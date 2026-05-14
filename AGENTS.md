@@ -65,3 +65,8 @@ Sempre que o usuário enviar uma nova mensagem ou comando, você DEVE executar r
 - Assim que o código compilar com sucesso, marque `[x]` na tarefa correspondente do plano.
 - Limpe a seção de `⚠️ Impedimentos` do buffer inserindo: "*Nenhum erro ativo.*"
 - Termine sua resposta exibindo o estado atual resumido do buffer e o consumo estimado da sessão.
+
+### 📜 Protocolo de Registro Histórico de Longo Prazo
+1. **Imutabilidade:** Os arquivos dentro de `docs/history/` são registros históricos. Você está PROIBIDO de alterar arquivos de sessões passadas.
+2. **Geração de Saída:** Quando o usuário solicitar o encerramento ou resumo de uma sessão para transição de chat, sintetize os pontos em um formato denso contendo: Data, Objetivos Alcançados, Decisões Técnicas de Arquitetura e Estado do Repositório.
+3. **Leitura Sob Demanda:** Você só deve ler a pasta `docs/history/` se o usuário solicitar explicitamente uma retrospectiva sobre o motivo de uma decisão tomada em sessões anteriores.
