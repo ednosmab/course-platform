@@ -1,0 +1,14 @@
+{
+  "name": "plataforma-cursos-cms",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "pnpm": {
+    "allowedBuilds": [
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
+}
