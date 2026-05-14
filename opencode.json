@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "filesystem-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "./"
+      ]
+    }
+  },
+  "settings": {
+    "instructions": [
+      "./AGENTS.md",
+      "./docs/CONTEXT_MAP.md"
+    ],
+    "systemPromptSuffix": "Siga rigorosamente o protocolo de Lazy Loading descrito em AGENTS.md utilizando o CONTEXT_MAP.md como roteador."
+  }
+}

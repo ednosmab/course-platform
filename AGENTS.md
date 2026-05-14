@@ -35,3 +35,33 @@
 - **Foco:** Montagem de Telas, Fluxos de Interface, Hooks de Salvamento e Clientes Supabase.
 - **Escopo:** Atua em `apps/admin-web/` e `apps/aluno-mobile/`.
 - **Instruções:** Você une os tipos criados pelo Agente 1 e as peças visuais criadas pelo Agente 2 para montar as interfaces de usuário finais da aplicação web e mobile.
+
+### ⏳ Diretriz de Leitura Preguiçosa (Lazy Loading)
+- Você está PROIBIDO de realizar buscas globais (globbing) ou ler múltiplos arquivos da pasta `docs/` de forma simultânea no início do chat.
+- Sempre que o usuário solicitar uma tarefa, analise o escopo e use o arquivo `docs/CONTEXT_MAP.md` para identificar os caminhos exatos dos arquivos de plano e skill necessários.
+- Use a ferramenta MCP para ler exclusivamente os arquivos mapeados para a tarefa atual e ignore as demais pastas de documentação.
+
+## 🤖 ALGORITMO OBRIGATÓRIO DE GESTÃO DE CONTEXTO (WORKFLOW ATIVO)
+
+Sempre que o usuário enviar uma nova mensagem ou comando, você DEVE executar rigorosamente os 4 passos abaixo na ordem exata, usando suas ferramentas MCP:
+
+### 🔄 PASSO 1: DIAGNÓSTICO E LEITURA PREGUIÇOSA (LAZY LOADING)
+- Use o MCP para ler `docs/CONTEXT_MAP.md` e localize a pasta da camada da tarefa.
+- Use o MCP para ler `docs/context_buffer.md` para extrair o estado da última execução.
+- Use o MCP para ler a Skill e o Plano de Execução específicos da camada afetada.
+
+### 📝 PASSO 2: ATUALIZAÇÃO DA MEMÓRIA RAM (BEFORE-CODE)
+- Antes de modificar qualquer código fonte, reescreva o `docs/context_buffer.md`.
+- Atualize o campo `## 🎯 Tarefa em Execução` com o objetivo imediato do turno.
+- Atualize `## 🕹️ Camada Ativa e Documentos Carregados via MCP` com os arquivos que usará.
+
+### 💻 PASSO 3: EXECUÇÃO CIRÚRGICA
+- Escreva ou altere o código estritamente dentro da pasta permitida ao seu Agente.
+- Se o usuário reportar erros de terminal (TypeScript/Lint/Zod), pare imediatamente.
+- Escreva o erro detalhado na seção `## ⚠️ Impedimentos & Logs de Erro Recentes` do buffer.
+- Tente a correção apenas após documentar o erro no buffer.
+
+### 🧹 PASSO 4: CONSOLIDAÇÃO E PURGA (AFTER-CODE)
+- Assim que o código compilar com sucesso, marque `[x]` na tarefa correspondente do plano.
+- Limpe a seção de `⚠️ Impedimentos` do buffer inserindo: "*Nenhum erro ativo.*"
+- Termine sua resposta exibindo o estado atual resumido do buffer e o consumo estimado da sessão.
