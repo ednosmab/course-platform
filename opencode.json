@@ -1,19 +1,31 @@
 {
-  "mcpServers": {
-    "filesystem-mcp": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "./"
-      ]
+  "$schema": "https://opencode.ai",
+  "agent": {
+    "profile": {
+      "model_tier": "medium",
+      "identity_file": "./AGENTS.md"
+    },
+    "inference": {
+      "temperature": 0.5
     }
   },
-  "settings": {
-    "instructions": [
-      "./AGENTS.md",
-      "./docs/CONTEXT_MAP.md"
-    ],
-    "systemPromptSuffix": "Siga rigorosamente o protocolo de Lazy Loading descrito em AGENTS.md utilizando o CONTEXT_MAP.md como roteador."
+  "instructions": [
+    "./AGENTS.md",
+    "./docs/CONTEXT_MAP.md"
+  ],
+  "mcp": {
+    "local-filesystem": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ],
+      "enabled": true,
+      "env": {
+        "AI_OPERATIONAL_RULES": "1. PROIBIDO lógica de domínio em packages/ui. 2. Todo schema Zod deve possuir version and .strict(). 3. Conventional Commits obrigatórios. 4. Respeitar teto de 50%-55% do contexto. 5. Proteger boundaries definidos no AGENTS.md. 6. Proibido imports cruzados entre apps. 7. Proibido instalar dependências sem justificativa. 8. Proibido modificar package.json fora da task atual. 9. Proibido sobrescrever documentação sem merge semântico. 10. Proibido criar código funcional durante TASK-00."
+      }
+    }
   }
 }
