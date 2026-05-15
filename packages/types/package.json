@@ -1,13 +1,21 @@
 {
   "name": "@projeto/types",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Contratos de dados e schemas de validação",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
 }
+

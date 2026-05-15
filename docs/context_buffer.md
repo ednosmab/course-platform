@@ -1,20 +1,26 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-AGUARDANDO_CONEXAO_DE_INFRA_DA_AUDITORIA
+AGUARDANDO_INICIO_TASK_02_TYPES
 
-## Tarefa Atual
-- Provisionamento das gavetas arquiteturais
-- Atualização do CONTEXT_MAP
-- Atualização do MCP
-- Blindagem anti-acoplamento
+## 🎯 Tarefa em Execução
+- TASK-02: Criar esquema Zod e tipo TS para Bloco de Texto (HTML) em packages/types/src/text.ts.
+
+## 🕹️ Camada Ativa e Documentos Carregados via MCP
+- Camada: Packages/Types
+- docs/CONTEXT_MAP.md
+- docs/context_buffer.md
+- docs/layers/types/execution_plan.md
+- docs/layers/types/zod_strict_validation_skill.md
 
 ## Critérios de Aceitação
-- Arquivos criados
-- CONTEXT_MAP atualizado
-- MCP atualizado
-- Git limpo após commit
+- Esquema Zod de texto implementado com `.strict()`.
+- Exportação de tipo TS derivado.
+
+## ⚠️ Impedimentos & Logs de Erro Recentes
+- *Nenhum erro ativo.*
 
 ## Próxima Task
-TASK-01:
-Validar conformidade dos schemas Zod.
+TASK-03: Criar esquema Zod e tipo TS para Bloco de Vídeo em packages/types/src/video.ts.
+
+
