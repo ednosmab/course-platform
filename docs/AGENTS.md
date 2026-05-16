@@ -16,6 +16,18 @@
 
 1. **NUNCA FAÇA COMMIT SEM PERMISSÃO:** É ESTREITAMENTE PROIBIDO executar comandos de `git commit` ou `git push` de forma automatizada. Você deve SEMPRE solicitar que o usuário teste as alterações localmente primeiro. Apenas após a confirmação visual e autorização explícita do usuário você poderá avançar ou sugerir o commit.
 2. **COMMITS CURTOS EM INGLÊS:** Quando um commit for autorizado, a mensagem de commit gerada ou sugerida DEVE ser escrita em inglês. Ela deve ser altamente concisa, resumida e seguir rigorosamente a especificação do Conventional Commits (ex: `feat: add text block schema`, `chore: update database rules`). Evite explicações longas ou genéricas no título do commit.
+3. **BOOTSTRAP E SETUP PROATIVO:** Ao receber guias de início rápido (Quick Starts) ou iniciar a fase estrutural (Semanas 1-8), o agente DEVE sempre validar e instalar dependências (pnpm), limpar cache se necessário, testar a instalação e criar fisicamente a estrutura de pastas base do monorepo (scaffolding) seguindo o padrão: `apps/admin-web`, `apps/aluno-mobile`, `packages/types`, `packages/ui`, `supabase/migrations` antes de começar a codificar, explicando a ação ao usuário. Não pule esta etapa, mesmo que não seja solicitada explicitamente.
+4. **REFINAMENTO CONTÍNUO (LEAN FLOW):** Ao identificar código repetido, desorganizado, mal nomeado ou que viola as regras de arquitetura (DRY, KISS, SOLID), você TEM A OBRIGAÇÃO de executar refatoração imediatamente. Documente o processo e as melhorias realizadas no `docs/context_buffer.md` na seção `## 🛠️ Refatorações Aplicadas` antes de solicitar feedback do usuário.
+5. **TESTES AUTOMATIZADOS (FIRST RUN):** Ao concluir a implementação de uma nova feature ou fix, você DEVE gerar automaticamente os testes unitários correspondentes e executá-los usando o comando configurado (`pnpm run test`). O resultado do teste deve ser documentado no buffer antes da entrega final.
+6. **VALIDAÇÃO DE SEGURANÇA (SECURITY BY DEFAULT):** Antes de implementar qualquer funcionalidade que envolva dados do usuário (inputs, uploads, formulários) ou renderização de HTML gerado por CMS, você DEVE verificar o `docs/skills/security_xss_prevention.md`. Aplique as defesas necessárias (sanitização, escape ou uso de componentes seguros) automaticamente e documente a validação no buffer.
+7. **TESTE DE INTEGRIDADE POST-COMMIT (POST-MORTEM):** Após realizar qualquer commit (e apenas após ser autorizado pelo usuário), você DEVE executar imediatamente um diagnóstico completo do sistema para garantir que a alteração não quebrou outras partes do projeto. Você DEVE utilizar as seguintes ferramentas e comandos na ordem exata:
+
+   a. **Detecção de Erros de Compilação:** Execute `pnpm run lint` para verificar erros de sintaxe e TypeScript. Verifique também os erros de validação do Zod reportados pelo compilador.
+
+   b. **Detecção de Erros de Importação:** Execute `pnpm ls zod` e `pnpm ls @supabase/supabase-js` para garantir que as dependências core continuam sendo resolvidas corretamente pelo pnpm.
+
+   c. **Teste de Integridade do Monorepo:** Execute `pnpm run test:e2e` para garantir que os fluxos críticos de UI continuam funcionando. Documente qualquer falha encontrada na seção `## ⚠️ Impedimentos & Logs de Erro Recentes` do `docs/context_buffer.md`, incluindo o stack trace completo.
+   d. **Correção Automática de Erros Críticos:** Se qualquer um dos comandos acima falhar, você DEVE executar as correções sugeridas pelo próprio terminal e repetir os testes até que todos passem, documentando cada tentativa no buffer, antes de prosseguir para a próxima tarefa.
 
 ---
 
@@ -36,10 +48,11 @@
 - **Escopo:** Atua em `apps/admin-web/` e `apps/aluno-mobile/`.
 - **Instruções:** Você une os tipos criados pelo Agente 1 e as peças visuais criadas pelo Agente 2 para montar as interfaces de usuário finais da aplicação web e mobile.
 
-### ⏳ Diretriz de Leitura Preguiçosa (Lazy Loading)
+### ⏳ Diretriz de Leitura Preguiçosa Otimizada (Lazy Loading)
 - Você está PROIBIDO de realizar buscas globais (globbing) ou ler múltiplos arquivos da pasta `docs/` de forma simultânea no início do chat.
 - Sempre que o usuário solicitar uma tarefa, analise o escopo e use o arquivo `docs/CONTEXT_MAP.md` para identificar os caminhos exatos dos arquivos de plano e skill necessários.
 - Use a ferramenta MCP para ler exclusivamente os arquivos mapeados para a tarefa atual e ignore as demais pastas de documentação.
+- Limpe o `context_buffer.md` ao iniciar cada nova tarefa (exceto durante fluxos de refatoração ou correção de bugs).
 
 ## 🤖 ALGORITMO OBRIGATÓRIO DE GESTÃO DE CONTEXTO (WORKFLOW ATIVO)
 

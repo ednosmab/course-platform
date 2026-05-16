@@ -1,25 +1,26 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-CONCLUIDO_GERACAO_SKILLS_FALTANTES
+CONCLUIDO_SETUP_AMBIENTE_BOOTSTRAP
 
 ## 🎯 Tarefa em Execução
-- Nenhuma. Aguardando comando do usuário.
+- Setup finalizado. Preparando para iniciar TASK-02 da camada de tipos.
 
 ## 🕹️ Camada Ativa e Documentos Carregados via MCP
-- Camada: Documentação/Skills (Refinamento Final)
-- docs/CONTEXT_MAP.md
-- docs/context_buffer.md
-- docs/skills/*.md
+- Camada: Infraestrutura & Setup Inicial
+- `package.json`
+- `docs/AGENTS.md`
+- `docs/context_buffer.md`
 
-## Critérios de Aceitação
-- [x] Skill de Gestão de Estado (`state_management_protocol.md`) criada.
-- [x] Skill de Performance Next.js & SEO (`nextjs_performance_seo.md`) criada.
-- [x] Skill de Segurança & Prevenção XSS (`security_xss_prevention.md`) criada.
-- [x] docs/CONTEXT_MAP.md atualizado com as novas integrações.
+## Critérios de Aceitação (Checklist de Setup)
+- [x] Dependências Core instaladas (`zod`, `tamagui`, `@supabase/supabase-js`, etc).
+- [x] Estrutura de pastas esqueleto criada (`packages/types`, `packages/ui`, `supabase/migrations`).
+- [x] Arquivos de exportação iniciais vazios gerados (`index.ts`, `tamagui.config.ts`).
+- [x] Teste de importação bem-sucedido.
+- [x] Regras DRY aplicadas no arquivo `AGENTS.md`.
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
 - *Nenhum erro ativo.*
 
 ## Próxima Task
-- Retomar TASK-02: Criar esquema Zod e tipo TS para Bloco de Texto (HTML) em packages/types/src/text.ts.
+- Retomar TASK-02: Criar esquema Zod para TextBlock em `packages/types/src/index.ts`.
