@@ -67,9 +67,11 @@ Você deve consultar os arquivos abaixo via MCP *apenas quando* o usuário solic
   - `docs/layers/renderer/engine-spec.md`
   - `docs/skills/design_patterns.md`
 
-## 🔍 7. Infraestrutura & Observabilidade
-- **Escopo:** Telemetria, logs estruturados, tracing, métricas, lint arquitetural, scanner de imports, validação de boundaries e automação de schemas.
+## 🔍 7. Infraestrutura, DevOps & Observabilidade
+- **Escopo:** CI/CD (GitHub Actions), Telemetria, logs estruturados, tracing, métricas, lint arquitetural, scanner de imports, validação de boundaries e automação de schemas.
 - **Arquivos para ler se acionado:**
+  - `docs/layers/infra/execution_plan.md`
+  - `docs/skills/ci_cd_pipeline.md`
   - `docs/layers/infra/observability.md`
   - `docs/skills/error_handling_observability.md`
   - `docs/layers/infra/future-automation.md`

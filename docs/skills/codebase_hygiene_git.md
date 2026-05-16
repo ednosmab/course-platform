@@ -9,12 +9,48 @@ Manter a sanidade, segurança e manutenibilidade do código-fonte através de re
 3. **Código Morto:** Substituiu um componente local por um do Design System? Apague o antigo IMEDIATAMENTE.
 4. **Documentação:** Mantenha os históricos limpos e nomes de diretórios semânticos (ex: `docs/skills/` em vez de `docs/misc/`).
 
-## 🌿 Estrutura de Branches (Trunk-Based Modificado)
+## 🌿 Estrutura de Branches e Nomenclatura
+
 | Branch | Ambiente | Propósito |
 |--------|----------|-----------|
-| `main` | Produção | Código estável. Nunca faça commit direto aqui. |
-| `develop` | Staging | Validação antes de ir para a main. |
-| `feat/*`, `fix/*` | Local | Todo e qualquer desenvolvimento ocorre aqui. |
+| `main` | Produção | Código estável e validado. NUNCA faça commit direto aqui. |
+| `develop` | Staging | Branch de integração e testes automatizados de CI/CD. Espelho da main. |
+| `feature/*`, `fix/*` | Local | Todo e qualquer desenvolvimento ocorre aqui. |
+
+### Dicas Práticas para Nomes de Branches
+Para manter o repositório organizado e alinhado aos padrões de mercado:
+1. **Use hífen para separar palavras:** Prefira `feature/login-usuario` em vez de camelCase ou espaços (`feature/loginUsuario`).
+2. **Seja curto e descritivo:** O nome deve resumir a funcionalidade ou erro (ex: `feature/checkout-cartao` ou `fix/botao-invisivel`).
+3. **Use o ID da Tarefa (se houver):** Se estiver usando ferramentas como Jira, Trello ou GitHub Issues, inclua o número do card na branch para facilitar o rastreamento depois (ex: `feature/jira-104-login`).
+
+## 🔄 Workflow Diário do Desenvolvedor (Ciclo Completo)
+
+Para evitar conflitos, este é o ciclo prático que todo desenvolvedor (ou agente IA) vai seguir a cada nova funcionalidade:
+
+**1. Atualize seu código local com a branch de integração (`develop`):**
+*(Lembre-se: `develop` é nosso espelho de testes da main)*
+```bash
+git checkout develop
+git pull origin develop
+```
+
+**2. Crie a sua branch de feature (com nomenclatura padronizada):**
+```bash
+git checkout -b feature/login-usuario
+```
+
+**3. Trabalhe no código, salve e faça o commit:**
+*(Siga as regras de TDD e Padrão Conventional Commits)*
+```bash
+git add .
+git commit -m "feat(auth): implement student login screen"
+```
+
+**4. Envie para o servidor e acione o Pipeline:**
+```bash
+git push origin feature/login-usuario
+```
+*(Após isso, abra um Pull Request para a branch `develop` onde o CI fará a validação)*
 
 ## 📝 Padrão de Commits (Conventional Commits)
 Sempre em INGLÊS e no formato: `type(scope): description`
