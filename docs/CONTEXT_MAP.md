@@ -4,7 +4,8 @@
 
 * P0 → docs/AGENTS.md
 * P0.1 → docs/INDEX.md
-* P0.2 → cognition/context/CONTEXT_HIERARCHY.md
+* P0.2 → docs/Requisitos_plataforma.md (Bíblia de Requisitos da Plataforma)
+* P0.3 → cognition/context/CONTEXT_HIERARCHY.md
 * P1 → docs/context_buffer.md
 * P2 → layer específica da task
 * P3 → arquivos correlatos
