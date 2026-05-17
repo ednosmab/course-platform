@@ -1,86 +1,113 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useEditor } from '../../context/EditorContext';
-import { Undo2, Redo2, CloudLightning, Check } from 'lucide-react';
+import { Undo2, Redo2, CloudLightning, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
 export const EditorHeader: React.FC = () => {
-  const { canUndo, canRedo, undo, redo, saveStatus } = useEditor();
+  const { canUndo, canRedo, undo, redo, saveStatus, previewMode, setPreviewMode, viewportMode, setViewportMode } = useEditor();
+  const [published, setPublished] = useState(false);
+
+  const handlePublish = () => {
+    setPublished(true);
+    setTimeout(() => setPublished(false), 3000);
+  };
 
   return (
-    <header className="h-16 bg-slate-900/60 backdrop-blur-xl border-b border-slate-800 px-8 flex items-center justify-between w-full">
-      {/* Title info */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
-          <CloudLightning size={18} />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Estúdio CMS</span>
-          <span className="text-sm font-semibold text-slate-200">Editor de Aula: Módulo 1 / Introdução Básica</span>
+    <header className="topbar">
+      {/* Left Area */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <button className="btn-icon" title="Voltar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '24px', height: '24px', backgroundColor: 'var(--accent-blue)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CloudLightning size={14} color="white" />
+            </div>
+            <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>
+              Onboarding 2026 / <span style={{ fontWeight: 600 }}>Aula 03 — Feedback</span>
+            </span>
+          </div>
+
+          {/* Save Status */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px', fontSize: '11px', color: 'var(--text-tertiary)' }}>
+            {saveStatus === 'saving' && (
+              <>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
+                <span>Salvando...</span>
+              </>
+            )}
+            {(saveStatus === 'saved' || saveStatus === 'idle') && (
+              <>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} />
+                <span>Salvo</span>
+              </>
+            )}
+            {saveStatus === 'error' && (
+              <>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#ef4444' }} />
+                <span style={{ color: '#ef4444' }}>Erro ao salvar</span>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Undo/Redo & Save controls */}
-      <div className="flex items-center gap-4">
-        {/* Save Status indicator */}
-        <div className="flex items-center gap-2 text-xs">
-          {saveStatus === 'saving' && (
-            <>
-              <div className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
-              <span className="text-slate-400">Salvando alterações...</span>
-            </>
-          )}
-          {saveStatus === 'saved' && (
-            <>
-              <Check size={12} className="text-indigo-400 font-bold" />
-              <span className="text-indigo-400 font-medium">Salvo com sucesso!</span>
-            </>
-          )}
-          {saveStatus === 'error' && (
-            <>
-              <div className="h-2 w-2 rounded-full bg-rose-500 animate-ping" />
-              <span className="text-rose-400 font-medium">Erro ao salvar no banco!</span>
-            </>
-          )}
-          {saveStatus === 'idle' && (
-            <>
-              <div className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span className="text-slate-400">Alterações salvas no Supabase</span>
-            </>
-          )}
-        </div>
+      {/* Center: View Toggle — controla tamanho do viewport do canvas */}
+      <div className="toggle-group" style={{ width: '120px' }}>
+        <button
+          className={`toggle-btn ${viewportMode === 'desktop' ? 'active' : ''}`}
+          onClick={() => { setViewportMode('desktop'); setPreviewMode(false); }}
+          title="Viewport Desktop"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+        </button>
+        <button
+          className={`toggle-btn ${viewportMode === 'mobile' ? 'active' : ''}`}
+          onClick={() => { setViewportMode('mobile'); setPreviewMode(false); }}
+          title="Viewport Mobile"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+        </button>
+      </div>
 
-        <div className="h-4 w-1px bg-slate-800" />
-
-        {/* Undo/Redo Buttons */}
-        <div className="flex items-center gap-1 bg-slate-950-40 p-1 border border-slate-800 rounded-lg">
-          <button
-            onClick={undo}
-            disabled={!canUndo}
-            className={`p-15 rounded transition-all duration-300 cursor-pointer ${
-              canUndo ? 'text-slate-300 hover-border-slate-700' : 'text-slate-605 cursor-not-allowed'
-            }`}
-            title="Desfazer (Ctrl+Z)"
-          >
-            <Undo2 size={15} />
+      {/* Right Area: Actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '4px', marginRight: '8px' }}>
+          <button className="btn-icon" onClick={undo} disabled={!canUndo} style={{ opacity: canUndo ? 1 : 0.4 }} title="Desfazer">
+            <Undo2 size={16} />
           </button>
-          <button
-            onClick={redo}
-            disabled={!canRedo}
-            className={`p-15 rounded transition-all duration-300 cursor-pointer ${
-              canRedo ? 'text-slate-300 hover-border-slate-700' : 'text-slate-605 cursor-not-allowed'
-            }`}
-            title="Refazer (Ctrl+Shift+Z)"
-          >
-            <Redo2 size={15} />
+          <button className="btn-icon" onClick={redo} disabled={!canRedo} style={{ opacity: canRedo ? 1 : 0.4 }} title="Refazer">
+            <Redo2 size={16} />
           </button>
         </div>
 
-        {/* Status indicator */}
-        <select className="bg-slate-950-60 border border-slate-800 rounded-lg px-3 py-15 text-xs text-slate-300 focus-outline-none focus-border-indigo-60 cursor-pointer">
-          <option value="draft">Rascunho</option>
-          <option value="published">Publicado</option>
-        </select>
+        <button
+          className="btn-outline"
+          onClick={() => setPreviewMode(!previewMode)}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+        >
+          {previewMode ? <EyeOff size={15} /> : <Eye size={15} />}
+          {previewMode ? 'Sair do Preview' : 'Visualizar como aluno'}
+        </button>
+
+        <button
+          className="btn-primary"
+          onClick={handlePublish}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            backgroundColor: published ? '#10b981' : undefined,
+            transition: 'background-color 0.3s',
+          }}
+        >
+          {published ? (
+            <><CheckCircle2 size={15} /> Publicado!</>
+          ) : (
+            'Publicar'
+          )}
+        </button>
       </div>
     </header>
   );

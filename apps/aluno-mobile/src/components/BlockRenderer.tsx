@@ -101,7 +101,8 @@ const VideoBlockRenderer: React.FC<{
           allowFullScreen
           style={{
             width: '100%',
-            height: '240px',
+            height: 'auto',
+            aspectRatio: '16/9',
             border: 'none',
             backgroundColor: '#000000',
           }}

@@ -9,23 +9,30 @@ interface EditorState {
   activeBlockId: string | null;
   history: AnyBlock[][];
   historyIndex: number;
+  previewMode: boolean;
+  viewportMode: 'desktop' | 'mobile';
 }
 
 type EditorAction =
-  | { type: 'ADD_BLOCK'; payload: { type: 'text' | 'video' | 'quiz' } }
+  | { type: 'ADD_BLOCK'; payload: { type: 'text' | 'video' | 'quiz' | 'image' | 'html' } }
   | { type: 'REMOVE_BLOCK'; payload: { id: string } }
   | { type: 'UPDATE_BLOCK'; payload: { id: string; updates: Partial<AnyBlock> } }
+  | { type: 'UPDATE_BLOCK_SILENT'; payload: { id: string; updates: Partial<AnyBlock> } }
   | { type: 'MOVE_BLOCK'; payload: { fromIndex: number; toIndex: number } }
   | { type: 'SET_ACTIVE_BLOCK'; payload: { id: string | null } }
   | { type: 'UNDO' }
   | { type: 'REDO' }
-  | { type: 'SET_BLOCKS'; payload: { blocks: AnyBlock[] } };
+  | { type: 'SET_BLOCKS'; payload: { blocks: AnyBlock[] } }
+  | { type: 'SET_PREVIEW_MODE'; payload: { active: boolean } }
+  | { type: 'SET_VIEWPORT_MODE'; payload: { mode: 'desktop' | 'mobile' } };
 
 const initialState: EditorState = {
   blocks: [],
   activeBlockId: null,
   history: [[]],
   historyIndex: 0,
+  previewMode: false,
+  viewportMode: 'desktop',
 };
 
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
@@ -46,12 +53,17 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       const id = crypto.randomUUID();
       let newBlock: AnyBlock;
 
+      // Calcula a posição Y padrão: empilha abaixo do último bloco
+      const lastBlock = state.blocks[state.blocks.length - 1];
+      const defaultY = lastBlock ? ((lastBlock as any).layout?.y ?? 40) + ((lastBlock as any).layout?.h ?? 120) + 20 : 40;
+
       if (action.payload.type === 'text') {
         newBlock = {
           id,
           type: 'text',
           content: 'Clique aqui para editar este texto...',
           styles: { align: 'left', fontSize: 'medium' },
+          layout: { x: 40, y: defaultY, w: 600, h: 80, zIndex: state.blocks.length },
         };
       } else if (action.payload.type === 'video') {
         newBlock = {
@@ -59,12 +71,30 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           type: 'video',
           url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
           provider: 'youtube',
+          layout: { x: 40, y: defaultY, w: 600, h: 340, zIndex: state.blocks.length },
+        };
+      } else if (action.payload.type === 'image') {
+        newBlock = {
+          id,
+          type: 'image',
+          url: '',
+          alt: 'Nova imagem',
+          styles: { align: 'center' },
+          layout: { x: 40, y: defaultY, w: 500, h: 300, zIndex: state.blocks.length },
+        };
+      } else if (action.payload.type === 'html') {
+        newBlock = {
+          id,
+          type: 'html',
+          htmlContent: '<div style="padding: 20px; background: #f0f0f0;">\n  <h2>Código Customizado</h2>\n</div>',
+          layout: { x: 40, y: defaultY, w: 600, h: 120, zIndex: state.blocks.length },
         };
       } else {
         newBlock = {
           id,
           type: 'quiz',
           question: 'Digite sua pergunta de quiz aqui...',
+          layout: { x: 40, y: defaultY, w: 600, h: 280, zIndex: state.blocks.length },
           options: [
             { id: crypto.randomUUID(), text: 'Opção A', isCorrect: true, feedback: 'Excelente!' },
             { id: crypto.randomUUID(), text: 'Opção B', isCorrect: false, feedback: 'Tente novamente.' },
@@ -85,12 +115,18 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     case 'UPDATE_BLOCK': {
       const newBlocks = state.blocks.map((b) => {
         if (b.id !== action.payload.id) return b;
-        return {
-          ...b,
-          ...action.payload.updates,
-        } as AnyBlock;
+        return { ...b, ...action.payload.updates } as AnyBlock;
       });
       return updateHistory(newBlocks);
+    }
+
+    case 'UPDATE_BLOCK_SILENT': {
+      // Atualiza sem criar entrada no histórico (usado durante drag)
+      const newBlocks = state.blocks.map((b) => {
+        if (b.id !== action.payload.id) return b;
+        return { ...b, ...action.payload.updates } as AnyBlock;
+      });
+      return { ...state, blocks: newBlocks };
     }
 
     case 'MOVE_BLOCK': {
@@ -143,20 +179,35 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       };
     }
 
+    case 'SET_PREVIEW_MODE': {
+      return {
+        ...state,
+        previewMode: action.payload.active,
+        activeBlockId: action.payload.active ? null : state.activeBlockId,
+      };
+    }
+
+    case 'SET_VIEWPORT_MODE': {
+      return { ...state, viewportMode: action.payload.mode };
+    }
+
     default:
       return state;
   }
 }
 
 interface EditorContextType extends EditorState {
-  addBlock: (type: 'text' | 'video' | 'quiz') => void;
+  addBlock: (type: 'text' | 'video' | 'quiz' | 'image' | 'html') => void;
   removeBlock: (id: string) => void;
   updateBlock: (id: string, updates: Partial<AnyBlock>) => void;
+  updateBlockSilent: (id: string, updates: Partial<AnyBlock>) => void;
   moveBlock: (fromIndex: number, toIndex: number) => void;
   setActiveBlockId: (id: string | null) => void;
   undo: () => void;
   redo: () => void;
   setBlocks: (blocks: AnyBlock[]) => void;
+  setPreviewMode: (active: boolean) => void;
+  setViewportMode: (mode: 'desktop' | 'mobile') => void;
   canUndo: boolean;
   canRedo: boolean;
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
@@ -171,7 +222,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [activeLessonId] = useState('11111111-1111-1111-1111-111111111111');
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const addBlock = (type: 'text' | 'video' | 'quiz') => dispatch({ type: 'ADD_BLOCK', payload: { type } });
+  const addBlock = (type: 'text' | 'video' | 'quiz' | 'image' | 'html') => dispatch({ type: 'ADD_BLOCK', payload: { type } });
   const removeBlock = (id: string) => dispatch({ type: 'REMOVE_BLOCK', payload: { id } });
   const updateBlock = (id: string, updates: Partial<AnyBlock>) => dispatch({ type: 'UPDATE_BLOCK', payload: { id, updates } });
   const moveBlock = (fromIndex: number, toIndex: number) => dispatch({ type: 'MOVE_BLOCK', payload: { fromIndex, toIndex } });
@@ -179,6 +230,9 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const undo = () => dispatch({ type: 'UNDO' });
   const redo = () => dispatch({ type: 'REDO' });
   const setBlocks = (blocks: AnyBlock[]) => dispatch({ type: 'SET_BLOCKS', payload: { blocks } });
+  const setPreviewMode = (active: boolean) => dispatch({ type: 'SET_PREVIEW_MODE', payload: { active } });
+  const setViewportMode = (mode: 'desktop' | 'mobile') => dispatch({ type: 'SET_VIEWPORT_MODE', payload: { mode } });
+  const updateBlockSilent = (id: string, updates: Partial<AnyBlock>) => dispatch({ type: 'UPDATE_BLOCK_SILENT', payload: { id, updates } });
 
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history.length - 1;
@@ -242,13 +296,15 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
               id: 'block-text-1',
               type: 'text',
               content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.',
-              styles: { align: 'left', fontSize: 'medium' }
+              styles: { align: 'left', fontSize: 'medium' },
+              layout: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 },
             },
             {
               id: 'block-video-1',
               type: 'video',
               url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-              provider: 'youtube'
+              provider: 'youtube',
+              layout: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 },
             },
             {
               id: 'block-quiz-1',
@@ -257,7 +313,8 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
               options: [
                 { id: 'opt-pg-1', text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' },
                 { id: 'opt-pg-2', text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }
-              ]
+              ],
+              layout: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 },
             }
           ] as AnyBlock[];
 
@@ -325,11 +382,14 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         addBlock,
         removeBlock,
         updateBlock,
+        updateBlockSilent,
         moveBlock,
         setActiveBlockId,
         undo,
         redo,
         setBlocks,
+        setPreviewMode,
+        setViewportMode,
         canUndo,
         canRedo,
         saveStatus,

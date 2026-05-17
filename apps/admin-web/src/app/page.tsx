@@ -10,12 +10,12 @@ import { BlockSettings } from '../components/editor/BlockSettings';
 export default function Home() {
   return (
     <EditorProvider>
-      <div className="flex flex-col h-screen bg-slate-950 text-slate-100 font-sans select-none overflow-hidden">
+      <div className="layout-container">
         {/* Barra de topo do estúdio CMS */}
         <EditorHeader />
 
-        {/* Viewport Principal do Editor */}
-        <div className="flex flex-1 overflow-hidden w-full">
+        {/* Viewport Principal do Editor (3 Colunas) */}
+        <div className="layout-main">
           {/* Paleta de Blocos (Esquerda) */}
           <BlockPalette />
 

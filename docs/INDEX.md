@@ -11,11 +11,13 @@ Este índice centraliza todo o ecossistema documental, regras cognitivas e plano
 
 ---
 
-## 🛠️ 2. Registros de Decisões de Arquitetura (ADRs)
+## 🛠️ 2. Registros de Decisões de Arquitetura (ADRs) e Workflows
 * **ADR-001 (Escolha da Stack e Primitivos Tamagui):** [docs/adrs/0001-escolha-da-stack-e-estilizacao.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/docs/adrs/0001-escolha-da-stack-e-estilizacao.md)
 * **ADR-002 (Motor de Workflow Multiagente):** [docs/adrs/ADR-002-workflow-engine.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/docs/adrs/ADR-002-workflow-engine.md)
 * **ADR-003 (Arquitetura de Memória Ativa/Histórica):** [docs/adrs/ADR-003-memory-architecture.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/docs/adrs/ADR-003-memory-architecture.md)
 * **ADR-004 (Governança e Segurança do Servidor MCP):** [docs/adrs/ADR-004-mcp-server-governance.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/docs/adrs/ADR-004-mcp-server-governance.md)
+* **ADR-005 (Fidelidade do Preview — A Lei do CMS):** [docs/adrs/ADR-005-preview-fidelity-law.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/docs/adrs/ADR-005-preview-fidelity-law.md)
+* **Workflow do Admin CMS:** [docs/workflows/workflow_adm.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/docs/workflows/workflow_adm.md)
 
 ---
 

@@ -1,11 +1,10 @@
 import { z } from 'zod';
 import { BlockLayoutSchema } from './layout';
 
-export const VideoBlockSchema = z.object({
+export const HtmlBlockSchema = z.object({
   id: z.string().uuid(),
-  type: z.literal('video'),
-  url: z.string(),
-  provider: z.enum(['youtube', 'vimeo', 'storage_supabase']),
+  type: z.literal('html'),
+  htmlContent: z.string(),
   styles: z.object({
     width: z.string().optional(),
     height: z.string().optional(),
@@ -13,4 +12,4 @@ export const VideoBlockSchema = z.object({
   layout: BlockLayoutSchema,
 }).strict();
 
-export type VideoBlock = z.infer<typeof VideoBlockSchema>;
+export type HtmlBlock = z.infer<typeof HtmlBlockSchema>;

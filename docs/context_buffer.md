@@ -1,25 +1,27 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-AGUARDANDO_APROVACAO_USUARIO
+CONSOLIDACAO_INFRA_E_TESTES
 
-## 🎯 Tarefa em Execução
-- Conclusão da FASE 5: Portal do Aluno (Experiência Mobile Híbrida) no apps/aluno-mobile, contendo o renderizador dinâmico de blocos CMS para React Native, player nativo expo-av, outbox offline-first de progresso e sincronizador reativo em background.
+## 🎯 Tarefa Recente Concluída
+- Resolução de bugs críticos de UX e UI no CMS (salvamento invisível, falta de responsividade) e no Portal do Aluno (Vídeos YouTube quebrando, gabarito vazado no Quiz).
+- Implementação de uma Bateria de Testes E2E (Playwright) para blindar o fluxo híbrido (Admin Web e Aluno Mobile/Web) via Mocking total do Supabase sem poluir o ambiente em nuvem.
 
-## 🕹️ Camada Ativa e Documentos Carregados via MCP
-- Camada: Portal do Aluno Mobile (Aluno-Mobile)
-- `docs/layers/apps/mobile_player_plan.md`
-- `docs/Requisitos_plataforma.md`
+## 🕹️ Camada Ativa e Documentos Relevantes
+- Camadas: Testing (E2E), CMS Editor (Admin Web), Portal do Aluno (App Mobile/Web)
+- `tests/e2e/1-admin-cms.spec.ts`
+- `tests/e2e/2-aluno-player.spec.ts`
+- `playwright.config.ts`
 
-## Critérios de Aceitação
-- [x] TASK-01: Adicionar dependências nativas (expo-av, @react-native-async-storage/async-storage, lucide-react-native) em apps/aluno-mobile/package.json.
-- [x] TASK-02: Criar o parser nativo de componentes BlockRenderer.tsx suportando Texto formatado, Vídeos e Quizzes interativos.
-- [x] TASK-03: Desenvolver o hook useMobileProgress.ts conectando com ProgressService (sincronizações imediata e debounced) e cache robusto offline outbox.
-- [x] TASK-04: Implementar a UI completa e interativa do aluno em App.tsx contendo currículo de trilha, auto-resume, regra de 85% de conclusão de vídeo e banner de simulação de rede offline-first.
-- [x] TASK-05: Validar a compilação estrita typescript do app mobile com tsc --noEmit obtendo sucesso absoluto (zero erros).
+## ✅ Resumo de Decisões e Entregas (Critérios de Aceite Atingidos)
+- [x] O fluxo de salvamento do CMS utiliza `.upsert()` no Supabase em vez de `.update()` para lidar com aulas que acabaram de ser criadas na interface sem recarregar, evitando falhas "PGRST116".
+- [x] O editor de Quiz no Admin Web foi aprimorado (`textarea` para a pergunta, tipografia e alinhamentos modulares injetados no esquema Zod).
+- [x] O Quiz no Aluno Web implementa a UX de "Tentar Novamente": opções incorretas não entregam mais o gabarito. O aluno é obrigado a refazer se errar.
+- [x] O Player do Aluno possui motor de renderização híbrida inteligente: Se a URL possui "youtube", injeta um `iframe`, se for um link direto de CDN (.mp4), renderiza com `expo-av`.
+- [x] A Bateria de testes E2E do Playwright intercepta as rotas de API com `page.route` e entrega mocks validados pelo Zod (com base no header `Accept`), blindando a plataforma localmente (tempo de execução: <4s).
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
-- *Nenhum erro ativo. Compilação TypeScript de aluno-mobile concluída com 100% de sucesso (Exit code: 0).*
+- *Nenhum erro ativo. Todos os testes E2E Playwright foram aprovados nas emulações Desktop Chrome (3000) e Mobile Chrome (8081).*
 
 ## Próxima Task
-- Parabéns! Concluímos com maestria todas as fases previstas no Software Development Plan (SDP)! Pronto para revisão geral do monorepo, auditoria de código e testes finais.
+- Aguardando direcionamento do usuário. Sistema 100% blindado contra regressões nos fluxos validados. Próximo passo sugerido seria adicionar E2E para Auth (Autenticação) ou finalizar polimento do layout geral do CMS.

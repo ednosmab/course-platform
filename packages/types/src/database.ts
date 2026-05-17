@@ -2,6 +2,8 @@ import { z } from 'zod';
 import { TextBlockSchema } from './text';
 import { VideoBlockSchema } from './video';
 import { QuizBlockSchema } from './quiz';
+import { ImageBlockSchema } from './image';
+import { HtmlBlockSchema } from './html';
 
 // 1. Profile Schema & Type
 export const ProfileSchema = z.object({
@@ -82,6 +84,8 @@ export const LessonSchema = z.object({
     TextBlockSchema,
     VideoBlockSchema,
     QuizBlockSchema,
+    ImageBlockSchema,
+    HtmlBlockSchema,
   ])),
   schema_version: z.number().int().positive().default(1),
   is_published: z.boolean(),

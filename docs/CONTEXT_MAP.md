@@ -52,6 +52,8 @@ Você deve consultar os arquivos abaixo via MCP *apenas quando* o usuário solic
 - **Arquivos para ler se acionado:**
   - `docs/layers/apps/admin_canvas_plan.md`
   - `docs/layers/apps/mobile_player_plan.md`
+  - `docs/adrs/ADR-005-preview-fidelity-law.md`
+  - `docs/workflows/workflow_adm.md`
   - `docs/skills/app_integration.md`
   - `docs/skills/optimistic_ui.md`
   - `docs/skills/nextjs_performance_seo.md`
@@ -91,3 +93,10 @@ Você deve consultar os arquivos abaixo via MCP *apenas quando* o usuário solic
   - `docs/skills/codebase_hygiene_git.md`
   - `docs/skills/architectural_integrity.md`
   - `docs/skills/security_xss_prevention.md`
+
+## 🧪 9. Testes de Ponta a Ponta (E2E) e Qualidade (Playwright)
+- **Escopo:** Configuração do Playwright, suítes de teste automatizadas para os fluxos principais (CMS e Portal do Aluno), mocking de chamadas ao banco de dados e políticas antifalha de regressão.
+- **Arquivos para ler se acionado:**
+  - `docs/layers/testing/e2e_playwright_plan.md` (A ser criado se necessário)
+  - `tests/e2e/*.spec.ts`
+  - `playwright.config.ts`
