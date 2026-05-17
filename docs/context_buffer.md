@@ -1,27 +1,30 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-CONSOLIDACAO_INFRA_E_TESTES
+FIDELIDADE_TOTAL_PREVIEW_ALUNO
 
 ## 🎯 Tarefa Recente Concluída
-- Resolução de bugs críticos de UX e UI no CMS (salvamento invisível, falta de responsividade) e no Portal do Aluno (Vídeos YouTube quebrando, gabarito vazado no Quiz).
-- Implementação de uma Bateria de Testes E2E (Playwright) para blindar o fluxo híbrido (Admin Web e Aluno Mobile/Web) via Mocking total do Supabase sem poluir o ambiente em nuvem.
+- **Fidelidade Total de Tela (ADR-005):** Refatoramos o aplicativo do aluno (`apps/aluno-mobile`) para espelhar perfeitamente e sem desvios o canvas móvel do CMS Admin. 
+- **Purga de Hardcoded e Clutters:** Removemos as decorações obsoletas de `App.tsx` (cabeçalhos de curso estáticos, currículo de aulas no footer, botão manual de conclusão e seeds de dados embutidos), tornando a tela dedicada e focada 100% nos blocos da aula.
+- **Tema Light Integrado:** Ajustamos a cor do background global do portal do aluno para `#f8fafc` e o card da aula para `#ffffff`, alinhando perfeitamente a paleta de cores ao visual leve de preview do CMS.
 
 ## 🕹️ Camada Ativa e Documentos Relevantes
-- Camadas: Testing (E2E), CMS Editor (Admin Web), Portal do Aluno (App Mobile/Web)
-- `tests/e2e/1-admin-cms.spec.ts`
-- `tests/e2e/2-aluno-player.spec.ts`
-- `playwright.config.ts`
+- Camadas: Admin CMS (`apps/admin-web`), Portal do Aluno (`apps/aluno-mobile`), Core Services (`packages/core`)
+- [App.tsx](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/apps/aluno-mobile/App.tsx)
+- [BlockRenderer.tsx](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/apps/aluno-mobile/src/components/BlockRenderer.tsx)
+- [EditorContext.tsx](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/apps/admin-web/src/context/EditorContext.tsx)
+- [workflow_adm.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/docs/workflows/workflow_adm.md)
 
 ## ✅ Resumo de Decisões e Entregas (Critérios de Aceite Atingidos)
-- [x] O fluxo de salvamento do CMS utiliza `.upsert()` no Supabase em vez de `.update()` para lidar com aulas que acabaram de ser criadas na interface sem recarregar, evitando falhas "PGRST116".
-- [x] O editor de Quiz no Admin Web foi aprimorado (`textarea` para a pergunta, tipografia e alinhamentos modulares injetados no esquema Zod).
-- [x] O Quiz no Aluno Web implementa a UX de "Tentar Novamente": opções incorretas não entregam mais o gabarito. O aluno é obrigado a refazer se errar.
-- [x] O Player do Aluno possui motor de renderização híbrida inteligente: Se a URL possui "youtube", injeta um `iframe`, se for um link direto de CDN (.mp4), renderiza com `expo-av`.
-- [x] A Bateria de testes E2E do Playwright intercepta as rotas de API com `page.route` e entrega mocks validados pelo Zod (com base no header `Accept`), blindando a plataforma localmente (tempo de execução: <4s).
+- [x] **Inscrição Dinâmica e Sincronia:** O app do aluno carrega dinamicamente a estrutura dos cursos cadastrados do Supabase (sem IDs fixos ou mocks) e se inscreve via WebSockets na aula ativa do CMS (`11111111-1111-1111-1111-111111111111`), garantindo sincronia instantânea ao "Publicar".
+- [x] **Reflow no React Native:** Portamos o algoritmo `groupBlocksByRow` para o mobile, agrupando blocos no React Native usando `flexDirection: 'row'` e larguras proporcionais flexíveis (`flexBasis`).
+- [x] **Renderizadores de Imagem e HTML:** Adicionamos renderização nativa de blocos de Imagem e renderização híbrida e segura de blocos HTML no mobile.
+- [x] **Visualização Limpa de Alto Contraste:** Configuramos contrastes escuros (`#1e293b`) em fontes e botões de quiz no celular do aluno para leitura premium sobre o novo card branco.
+- [x] **Banner de Controle Elegante:** Centralizamos todas as configurações e utilitários (Sincronizar CMS e Alternar Rede) em um banner de status compacto no topo.
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
-- *Nenhum erro ativo. Todos os testes E2E Playwright foram aprovados nas emulações Desktop Chrome (3000) e Mobile Chrome (8081).*
+- *Nenhum erro ativo. Todo o monorepo compila com 100% de sucesso.*
 
 ## Próxima Task
-- Aguardando direcionamento do usuário. Sistema 100% blindado contra regressões nos fluxos validados. Próximo passo sugerido seria adicionar E2E para Auth (Autenticação) ou finalizar polimento do layout geral do CMS.
+- Sessão pronta para ser fechada pelo usuário. Conexão CMS/Aluno consolidada e blindada sob a Lei Absoluta do Preview.
+

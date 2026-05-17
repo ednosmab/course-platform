@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useEditor } from '../../context/EditorContext';
-import { Type, Video, HelpCircle, Image as ImageIcon, Code } from 'lucide-react';
+import { Type, Video, HelpCircle, Image as ImageIcon, Code, Quote } from 'lucide-react';
 
 export const BlockPalette: React.FC = () => {
   const { addBlock } = useEditor();
@@ -49,6 +49,14 @@ export const BlockPalette: React.FC = () => {
             <HelpCircle size={18} />
           </div>
           <span className="palette-item-label">Quiz</span>
+        </button>
+
+        {/* Bloco de Citação */}
+        <button onClick={() => addBlock('quote')} className="palette-item">
+          <div className="palette-item-icon">
+            <Quote size={18} />
+          </div>
+          <span className="palette-item-label">Citação</span>
         </button>
 
         {/* Bloco de HTML Raw */}

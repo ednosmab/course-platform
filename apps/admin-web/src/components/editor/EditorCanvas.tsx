@@ -22,45 +22,84 @@ function isOutOfBounds(block: AnyBlock, pageW: number): boolean {
   return l.x < 0 || l.x + l.w > pageW || l.y < 0;
 }
 
-// Parser simples de Markdown para ênfase, negrito e combinados (strong + em) inline
+// Parser simples de Markdown para ênfase, negrito, combinados (strong + em) e blockquotes (>) inline
 function parseSimpleMarkdown(text: string): React.ReactNode[] {
   if (!text) return [];
-  // Reconhece strong+em (*** ou ___ ou **_ ou _**), strong (** ou __), e em (* ou _)
-  const regex = /(\*\*\*.*?\*\*\*|___.*?___|\*\*\_.*?\_\*\*|\_\*\*.*?\*\*\_|\*\*.*?\*\*|__.*?__|\*.*?\*|_.*?_)/g;
-  const parts = text.split(regex);
-  return parts.map((part, index) => {
-    // 3 caracteres: strong + em combinados
-    if (part.startsWith('***') && part.endsWith('***')) {
-      return <strong key={index}><em>{part.slice(3, -3)}</em></strong>;
+
+  // Divide o texto por quebras de linha para detectar blockquotes
+  const lines = text.split('\n');
+  const renderedLines: React.ReactNode[] = [];
+
+  // Helper para analisar formatação negrito/itálico inline em uma linha
+  const parseInline = (inlineText: string, keyPrefix: string): React.ReactNode[] => {
+    const regex = /(\*\*\*.*?\*\*\*|___.*?___|\*\*\_.*?\_\*\*|\_\*\*.*?\*\*\_|\*\*.*?\*\*|__.*?__|\*.*?\*|_.*?_)/g;
+    const parts = inlineText.split(regex);
+    return parts.map((part, index) => {
+      const k = `${keyPrefix}-${index}`;
+      if (part.startsWith('***') && part.endsWith('***')) {
+        return <strong key={k}><em>{part.slice(3, -3)}</em></strong>;
+      }
+      if (part.startsWith('___') && part.endsWith('___')) {
+        return <strong key={k}><em>{part.slice(3, -3)}</em></strong>;
+      }
+      if (part.startsWith('**_') && part.endsWith('_**')) {
+        return <strong key={k}><em>{part.slice(3, -3)}</em></strong>;
+      }
+      if (part.startsWith('_**') && part.endsWith('**_')) {
+        return <strong key={k}><em>{part.slice(3, -3)}</em></strong>;
+      }
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={k}>{part.slice(2, -2)}</strong>;
+      }
+      if (part.startsWith('__') && part.endsWith('__')) {
+        return <strong key={k}>{part.slice(2, -2)}</strong>;
+      }
+      if (part.startsWith('*') && part.endsWith('*')) {
+        return <em key={k}>{part.slice(1, -1)}</em>;
+      }
+      if (part.startsWith('_') && part.endsWith('_')) {
+        return <em key={k}>{part.slice(1, -1)}</em>;
+      }
+      return part;
+    });
+  };
+
+  lines.forEach((line, lineIdx) => {
+    const trimmedLine = line.trim();
+    if (trimmedLine.startsWith('>') || trimmedLine.startsWith('&gt;')) {
+      const cleanContent = trimmedLine.startsWith('&gt;') ? trimmedLine.slice(4).trim() : trimmedLine.slice(1).trim();
+      renderedLines.push(
+        <blockquote
+          key={lineIdx}
+          style={{
+            borderLeft: '4px solid var(--accent-blue)',
+            paddingLeft: '12px',
+            marginLeft: '0',
+            marginRight: '0',
+            marginTop: '8px',
+            marginBottom: '8px',
+            fontStyle: 'italic',
+            color: 'var(--text-secondary)',
+            backgroundColor: 'var(--bg-canvas)',
+            paddingTop: '6px',
+            paddingBottom: '6px',
+            paddingRight: '12px',
+            borderRadius: '0 6px 6px 0',
+          }}
+        >
+          {parseInline(cleanContent, `quote-inline-${lineIdx}`)}
+        </blockquote>
+      );
+    } else {
+      renderedLines.push(
+        <div key={lineIdx} style={{ minHeight: '1.2em' }}>
+          {parseInline(line, `inline-${lineIdx}`)}
+        </div>
+      );
     }
-    if (part.startsWith('___') && part.endsWith('___')) {
-      return <strong key={index}><em>{part.slice(3, -3)}</em></strong>;
-    }
-    if (part.startsWith('**_') && part.endsWith('_**')) {
-      return <strong key={index}><em>{part.slice(3, -3)}</em></strong>;
-    }
-    if (part.startsWith('_**') && part.endsWith('**_')) {
-      return <strong key={index}><em>{part.slice(3, -3)}</em></strong>;
-    }
-    
-    // 2 caracteres: strong
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={index}>{part.slice(2, -2)}</strong>;
-    }
-    if (part.startsWith('__') && part.endsWith('__')) {
-      return <strong key={index}>{part.slice(2, -2)}</strong>;
-    }
-    
-    // 1 caractere: em
-    if (part.startsWith('*') && part.endsWith('*')) {
-      return <em key={index}>{part.slice(1, -1)}</em>;
-    }
-    if (part.startsWith('_') && part.endsWith('_')) {
-      return <em key={index}>{part.slice(1, -1)}</em>;
-    }
-    
-    return part;
   });
+
+  return renderedLines;
 }
 
 // ─── Resize handle directions ─────────────────────────────────────────────────
@@ -171,6 +210,52 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
             <span style={{ fontSize: '12px', color: '#60a5fa', fontWeight: 500 }}>Arraste uma imagem aqui</span>
             <span style={{ fontSize: '11px' }}>ou cole a URL no painel →</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+  if (block.type === 'quote') {
+    const styles = (block.styles || {}) as any;
+    const fs = styles.fontSize || 'medium';
+    const fontSize = isMobile ? FONT_MOBILE[fs] : FONT_DESKTOP[fs];
+
+    const cardStyle: React.CSSProperties = {
+      backgroundColor: styles.backgroundColor || 'transparent',
+      backgroundImage: styles.backgroundImage ? `url(${styles.backgroundImage})` : 'none',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      borderRadius: styles.backgroundColor || styles.backgroundImage ? '8px' : '0',
+      padding: styles.backgroundColor || styles.backgroundImage ? '16px' : '0',
+      borderLeft: styles.backgroundColor || styles.backgroundImage ? 'none' : '4px solid var(--accent-blue)',
+      paddingLeft: styles.backgroundColor || styles.backgroundImage ? '16px' : '16px',
+      height: '100%',
+      overflow: 'auto',
+      color: styles.color || 'var(--text-secondary)',
+      fontFamily: styles.fontFamily || 'inherit',
+      textAlign: styles.align || 'left',
+    };
+
+    let textElement: React.ReactNode = <>{parseSimpleMarkdown(block.content)}</>;
+    if (styles.bold) {
+      textElement = <strong>{textElement}</strong>;
+    }
+    if (styles.italic) {
+      textElement = <em>{textElement}</em>;
+    }
+
+    return (
+      <div style={cardStyle}>
+        {/* Ícone sutil de aspas se houver espaço e fundo */}
+        {(styles.backgroundColor || styles.backgroundImage) && (
+          <div style={{ opacity: 0.15, fontSize: '32px', lineHeight: 0.5, marginBottom: '4px', fontFamily: 'serif' }}>“</div>
+        )}
+        <div style={{ fontSize, fontStyle: 'italic', lineHeight: 1.6 }}>
+          {textElement}
+        </div>
+        {block.author && (
+          <div style={{ fontSize: '11px', marginTop: '8px', opacity: 0.7, fontWeight: 500 }}>
+            — {block.author}
           </div>
         )}
       </div>

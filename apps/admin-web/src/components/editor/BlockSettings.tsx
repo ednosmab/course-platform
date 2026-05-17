@@ -6,6 +6,33 @@ import { AlignLeft, AlignCenter, AlignRight, AlignJustify, Trash2, Plus, AlertCi
 import { AnyBlock } from '@projeto/types';
 
 /** Gera HTML representativo de qualquer bloco (fora do componente para evitar re-renders) */
+function parseMarkdownToHtml(text: string): string {
+  if (!text) return '';
+  const lines = text.split('\n');
+  const renderedLines = lines.map((line) => {
+    const trimmedLine = line.trim();
+    const isQuote = trimmedLine.startsWith('>') || trimmedLine.startsWith('&gt;');
+    let cleanContent = isQuote 
+      ? (trimmedLine.startsWith('&gt;') ? trimmedLine.slice(4).trim() : trimmedLine.slice(1).trim()) 
+      : line;
+
+    cleanContent = cleanContent.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    cleanContent = cleanContent.replace(/___(.*?)/g, '<strong><em>$1</em></strong>');
+    cleanContent = cleanContent.replace(/\*\*_(.*?)\_\*\*/g, '<strong><em>$1</em></strong>');
+    cleanContent = cleanContent.replace(/_\*\*(.*?)\*\*_/g, '<strong><em>$1</em></strong>');
+    cleanContent = cleanContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    cleanContent = cleanContent.replace(/__(.*?)__/g, '<strong>$1</strong>');
+    cleanContent = cleanContent.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    cleanContent = cleanContent.replace(/_(.*?)_/g, '<em>$1</em>');
+
+    if (isQuote) {
+      return `<blockquote style="border-left: 4px solid #3b82f6; padding-left: 12px; margin: 8px 0; font-style: italic; color: #4b5563; background-color: #f3f4f6; padding-top: 6px; padding-bottom: 6px; padding-right: 12px; border-radius: 0 6px 6px 0;">${cleanContent}</blockquote>`;
+    }
+    return `<div>${cleanContent}</div>`;
+  });
+  return renderedLines.join('');
+}
+
 function getHtmlFromBlock(block: AnyBlock): string {
   switch (block.type) {
     case 'text': {
@@ -20,8 +47,36 @@ function getHtmlFromBlock(block: AnyBlock): string {
       if (styles.backgroundImage) inlineStyle += ` background-image: url(${styles.backgroundImage}); background-size: cover; background-position: center;`;
       if (styles.backgroundColor || styles.backgroundImage) inlineStyle += ` padding: 16px; border-radius: 8px;`;
 
+      let content = parseMarkdownToHtml(block.content);
+      if (styles.bold) content = `<strong>${content}</strong>`;
+      if (styles.italic) content = `<em>${content}</em>`;
+
+      return `<p style="${inlineStyle}">${content}</p>`;
+    }
+    case 'video':
+      return `<iframe\n  src="https://www.youtube.com/embed/${block.url}"\n  width="100%"\n  style="aspect-ratio:16/9;border:none;border-radius:8px"\n  allowfullscreen\n></iframe>`;
+    case 'image':
+      return `<img\n  src="${block.url}"\n  alt="${block.alt || ''}"\n  style="width:100%;border-radius:8px"\n/>`;
+    case 'html':
+      return block.htmlContent;
+    case 'quote': {
+      const fsMap: Record<string, string> = { small: '13px', medium: '16px', large: '24px', xlarge: '32px' };
+      const fs = block.styles?.fontSize || 'medium';
+      const styles = (block.styles || {}) as any;
+
+      let inlineStyle = `font-size: ${fsMap[fs]}; text-align: ${styles.align || 'left'}; line-height: 1.6; font-style: italic;`;
+      if (styles.fontFamily) inlineStyle += ` font-family: ${styles.fontFamily};`;
+      if (styles.color) inlineStyle += ` color: ${styles.color};`;
+      if (styles.backgroundColor) inlineStyle += ` background-color: ${styles.backgroundColor};`;
+      if (styles.backgroundImage) inlineStyle += ` background-image: url(${styles.backgroundImage}); background-size: cover; background-position: center;`;
+      
+      if (styles.backgroundColor || styles.backgroundImage) {
+        inlineStyle += ` padding: 16px; border-radius: 8px;`;
+      } else {
+        inlineStyle += ` border-left: 4px solid #3b82f6; padding-left: 16px;`;
+      }
+
       let content = block.content;
-      // Converte a notação markdown inline em tags semânticas HTML5 (combinados, strong, em)
       content = content.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
       content = content.replace(/___(.*?)/g, '<strong><em>$1</em></strong>');
       content = content.replace(/\*\*_(.*?)\_\*\*/g, '<strong><em>$1</em></strong>');
@@ -34,14 +89,13 @@ function getHtmlFromBlock(block: AnyBlock): string {
       if (styles.bold) content = `<strong>${content}</strong>`;
       if (styles.italic) content = `<em>${content}</em>`;
 
-      return `<p style="${inlineStyle}">${content}</p>`;
+      const authorHtml = block.author ? `<div style="font-size: 11px; margin-top: 8px; opacity: 0.7; font-weight: 500;">— ${block.author}</div>` : '';
+
+      return `<blockquote style="${inlineStyle}">
+  <div>${content}</div>
+  ${authorHtml}
+</blockquote>`;
     }
-    case 'video':
-      return `<iframe\n  src="https://www.youtube.com/embed/${block.url}"\n  width="100%"\n  style="aspect-ratio:16/9;border:none;border-radius:8px"\n  allowfullscreen\n></iframe>`;
-    case 'image':
-      return `<img\n  src="${block.url}"\n  alt="${block.alt || ''}"\n  style="width:100%;border-radius:8px"\n/>`;
-    case 'html':
-      return block.htmlContent;
     case 'quiz': {
       const fsMap: Record<string, string> = { small: '13px', medium: '16px', large: '24px', xlarge: '32px' };
       const fs = block.styles?.fontSize || 'medium';
@@ -53,17 +107,7 @@ function getHtmlFromBlock(block: AnyBlock): string {
       if (styles.backgroundImage) inlineStyle += ` background-image: url(${styles.backgroundImage}); background-size: cover; background-position: center;`;
       inlineStyle += styles.backgroundColor || styles.backgroundImage ? ` padding: 16px; border-radius: 8px;` : ` border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px;`;
 
-      let question = block.question;
-      // Converte markdown inline na pergunta (combinados, strong, em)
-      question = question.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
-      question = question.replace(/___(.*?)/g, '<strong><em>$1</em></strong>');
-      question = question.replace(/\*\*_(.*?)\_\*\*/g, '<strong><em>$1</em></strong>');
-      question = question.replace(/_\*\*(.*?)\*\*_/g, '<strong><em>$1</em></strong>');
-      question = question.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      question = question.replace(/__(.*?)__/g, '<strong>$1</strong>');
-      question = question.replace(/\*(.*?)\*/g, '<em>$1</em>');
-      question = question.replace(/_(.*?)_/g, '<em>$1</em>');
-
+      let question = parseMarkdownToHtml(block.question);
       if (styles.bold) question = `<strong>${question}</strong>`;
       if (styles.italic) question = `<em>${question}</em>`;
 
@@ -374,6 +418,29 @@ export const BlockSettings: React.FC = () => {
               onChange={(e) => updateBlock(activeBlock.id, { content: e.target.value })}
               rows={4}
             />
+            <button
+              type="button"
+              onClick={() => {
+                const currentContent = activeBlock.content || '';
+                const divider = currentContent ? '\n' : '';
+                updateBlock(activeBlock.id, { content: currentContent + divider + '> "Insira sua citação aqui"\n— Autor' });
+              }}
+              style={{
+                marginTop: '6px',
+                fontSize: '11px',
+                color: 'var(--accent-blue)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '4px 0',
+                fontWeight: 500
+              }}
+            >
+              💬 Inserir Citação Formatada
+            </button>
           </div>
 
           <div className="form-group">
@@ -485,6 +552,29 @@ export const BlockSettings: React.FC = () => {
               rows={3}
               placeholder="Digite a pergunta do quiz aqui..."
             />
+            <button
+              type="button"
+              onClick={() => {
+                const currentQuestion = activeBlock.question || '';
+                const divider = currentQuestion ? '\n' : '';
+                updateBlock(activeBlock.id, { question: currentQuestion + divider + '> "Insira sua citação aqui"\n— Autor' });
+              }}
+              style={{
+                marginTop: '6px',
+                fontSize: '11px',
+                color: 'var(--accent-blue)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '4px 0',
+                fontWeight: 500
+              }}
+            >
+              💬 Inserir Citação Formatada
+            </button>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px', marginBottom: '8px' }}>
@@ -659,6 +749,93 @@ export const BlockSettings: React.FC = () => {
               Este bloco executa HTML bruto na tela do aluno. Certifique-se de usar apenas código confiável. Scripts externos e iframes de origens desconhecidas podem comprometer a segurança.
             </div>
           </div>
+
+          <DimensionControls block={activeBlock} updateBlock={updateBlock} />
+        </div>
+      )}
+
+      {/* --- SETTINGS FOR QUOTE BLOCK --- */}
+      {activeBlock.type === 'quote' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div className="form-group">
+            <label className="form-label">Conteúdo da Citação</label>
+            <textarea
+              className="form-textarea"
+              value={activeBlock.content}
+              onChange={(e) => updateBlock(activeBlock.id, { content: e.target.value })}
+              rows={4}
+              placeholder="Digite a citação aqui..."
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Autor / Fonte</label>
+            <input
+              type="text"
+              className="form-input"
+              value={(activeBlock as any).author || ''}
+              onChange={(e) => updateBlock(activeBlock.id, { author: e.target.value })}
+              placeholder="— Nome do Autor, Livro, etc."
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Tamanho da Fonte</label>
+            <select
+              className="form-input"
+              value={activeBlock.styles?.fontSize || 'medium'}
+              onChange={(e) =>
+                updateBlock(activeBlock.id, {
+                  styles: {
+                    ...activeBlock.styles,
+                    fontSize: e.target.value as any,
+                  },
+                })
+              }
+            >
+              <option value="small">Pequeno (13px)</option>
+              <option value="medium">Médio (16px)</option>
+              <option value="large">Grande (24px)</option>
+              <option value="xlarge">Gigante (32px)</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Alinhamento</label>
+            <div style={{ display: 'flex', backgroundColor: 'var(--bg-canvas)', borderRadius: '6px', padding: '4px', border: '1px solid var(--border-light)' }}>
+              {([
+                { id: 'left', Icon: AlignLeft },
+                { id: 'center', Icon: AlignCenter },
+                { id: 'right', Icon: AlignRight },
+                { id: 'justify', Icon: AlignJustify },
+              ] as const).map(({ id: align, Icon }) => {
+                const isSelected = activeBlock.styles?.align === align;
+                return (
+                  <button
+                    key={align}
+                    onClick={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, align } })}
+                    style={{
+                      flex: 1, display: 'flex', justifyContent: 'center', padding: '6px', borderRadius: '4px',
+                      backgroundColor: isSelected ? 'var(--bg-surface)' : 'transparent',
+                      color: isSelected ? 'var(--accent-blue)' : 'var(--text-secondary)',
+                      boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
+                    }}
+                  >
+                    <Icon size={16} />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="tip-box">
+            <div className="tip-title">✨ ÊNFASE INLINE (MARKDOWN)</div>
+            <div className="tip-text">
+              Assim como no texto, você pode usar <code>**negrito**</code> ou <code>*itálico*</code> no conteúdo da citação para destacar palavras específicas.
+            </div>
+          </div>
+
+          <TypographyAndBackgroundControls block={activeBlock} updateBlock={updateBlock} />
 
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
         </div>

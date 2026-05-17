@@ -78,7 +78,11 @@ O tamanho das fontes de texto e perguntas varia dinamicamente de acordo com a vi
    - `***texto***` ou `___texto___` ou `**_texto_**` ou `_**texto**_` $\rightarrow$ `<strong><em>texto</em></strong>` (Negrito + Itálico combinados)
    - `**texto**` ou `__texto__` $\rightarrow$ `<strong>texto</strong>` (Negrito)
    - `*texto*` ou `_texto_` $\rightarrow$ `<em>texto</em>` (Itálico)
-3. **Estilos de Card:** Blocos com cor ou imagem de fundo definidas recebem automaticamente preenchimento interno dinâmico (`padding: 16px`) e cantos levemente arredondados (`borderRadius: 8px`) para garantir a estética premium e evitar que textos toquem nas bordas do fundo.
+   - `> citação` (no início da linha) $\rightarrow$ `<blockquote style="...">citação</blockquote>` (Bloco de Citação renderizado com borda azul à esquerda e estilo itálico, aplicável dentro de blocos de **Texto** e **Quiz**).
+3. **Bloco de Citação Standalone (`quote`):**
+   - Bloco independente que permite definir o conteúdo da citação, o autor/fonte (exibido como `— Autor`) e controle completo de cores, alinhamentos, tipografia premium, imagem de fundo ou cor de fundo customizados.
+   - Quando estilizado com fundo, exibe aspas serifadas ornamentais no topo para estética premium. Sem fundo, exibe uma borda lateral vertical azul clássica.
+4. **Estilos de Card:** Blocos com cor ou imagem de fundo definidas recebem automaticamente preenchimento interno dinâmico (`padding: 16px`) e cantos levemente arredondados (`borderRadius: 8px`) para garantir a estética premium e evitar que textos toquem nas bordas do fundo.
 
 ---
 
@@ -88,3 +92,11 @@ A função `getHtmlFromBlock` é responsável por traduzir o estado visual do ed
 - Converter todas as estilizações de cores, fundos, imagens e fontes do painel em estilos em linha CSS válidos (`style="..."`).
 - Aplicar o parser de Markdown para converter as marcações do usuário em elementos semânticos reais (`<strong>` e `<em>`) na string final exportada.
 - O HTML exportado deve ser 100% autocontido, responsivo e semanticamente impecável.
+
+---
+
+## ⚡ 6. Sincronização em Tempo Real (Supabase Realtime)
+
+1. **Autosave do CMS:** O editor do CMS possui um mecanismo de Autosave que monitora as alterações nos blocos e faz a persistência de forma transparente com um debounce de `1.5s` na tabela `lessons` do Supabase.
+2. **Atualização Reativa do Usuário:** O aplicativo do aluno (`aluno-mobile`) utiliza **Supabase Realtime Channels** para se inscrever na aula ativa.
+3. **Fidelidade Instantânea:** Quando o administrador atualiza ou publica um bloco no CMS, a alteração é gravada no banco de dados e enviada imediatamente via WebSockets para todos os alunos que estão visualizando a aula ativa, atualizando os blocos na tela do dispositivo em tempo real sem necessidade de recarregar o aplicativo.

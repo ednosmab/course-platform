@@ -4,6 +4,7 @@ import { VideoBlockSchema } from './video';
 import { QuizBlockSchema } from './quiz';
 import { ImageBlockSchema } from './image';
 import { HtmlBlockSchema } from './html';
+import { QuoteBlockSchema } from './quote';
 
 // 1. Profile Schema & Type
 export const ProfileSchema = z.object({
@@ -86,6 +87,7 @@ export const LessonSchema = z.object({
     QuizBlockSchema,
     ImageBlockSchema,
     HtmlBlockSchema,
+    QuoteBlockSchema,
   ])),
   schema_version: z.number().int().positive().default(1),
   is_published: z.boolean(),

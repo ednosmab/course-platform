@@ -5,12 +5,17 @@ import { useEditor } from '../../context/EditorContext';
 import { Undo2, Redo2, CloudLightning, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
 export const EditorHeader: React.FC = () => {
-  const { canUndo, canRedo, undo, redo, saveStatus, previewMode, setPreviewMode, viewportMode, setViewportMode } = useEditor();
+  const { canUndo, canRedo, undo, redo, saveStatus, previewMode, setPreviewMode, viewportMode, setViewportMode, publishLesson } = useEditor();
   const [published, setPublished] = useState(false);
 
-  const handlePublish = () => {
-    setPublished(true);
-    setTimeout(() => setPublished(false), 3000);
+  const handlePublish = async () => {
+    try {
+      await publishLesson();
+      setPublished(true);
+      setTimeout(() => setPublished(false), 3000);
+    } catch (err) {
+      console.error('Falha ao publicar aula:', err);
+    }
   };
 
   return (

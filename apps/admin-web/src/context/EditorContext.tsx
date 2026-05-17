@@ -14,7 +14,7 @@ interface EditorState {
 }
 
 type EditorAction =
-  | { type: 'ADD_BLOCK'; payload: { type: 'text' | 'video' | 'quiz' | 'image' | 'html' } }
+  | { type: 'ADD_BLOCK'; payload: { type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' } }
   | { type: 'REMOVE_BLOCK'; payload: { id: string } }
   | { type: 'UPDATE_BLOCK'; payload: { id: string; updates: Partial<AnyBlock> } }
   | { type: 'UPDATE_BLOCK_SILENT'; payload: { id: string; updates: Partial<AnyBlock> } }
@@ -81,6 +81,15 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           alt: 'Nova imagem',
           styles: { align: 'center' },
           layout: { x: 40, y: defaultY, w: 500, h: 300, zIndex: state.blocks.length },
+        };
+      } else if (action.payload.type === 'quote') {
+        newBlock = {
+          id,
+          type: 'quote',
+          content: 'Digite sua citação aqui...',
+          author: 'Autor da citação',
+          styles: { align: 'left', fontSize: 'medium' },
+          layout: { x: 40, y: defaultY, w: 600, h: 100, zIndex: state.blocks.length },
         };
       } else if (action.payload.type === 'html') {
         newBlock = {
@@ -197,7 +206,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 }
 
 interface EditorContextType extends EditorState {
-  addBlock: (type: 'text' | 'video' | 'quiz' | 'image' | 'html') => void;
+  addBlock: (type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote') => void;
   removeBlock: (id: string) => void;
   updateBlock: (id: string, updates: Partial<AnyBlock>) => void;
   updateBlockSilent: (id: string, updates: Partial<AnyBlock>) => void;
@@ -212,6 +221,7 @@ interface EditorContextType extends EditorState {
   canRedo: boolean;
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
   activeLessonId: string;
+  publishLesson: () => Promise<void>;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
@@ -222,7 +232,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [activeLessonId] = useState('11111111-1111-1111-1111-111111111111');
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const addBlock = (type: 'text' | 'video' | 'quiz' | 'image' | 'html') => dispatch({ type: 'ADD_BLOCK', payload: { type } });
+  const addBlock = (type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote') => dispatch({ type: 'ADD_BLOCK', payload: { type } });
   const removeBlock = (id: string) => dispatch({ type: 'REMOVE_BLOCK', payload: { id } });
   const updateBlock = (id: string, updates: Partial<AnyBlock>) => dispatch({ type: 'UPDATE_BLOCK', payload: { id, updates } });
   const moveBlock = (fromIndex: number, toIndex: number) => dispatch({ type: 'MOVE_BLOCK', payload: { fromIndex, toIndex } });
@@ -237,98 +247,137 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history.length - 1;
 
-  // 1. Carregamento inicial (e auto-seed se o banco estiver vazio)
+const getDraftId = (lessonId: string) => {
+  return lessonId.substring(0, 24) + 'dddddddddddd';
+};
+
+// 1. Carregamento inicial (e auto-seed se o banco estiver vazio)
   useEffect(() => {
     const initDatabase = async () => {
       try {
-        console.log('Verificando aulas no Supabase...');
-        const { data: lesson, error: fetchErr } = await supabase
+        console.log('Verificando rascunhos no Supabase...');
+        const draftId = getDraftId(activeLessonId);
+        const { data: draftLesson, error: draftErr } = await supabase
           .from('lessons')
           .select('*')
-          .eq('id', activeLessonId)
+          .eq('id', draftId)
           .maybeSingle();
 
-        if (fetchErr) throw fetchErr;
+        if (draftErr) throw draftErr;
 
-        if (lesson) {
-          console.log('Aula encontrada! Carregando blocos...', lesson.blocks);
-          setBlocks(lesson.blocks || []);
+        if (draftLesson) {
+          console.log('Rascunho encontrado! Carregando blocos...', draftLesson.blocks);
+          setBlocks(draftLesson.blocks || []);
         } else {
-          console.log('Banco de dados vazio ou sem a aula padrão. Iniciando auto-seed...');
-          
-          // Seed Path
-          const pathId = '88888888-8888-8888-8888-888888888888';
-          await supabase.from('paths').upsert({
-            id: pathId,
-            title: 'Trilha Full Stack Developer',
-            description: 'Aprenda do zero ao deploy com arquiteturas resilientes e modernas.',
-            is_published: true
-          });
+          // Se não há rascunho, tentamos carregar a publicada e clonar
+          console.log('Rascunho não encontrado. Buscando versão publicada...');
+          const { data: publishedLesson, error: pubErr } = await supabase
+            .from('lessons')
+            .select('*')
+            .eq('id', activeLessonId)
+            .maybeSingle();
 
-          // Seed Course
-          const courseId = '99999999-9999-9999-9999-999999999999';
-          await supabase.from('courses').upsert({
-            id: courseId,
-            title: 'Desenvolvimento Web Full Stack',
-            description: 'Torne-se um desenvolvedor completo, do frontend ao backend e DevOps.',
-            is_published: true
-          });
+          if (pubErr) throw pubErr;
 
-          // Link Path & Course
-          await supabase.from('path_courses').upsert({
-            path_id: pathId,
-            course_id: courseId,
-            order_index: 1
-          });
+          if (publishedLesson) {
+            console.log('Versão publicada encontrada! Criando rascunho de trabalho...');
+            await supabase.from('lessons').upsert({
+              id: draftId,
+              module_id: publishedLesson.module_id,
+              title: publishedLesson.title,
+              order_index: publishedLesson.order_index,
+              is_published: false,
+              blocks: publishedLesson.blocks || []
+            });
+            setBlocks(publishedLesson.blocks || []);
+          } else {
+            console.log('Banco de dados vazio. Iniciando auto-seed de produção e rascunho...');
+            
+            // Seed Path
+            const pathId = '88888888-8888-8888-8888-888888888888';
+            await supabase.from('paths').upsert({
+              id: pathId,
+              title: 'Trilha Full Stack Developer',
+              description: 'Aprenda do zero ao deploy com arquiteturas resilientes e modernas.',
+              is_published: true
+            });
 
-          // Seed Module
-          const moduleId = '00000000-0000-0000-0000-000000000000';
-          await supabase.from('modules').upsert({
-            id: moduleId,
-            course_id: courseId,
-            title: 'Módulo 1: Introdução Básica',
-            order_index: 1
-          });
+            // Seed Course
+            const courseId = '99999999-9999-9999-9999-999999999999';
+            await supabase.from('courses').upsert({
+              id: courseId,
+              title: 'Desenvolvimento Web Full Stack',
+              description: 'Torne-se um desenvolvedor completo, do frontend ao backend e DevOps.',
+              is_published: true
+            });
 
-          // Seed Lesson
-          const defaultBlocks = [
-            {
-              id: 'block-text-1',
-              type: 'text',
-              content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.',
-              styles: { align: 'left', fontSize: 'medium' },
-              layout: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 },
-            },
-            {
-              id: 'block-video-1',
-              type: 'video',
-              url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-              provider: 'youtube',
-              layout: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 },
-            },
-            {
-              id: 'block-quiz-1',
-              type: 'quiz',
-              question: 'Qual banco de dados relacional é utilizado no Supabase?',
-              options: [
-                { id: 'opt-pg-1', text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' },
-                { id: 'opt-pg-2', text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }
-              ],
-              layout: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 },
-            }
-          ] as AnyBlock[];
+            // Link Path & Course
+            await supabase.from('path_courses').upsert({
+              path_id: pathId,
+              course_id: courseId,
+              order_index: 1
+            });
 
-          await supabase.from('lessons').upsert({
-            id: activeLessonId,
-            module_id: moduleId,
-            title: '1. Introdução à Plataforma Híbrida',
-            order_index: 1,
-            is_published: true,
-            blocks: defaultBlocks
-          });
+            // Seed Module
+            const moduleId = '00000000-0000-0000-0000-000000000000';
+            await supabase.from('modules').upsert({
+              id: moduleId,
+              course_id: courseId,
+              title: 'Módulo 1: Introdução Básica',
+              order_index: 1
+            });
 
-          setBlocks(defaultBlocks);
-          console.log('Auto-seed realizado com sucesso!');
+            // Seed Lesson
+            const defaultBlocks = [
+              {
+                id: 'block-text-1',
+                type: 'text',
+                content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.',
+                styles: { align: 'left', fontSize: 'medium' },
+                layout: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 },
+              },
+              {
+                id: 'block-video-1',
+                type: 'video',
+                url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                provider: 'youtube',
+                layout: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 },
+              },
+              {
+                id: 'block-quiz-1',
+                type: 'quiz',
+                question: 'Qual banco de dados relacional é utilizado no Supabase?',
+                options: [
+                  { id: 'opt-pg-1', text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' },
+                  { id: 'opt-pg-2', text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }
+                ],
+                layout: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 },
+              }
+            ] as AnyBlock[];
+
+            // Cria a versão de produção
+            await supabase.from('lessons').upsert({
+              id: activeLessonId,
+              module_id: moduleId,
+              title: '1. Introdução à Plataforma Híbrida',
+              order_index: 1,
+              is_published: true,
+              blocks: defaultBlocks
+            });
+
+            // Cria o rascunho de trabalho correspondente
+            await supabase.from('lessons').upsert({
+              id: draftId,
+              module_id: moduleId,
+              title: '1. Introdução à Plataforma Híbrida',
+              order_index: 1,
+              is_published: false,
+              blocks: defaultBlocks
+            });
+
+            setBlocks(defaultBlocks);
+            console.log('Auto-seed realizado com sucesso!');
+          }
         }
       } catch (err) {
         console.error('Erro na inicialização do Supabase:', err);
@@ -341,23 +390,24 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     initDatabase();
   }, [activeLessonId]);
 
-  // 2. Debounced Save para salvar no Supabase ao alterar blocos
+  // 2. Debounced Save para salvar no Supabase ao alterar blocos (Apenas na versão Rascunho!)
   useEffect(() => {
-    if (!isLoaded) return; // Não salvar durante a carga inicial
+    if (!isLoaded) return; 
 
     setSaveStatus('saving');
 
     const timer = setTimeout(async () => {
       try {
-        console.log('Salvando blocos no Supabase...', state.blocks);
+        console.log('Salvando rascunho no Supabase...', state.blocks);
+        const draftId = getDraftId(activeLessonId);
         const { error: saveErr } = await supabase
           .from('lessons')
           .upsert({
-            id: activeLessonId,
+            id: draftId,
             module_id: '00000000-0000-0000-0000-000000000000',
             title: '1. Introdução à Plataforma Híbrida',
             order_index: 1,
-            is_published: true,
+            is_published: false,
             blocks: state.blocks
           });
 
@@ -367,13 +417,38 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
         return () => clearTimeout(resetTimer);
       } catch (err) {
-        console.error('Erro ao salvar no Supabase:', err);
+        console.error('Erro ao salvar rascunho no Supabase:', err);
         setSaveStatus('error');
       }
     }, 1500); // 1.5s de debounce
 
     return () => clearTimeout(timer);
   }, [state.blocks, activeLessonId, isLoaded]);
+
+  // 3. Função oficial de publicação (Copia o rascunho para a aula publicada de produção)
+  const publishLesson = async () => {
+    try {
+      setSaveStatus('saving');
+      console.log('Publicando rascunho na versão ativa...', state.blocks);
+      const { error: pubErr } = await supabase
+        .from('lessons')
+        .upsert({
+          id: activeLessonId,
+          module_id: '00000000-0000-0000-0000-000000000000',
+          title: '1. Introdução à Plataforma Híbrida',
+          order_index: 1,
+          is_published: true,
+          blocks: state.blocks
+        });
+
+      if (pubErr) throw pubErr;
+      setSaveStatus('saved');
+      const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (err) {
+      console.error('Erro ao publicar aula no Supabase:', err);
+      setSaveStatus('error');
+    }
+  };
 
   return (
     <EditorContext.Provider
@@ -394,6 +469,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         canRedo,
         saveStatus,
         activeLessonId,
+        publishLesson,
       }}
     >
       {children}

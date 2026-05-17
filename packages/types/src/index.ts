@@ -4,12 +4,14 @@ import { VideoBlockSchema } from './video';
 import { QuizBlockSchema } from './quiz';
 import { ImageBlockSchema } from './image';
 import { HtmlBlockSchema } from './html';
+import { QuoteBlockSchema } from './quote';
 
 export * from './text';
 export * from './video';
 export * from './quiz';
 export * from './image';
 export * from './html';
+export * from './quote';
 export * from './layout';
 
 // União discriminada baseada na propriedade 'type'
@@ -19,6 +21,7 @@ export const AnyBlockSchema = z.discriminatedUnion('type', [
   QuizBlockSchema,
   ImageBlockSchema,
   HtmlBlockSchema,
+  QuoteBlockSchema,
 ]);
 
 export type AnyBlock = z.infer<typeof AnyBlockSchema>;
