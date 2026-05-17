@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import { supabase } from '../supabase.js';
 import { Course, CourseSchema, Module, ModuleSchema, Lesson, LessonSchema, Path, PathSchema } from '@projeto/types';
 import { z } from 'zod';
 
@@ -73,7 +73,7 @@ export const CourseService = {
         if (lessonsError) throw lessonsError;
 
         // Parse individual de cada aula com safeParse para resiliência de CMS blocks
-        const lessons = (lessonsData || []).map((les) => {
+        const lessons = (lessonsData || []).map((les: any) => {
           const parsed = LessonSchema.safeParse(les);
           if (!parsed.success) {
             console.error(`Erro de contrato na aula ${les.id}:`, parsed.error);
