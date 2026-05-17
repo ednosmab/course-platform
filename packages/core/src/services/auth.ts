@@ -1,5 +1,5 @@
 
-import { supabase } from '../supabase.js';
+import { supabase } from '../supabase';
 import { Profile, ProfileSchema } from '@projeto/types';
 
 export const AuthService = {

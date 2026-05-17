@@ -12,6 +12,11 @@ export const QuizBlockSchema = z.object({
   type: z.literal('quiz'),
   question: z.string(),
   options: z.array(QuizOptionSchema).min(2),
+  styles: z.object({
+    align: z.enum(['left', 'center', 'right', 'justify']).optional(),
+    color: z.string().optional(),
+    fontSize: z.enum(['small', 'medium', 'large', 'xlarge']).optional(),
+  }).strict().optional(),
 }).strict();
 
 export type QuizOption = z.infer<typeof QuizOptionSchema>;

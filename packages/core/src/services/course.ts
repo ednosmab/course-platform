@@ -1,4 +1,4 @@
-import { supabase } from '../supabase.js';
+import { supabase } from '../supabase';
 import { Course, CourseSchema, Module, ModuleSchema, Lesson, LessonSchema, Path, PathSchema } from '@projeto/types';
 import { z } from 'zod';
 

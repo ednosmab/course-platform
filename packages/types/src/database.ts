@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { TextBlockSchema } from './text.js';
-import { VideoBlockSchema } from './video.js';
-import { QuizBlockSchema } from './quiz.js';
+import { TextBlockSchema } from './text';
+import { VideoBlockSchema } from './video';
+import { QuizBlockSchema } from './quiz';
 
 // 1. Profile Schema & Type
 export const ProfileSchema = z.object({

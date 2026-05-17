@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { TextBlockSchema } from './text.js';
-import { VideoBlockSchema } from './video.js';
-import { QuizBlockSchema } from './quiz.js';
+import { TextBlockSchema } from './text';
+import { VideoBlockSchema } from './video';
+import { QuizBlockSchema } from './quiz';
 
-export * from './text.js';
-export * from './video.js';
-export * from './quiz.js';
+export * from './text';
+export * from './video';
+export * from './quiz';
 
 // União discriminada baseada na propriedade 'type'
 export const AnyBlockSchema = z.discriminatedUnion('type', [
@@ -23,4 +23,4 @@ export const CourseLessonContentSchema = z.object({
 
 export type CourseLessonContent = z.infer<typeof CourseLessonContentSchema>;
 
-export * from './database.js';
+export * from './database';

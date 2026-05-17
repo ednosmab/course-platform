@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import { AnyBlock } from '@projeto/types';
 import { HelpCircle, CheckCircle, AlertTriangle, BookOpen, Play } from 'lucide-react-native';
@@ -65,6 +65,16 @@ const VideoBlockRenderer: React.FC<{
   const videoRef = React.useRef<Video>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  const getYoutubeId = (url: string) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  const youtubeId = getYoutubeId(block.url);
+  const isYoutube = !!youtubeId || block.provider === 'youtube';
+
   const handleLoad = async () => {
     if (savedPosition > 0 && videoRef.current) {
       console.log(`Auto-Resume: Buscando posição salva no segundo ${savedPosition}...`);
@@ -80,11 +90,35 @@ const VideoBlockRenderer: React.FC<{
     }
   };
 
+  // Se for YouTube e estivermos na plataforma Web, renderizamos o iframe do YouTube de forma responsiva
+  if (isYoutube && youtubeId && Platform.OS === 'web') {
+    return (
+      <View style={styles.videoContainer}>
+        <iframe
+          src={`https://www.youtube.com/embed/${youtubeId}`}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          style={{
+            width: '100%',
+            height: '240px',
+            border: 'none',
+            backgroundColor: '#000000',
+          }}
+        />
+        <View style={styles.videoMeta}>
+          <BookOpen size={12} color="#a78bfa" />
+          <Text style={styles.videoMetaText}>Origem: YouTube | {block.url}</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.videoContainer}>
       <Video
         ref={videoRef}
-        source={{ uri: 'https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4' }}
+        source={{ uri: block.url || 'https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4' }}
         rate={1.0}
         volume={1.0}
         isMuted={false}
@@ -106,7 +140,7 @@ const VideoBlockRenderer: React.FC<{
       
       <View style={styles.videoMeta}>
         <BookOpen size={12} color="#a78bfa" />
-        <Text style={styles.videoMetaText}>Origem: {block.provider} | {block.url}</Text>
+        <Text style={styles.videoMetaText}>Origem: {block.provider || 'Vídeo Direto'} | {block.url}</Text>
       </View>
     </View>
   );
@@ -118,6 +152,17 @@ const QuizBlockRenderer: React.FC<{ block: any }> = ({ block }) => {
 
   const activeOption = block.options.find((o: any) => o.id === selectedOptionId);
 
+  const fontSize =
+    block.styles?.fontSize === 'small'
+      ? 12
+      : block.styles?.fontSize === 'large'
+        ? 18
+        : block.styles?.fontSize === 'xlarge'
+          ? 24
+          : 14;
+
+  const textAlign = block.styles?.align || 'left';
+
   const handleSubmit = () => {
     if (selectedOptionId) {
       setSubmitted(true);
@@ -128,13 +173,14 @@ const QuizBlockRenderer: React.FC<{ block: any }> = ({ block }) => {
     <View style={styles.quizCard}>
       <View style={styles.quizHeader}>
         <HelpCircle size={18} color="#ec4899" />
-        <Text style={styles.quizQuestion}>{block.question}</Text>
+        <Text style={[styles.quizQuestion, { fontSize, textAlign }]}>{block.question}</Text>
       </View>
 
       <View style={styles.quizOptionsList}>
         {block.options.map((opt: any) => {
           const isSelected = opt.id === selectedOptionId;
-          const showCorrectStyle = submitted && opt.isCorrect;
+          const isCorrectAnswerSelected = activeOption?.isCorrect;
+          const showCorrectStyle = submitted && opt.isCorrect && isCorrectAnswerSelected;
           const showIncorrectStyle = submitted && isSelected && !opt.isCorrect;
 
           return (

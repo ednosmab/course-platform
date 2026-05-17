@@ -1,7 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useReducer } from 'react';
+import React, { createContext, useContext, useReducer, useState, useEffect } from 'react';
 import { AnyBlock } from '@projeto/types';
+import { supabase } from '@projeto/core';
 
 interface EditorState {
   blocks: AnyBlock[];
@@ -158,12 +159,17 @@ interface EditorContextType extends EditorState {
   setBlocks: (blocks: AnyBlock[]) => void;
   canUndo: boolean;
   canRedo: boolean;
+  saveStatus: 'idle' | 'saving' | 'saved' | 'error';
+  activeLessonId: string;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
 
 export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(editorReducer, initialState);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [activeLessonId] = useState('11111111-1111-1111-1111-111111111111');
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const addBlock = (type: 'text' | 'video' | 'quiz') => dispatch({ type: 'ADD_BLOCK', payload: { type } });
   const removeBlock = (id: string) => dispatch({ type: 'REMOVE_BLOCK', payload: { id } });
@@ -176,6 +182,141 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history.length - 1;
+
+  // 1. Carregamento inicial (e auto-seed se o banco estiver vazio)
+  useEffect(() => {
+    const initDatabase = async () => {
+      try {
+        console.log('Verificando aulas no Supabase...');
+        const { data: lesson, error: fetchErr } = await supabase
+          .from('lessons')
+          .select('*')
+          .eq('id', activeLessonId)
+          .maybeSingle();
+
+        if (fetchErr) throw fetchErr;
+
+        if (lesson) {
+          console.log('Aula encontrada! Carregando blocos...', lesson.blocks);
+          setBlocks(lesson.blocks || []);
+        } else {
+          console.log('Banco de dados vazio ou sem a aula padrão. Iniciando auto-seed...');
+          
+          // Seed Path
+          const pathId = '88888888-8888-8888-8888-888888888888';
+          await supabase.from('paths').upsert({
+            id: pathId,
+            title: 'Trilha Full Stack Developer',
+            description: 'Aprenda do zero ao deploy com arquiteturas resilientes e modernas.',
+            is_published: true
+          });
+
+          // Seed Course
+          const courseId = '99999999-9999-9999-9999-999999999999';
+          await supabase.from('courses').upsert({
+            id: courseId,
+            title: 'Desenvolvimento Web Full Stack',
+            description: 'Torne-se um desenvolvedor completo, do frontend ao backend e DevOps.',
+            is_published: true
+          });
+
+          // Link Path & Course
+          await supabase.from('path_courses').upsert({
+            path_id: pathId,
+            course_id: courseId,
+            order_index: 1
+          });
+
+          // Seed Module
+          const moduleId = '00000000-0000-0000-0000-000000000000';
+          await supabase.from('modules').upsert({
+            id: moduleId,
+            course_id: courseId,
+            title: 'Módulo 1: Introdução Básica',
+            order_index: 1
+          });
+
+          // Seed Lesson
+          const defaultBlocks = [
+            {
+              id: 'block-text-1',
+              type: 'text',
+              content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.',
+              styles: { align: 'left', fontSize: 'medium' }
+            },
+            {
+              id: 'block-video-1',
+              type: 'video',
+              url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+              provider: 'youtube'
+            },
+            {
+              id: 'block-quiz-1',
+              type: 'quiz',
+              question: 'Qual banco de dados relacional é utilizado no Supabase?',
+              options: [
+                { id: 'opt-pg-1', text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' },
+                { id: 'opt-pg-2', text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }
+              ]
+            }
+          ] as AnyBlock[];
+
+          await supabase.from('lessons').upsert({
+            id: activeLessonId,
+            module_id: moduleId,
+            title: '1. Introdução à Plataforma Híbrida',
+            order_index: 1,
+            is_published: true,
+            blocks: defaultBlocks
+          });
+
+          setBlocks(defaultBlocks);
+          console.log('Auto-seed realizado com sucesso!');
+        }
+      } catch (err) {
+        console.error('Erro na inicialização do Supabase:', err);
+        setSaveStatus('error');
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    initDatabase();
+  }, [activeLessonId]);
+
+  // 2. Debounced Save para salvar no Supabase ao alterar blocos
+  useEffect(() => {
+    if (!isLoaded) return; // Não salvar durante a carga inicial
+
+    setSaveStatus('saving');
+
+    const timer = setTimeout(async () => {
+      try {
+        console.log('Salvando blocos no Supabase...', state.blocks);
+        const { error: saveErr } = await supabase
+          .from('lessons')
+          .upsert({
+            id: activeLessonId,
+            module_id: '00000000-0000-0000-0000-000000000000',
+            title: '1. Introdução à Plataforma Híbrida',
+            order_index: 1,
+            is_published: true,
+            blocks: state.blocks
+          });
+
+        if (saveErr) throw saveErr;
+
+        setSaveStatus('saved');
+        const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
+        return () => clearTimeout(resetTimer);
+      } catch (err) {
+        console.error('Erro ao salvar no Supabase:', err);
+        setSaveStatus('error');
+      }
+    }, 1500); // 1.5s de debounce
+
+    return () => clearTimeout(timer);
+  }, [state.blocks, activeLessonId, isLoaded]);
 
   return (
     <EditorContext.Provider
@@ -191,6 +332,8 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setBlocks,
         canUndo,
         canRedo,
+        saveStatus,
+        activeLessonId,
       }}
     >
       {children}

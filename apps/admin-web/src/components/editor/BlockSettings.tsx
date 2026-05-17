@@ -137,12 +137,68 @@ export const BlockSettings: React.FC = () => {
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Pergunta</label>
-            <input
-              type="text"
+            <textarea
               value={activeBlock.question}
               onChange={(e) => updateBlock(activeBlock.id, { question: e.target.value })}
-              className="bg-slate-950-60 border border-slate-800 rounded-lg p-25 text-sm text-slate-200 focus-outline-none focus-border-indigo-60"
+              rows={4}
+              placeholder="Digite a pergunta do quiz aqui..."
+              className="bg-slate-950/60 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 resize-y"
             />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Tamanho da Fonte da Pergunta</label>
+            <select
+              value={activeBlock.styles?.fontSize || 'medium'}
+              onChange={(e) =>
+                updateBlock(activeBlock.id, {
+                  styles: {
+                    ...activeBlock.styles,
+                    fontSize: e.target.value as any,
+                  },
+                })
+              }
+              className="bg-slate-950/60 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+            >
+              <option value="small">Pequena</option>
+              <option value="medium">Média</option>
+              <option value="large">Grande</option>
+              <option value="xlarge">Muito Grande</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Alinhamento da Pergunta</label>
+            <div className="grid grid-cols-4 gap-1 bg-slate-950/40 p-1 rounded-lg border border-slate-800">
+              {(['left', 'center', 'right', 'justify'] as const).map((align) => {
+                const isSelected = activeBlock.styles?.align === align;
+                const Icons = {
+                  left: AlignLeft,
+                  center: AlignCenter,
+                  right: AlignRight,
+                  justify: AlignJustify,
+                };
+                const Icon = Icons[align];
+                return (
+                  <button
+                    key={align}
+                    onClick={() =>
+                      updateBlock(activeBlock.id, {
+                        styles: {
+                          ...activeBlock.styles,
+                          align,
+                        },
+                      })
+                    }
+                    className={`flex items-center justify-center p-2 rounded transition-all duration-300 cursor-pointer ${
+                      isSelected ? 'bg-indigo-55-20 text-indigo-400' : 'text-slate-400'
+                    }`}
+                  >
+                    <Icon size={16} />
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex flex-col gap-3">
@@ -168,7 +224,7 @@ export const BlockSettings: React.FC = () => {
 
             <div className="flex flex-col gap-4">
               {activeBlock.options.map((opt) => (
-                <div key={opt.id} className="bg-slate-950-40 border border-slate-800 rounded-xl p-3 flex flex-col gap-2 relative">
+                <div key={opt.id} className="bg-slate-950/40 border border-slate-800 rounded-xl p-3 flex flex-col gap-2 relative">
                   <div className="flex items-center gap-2">
                     <input
                       type="radio"
@@ -193,7 +249,7 @@ export const BlockSettings: React.FC = () => {
                         });
                         updateBlock(activeBlock.id, { options: updatedOptions });
                       }}
-                      className="bg-transparent border-b border-b-transparent focus-border-indigo text-xs text-slate-200 flex-1 focus-outline-none py-05"
+                      className="bg-transparent border-b border-transparent focus:border-indigo-500 text-xs text-slate-200 flex-1 focus:outline-none py-1"
                     />
                     {activeBlock.options.length > 2 && (
                       <button
@@ -204,7 +260,7 @@ export const BlockSettings: React.FC = () => {
                           }
                           updateBlock(activeBlock.id, { options: updatedOptions });
                         }}
-                        className="text-pink-500-60 hover:text-pink-500 transition-all duration-300 cursor-pointer"
+                        className="text-pink-500/60 hover:text-pink-500 transition-all duration-300 cursor-pointer"
                       >
                         <Trash2 size={12} />
                       </button>
@@ -221,7 +277,7 @@ export const BlockSettings: React.FC = () => {
                       });
                       updateBlock(activeBlock.id, { options: updatedOptions });
                     }}
-                    className="bg-slate-950-60 border border-slate-900 rounded p-15 text-xs text-slate-400 focus-outline-none focus-border-indigo-40"
+                    className="bg-slate-950/60 border border-slate-800 rounded p-2 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 w-full mt-1"
                   />
                 </div>
               ))}

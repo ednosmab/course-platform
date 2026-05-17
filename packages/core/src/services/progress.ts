@@ -1,4 +1,4 @@
-import { supabase } from '../supabase.js';
+import { supabase } from '../supabase';
 import { StudentProgress, StudentProgressSchema } from '@projeto/types';
 
 // Cache em memória para agrupamento e gerenciamento de debounce por aluno/aula

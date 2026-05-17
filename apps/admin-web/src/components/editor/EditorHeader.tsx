@@ -1,32 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useEditor } from '../../context/EditorContext';
 import { Undo2, Redo2, CloudLightning, Check } from 'lucide-react';
 
 export const EditorHeader: React.FC = () => {
-  const { canUndo, canRedo, undo, redo, blocks } = useEditor();
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
-
-  // Simulador de salvamento automático debounced no banco
-  useEffect(() => {
-    if (blocks.length === 0) return;
-
-    setSaveStatus('saving');
-    const timer = setTimeout(() => {
-      setSaveStatus('saved');
-      const innerTimer = setTimeout(() => setSaveStatus('idle'), 2000);
-      return () => clearTimeout(innerTimer);
-    }, 1200);
-
-    return () => clearTimeout(timer);
-  }, [blocks]);
+  const { canUndo, canRedo, undo, redo, saveStatus } = useEditor();
 
   return (
-    <header className="h-16 bg-slate-900-60 backdrop-blur-xl border-b border-slate-800 px-8 flex items-center justify-between w-full">
+    <header className="h-16 bg-slate-900/60 backdrop-blur-xl border-b border-slate-800 px-8 flex items-center justify-between w-full">
       {/* Title info */}
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-indigo-55-10 rounded-lg text-indigo-400">
+        <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
           <CloudLightning size={18} />
         </div>
         <div className="flex flex-col">
@@ -38,7 +23,7 @@ export const EditorHeader: React.FC = () => {
       {/* Undo/Redo & Save controls */}
       <div className="flex items-center gap-4">
         {/* Save Status indicator */}
-        <div className="flex items-center gap-15 text-xs">
+        <div className="flex items-center gap-2 text-xs">
           {saveStatus === 'saving' && (
             <>
               <div className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
@@ -51,10 +36,16 @@ export const EditorHeader: React.FC = () => {
               <span className="text-indigo-400 font-medium">Salvo com sucesso!</span>
             </>
           )}
+          {saveStatus === 'error' && (
+            <>
+              <div className="h-2 w-2 rounded-full bg-rose-500 animate-ping" />
+              <span className="text-rose-400 font-medium">Erro ao salvar no banco!</span>
+            </>
+          )}
           {saveStatus === 'idle' && (
             <>
-              <div className="h-2 w-2 rounded-full bg-slate-600" />
-              <span className="text-slate-500">Alterações salvas localmente</span>
+              <div className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="text-slate-400">Alterações salvas no Supabase</span>
             </>
           )}
         </div>
