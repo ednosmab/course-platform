@@ -1,23 +1,27 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-AGUARDANDO_IMPLEMENTADOR_INFRA_DEVOPS
+AGUARDANDO_APROVACAO_USUARIO
 
 ## 🎯 Tarefa em Execução
-- Nenhuma. O Agente Planejador concluiu a modelagem do plano DevOps/TDD. Aguardando o próximo agente (Agente 2) iniciar a implementação.
+- Nenhuma. A FASE 0 (TASK-00) de implantação da infraestrutura MCP de governança foi concluída com sucesso. Aguardando validação manual e autorização de commits pelo usuário (Edson).
 
 ## 🕹️ Camada Ativa e Documentos Carregados via MCP
-- Camada: Infraestrutura & DevOps (docs/layers/infra)
-- `docs/layers/infra/execution_plan.md`
-- `docs/AGENTS.md`
-- `docs/skills/tdd_workflow.md`
+- Camada: Infraestrutura e Governança MCP
+- `PLANO_UNIFICADO_IMPLANTACAO_MCP.md`
+- `docs/INDEX.md`
+- `docs/history/session_02_mcp_infrastructure.md`
 
 ## Critérios de Aceitação
-- [x] Plano de execução DevOps documentado e alinhado com o usuário.
-- [ ] Implementar TASKs 01 a 05 conforme `docs/layers/infra/execution_plan.md`.
+- [x] Criar estrutura de diretórios (`runtime/`, `governance/`, `cognition/`, `audit/`, `.github/workflows/`).
+- [x] Criar ADRs 002, 003 e 004 em `docs/adrs/`.
+- [x] Preencher planos vazios: `database_schema_plan.md`, `rls_governance_skill.md`, `admin_canvas_plan.md`, `mobile_player_plan.md`.
+- [x] Criar Contratos de Agente YAML e Handoffs MD.
+- [x] Criar políticas de regras operacionais, prompts base e hierarquia contextual.
+- [x] Criar o índice global `docs/INDEX.md`.
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
 - *Nenhum erro ativo.*
 
 ## Próxima Task
-- O próximo agente deve iniciar a FASE DE IMPLEMENTAÇÃO lendo o arquivo `docs/layers/infra/execution_plan.md` e configurando as GitHub Actions e o Vitest.
+- Iniciar a FASE 1 (Contratos de Dados) nos pacotes de tipagem após aprovação e homologação do commit pelo usuário.

@@ -1,0 +1,36 @@
+{
+  "session": {
+    "id": 2,
+    "started_at": "2026-05-16T23:25:00Z",
+    "status": "INITIALIZING_MCP_INFRASTRUCTURE"
+  },
+  "workflow": {
+    "active_id": "WF-MCP-BOOTSTRAP-002",
+    "active_layer": "infra",
+    "active_agent": "Orchestrator"
+  },
+  "agents": {
+    "planner": {
+      "active": false,
+      "last_run": null
+    },
+    "executor": {
+      "active": false,
+      "last_run": null
+    },
+    "reviewer": {
+      "active": false,
+      "last_run": null
+    },
+    "orchestrator": {
+      "active": true,
+      "last_run": "2026-05-16T23:25:00Z"
+    }
+  },
+  "metrics": {
+    "total_handoffs": 0,
+    "failed_tests": 0,
+    "completed_tasks": 0
+  },
+  "failures": []
+}
