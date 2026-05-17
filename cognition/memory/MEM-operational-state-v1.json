@@ -2,11 +2,11 @@
   "session": {
     "id": 3,
     "started_at": "2026-05-16T23:32:00Z",
-    "status": "INITIALIZING_UI_DESIGN_SYSTEM"
+    "status": "WAITING_FOR_CORE_SERVICES"
   },
   "workflow": {
-    "active_id": "WF-UI-DESIGN-003",
-    "active_layer": "ui",
+    "active_id": "WF-CORE-SERVICES-004",
+    "active_layer": "core",
     "active_agent": "Executor"
   },
   "agents": {
@@ -16,7 +16,7 @@
     },
     "executor": {
       "active": true,
-      "last_run": "2026-05-16T23:32:00Z"
+      "last_run": "2026-05-16T23:54:00Z"
     },
     "reviewer": {
       "active": false,
@@ -28,9 +28,9 @@
     }
   },
   "metrics": {
-    "total_handoffs": 1,
+    "total_handoffs": 2,
     "failed_tests": 0,
-    "completed_tasks": 22
+    "completed_tasks": 24
   },
   "failures": []
 }

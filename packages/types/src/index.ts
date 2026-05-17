@@ -22,3 +22,5 @@ export const CourseLessonContentSchema = z.object({
 }).strict();
 
 export type CourseLessonContent = z.infer<typeof CourseLessonContentSchema>;
+
+export * from './database';
