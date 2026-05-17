@@ -1,36 +1,36 @@
 {
   "session": {
-    "id": 2,
-    "started_at": "2026-05-16T23:25:00Z",
-    "status": "INITIALIZING_MCP_INFRASTRUCTURE"
+    "id": 3,
+    "started_at": "2026-05-16T23:32:00Z",
+    "status": "INITIALIZING_UI_DESIGN_SYSTEM"
   },
   "workflow": {
-    "active_id": "WF-MCP-BOOTSTRAP-002",
-    "active_layer": "infra",
-    "active_agent": "Orchestrator"
+    "active_id": "WF-UI-DESIGN-003",
+    "active_layer": "ui",
+    "active_agent": "Executor"
   },
   "agents": {
     "planner": {
       "active": false,
-      "last_run": null
+      "last_run": "2026-05-16T23:30:00Z"
     },
     "executor": {
-      "active": false,
-      "last_run": null
+      "active": true,
+      "last_run": "2026-05-16T23:32:00Z"
     },
     "reviewer": {
       "active": false,
       "last_run": null
     },
     "orchestrator": {
-      "active": true,
+      "active": false,
       "last_run": "2026-05-16T23:25:00Z"
     }
   },
   "metrics": {
-    "total_handoffs": 0,
+    "total_handoffs": 1,
     "failed_tests": 0,
-    "completed_tasks": 0
+    "completed_tasks": 22
   },
   "failures": []
 }

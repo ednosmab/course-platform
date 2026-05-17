@@ -3,6 +3,8 @@
 # 📖 ORDEM OBRIGATÓRIA DE LEITURA
 
 * P0 → docs/AGENTS.md
+* P0.1 → docs/INDEX.md
+* P0.2 → cognition/context/CONTEXT_HIERARCHY.md
 * P1 → docs/context_buffer.md
 * P2 → layer específica da task
 * P3 → arquivos correlatos
@@ -24,6 +26,7 @@ Você deve consultar os arquivos abaixo via MCP *apenas quando* o usuário solic
 - **Escopo:** Configuração de tokens Tamagui, temas, componentes atômicos do Canvas (Texto, Vídeo, Quiz) e compilação Cross-Platform.
 - **Arquivos para ler se acionado:**
   - `docs/layers/ui/execution_plan.md`
+  - `docs/layers/ui/tamagui_tokenization_skill.md`
   - `docs/skills/tamagui_ui.md`
   - `docs/skills/ui_ux_principles.md`
   - `docs/skills/responsividade.md`
@@ -34,6 +37,7 @@ Você deve consultar os arquivos abaixo via MCP *apenas quando* o usuário solic
 - **Escopo:** Migrations do PostgreSQL, tabelas de aulas, colunas JSONB, políticas RLS e Storage de mídias.
 - **Arquivos para ler se acionado:**
   - `docs/layers/supabase/database_schema_plan.md`
+  - `docs/layers/supabase/rls_governance_skill.md`
   - `docs/skills/supabase_rls.md`
   - `docs/skills/supabase_auth_jwt.md`
   - `docs/skills/supabase_edge_functions.md`
