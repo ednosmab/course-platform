@@ -1,0 +1,23 @@
+{
+  "name": "@projeto/core",
+  "version": "1.0.0",
+  "description": "Serviços, hooks e conexões compartilhadas da plataforma",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@projeto/types": "workspace:*",
+    "@supabase/supabase-js": "^2.43.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "@types/node": "^20.12.12"
+  }
+}
