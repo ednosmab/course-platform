@@ -23,6 +23,7 @@ type EditorAction =
   | { type: 'UNDO' }
   | { type: 'REDO' }
   | { type: 'SET_BLOCKS'; payload: { blocks: AnyBlock[] } }
+  | { type: 'REORDER_BLOCKS'; payload: { blocks: AnyBlock[] } }
   | { type: 'SET_PREVIEW_MODE'; payload: { active: boolean } }
   | { type: 'SET_VIEWPORT_MODE'; payload: { mode: 'desktop' | 'mobile' } };
 
@@ -188,6 +189,11 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       };
     }
 
+    case 'REORDER_BLOCKS': {
+      // Atualiza blocos mantendo o activeBlockId e criando entrada no histórico
+      return updateHistory(action.payload.blocks);
+    }
+
     case 'SET_PREVIEW_MODE': {
       return {
         ...state,
@@ -215,6 +221,7 @@ interface EditorContextType extends EditorState {
   undo: () => void;
   redo: () => void;
   setBlocks: (blocks: AnyBlock[]) => void;
+  reorderBlocks: (blocks: AnyBlock[]) => void;
   setPreviewMode: (active: boolean) => void;
   setViewportMode: (mode: 'desktop' | 'mobile') => void;
   canUndo: boolean;
@@ -240,6 +247,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const undo = () => dispatch({ type: 'UNDO' });
   const redo = () => dispatch({ type: 'REDO' });
   const setBlocks = (blocks: AnyBlock[]) => dispatch({ type: 'SET_BLOCKS', payload: { blocks } });
+  const reorderBlocks = (blocks: AnyBlock[]) => dispatch({ type: 'REORDER_BLOCKS', payload: { blocks } });
   const setPreviewMode = (active: boolean) => dispatch({ type: 'SET_PREVIEW_MODE', payload: { active } });
   const setViewportMode = (mode: 'desktop' | 'mobile') => dispatch({ type: 'SET_VIEWPORT_MODE', payload: { mode } });
   const updateBlockSilent = (id: string, updates: Partial<AnyBlock>) => dispatch({ type: 'UPDATE_BLOCK_SILENT', payload: { id, updates } });
@@ -463,6 +471,7 @@ const getDraftId = (lessonId: string) => {
         undo,
         redo,
         setBlocks,
+        reorderBlocks,
         setPreviewMode,
         setViewportMode,
         canUndo,

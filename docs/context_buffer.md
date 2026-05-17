@@ -1,9 +1,12 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-FIDELIDADE_TOTAL_PREVIEW_ALUNO
+PAINEL_CAMADAS_IMPLEMENTADO
 
 ## 🎯 Tarefa Recente Concluída
+- **Painel de Posição e Camadas:** Implementamos o painel flutuante de Posição contendo as abas `Organizar` e `Camadas`.
+- Adicionamos controle preciso de alinhamento com a página base e mutação imediata de `zIndex`.
+- Desenvolvemos a ordenação visual de camadas através do Drag & Drop nativo do HTML5, e o algoritmo de filtro de "Apenas em sobreposição" com intersecção AABB.
 - **Fidelidade Total de Tela (ADR-005):** Refatoramos o aplicativo do aluno (`apps/aluno-mobile`) para espelhar perfeitamente e sem desvios o canvas móvel do CMS Admin. 
 - **Purga de Hardcoded e Clutters:** Removemos as decorações obsoletas de `App.tsx` (cabeçalhos de curso estáticos, currículo de aulas no footer, botão manual de conclusão e seeds de dados embutidos), tornando a tela dedicada e focada 100% nos blocos da aula.
 - **Tema Light Integrado:** Ajustamos a cor do background global do portal do aluno para `#f8fafc` e o card da aula para `#ffffff`, alinhando perfeitamente a paleta de cores ao visual leve de preview do CMS.
@@ -11,9 +14,8 @@ FIDELIDADE_TOTAL_PREVIEW_ALUNO
 ## 🕹️ Camada Ativa e Documentos Relevantes
 - Camadas: Admin CMS (`apps/admin-web`), Portal do Aluno (`apps/aluno-mobile`), Core Services (`packages/core`)
 - [App.tsx](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/apps/aluno-mobile/App.tsx)
-- [BlockRenderer.tsx](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/apps/aluno-mobile/src/components/BlockRenderer.tsx)
-- [EditorContext.tsx](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/apps/admin-web/src/context/EditorContext.tsx)
-- [workflow_adm.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/docs/workflows/workflow_adm.md)
+- [EditorHeader.tsx](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/apps/admin-web/src/components/editor/EditorHeader.tsx)
+- [PositionPanel.tsx](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/apps/admin-web/src/components/editor/PositionPanel.tsx)
 
 ## ✅ Resumo de Decisões e Entregas (Critérios de Aceite Atingidos)
 - [x] **Inscrição Dinâmica e Sincronia:** O app do aluno carrega dinamicamente a estrutura dos cursos cadastrados do Supabase (sem IDs fixos ou mocks) e se inscreve via WebSockets na aula ativa do CMS (`11111111-1111-1111-1111-111111111111`), garantindo sincronia instantânea ao "Publicar".
@@ -26,5 +28,4 @@ FIDELIDADE_TOTAL_PREVIEW_ALUNO
 - *Nenhum erro ativo. Todo o monorepo compila com 100% de sucesso.*
 
 ## Próxima Task
-- Sessão pronta para ser fechada pelo usuário. Conexão CMS/Aluno consolidada e blindada sob a Lei Absoluta do Preview.
-
+- Aguardando próximas diretrizes do usuário. O módulo visual do CMS está robusto e agora conta com controle total de Z-Index e painel global de camadas.

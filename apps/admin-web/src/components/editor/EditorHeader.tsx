@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import { useEditor } from '../../context/EditorContext';
-import { Undo2, Redo2, CloudLightning, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { Undo2, Redo2, CloudLightning, Eye, EyeOff, CheckCircle2, Layers } from 'lucide-react';
+import { PositionPanel } from './PositionPanel';
 
 export const EditorHeader: React.FC = () => {
   const { canUndo, canRedo, undo, redo, saveStatus, previewMode, setPreviewMode, viewportMode, setViewportMode, publishLesson } = useEditor();
   const [published, setPublished] = useState(false);
+  const [isPositionPanelOpen, setIsPositionPanelOpen] = useState(false);
 
   const handlePublish = async () => {
     try {
@@ -99,6 +101,14 @@ export const EditorHeader: React.FC = () => {
         </button>
 
         <button
+          className={`btn-outline ${isPositionPanelOpen ? 'active' : ''}`}
+          onClick={() => setIsPositionPanelOpen(!isPositionPanelOpen)}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: isPositionPanelOpen ? 'var(--bg-surface)' : undefined, color: isPositionPanelOpen ? 'var(--accent-blue)' : undefined, borderColor: isPositionPanelOpen ? 'var(--accent-blue)' : undefined }}
+        >
+          <Layers size={15} /> Posição
+        </button>
+
+        <button
           className="btn-primary"
           onClick={handlePublish}
           style={{
@@ -114,6 +124,11 @@ export const EditorHeader: React.FC = () => {
           )}
         </button>
       </div>
+
+      {/* Popover/Modal do Painel de Posição */}
+      {isPositionPanelOpen && (
+        <PositionPanel onClose={() => setIsPositionPanelOpen(false)} />
+      )}
     </header>
   );
 };

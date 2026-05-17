@@ -621,7 +621,7 @@ export const EditorCanvas: React.FC = () => {
               key={block.id}
               onMouseDown={(e) => onBlockMouseDown(e, block)}
               onClick={(e) => { e.stopPropagation(); setActiveBlockId(block.id); }}
-              style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: isActive ? 9999 : layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none' }}
+              style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none', isolation: 'isolate' }}
             >
               {/* Selection / out-of-bounds border */}
               <div style={{
