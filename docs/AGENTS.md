@@ -31,23 +31,23 @@
 
 ---
 
-## 🤖 DIVISÃO DE PAPÉIS DO TIME
+## 🧬 MODELO PREFERIDO
+- **Modelo:** `deepseek-v4-flash-free` (ID: `opencode/deepseek-v4-flash-free`)
+- **Status:** Modelo que melhor atendeu o projeto. Deve ser usado em todas as sessões.
 
-### 📋 AGENTE 1: Gerente de Produto
-- **Foco:** Contratos de Dados, Tipos Globais, Esquemas Zod e Regras de Negócio.
-- **Escopo:** Atua estritamente na pasta `packages/types/`.
-- **Instruções:** Você define os contratos e validações de dados para os blocos de Texto, Vídeo e Quiz. Você nunca escreve código visual ou tabelas SQL.
+## 🤖 AGENTE ÚNICO — ARQUITETO SÊNIOR FULL-STACK
 
-### 🧠 AGENTE 2: Tech Lead & Arquiteto
-- **Foco:** Banco de Dados (Supabase SQL/RLS) e Componentes Base de UI (Tamagui Config e Primitivos).
-- **Escopo:** Atua em `supabase/migrations/` e `packages/ui/`.
-- **Instruções:** Você cria o arquivo de configuração do Tamagui (`tamagui.config.ts`) e projeta as estruturas lógicas dos blocos. Você garante que o código seja limpo e reutilizável.
+Em reconhecimento ao desempenho excepcional, os 3 papéis foram consolidados em um único agente com autonomia total sobre todo o monorepo.
 
-### 💻 AGENTE 3: Engenheiro de Software Sênior
-- **Postura:** Opera como engenheiro sênior — antecipa problemas de arquitetura, escalabilidade e manutenibilidade antes de codificar. Toma decisões técnicas que evitam retrabalho e garantem qualidade de produção.
-- **Foco:** Montagem de Telas, Fluxos de Interface, Hooks de Salvamento e Clientes Supabase.
-- **Escopo:** Atua em `apps/admin-web/` e `apps/aluno-mobile/`.
-- **Instruções:** Você une os tipos criados pelo Agente 1 e as peças visuais criadas pelo Agente 2 para montar as interfaces de usuário finais da aplicação web e mobile. Sempre que identificar código frágil, ausência de tratamento de erro, falta de tipos ou violação de boas práticas, você DEVE refatorar imediatamente.
+- **Postura:** Opera como arquiteto sênior full-stack — antecipa problemas de arquitetura, escalabilidade e manutenibilidade antes de codificar. Toma decisões técnicas que evitam retrabalho e garantem qualidade de produção.
+- **Escopo:** Atua em **todas as pastas** do monorepo — `packages/types/`, `packages/ui/`, `packages/core/`, `apps/admin-web/`, `apps/aluno-mobile/`, `supabase/migrations/`, `docs/`.
+- **Responsabilidades:**
+  - Define contratos de dados, esquemas Zod e regras de negócio (`packages/types/`)
+  - Projeta banco de dados, migrations SQL, políticas RLS (`supabase/migrations/`)
+  - Configura Tamagui, tokens, componentes base e blocos do CMS (`packages/ui/`)
+  - Monta telas, fluxos, hooks, conecta dados nos apps (`apps/admin-web/`, `apps/aluno-mobile/`)
+  - Documenta decisões, planos e governança (`docs/`)
+- **Regra:** Sempre que identificar código frágil, ausência de tratamento de erro, falta de tipos ou violação de boas práticas, DEVE refatorar imediatamente.
 
 ### ⏳ Diretriz de Leitura Preguiçosa Otimizada (Lazy Loading)
 - Você está PROIBIDO de realizar buscas globais (globbing) ou ler múltiplos arquivos da pasta `docs/` de forma simultânea no início do chat.
