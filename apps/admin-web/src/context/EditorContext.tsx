@@ -58,13 +58,20 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       const lastBlock = state.blocks[state.blocks.length - 1];
       const defaultY = lastBlock ? ((lastBlock as any).layout?.y ?? 40) + ((lastBlock as any).layout?.h ?? 120) + 20 : 40;
 
+      // Calcula o maior zIndex atual para garantir que o novo bloco fique no topo
+      const maxZ = state.blocks.reduce((max, b) => {
+        const z = (b as any).layout?.zIndex ?? 0;
+        return z > max ? z : max;
+      }, -1);
+      const nextZ = maxZ + 1;
+
       if (action.payload.type === 'text') {
         newBlock = {
           id,
           type: 'text',
           content: 'Clique aqui para editar este texto...',
           styles: { align: 'left', fontSize: 'medium' },
-          layout: { x: 40, y: defaultY, w: 600, h: 80, zIndex: state.blocks.length },
+          layout: { x: 40, y: defaultY, w: 600, h: 80, zIndex: nextZ },
         };
       } else if (action.payload.type === 'video') {
         newBlock = {
@@ -72,7 +79,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           type: 'video',
           url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
           provider: 'youtube',
-          layout: { x: 40, y: defaultY, w: 600, h: 340, zIndex: state.blocks.length },
+          layout: { x: 40, y: defaultY, w: 600, h: 340, zIndex: nextZ },
         };
       } else if (action.payload.type === 'image') {
         newBlock = {
@@ -81,7 +88,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           url: '',
           alt: 'Nova imagem',
           styles: { align: 'center' },
-          layout: { x: 40, y: defaultY, w: 500, h: 300, zIndex: state.blocks.length },
+          layout: { x: 40, y: defaultY, w: 500, h: 300, zIndex: nextZ },
         };
       } else if (action.payload.type === 'quote') {
         newBlock = {
@@ -90,21 +97,21 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           content: 'Digite sua citação aqui...',
           author: 'Autor da citação',
           styles: { align: 'left', fontSize: 'medium' },
-          layout: { x: 40, y: defaultY, w: 600, h: 100, zIndex: state.blocks.length },
+          layout: { x: 40, y: defaultY, w: 600, h: 100, zIndex: nextZ },
         };
       } else if (action.payload.type === 'html') {
         newBlock = {
           id,
           type: 'html',
           htmlContent: '<div style="padding: 20px; background: #f0f0f0;">\n  <h2>Código Customizado</h2>\n</div>',
-          layout: { x: 40, y: defaultY, w: 600, h: 120, zIndex: state.blocks.length },
+          layout: { x: 40, y: defaultY, w: 600, h: 120, zIndex: nextZ },
         };
       } else {
         newBlock = {
           id,
           type: 'quiz',
           question: 'Digite sua pergunta de quiz aqui...',
-          layout: { x: 40, y: defaultY, w: 600, h: 280, zIndex: state.blocks.length },
+          layout: { x: 40, y: defaultY, w: 600, h: 280, zIndex: nextZ },
           options: [
             { id: crypto.randomUUID(), text: 'Opção A', isCorrect: true, feedback: 'Excelente!' },
             { id: crypto.randomUUID(), text: 'Opção B', isCorrect: false, feedback: 'Tente novamente.' },

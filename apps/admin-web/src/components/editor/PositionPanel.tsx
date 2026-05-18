@@ -74,9 +74,11 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     const newBlocks = blocks.map(b => {
       const idx = orderedBlockIds.indexOf(b.id);
       const l = getLayout(b);
-      return { ...b, layout: { ...l, zIndex: idx >= 0 ? idx : 0 } };
+      return { ...b, layout: { ...l, zIndex: idx >= 0 ? idx : (l.zIndex ?? 0) } };
     });
-    reorderBlocks(newBlocks as AnyBlock[]);
+    
+    // LAW: Devemos garantir que o estado seja atualizado com uma nova referência
+    reorderBlocks([...newBlocks] as AnyBlock[]);
   }, [blocks, reorderBlocks]);
 
   /** Retorna os IDs de blocos ordenados do fundo ao topo (ascendente por zIndex) */
@@ -88,10 +90,9 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     if (!activeBlock) return;
     const ordered = getOrderedIds();
     const idx = ordered.indexOf(activeBlock.id);
-    if (idx < 0 || idx >= ordered.length - 1) return; // já está no topo
+    if (idx < 0 || idx >= ordered.length - 1) return;
     
     const newOrdered = [...ordered];
-    // Swap com o de cima
     [newOrdered[idx], newOrdered[idx + 1]] = [newOrdered[idx + 1], newOrdered[idx]];
     normalizeAndApply(newOrdered);
   };
@@ -100,10 +101,9 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     if (!activeBlock) return;
     const ordered = getOrderedIds();
     const idx = ordered.indexOf(activeBlock.id);
-    if (idx <= 0) return; // já está no fundo
+    if (idx <= 0) return;
     
     const newOrdered = [...ordered];
-    // Swap com o de baixo
     [newOrdered[idx], newOrdered[idx - 1]] = [newOrdered[idx - 1], newOrdered[idx]];
     normalizeAndApply(newOrdered);
   };
@@ -115,7 +115,6 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     if (idx < 0) return;
     
     const newOrdered = [...ordered];
-    // Remove e empurra pro final
     newOrdered.splice(idx, 1);
     newOrdered.push(activeBlock.id);
     normalizeAndApply(newOrdered);
@@ -128,7 +127,6 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     if (idx < 0) return;
     
     const newOrdered = [...ordered];
-    // Remove e insere no início
     newOrdered.splice(idx, 1);
     newOrdered.unshift(activeBlock.id);
     normalizeAndApply(newOrdered);
@@ -191,18 +189,22 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     e.preventDefault();
     if (!draggedId || draggedId === targetId) { setDraggedId(null); return; }
 
-    // displayLayers está do topo para o fundo. Precisamos converter para ordered (fundo para topo).
-    const topToBottom = [...displayLayers].map(b => b.id);
-    const dragIdx = topToBottom.indexOf(draggedId);
-    const targetIdx = topToBottom.indexOf(targetId);
+    const currentOrderedIds = getOrderedIds();
+    const dragIdx = currentOrderedIds.indexOf(draggedId);
+    const targetIdx = currentOrderedIds.indexOf(targetId);
+    
     if (dragIdx < 0 || targetIdx < 0) { setDraggedId(null); return; }
 
-    topToBottom.splice(dragIdx, 1);
-    topToBottom.splice(targetIdx, 0, draggedId);
+    const newOrdered = [...currentOrderedIds];
+    newOrdered.splice(dragIdx, 1);
+    // Insere na posição original do target.
+    // Se dragIdx < targetIdx, o target deslocou 1 para esquerda após remoção,
+    // então inserir em targetIdx coloca o item arrastado DEPOIS do target (zIndex maior).
+    // Se dragIdx > targetIdx, inserir em targetIdx coloca o item arrastado
+    // ANTES do target (zIndex menor).
+    newOrdered.splice(targetIdx, 0, draggedId);
 
-    // Converte de topToBottom para bottomToTop (ascendente de z)
-    const bottomToTop = [...topToBottom].reverse();
-    normalizeAndApply(bottomToTop);
+    normalizeAndApply(newOrdered);
     setDraggedId(null);
   };
 
