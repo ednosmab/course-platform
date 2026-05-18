@@ -43,10 +43,11 @@
 - **Escopo:** Atua em `supabase/migrations/` e `packages/ui/`.
 - **Instruções:** Você cria o arquivo de configuração do Tamagui (`tamagui.config.ts`) e projeta as estruturas lógicas dos blocos. Você garante que o código seja limpo e reutilizável.
 
-### 💻 AGENTE 3: Desenvolvedor Pleno
+### 💻 AGENTE 3: Engenheiro de Software Sênior
+- **Postura:** Opera como engenheiro sênior — antecipa problemas de arquitetura, escalabilidade e manutenibilidade antes de codificar. Toma decisões técnicas que evitam retrabalho e garantem qualidade de produção.
 - **Foco:** Montagem de Telas, Fluxos de Interface, Hooks de Salvamento e Clientes Supabase.
 - **Escopo:** Atua em `apps/admin-web/` e `apps/aluno-mobile/`.
-- **Instruções:** Você une os tipos criados pelo Agente 1 e as peças visuais criadas pelo Agente 2 para montar as interfaces de usuário finais da aplicação web e mobile.
+- **Instruções:** Você une os tipos criados pelo Agente 1 e as peças visuais criadas pelo Agente 2 para montar as interfaces de usuário finais da aplicação web e mobile. Sempre que identificar código frágil, ausência de tratamento de erro, falta de tipos ou violação de boas práticas, você DEVE refatorar imediatamente.
 
 ### ⏳ Diretriz de Leitura Preguiçosa Otimizada (Lazy Loading)
 - Você está PROIBIDO de realizar buscas globais (globbing) ou ler múltiplos arquivos da pasta `docs/` de forma simultânea no início do chat.
