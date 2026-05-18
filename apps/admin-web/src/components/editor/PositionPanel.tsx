@@ -59,6 +59,7 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<'organizar' | 'camadas'>('organizar');
   const [layersFilter, setLayersFilter] = useState<'todas' | 'sobreposicao'>('todas');
   const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
 
   const activeBlock = blocks.find(b => b.id === activeBlockId);
 
@@ -177,7 +178,14 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
   // DnD nativo
   const onDragStart = (e: React.DragEvent, blockId: string) => {
     setDraggedId(blockId);
+    setDropIndex(null);
     e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', blockId);
+  };
+
+  const onDragEnd = () => {
+    setDraggedId(null);
+    setDropIndex(null);
   };
 
   const onDragOver = (e: React.DragEvent) => {
@@ -185,27 +193,58 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     e.dataTransfer.dropEffect = 'move';
   };
 
+  const onDragOverItem = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const midPoint = rect.height / 2;
+    
+    // filteredLayers é top-to-bottom. dropIndex = posição visual onde inserir.
+    const idx = filteredLayers.findIndex(b => b.id === targetId);
+    setDropIndex(y < midPoint ? idx : idx + 1);
+  };
+
+  const onDragLeaveItem = () => {
+    setDropIndex(null);
+  };
+
   const onDrop = (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
-    if (!draggedId || draggedId === targetId) { setDraggedId(null); return; }
+    if (!draggedId || draggedId === targetId) { setDraggedId(null); setDropIndex(null); return; }
 
-    const currentOrderedIds = getOrderedIds();
+    const currentOrderedIds = getOrderedIds(); // bottom-to-top
     const dragIdx = currentOrderedIds.indexOf(draggedId);
-    const targetIdx = currentOrderedIds.indexOf(targetId);
     
-    if (dragIdx < 0 || targetIdx < 0) { setDraggedId(null); return; }
-
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const midPoint = rect.height / 2;
+    const targetVisualIdx = filteredLayers.findIndex(b => b.id === targetId);
+    const dropVisualIdx = y < midPoint ? targetVisualIdx : targetVisualIdx + 1;
+    
+    // filteredLayers é top-to-bottom. Converte para a ordem global displayLayers.
+    const displayIds = displayLayers.map(b => b.id);
+    let globalDropPos: number;
+    if (dropVisualIdx >= filteredLayers.length) {
+      globalDropPos = displayIds.length; // final da lista global
+    } else {
+      const dropBlockId = filteredLayers[dropVisualIdx].id;
+      globalDropPos = displayIds.indexOf(dropBlockId);
+    }
+    
+    // Converte posição global top-to-bottom para bottom-to-top (zIndex)
+    // displayLayers[0] = topo = último em currentOrderedIds
+    const insertAt = currentOrderedIds.length - globalDropPos;
+    
     const newOrdered = [...currentOrderedIds];
     newOrdered.splice(dragIdx, 1);
-    // Insere na posição original do target.
-    // Se dragIdx < targetIdx, o target deslocou 1 para esquerda após remoção,
-    // então inserir em targetIdx coloca o item arrastado DEPOIS do target (zIndex maior).
-    // Se dragIdx > targetIdx, inserir em targetIdx coloca o item arrastado
-    // ANTES do target (zIndex menor).
-    newOrdered.splice(targetIdx, 0, draggedId);
+    const adjustedInsert = dragIdx < insertAt ? insertAt - 1 : insertAt;
+    newOrdered.splice(adjustedInsert, 0, draggedId);
 
     normalizeAndApply(newOrdered);
     setDraggedId(null);
+    setDropIndex(null);
   };
 
   // ──────────────────────────────────────────────────────
@@ -316,10 +355,7 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
                   </div>
                 </div>
 
-                {/* Debug: mostra zIndex atual */}
-                <div style={{ fontSize: '10px', color: 'var(--text-tertiary)', fontFamily: 'monospace', padding: '8px', backgroundColor: 'var(--bg-canvas)', borderRadius: '6px' }}>
-                  zIndex: {getLayout(activeBlock).zIndex} · Blocos: {blocks.length}
-                </div>
+                
               </>
             )}
           </div>
@@ -358,51 +394,60 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
               {filteredLayers.map(block => {
                 const isActive = block.id === activeBlockId;
                 const isDragging = block.id === draggedId;
-                const z = getLayout(block).zIndex;
+                const showDropLine = dropIndex === filteredLayers.indexOf(block);
 
                 return (
-                  <div
-                    key={block.id}
-                    draggable
-                    onDragStart={(e) => onDragStart(e, block.id)}
-                    onDragOver={onDragOver}
-                    onDrop={(e) => onDrop(e, block.id)}
-                    onClick={() => setActiveBlockId(block.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '8px 10px',
-                      backgroundColor: isActive ? '#eff6ff' : 'var(--bg-canvas)',
-                      border: isActive ? '1.5px solid var(--accent-blue)' : '1px solid var(--border-light)',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      opacity: isDragging ? 0.35 : 1,
-                      gap: '8px',
-                      transition: 'opacity 0.15s, border-color 0.15s',
-                    }}
-                  >
-                    {/* Drag Handle */}
-                    <div style={{ cursor: 'grab', color: 'var(--text-tertiary)', display: 'flex', flexShrink: 0 }}>
-                      <GripVertical size={14} />
-                    </div>
-
-                    {/* Icon + Title */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0 }}>
-                      <div style={{ color: isActive ? 'var(--accent-blue)' : 'var(--text-secondary)', flexShrink: 0 }}>
-                        <BlockIcon type={block.type} />
+                  <div key={block.id} style={{ position: 'relative' }}>
+                    {/* Drop indicator line */}
+                    {showDropLine && (
+                      <div style={{ position: 'absolute', top: -2, left: 0, right: 0, height: '3px', backgroundColor: '#3b82f6', borderRadius: '2px', zIndex: 10, pointerEvents: 'none' }} />
+                    )}
+                    <div
+                      draggable
+                      onDragStart={(e) => onDragStart(e, block.id)}
+                      onDragOver={(e) => onDragOverItem(e, block.id)}
+                      onDragLeave={onDragLeaveItem}
+                      onDrop={(e) => onDrop(e, block.id)}
+                      onDragEnd={onDragEnd}
+                      onClick={() => setActiveBlockId(block.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '8px 10px',
+                        backgroundColor: isActive ? '#eff6ff' : 'var(--bg-canvas)',
+                        border: isActive ? '1.5px solid var(--accent-blue)' : '1px solid var(--border-light)',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        opacity: isDragging ? 0.35 : 1,
+                        gap: '8px',
+                        transition: 'opacity 0.15s, border-color 0.15s',
+                      }}
+                    >
+                      {/* Drag Handle */}
+                      <div style={{ cursor: 'grab', color: 'var(--text-tertiary)', display: 'flex', flexShrink: 0 }}>
+                        <GripVertical size={14} />
                       </div>
-                      <span style={{ fontSize: '11px', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {getBlockTitle(block)}
-                      </span>
-                    </div>
 
-                    {/* Z badge */}
-                    <span style={{ fontSize: '9px', color: 'var(--text-tertiary)', fontFamily: 'monospace', flexShrink: 0 }}>
-                      z{z}
-                    </span>
+                      {/* Icon + Title */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0 }}>
+                        <div style={{ color: isActive ? 'var(--accent-blue)' : 'var(--text-secondary)', flexShrink: 0 }}>
+                          <BlockIcon type={block.type} />
+                        </div>
+                        <span style={{ fontSize: '11px', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {getBlockTitle(block)}
+                        </span>
+                      </div>
+
+                    </div>
                   </div>
                 );
               })}
+              {/* Drop indicator at the bottom when inserting at end */}
+              {dropIndex === filteredLayers.length && (
+                <div style={{ position: 'relative', height: '4px' }}>
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', backgroundColor: '#3b82f6', borderRadius: '2px', zIndex: 10, pointerEvents: 'none' }} />
+                </div>
+              )}
             </div>
           </div>
         )}
