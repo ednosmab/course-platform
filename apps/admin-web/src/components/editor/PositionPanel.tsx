@@ -220,16 +220,16 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
       onMouseDown={(e) => e.stopPropagation()}
       style={{
         position: 'fixed',
-        top: '72px',
-        right: '310px',
+        top: '60px',
+        right: '0',
         width: '280px',
+        height: 'calc(100vh - 60px)',
         backgroundColor: '#ffffff',
-        borderRadius: '12px',
-        boxShadow: '0 12px 48px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06)',
+        borderLeft: '1px solid #e2e8f0',
+        boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
         zIndex: 99999,
         display: 'flex',
         flexDirection: 'column',
-        maxHeight: 'calc(100vh - 100px)',
       }}
     >
       {/* Header */}
