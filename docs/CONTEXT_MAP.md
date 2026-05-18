@@ -24,7 +24,8 @@ Você deve consultar os arquivos abaixo via MCP *apenas quando* o usuário solic
   - `docs/layers/types/data-lifecycle.md`
 
 ## 🎨 2. Design System e Componentes Visuais (Packages/UI)
-- **Escopo:** Configuração de tokens Tamagui, temas, componentes atômicos do Canvas (Texto, Vídeo, Quiz) e compilação Cross-Platform.
+- **Escopo:** Configuração de tokens Tamagui, temas, componentes atômicos do Canvas (Texto, Vídeo, Quiz), compilação Cross-Platform e reforma do Design System (DSv2).
+- **Plano Mestre:** `docs/roadmaps/design-system-reforma.md`
 - **Arquivos para ler se acionado:**
   - `docs/layers/ui/execution_plan.md`
   - `docs/layers/ui/tamagui_tokenization_skill.md`
@@ -33,6 +34,7 @@ Você deve consultar os arquivos abaixo via MCP *apenas quando* o usuário solic
   - `docs/skills/responsividade.md`
   - `docs/skills/animation_protocol.md`
   - `docs/layers/ui/token-governance.md`
+  - `packages/ui/src/tokens/*.ts`
 
 ## 🛡️ 3. Persistência, Banco de Dados e Segurança (Supabase)
 - **Escopo:** Migrations do PostgreSQL, tabelas de aulas, colunas JSONB, políticas RLS e Storage de mídias.

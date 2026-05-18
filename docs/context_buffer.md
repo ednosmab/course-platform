@@ -1,30 +1,38 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-PAINEL_CAMADAS_FUNCIONAL
+DSv2_REFORM_INIT — Design System Reforma iniciada
 
-## 🎯 Tarefa Recente Concluída
-- **Postura elevada para Senior:** Agente 3 redefinido para atuar como Engenheiro de Software Sênior, com responsabilidade ampliada sobre qualidade arquitetural e refatoração proativa. Atualizado em `docs/AGENTS.md`.
-- **Correção de sobreposição (zIndex):** Ajustado `EditorCanvas.tsx` para não forçar `zIndex: 9999` no bloco ativo. Corrigido `normalizeAndApply` no `PositionPanel.tsx` para usar nova referência de array. Corrigido `ADD_BLOCK` no `EditorContext.tsx` para calcular `maxZ + 1` em vez de `state.blocks.length`.
-- **Drag & Drop nas Camadas:** Corrigido `onDrop` para usar índice original do target. Adicionado `onDragEnd` para limpar estado. Adicionada **linha azul indicadora** de drop position (estilo Canva).
-- **Painel reposicionado:** Alterado de popover flutuante para sidebar fixa à direita (`right: 0`, altura total).
-- **Removido debug:** `zIndex` removido do footer da aba Organizar e dos badges dos itens de camada.
+## 🎯 Tarefa em Execução (Sprint Atual)
+- **Missão:** Reforma completa do Design System — migrar apps para consumirem `@projeto/ui`, modularizar tokens, criar componentes de bloco CMS, padronizar ícones, estabelecer governança.
+- **Plano Mestre:** `docs/roadmaps/design-system-reforma.md`
+- **Fase Ativa:** Fase 0 — Fundação (Token Modular + Governança)
+- **Escopo:** `packages/ui/` e `docs/`
 
-## 🕹️ Camada Ativa e Documentos Relevantes
-- Camada: Admin CMS (`apps/admin-web`)
-- `apps/admin-web/src/components/editor/PositionPanel.tsx`
-- `apps/admin-web/src/components/editor/EditorCanvas.tsx`
-- `apps/admin-web/src/context/EditorContext.tsx`
+## 🕹️ Camada Ativa e Documentos Carregados
+- **Camada:** Design System & Componentes Visuais (`packages/ui`)
+- **Plano:** `docs/roadmaps/design-system-reforma.md`
+- **Execução:** `docs/layers/ui/execution_plan.md`
+- **Skills:** `docs/layers/ui/tamagui_tokenization_skill.md`, `docs/skills/tamagui_ui.md`, `docs/skills/ui_ux_principles.md`
+- **Governança:** `docs/layers/ui/token-governance.md`
 
-## ✅ Resumo de Decisões e Entregas (Critérios de Aceite Atingidos)
-- [x] Sobrepisição de elementos funcionando corretamente (botões Organizar e DnD em Camadas)
-- [x] Novo bloco sempre recebe `zIndex` maior que o máximo atual
-- [x] Linha azul indicadora aparece durante arraste em Camadas
-- [x] Elemento não fica morelo cinza preso após arraste (onDragEnd)
-- [x] Painel reposicionado como sidebar direita
+## 🛠️ Estado do Design System (Diagnóstico Inicial)
+- [x] `packages/ui/src/tamagui.config.ts` — 252 linhas, tokens de cor/espaçamento/tipografia, temas dark/light
+- [x] `packages/ui/src/components/` — Button, Card, Text, Container (4 primitivos)
+- [ ] `packages/ui/src/tokens/` — **VAZIO** (precisa ser populado)
+- [ ] `docs/layers/ui/token-governance.md` — **STUB** (só cabeçalhos)
+- [ ] `apps/admin-web` — **NÃO** usa `@projeto/ui` (usa CSS classes + estilos inline)
+- [ ] `apps/aluno-mobile` — **NÃO** usa `@projeto/ui` (usa StyleSheet.create())
+- [ ] Componentes de bloco (TextBlock, VideoBlock, QuizBlock) — JSX bruto nos apps
+- [ ] Ícones — imports diretos de lucide-react e lucide-react-native (sem wrapper)
+
+## ✅ Tasks Concluídas
+- [x] Diagnóstico completo do DS — relatório gerado e documentado
+- [x] Plano de reforma criado em `docs/roadmaps/design-system-reforma.md`
+- [x] `docs/CONTEXT_MAP.md` atualizado com referência ao plano mestre e tokens
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
 - *Nenhum erro ativo.*
 
 ## Próxima Task
-- Aguardando próximas diretrizes do usuário.
+- Iniciar Fase 0.1: Modularizar tokens em `packages/ui/src/tokens/`
