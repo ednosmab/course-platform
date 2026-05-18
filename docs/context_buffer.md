@@ -1,38 +1,29 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-DSv2_REFORM_INIT — Design System Reforma iniciada
+DSv2_REFORM_READY — Plano criado, agente consolidado, aguardando execução
 
-## 🎯 Tarefa em Execução (Sprint Atual)
-- **Missão:** Reforma completa do Design System — migrar apps para consumirem `@projeto/ui`, modularizar tokens, criar componentes de bloco CMS, padronizar ícones, estabelecer governança.
-- **Plano Mestre:** `docs/roadmaps/design-system-reforma.md`
-- **Fase Ativa:** Fase 0 — Fundação (Token Modular + Governança)
-- **Escopo:** `packages/ui/` e `docs/`
+## 🎯 Últimas Conquistas
+- **Agentes consolidados:** Os 3 papéis (PM, Tech Lead, Senior) foram unificados em um único **Arquiteto Sênior Full-Stack** com escopo total no monorepo
+- **Modelo preferido registrado:** `deepseek-v4-flash-free` documentado como modelo oficial em `docs/AGENTS.md`
+- **DSv2 Reform Plan criado:** `docs/roadmaps/design-system-reforma.md` — 6 fases, 38 tasks
+- **Branch isolada:** `feat/dsv2-reform` criada para a reforma, `develop` mantido limpo
+- **CONTEXT_MAP atualizado:** Seção 2 agora aponta para plano mestre + tokens
+- **execution_plan expandido:** Tasks legado marcadas como concluídas, novas tasks até TASK-38
 
-## 🕹️ Camada Ativa e Documentos Carregados
-- **Camada:** Design System & Componentes Visuais (`packages/ui`)
-- **Plano:** `docs/roadmaps/design-system-reforma.md`
-- **Execução:** `docs/layers/ui/execution_plan.md`
-- **Skills:** `docs/layers/ui/tamagui_tokenization_skill.md`, `docs/skills/tamagui_ui.md`, `docs/skills/ui_ux_principles.md`
-- **Governança:** `docs/layers/ui/token-governance.md`
-
-## 🛠️ Estado do Design System (Diagnóstico Inicial)
-- [x] `packages/ui/src/tamagui.config.ts` — 252 linhas, tokens de cor/espaçamento/tipografia, temas dark/light
-- [x] `packages/ui/src/components/` — Button, Card, Text, Container (4 primitivos)
-- [ ] `packages/ui/src/tokens/` — **VAZIO** (precisa ser populado)
-- [ ] `docs/layers/ui/token-governance.md` — **STUB** (só cabeçalhos)
-- [ ] `apps/admin-web` — **NÃO** usa `@projeto/ui` (usa CSS classes + estilos inline)
-- [ ] `apps/aluno-mobile` — **NÃO** usa `@projeto/ui` (usa StyleSheet.create())
-- [ ] Componentes de bloco (TextBlock, VideoBlock, QuizBlock) — JSX bruto nos apps
-- [ ] Ícones — imports diretos de lucide-react e lucide-react-native (sem wrapper)
-
-## ✅ Tasks Concluídas
-- [x] Diagnóstico completo do DS — relatório gerado e documentado
-- [x] Plano de reforma criado em `docs/roadmaps/design-system-reforma.md`
-- [x] `docs/CONTEXT_MAP.md` atualizado com referência ao plano mestre e tokens
+## 🕹️ Estado Atual do Projeto
+- **Branch atual:** `feat/dsv2-reform` (reforma DS) / `develop` (produção)
+- **Próxima ação:** Iniciar Fase 0.1 — Modularizar tokens em `packages/ui/src/tokens/`
+- **Pendências:** `packages/ui/src/tokens/` vazio, `token-governance.md` vazio, apps não consomem `@projeto/ui`
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
 - *Nenhum erro ativo.*
 
-## Próxima Task
-- Iniciar Fase 0.1: Modularizar tokens em `packages/ui/src/tokens/`
+## 📋 Checklist para começar a execução
+- [x] Plano de reforma criado
+- [x] Branch `feat/dsv2-reform` isolada
+- [x] Agente consolidado com escopo total
+- [x] Modelo preferido registrado
+- [ ] **Fase 0.1:** Modularizar tokens em `packages/ui/src/tokens/`
+- [ ] **Fase 0.2:** Preencher `docs/layers/ui/token-governance.md`
+- [ ] **Fase 1+:** Migrar apps para `@projeto/ui`
