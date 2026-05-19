@@ -445,6 +445,7 @@ function PreviewCanvas({ blocks, isMobile }: { blocks: AnyBlock[]; isMobile?: bo
       justifyContent: 'flex-start',
       padding: '24px',
       overflowY: 'auto',
+      flex: 1,
     }}>
       <div style={{
         width: isMobile ? MOBILE_W + 24 : '100%',
@@ -473,7 +474,7 @@ function PreviewCanvas({ blocks, isMobile }: { blocks: AnyBlock[]; isMobile?: bo
 // ─── Mobile Viewport (edit mode interativo) ─────────────────────────────
 function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDrop: (id: string, file: File) => void }) {
   return (
-    <div className="canvas-area canvas-bg" style={{ alignItems: 'center', justifyContent: 'flex-start', padding: '24px', overflowY: 'auto' }}>
+    <div className="canvas-area canvas-bg" style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', padding: '24px', overflowY: 'auto' }}>
       <div style={{ border: '6px solid #1e293b', borderRadius: '36px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.25)', backgroundColor: 'white', width: MOBILE_W + 12, flexShrink: 0 }}>
         {/* Notch */}
         <div style={{ backgroundColor: '#1e293b', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -585,7 +586,7 @@ export const EditorCanvas: React.FC = () => {
     };
   }, [updateBlock, updateBlockSilent]);
 
-  if (!mounted) return <div className="canvas-area canvas-bg"><div style={{ color: 'var(--text-tertiary)' }}>Carregando...</div></div>;
+  if (!mounted) return <div className="canvas-area canvas-bg" style={{ flex: 1 }}><div style={{ color: 'var(--text-tertiary)' }}>Carregando...</div></div>;
 
   if (previewMode) return <PreviewCanvas blocks={blocks} isMobile={viewportMode === 'mobile'} />;
 
@@ -600,7 +601,7 @@ export const EditorCanvas: React.FC = () => {
   return (
     <div
       className="canvas-area canvas-bg"
-      style={{ padding: '40px 24px', overflow: 'auto' }}
+      style={{ flex: 1, padding: '40px 24px', overflow: 'auto' }}
       onClick={() => setActiveBlockId(null)}
     >
       {/* ── White page card: delimitador de página desktop com margin auto para centralizar ── */}
