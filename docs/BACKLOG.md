@@ -196,6 +196,10 @@ Tasks do plano `docs/layers/testing/e2e_playwright_plan.md`:
 - [ ] **ADR-015:** Gap arquitetural — TanStack Query/Zustand prescritos mas não implementados
 - [ ] **ADR-016:** Tamagui compile-time optimization (babel plugin, zero runtime CSS-in-JS)
 
+### 🔍 Pós-MVP
+
+- [ ] **Auditoria geral do projeto** — Analisar todo o código após MVP estabilizado: schema drift, performance, segurança, cobertura de testes, dependências obsoletas, dívida técnica acumulada. Referência: `docs/DECISOES_ARQUITETURAIS_RECOMENDACOES.md`
+
 ### 🧹 Documentação
 
 - [ ] **Atualizar `docs/layers/ui/execution_plan.md`** — marcar TASK-32 a TASK-38 como concluídas
