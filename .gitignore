@@ -10,6 +10,7 @@ build/
 
 # Caches e arquivos gerados pelo Expo (Mobile)
 .expo/
+.tamagui/
 *.jks
 *.p8
 *.p12
