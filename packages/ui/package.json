@@ -20,7 +20,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
+
   "dependencies": {
     "@tamagui/animations-react-native": "2.0.0-rc.42",
     "@tamagui/config": "2.0.0-rc.42",
