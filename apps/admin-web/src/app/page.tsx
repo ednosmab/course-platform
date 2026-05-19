@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { YStack, XStack } from '@projeto/ui';
 import { EditorProvider } from '../context/EditorContext';
 import { EditorHeader } from '../components/editor/EditorHeader';
 import { BlockPalette } from '../components/editor/BlockPalette';
@@ -10,22 +11,14 @@ import { BlockSettings } from '../components/editor/BlockSettings';
 export default function Home() {
   return (
     <EditorProvider>
-      <div className="layout-container">
-        {/* Barra de topo do estúdio CMS */}
+      <YStack f={1} h="100vh" w="100vw" overflow="hidden">
         <EditorHeader />
-
-        {/* Viewport Principal do Editor (3 Colunas) */}
-        <div className="layout-main">
-          {/* Paleta de Blocos (Esquerda) */}
+        <XStack f={1} overflow="hidden" w="100%">
           <BlockPalette />
-
-          {/* Canvas do Editor Reordenável (Centro) */}
           <EditorCanvas />
-
-          {/* Ajustes Específicos do Bloco (Direita) */}
           <BlockSettings />
-        </div>
-      </div>
+        </XStack>
+      </YStack>
     </EditorProvider>
   );
 }
