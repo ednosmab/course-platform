@@ -13,8 +13,8 @@ PLANEJAMENTO_COMPLETO — 4 assuntos tratados e commitados. Próxima ação: ini
 
 ## 🕹️ Estado Atual do Projeto
 - **Branch atual:** `feat/dsv2-reform` (reforma DS) / `develop` (produção)
-- **Próxima ação:** Iniciar Fase 1 — Migrar `admin-web` para `@projeto/ui` (TASK-15 a TASK-18)
-- **Pendências:** Apps não consomem `@projeto/ui`, tasks de escala não iniciadas, testes não configurados
+- **Próxima ação:** Iniciar Fase 2 — Migrar `aluno-mobile` para `@projeto/ui` (TASK-19 a TASK-23)
+- **Pendências:** `aluno-mobile` não consome `@projeto/ui`, tasks de escala não iniciadas, testes não configurados
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
 - *Nenhum erro ativo.*
@@ -24,6 +24,6 @@ PLANEJAMENTO_COMPLETO — 4 assuntos tratados e commitados. Próxima ação: ini
 - [x] Plano de Escalabilidade — `docs/roadmaps/scalability-plan.md`
 - [x] Estratégia de Testes — `docs/layers/testing/`
 - [x] FORBIDDEN_OPERATIONS expandido + vinculante no AGENTS.md
-- [ ] **Fase 1:** Migrar `admin-web` para `@projeto/ui` (TASK-15 a TASK-18)
+- [x] **Fase 1:** Migrar `admin-web` para `@projeto/ui` (TASK-15 a TASK-18)
 - [ ] **Fase 2:** Migrar `aluno-mobile` para `@projeto/ui` (TASK-19 a TASK-23)
 - [ ] **Fase 3+:** Blocos CMS, Ícones, Storybook, Governança final
