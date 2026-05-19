@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useEditor } from '../../context/EditorContext';
-import { Icon } from '@projeto/ui';
+import { Icon, useMedia } from '@projeto/ui';
 import { StudentPreview } from '../preview/StudentPreview';
 import { AnyBlock } from '@projeto/types';
 
@@ -448,7 +448,7 @@ function PreviewCanvas({ blocks, isMobile }: { blocks: AnyBlock[]; isMobile?: bo
     }}>
       <div style={{
         width: isMobile ? MOBILE_W + 24 : '100%',
-        maxWidth: isMobile ? MOBILE_W + 24 : 860,
+        maxWidth: isMobile ? MOBILE_W + 24 : PAGE_W,
         backgroundColor: '#FFFFFF',
         borderRadius: isMobile ? 28 : 8,
         boxShadow: isMobile ? '0 24px 64px rgba(0,0,0,0.2)' : 'none',
@@ -497,6 +497,7 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
 // ─── Main EditorCanvas ────────────────────────────────────────────────────────
 export const EditorCanvas: React.FC = () => {
   const { blocks, activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent, previewMode, viewportMode } = useEditor();
+  const media = useMedia();
   const [mounted, setMounted] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
 
@@ -589,7 +590,8 @@ export const EditorCanvas: React.FC = () => {
 
   if (previewMode) return <PreviewCanvas blocks={blocks} isMobile={viewportMode === 'mobile'} />;
 
-  if (viewportMode === 'mobile') return <MobileViewport blocks={blocks} onImageDrop={handleImageDrop} />;
+  const isNarrowScreen = media.md || media.sm || media.xs;
+  if (isNarrowScreen) return <MobileViewport blocks={blocks} onImageDrop={handleImageDrop} />;
 
   // ── Desktop Edit Mode ────────────────────────────────────────────────────────
   const sortedBlocks = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);

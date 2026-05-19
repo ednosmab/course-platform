@@ -4,6 +4,7 @@ export {
   ZStack,
   styled,
   Theme,
+  useMedia,
   createTamagui,
   TamaguiProvider,
   ScrollView,
