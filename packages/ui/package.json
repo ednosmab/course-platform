@@ -10,8 +10,8 @@
       "default": "./src/index.ts"
     },
     "./native": {
-      "import": "./src/native-entry.ts",
-      "default": "./src/native-entry.ts"
+      "import": "./native.ts",
+      "default": "./native.ts"
     }
   },
   "scripts": {
@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@projeto/types": "workspace:*",
+    "@tamagui/babel-plugin": "2.0.0-rc.42",
     "@types/react": "^19.2.14",
     "@types/react-native": "^0.73.0",
     "expo-av": "^15.0.2",

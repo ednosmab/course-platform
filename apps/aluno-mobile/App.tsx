@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StatusBar } from 'react-native';
-import { YStack, XStack, Text, Button, ScrollView, Spinner } from '@projeto/ui';
+import { YStack, XStack, Text, Button, ScrollView, Spinner, TamaguiProvider, config } from '@projeto/ui';
 import { useMobileProgress } from './src/hooks/useMobileProgress';
 import { BlockRenderer } from './src/components/BlockRenderer';
 import { AnyBlock } from '@projeto/types';
 import { CourseService, supabase } from '@projeto/core';
-import { Wifi, WifiOff, CheckCircle, BookOpen, RefreshCw, AlertCircle } from 'lucide-react-native';
+import { Wifi, WifiOff, BookOpen, RefreshCw, AlertCircle } from 'lucide-react-native';
 
 export default function App() {
   const { isOffline, setIsOffline, pendingCount, saveProgressMobile, syncPending } = useMobileProgress();
@@ -188,35 +188,39 @@ export default function App() {
 
   if (error) {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
-        <YStack flex={1} jc="center" ai="center" p="$6" bg="$gray1">
-          <StatusBar barStyle="light-content" />
-          <AlertCircle size={48} color="#f43f5e" />
-          <Text color="$danger" fontSize={16} fontWeight="700" mt="$4" textAlign="center">
-            Erro ao Conectar ao Supabase
-          </Text>
-          <Text color="$gray4" fontSize={12} mt="$2" textAlign="center" lineHeight={18}>
-            {error}
-          </Text>
-          <Button variant="secondary" mt="$6" onPress={loadCourseData}>
-            Tentar Novamente
-          </Button>
-        </YStack>
-      </SafeAreaView>
+      <TamaguiProvider config={config}>
+        <SafeAreaView style={{ flex: 1 }}>
+          <YStack flex={1} jc="center" ai="center" p="$6" bg="$gray1">
+            <StatusBar barStyle="light-content" />
+            <AlertCircle size={48} color="#f43f5e" />
+            <Text color="$danger" fontSize={16} fontWeight="700" mt="$4" textAlign="center">
+              Erro ao Conectar ao Supabase
+            </Text>
+            <Text color="$gray4" fontSize={12} mt="$2" textAlign="center" lineHeight={18}>
+              {error}
+            </Text>
+            <Button variant="secondary" mt="$6" onPress={loadCourseData}>
+              Tentar Novamente
+            </Button>
+          </YStack>
+        </SafeAreaView>
+      </TamaguiProvider>
     );
   }
 
   if (loading || !activeLesson) {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
-        <YStack flex={1} jc="center" ai="center" bg="$gray1">
-          <StatusBar barStyle="light-content" />
-          <Spinner size="large" color="$primary" />
-          <Text color="$gray4" mt="$4" fontSize={13} fontWeight="600">
-            Carregando plataforma de alunos real...
-          </Text>
-        </YStack>
-      </SafeAreaView>
+      <TamaguiProvider config={config}>
+        <SafeAreaView style={{ flex: 1 }}>
+          <YStack flex={1} jc="center" ai="center" bg="$gray1">
+            <StatusBar barStyle="light-content" />
+            <Spinner size="large" color="$primary" />
+            <Text color="$gray4" mt="$4" fontSize={13} fontWeight="600">
+              Carregando plataforma de alunos real...
+            </Text>
+          </YStack>
+        </SafeAreaView>
+      </TamaguiProvider>
     );
   }
 
@@ -224,6 +228,7 @@ export default function App() {
   const progressPercent = lessons.length > 0 ? Math.round((completedCount / lessons.length) * 100) : 0;
 
   return (
+    <TamaguiProvider config={config}>
     <SafeAreaView style={{ flex: 1 }}>
       <YStack flex={1} bg="$gray1">
       <StatusBar barStyle="dark-content" />
@@ -293,5 +298,6 @@ export default function App() {
       </ScrollView>
       </YStack>
     </SafeAreaView>
+    </TamaguiProvider>
   );
 }
