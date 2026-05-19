@@ -24,6 +24,52 @@
   - `EXPO_PUBLIC_SUPABASE_URL` e `EXPO_PUBLIC_SUPABASE_ANON_KEY` necessárias no workflow
   - Adicionar secrets no GitHub Actions
 
+### 🎨 Extrair Design de `design/create-teach-module/`
+
+Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Estúdio e Dashboard. Implementar no nosso ecossistema (Next.js + Tamagui + `@projeto/ui`).
+
+- [ ] **DASH-01 — Dashboard do admin**
+  - Top bar: brand (`Mosaico.`), navegação (Cursos, Alunos, Mídia, Relatórios), busca, notificações, avatar do usuário
+  - Hero: status pill, headline, stats cards (cursos ativos, alunos, aulas, conclusão média)
+  - Grid de cursos: card com cover gradient, status badge, título, metadata, progress bar, menu de contexto
+  - Referência: `design/create-teach-module/src/routes/index.tsx`
+- [ ] **EDIT-01 — Layout 3 colunas do Estúdio**
+  - Esquerda: paleta de blocos (9 tipos) com drag-and-drop (referência: `studio.$courseId.tsx:27-37`)
+  - Centro: canvas com preview por dispositivo (desktop/tablet/mobile)
+  - Direita: painel de propriedades sensível ao tipo de bloco selecionado
+- [ ] **EDIT-02 — Novos tipos de bloco**
+  - `heading` (H1-H3 editável inline)
+  - `checklist` (lista numerada com checkbox visual)
+  - `code` (bloco monoespaçado com syntax highlight)
+  - `divider` (linha horizontal separadora)
+  - Adicionar schemas Zod em `packages/types/` e componentes em `packages/ui/src/blocks/`
+- [ ] **EDIT-03 — Inline editing via `contentEditable`**
+  - Clicar direto no texto do canvas para editar, sem abrir formulário
+  - `onBlur` salva no estado do bloco
+- [ ] **EDIT-04 — Drag-and-drop reordering**
+  - Arrastar blocos na paleta ou no canvas para reordenar
+  - Indicador visual de drop zone (referência: `studio.$courseId.tsx:93-98`)
+- [ ] **EDIT-05 — Device preview toggle**
+  - Botões Desktop / Tablet / Mobile no topo do canvas
+  - Canvas se redimensiona (`max-w-[380px]` mobile, `max-w-[720px]` tablet, `max-w-[860px]` desktop)
+- [ ] **EDIT-06 — Propriedades por tipo de bloco**
+  - Painel direito mostra campos diferentes conforme o tipo (texto, heading level, URL do vídeo, upload de imagem, espaçamento, visibilidade)
+  - Referência: `studio.$courseId.tsx:469-543`
+- [ ] **EDIT-07 — Hover toolbar em cada bloco**
+  - Ícones: reordenar (grip), duplicar, mais opções, excluir
+  - Aparece no hover ou quando o bloco está selecionado
+  - Referência: `studio.$courseId.tsx:310-320`
+- [ ] **TOKEN-01 — Migrar paleta "Cloud White" (OKLCH) para Tamagui**
+  - Cores: `--background`, `--surface`, `--card`, `--primary`, `--success`, `--destructive`, etc.
+  - Sombras: `--shadow-soft`, `--shadow-pop`
+  - Gradientes: `--gradient-primary`, `--gradient-surface`
+  - Fontes: Space Grotesk (display), DM Sans (body)
+  - Grid pattern: `bg-grid` utility
+  - Referência: `design/create-teach-module/src/styles.css:54-104`
+- [ ] **TOKEN-02 — Atualizar Brand Mark**
+  - Nome "Mosaico" com gradient e Sparkles icon
+  - Referência: `design/create-teach-module/src/components/brand-mark.tsx`
+
 ### P2 — Média
 
 - [ ] **Criar stories faltantes no Ladle**
@@ -80,10 +126,11 @@
   - Verificar se `lucide-react-native` ainda é necessário como peerDep
 - [ ] **Resolver `// eslint-disable-next-line react-hooks/exhaustive-deps`**
   - `apps/admin/src/components/editor/BlockSettings.tsx:320`
-- [ ] **Integrar ou remover `design/create-teach-module/`**
+- [ ] **Remover `design/create-teach-module/` após extração**
   - Projeto externo com shadcn/ui + Tailwind (viola regras do DS)
   - 50+ componentes UI duplicados não integrados ao `@projeto/ui`
   - Usa `bun` em vez de `pnpm`
+  - Manter apenas após DASH-01 a TOKEN-02 concluídos
 - [ ] **Preencher docs stub (6 arquivos vazios)**
   - `docs/layers/core/domain-logic.md`, `event-architecture.md`, `offline-strategy.md`
   - `docs/layers/renderer/engine-spec.md`
