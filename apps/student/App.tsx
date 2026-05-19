@@ -188,7 +188,7 @@ export default function App() {
 
   if (error) {
     return (
-      <TamaguiProvider config={config}>
+      <TamaguiProvider config={config} defaultTheme={null}>
         <SafeAreaView style={{ flex: 1 }}>
           <YStack flex={1} jc="center" ai="center" p="$6" bg="$gray1">
             <StatusBar barStyle="light-content" />
@@ -210,7 +210,7 @@ export default function App() {
 
   if (loading || !activeLesson) {
     return (
-      <TamaguiProvider config={config}>
+      <TamaguiProvider config={config} defaultTheme={null}>
         <SafeAreaView style={{ flex: 1 }}>
           <YStack flex={1} jc="center" ai="center" bg="$gray1">
             <StatusBar barStyle="light-content" />
@@ -228,7 +228,7 @@ export default function App() {
   const progressPercent = lessons.length > 0 ? Math.round((completedCount / lessons.length) * 100) : 0;
 
   return (
-    <TamaguiProvider config={config}>
+    <TamaguiProvider config={config} defaultTheme={null}>
     <SafeAreaView style={{ flex: 1 }}>
       <YStack flex={1} bg="$gray1">
       <StatusBar barStyle="dark-content" />
