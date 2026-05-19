@@ -195,6 +195,7 @@ Tasks do plano `docs/layers/testing/e2e_playwright_plan.md`:
 - [ ] **Pagamentos** — Pix, cartão, assinatura recorrente, checkout, webhooks de billing
 - [ ] **Aulas ao vivo** — WebRTC, sinalização, chat em tempo real, gravação
 - [ ] **Fóruns de discussão** — Threads por aula, moderação, notificações
+- [ ] **Dashboard do aluno** — Página inicial do app mobile com overview de cursos, progresso, próximas aulas
 
 ---
 
