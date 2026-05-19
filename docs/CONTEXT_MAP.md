@@ -3,9 +3,10 @@
 # 📖 ORDEM OBRIGATÓRIA DE LEITURA
 
 * P0 → docs/AGENTS.md
-* P0.1 → docs/INDEX.md
-* P0.2 → docs/Requisitos_plataforma.md (Bíblia de Requisitos da Plataforma)
-* P0.3 → cognition/context/CONTEXT_HIERARCHY.md
+* P0.1 → docs/FORBIDDEN_OPERATIONS.md (Regras vinculantes para IA — leitura obrigatória)
+* P0.2 → docs/INDEX.md
+* P0.3 → docs/Requisitos_plataforma.md (Bíblia de Requisitos da Plataforma)
+* P0.4 → cognition/context/CONTEXT_HIERARCHY.md
 * P1 → docs/context_buffer.md
 * P2 → layer específica da task
 * P3 → arquivos correlatos
@@ -98,7 +99,16 @@ Você deve consultar os arquivos abaixo via MCP *apenas quando* o usuário solic
 
 ## 🧪 9. Testes de Ponta a Ponta (E2E) e Qualidade (Playwright)
 - **Escopo:** Configuração do Playwright, suítes de teste automatizadas para os fluxos principais (CMS e Portal do Aluno), mocking de chamadas ao banco de dados e políticas antifalha de regressão.
-- **Arquivos para ler se acionado:**
-  - `docs/layers/testing/e2e_playwright_plan.md` (A ser criado se necessário)
+- **Arquivos para ler se acionado:
+  - `docs/layers/testing/e2e_playwright_plan.md`
+  - `docs/layers/testing/estratégia_de_testes.md`
+  - `docs/layers/infra/execution_plan.md`
   - `tests/e2e/*.spec.ts`
   - `playwright.config.ts`
+
+## ⚡ 10. Escalabilidade e Performance
+- **Escopo:** Suporte a 3k/10k/50k+ conexões simultâneas, cache, pool de conexões, rate limiting, CDN.
+- **Arquivos para ler se acionado:
+  - `docs/roadmaps/scalability-plan.md`
+  - `docs/skills/postgresql_performance.md`
+  - `docs/layers/infra/execution_plan.md`
