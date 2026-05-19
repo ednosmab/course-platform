@@ -18,5 +18,5 @@ Criar uma base visual consistente, performática e cross-platform (Web & Mobile)
 
 ## 📂 Onde Aplicar
 - `packages/ui/src/`
-- `apps/admin-web/components/`
-- `apps/aluno-mobile/components/`
+- `apps/admin/components/`
+- `apps/student/components/`

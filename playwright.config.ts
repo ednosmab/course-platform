@@ -28,13 +28,13 @@ export default defineConfig({
   // Inicia os servidores de desenvolvimento antes de rodar os testes
   webServer: [
     {
-      command: 'pnpm --filter admin-web dev',
+      command: 'pnpm --filter admin dev',
       url: 'http://localhost:3000',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
     },
     {
-      command: 'pnpm --filter aluno-mobile web',
+      command: 'pnpm --filter student web',
       url: 'http://localhost:8081',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,

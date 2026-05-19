@@ -12,7 +12,7 @@
 |---|---|---|
 | F-01 | **PROIBIDO** lógica de domínio em `packages/ui` | UI é puramente visual; regras de negócio devem estar em `packages/core` |
 | F-02 | **PROIBIDO** acesso direto ao Supabase no Renderer | Renderer é stateless; dados devem vir via props |
-| F-03 | **PROIBIDO** imports cruzados entre apps (`admin-web` ← `aluno-mobile`) | Cada app é independente; compartilhar via `@projeto/*` |
+| F-03 | **PROIBIDO** imports cruzados entre apps (`admin` ← `student`) | Cada app é independente; compartilhar via `@projeto/*` |
 | F-04 | **PROIBIDO** schemas Zod inline fora de `packages/types` | Schemas são contratos compartilhados; devem estar centralizados |
 | F-05 | **PROIBIDO** SQL ou queries Supabase fora da camada de dados (core/apps) | Apenas `supabase/migrations/` e serviços autorizados |
 | F-06 | **PROIBIDO** acoplar estado global ao Renderer | Renderer deve ser puramente funcional; estado via props |

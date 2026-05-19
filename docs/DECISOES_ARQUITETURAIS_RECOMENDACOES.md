@@ -75,7 +75,7 @@ As decisões abaixo **não são negociáveis** e foram explicitamente documentad
 ├─────────────────────────────────────────────────────────────────┤
 │ Agente: 3 (Desenvolvedor Pleno / DeepSeek V4 Flash)           │
 │ Responsabilidade: Montar screens, hooks, conexões com API      │
-│ Escopo: apps/admin-web/, apps/aluno-mobile/                   │
+│ Escopo: apps/admin/, apps/student/                   │
 │ Artefatos: Pages Next.js, Screens Expo, Clientes Supabase     │
 │ ⚠️ Nunca escrever: Tipos globais, Tokens, SQL migrations      │
 └─────────────────────────────────────────────────────────────────┘
@@ -109,18 +109,18 @@ FASE 2: ARQUITETURA (Agente 2)
 
 FASE 3: IMPLEMENTAÇÃO (Agente 3)
 └─ Ler: docs/layers/apps/admin_canvas_plan.md
-└─ Criar: apps/admin-web/src/pages/editor.tsx
+└─ Criar: apps/admin/src/pages/editor.tsx
    - Importar types do @projeto/types
    - Importar componentes do @projeto/ui
    - Integrar cliente Supabase
    - Implementar canvas drag-drop
-└─ Criar: apps/aluno-mobile/src/screens/Player.tsx
+└─ Criar: apps/student/src/screens/Player.tsx
    - Renderizador JSON → Componentes
 
 FASE 4: VALIDAÇÃO (Usuário - Edson)
 └─ Usuário testa localmente:
-   - pnpm run dev (admin-web)
-   - pnpm run android (aluno-mobile)
+   - pnpm run dev (admin)
+   - pnpm run android (student)
    - Testa fluxos de criação e consumo
    - Aprova ou solicita ajustes
 
@@ -272,8 +272,8 @@ Toda tarefa segue **4 passos sequenciais e imutáveis**:
 packages/types/src/index.ts        // Agente 1
 packages/ui/src/tamagui.config.ts  // Agente 2
 supabase/migrations/*.sql          // Agente 2
-apps/admin-web/src/**/*.tsx        // Agente 3
-apps/aluno-mobile/src/**/*.tsx     // Agente 3
+apps/admin/src/**/*.tsx        // Agente 3
+apps/student/src/**/*.tsx     // Agente 3
 
 // ❌ PROIBIDO:
 Tamagui tokens em app/              // Deve estar em packages/ui
@@ -346,8 +346,8 @@ git push origin feature/text-block
 - `types:` Mudanças em packages/types
 - `ui:` Mudanças em packages/ui
 - `db:` Migrações Supabase
-- `admin:` Mudanças em apps/admin-web
-- `mobile:` Mudanças em apps/aluno-mobile
+- `admin:` Mudanças em apps/admin
+- `mobile:` Mudanças em apps/student
 - `core:` Mudanças em packages/core (futuro)
 
 **Exemplos Válidos:**
@@ -440,8 +440,8 @@ Quando você não sabe qual agente deve fazer algo, use esta matriz:
 | 1 | Agente 1 | Criar AudioBlockSchema em Zod | packages/types/src/index.ts |
 | 2 | Agente 2 | Criar AudioBlockComponent em Tamagui | packages/ui/src/components/AudioBlock.tsx |
 | 3 | Agente 2 | (Se necessário) Adicionar coluna JSONB | supabase/migrations/*.sql |
-| 4 | Agente 3 | Integrar AudioBlock no Canvas Editor | apps/admin-web/src/components/Canvas.tsx |
-| 5 | Agente 3 | Integrar renderer para AudioBlock | apps/aluno-mobile/src/renderer/index.tsx |
+| 4 | Agente 3 | Integrar AudioBlock no Canvas Editor | apps/admin/src/components/Canvas.tsx |
+| 5 | Agente 3 | Integrar renderer para AudioBlock | apps/student/src/renderer/index.tsx |
 
 ### 7.2 "Preciso adicionar um campo ao TextBlock"
 
@@ -460,8 +460,8 @@ Quando você não sabe qual agente deve fazer algo, use esta matriz:
 | 1 | Agente 1 | (Skip) |
 | 2 | Agente 2 | Adicionar políticas RLS para tabela users |
 | 3 | Agente 2 | Criar migração para oauth_providers (se usar Supabase Auth) |
-| 4 | Agente 3 | Integrar Supabase Auth client em apps/admin-web |
-| 5 | Agente 3 | Integrar Supabase Auth client em apps/aluno-mobile |
+| 4 | Agente 3 | Integrar Supabase Auth client em apps/admin |
+| 5 | Agente 3 | Integrar Supabase Auth client em apps/student |
 
 ---
 
@@ -498,7 +498,7 @@ WHERE blocos @> '[{"type": "text"}]'::jsonb
 # Limpar cache e reinstalar
 rm -rf node_modules pnpm-lock.yaml
 pnpm install
-# Ou especificar em package.json: "next": "false" em aluno-mobile
+# Ou especificar em package.json: "next": "false" em student
 ```
 
 ### 8.5 Problema: Zod Validation Usa Muito Bundle Size
@@ -555,14 +555,14 @@ pnpm install
 
 ### 9.4 Semana 2 (Agente 3)
 ```typescript
-// apps/admin-web/src/app/editor/page.tsx
+// apps/admin/src/app/editor/page.tsx
 // Criar:
 - Canvas container
 - Block palette (drag source)
 - Inspector panel (edit properties)
 // Conectar types + ui
 
-// apps/aluno-mobile/src/screens/PlayerScreen.tsx
+// apps/student/src/screens/PlayerScreen.tsx
 // Criar:
 - Renderer JSON → Componentes
 // Conectar types + ui

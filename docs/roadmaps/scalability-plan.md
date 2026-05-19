@@ -174,7 +174,7 @@ async function syncProgress(attempt = 0): Promise<void> {
 // Formato obrigatório para todos os logs
 console.log(JSON.stringify({
   level: 'error',
-  service: 'admin-web',
+  service: 'admin',
   operation: 'create_course',
   userId: user.id,
   duration: Date.now() - start,

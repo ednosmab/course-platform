@@ -16,6 +16,6 @@ Orquestrar a união entre tipos (Agente 1) e componentes UI (Agente 2) para entr
 - **Zod:** Para garantir que a aplicação não quebre com dados inesperados.
 
 ## 📂 Onde Aplicar
-- `apps/admin-web/`
-- `apps/aluno-mobile/`
+- `apps/admin/`
+- `apps/student/`
 - `packages/core/hooks/`

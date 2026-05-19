@@ -43,12 +43,12 @@ A **Course Platform** é uma infraestrutura proprietária focada em três pilare
 ```
 course-platform-main/
 ├── apps/
-│   ├── admin-web/              # Next.js 16 - Estúdio do Administrador
+│   ├── admin/              # Next.js 16 - Estúdio do Administrador
 │   │   ├── src/app/            # App Router pages
 │   │   ├── public/             # Assets estáticos
 │   │   └── package.json        # React 19.2.4, Next 16.2.6
 │   │
-│   └── aluno-mobile/           # Expo 54 - Portal do Aluno
+│   └── student/           # Expo 54 - Portal do Aluno
 │       ├── src/                # Screens e Navegação (Expo Router)
 │       ├── assets/             # Ícones e imagens
 │       └── package.json        # React 19.1.0, Expo 54
@@ -106,8 +106,8 @@ course-platform-main/
 #### **Camada 4: Aplicações Finais (apps/)**
 - **Responsável:** Agente 3 (Desenvolvedor Pleno)
 - **Artefatos:**
-  - Telas do Editor Visual (admin-web)
-  - Telas do Portal de Consumo (aluno-mobile)
+  - Telas do Editor Visual (admin)
+  - Telas do Portal de Consumo (student)
   - Hooks customizados, clientes Supabase
   - Roteamento Next.js/Expo Router
 - **Restrição:** ⚠️ Dependente das camadas 1, 2, 3
@@ -357,11 +357,11 @@ docs/
 
 ### 7.1 Estrutura Atual dos Arquivos
 
-#### **apps/admin-web/**
+#### **apps/admin/**
 ```typescript
 // package.json
 {
-  "name": "admin-web",
+  "name": "admin",
   "version": "0.1.0",
   "dependencies": {
     "next": "16.2.6",
@@ -382,11 +382,11 @@ src/app/
 
 **Status:** Bootstrap inicial - Apenas estrutura Next.js padrão
 
-#### **apps/aluno-mobile/**
+#### **apps/student/**
 ```typescript
 // package.json
 {
-  "name": "aluno-mobile",
+  "name": "student",
   "version": "1.0.0",
   "dependencies": {
     "expo": "~54.0.33",
@@ -532,7 +532,7 @@ As dependências base estão pinadas mas o projeto ainda não inicia. Observaç�
 3. 🔄 **Agente 1 cria primeiro schema de TextBlock**
 4. 🔄 **Agente 2 cria tamagui.config.ts inicial**
 5. 🔄 **Build dos pacotes packages/types e packages/ui**
-6. 🔄 **Agente 3 cria tela base no admin-web com componentes**
+6. 🔄 **Agente 3 cria tela base no admin com componentes**
 
 ---
 

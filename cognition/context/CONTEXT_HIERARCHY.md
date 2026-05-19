@@ -44,4 +44,4 @@ Ao receber uma solicitação de tarefa do usuário, o Orquestrador indicará qua
 
 ### Camada 4: Aplicações (Apps)
 * **Contexto Primário:** `docs/layers/apps/[admin_canvas_plan | mobile_player_plan].md`
-* **Escopo Físico:** `apps/admin-web/` ou `apps/aluno-mobile/`
+* **Escopo Físico:** `apps/admin/` ou `apps/student/`

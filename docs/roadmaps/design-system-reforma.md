@@ -3,7 +3,7 @@
 ## Diagnóstico
 
 - `packages/ui` possui tokens Tamagui e 4 primitivos (Button, Card, Text, Container)
-- NENHUM app consome `@projeto/ui` — admin-web usa CSS classes, aluno-mobile usa StyleSheet
+- NENHUM app consome `@projeto/ui` — admin usa CSS classes, student usa StyleSheet
 - Tokens duplicados em 3 lugares (tamagui.config.ts, globals.css, valores hardcoded)
 - `packages/ui/src/tokens/` vazio
 - `docs/layers/ui/token-governance.md` — stub vazio
@@ -23,7 +23,7 @@
 
 ---
 
-### Fase 1 — Adoção em `admin-web` (Next.js)
+### Fase 1 — Adoção em `admin` (Next.js)
 
 **Objetivo:** Substituir CSS classes e estilos inline por componentes `@projeto/ui`.
 
@@ -31,25 +31,25 @@
 
 | # | Task | Arquivos | Critério de Aceite |
 |---|------|----------|-------------------|
-| 1.1 | Mapear todos usos de `<button>`, `<div className="btn-*">` no admin-web e substituir por `<Button>` do `@projeto/ui` | `apps/admin-web/src/**/*.tsx` | Zero `<button>` nativo no JSX do admin-web |
-| 1.2 | Substituir `<div>` de layout por `<YStack>`, `<XStack>`, `<Container>` do Tamagui | `apps/admin-web/src/**/*.tsx` | Layouts usam Tamagui stacks |
-| 1.3 | Substituir `<span>`, `<p>`, `<h1-6>` por `<Text variant="...">` do `@projeto/ui` | `apps/admin-web/src/**/*.tsx` | Zero tags de texto HTML nativo |
-| 1.4 | Migrar `globals.css` — remover tokens CSS duplicados, manter apenas resets e estilos de canvas | `apps/admin-web/src/app/globals.css` | CSS vars duplicadas removidas |
-| 1.5 | Eliminar `page.module.css` se existir | `apps/admin-web/src/app/page.module.css` | Arquivo deletado |
+| 1.1 | Mapear todos usos de `<button>`, `<div className="btn-*">` no admin e substituir por `<Button>` do `@projeto/ui` | `apps/admin/src/**/*.tsx` | Zero `<button>` nativo no JSX do admin |
+| 1.2 | Substituir `<div>` de layout por `<YStack>`, `<XStack>`, `<Container>` do Tamagui | `apps/admin/src/**/*.tsx` | Layouts usam Tamagui stacks |
+| 1.3 | Substituir `<span>`, `<p>`, `<h1-6>` por `<Text variant="...">` do `@projeto/ui` | `apps/admin/src/**/*.tsx` | Zero tags de texto HTML nativo |
+| 1.4 | Migrar `globals.css` — remover tokens CSS duplicados, manter apenas resets e estilos de canvas | `apps/admin/src/app/globals.css` | CSS vars duplicadas removidas |
+| 1.5 | Eliminar `page.module.css` se existir | `apps/admin/src/app/page.module.css` | Arquivo deletado |
 
 ---
 
-### Fase 2 — Adoção em `aluno-mobile` (Expo)
+### Fase 2 — Adoção em `student` (Expo)
 
 **Objetivo:** Substituir `StyleSheet.create()` e `View`/`Text` nativo por componentes `@projeto/ui`.
 
 | # | Task | Arquivos | Critério de Aceite |
 |---|------|----------|-------------------|
-| 2.1 | Substituir `<View>` por `<YStack>`, `<XStack>` do Tamagui | `apps/aluno-mobile/src/**/*.tsx` | Zero `<View>` nativo |
-| 2.2 | Substituir `<Text>` nativo por `<Text variant="...">` do `@projeto/ui` | `apps/aluno-mobile/src/**/*.tsx` | Zero `<Text>` nativo do RN |
-| 2.3 | Substituir `<TouchableOpacity>` por `<Button>` ou `Pressable` do Tamagui | `apps/aluno-mobile/src/**/*.tsx` | Zero `TouchableOpacity` |
-| 2.4 | Remover blocos `StyleSheet.create()` e usar tokens Tamagui | `apps/aluno-mobile/src/**/*.tsx` | Zero `StyleSheet.create()` |
-| 2.5 | Remover cores hardcoded (ex: `#f8fafc`, `#1e293b`) — usar `$color` tokens | `apps/aluno-mobile/src/**/*.tsx` | Zero strings de cor hex/rgb soltas |
+| 2.1 | Substituir `<View>` por `<YStack>`, `<XStack>` do Tamagui | `apps/student/src/**/*.tsx` | Zero `<View>` nativo |
+| 2.2 | Substituir `<Text>` nativo por `<Text variant="...">` do `@projeto/ui` | `apps/student/src/**/*.tsx` | Zero `<Text>` nativo do RN |
+| 2.3 | Substituir `<TouchableOpacity>` por `<Button>` ou `Pressable` do Tamagui | `apps/student/src/**/*.tsx` | Zero `TouchableOpacity` |
+| 2.4 | Remover blocos `StyleSheet.create()` e usar tokens Tamagui | `apps/student/src/**/*.tsx` | Zero `StyleSheet.create()` |
+| 2.5 | Remover cores hardcoded (ex: `#f8fafc`, `#1e293b`) — usar `$color` tokens | `apps/student/src/**/*.tsx` | Zero strings de cor hex/rgb soltas |
 
 ---
 
@@ -64,7 +64,7 @@
 | 3.3 | Criar `QuizBlock.tsx` — alternativas, múltipla escolha, feedback | `packages/ui/src/components/blocks/QuizBlock.tsx` | Renderiza quiz com estados |
 | 3.4 | Criar `ImageBlock.tsx` — imagem com caption, lazy load | `packages/ui/src/components/blocks/ImageBlock.tsx` | Suporta fallback e loading |
 | 3.5 | Criar `QuoteBlock.tsx` — citação destacada | `packages/ui/src/components/blocks/QuoteBlock.tsx` | Variantes com/som author |
-| 3.6 | Criar `HTMLBlock.tsx` — raw HTML sanitizado (admin-web apenas) | `packages/ui/src/components/blocks/HTMLBlock.tsx` | Sanitização XSS obrigatória |
+| 3.6 | Criar `HTMLBlock.tsx` — raw HTML sanitizado (admin apenas) | `packages/ui/src/components/blocks/HTMLBlock.tsx` | Sanitização XSS obrigatória |
 | 3.7 | Reexportar todos os block components em `packages/ui/src/index.ts` | `packages/ui/src/index.ts` | Import `from '@projeto/ui/blocks'` funciona |
 | 3.8 | Extrair `renderSimpleMarkdown` para utilitário compartilhado em `@projeto/ui` | `packages/ui/src/utils/markdown.ts` | Ambas as plataformas usam o mesmo parser |
 
@@ -119,7 +119,7 @@ Fase 6 (governança) — ao final, após tudo consolidado
 ## Critérios de Sucesso
 
 1. Zero `<div>`, `<span>`, `<button>`, `<p>`, `<h1-6>` nos componentes dos apps (exceto canvas container)
-2. Zero `StyleSheet.create()` no aluno-mobile
+2. Zero `StyleSheet.create()` no student
 3. Zero cores hex/rgb hardcoded nos apps
 4. Todos os blocos do CMS vivem em `packages/ui/src/components/blocks/`
 5. Ambos os apps importam blocos de `@projeto/ui`

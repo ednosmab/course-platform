@@ -1,6 +1,6 @@
 # Workflow de Desenvolvimento do Admin CMS
 
-Este documento descreve as regras absolutas de arquitetura, layout, comportamento de eventos e renderização do subsistema **Admin CMS** (`apps/admin-web`). Toda e qualquer modificação ou adição de código efetuada por desenvolvedores humanos ou agentes de IA deve respeitar rigorosamente as diretrizes aqui consolidadas.
+Este documento descreve as regras absolutas de arquitetura, layout, comportamento de eventos e renderização do subsistema **Admin CMS** (`apps/admin`). Toda e qualquer modificação ou adição de código efetuada por desenvolvedores humanos ou agentes de IA deve respeitar rigorosamente as diretrizes aqui consolidadas.
 
 ---
 
@@ -8,7 +8,7 @@ Este documento descreve as regras absolutas de arquitetura, layout, comportament
 
 > **TUDO O QUE FOR APRESENTADO NO PREVIEW SERÁ O RESULTADO FINAL DA TELA DO USUÁRIO.**
 
-1. **Renderer Único:** O componente `MobileCanvas` (localizado em [EditorCanvas.tsx](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/apps/admin-web/src/components/editor/EditorCanvas.tsx)) é o único mecanismo oficial de renderização responsiva do sistema. Ele é compartilhado entre o **Preview Canvas**, o **Mobile Viewport** do admin e a **Tela do Aluno** no portal móvel.
+1. **Renderer Único:** O componente `MobileCanvas` (localizado em [EditorCanvas.tsx](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/apps/admin/src/components/editor/EditorCanvas.tsx)) é o único mecanismo oficial de renderização responsiva do sistema. Ele é compartilhado entre o **Preview Canvas**, o **Mobile Viewport** do admin e a **Tela do Aluno** no portal móvel.
 2. **Fidelidade Total:** Nenhuma diferença visual ou estrutural entre o preview e a tela final do aluno é tolerada. Qualquer desvio é classificado como bug crítico.
 
 ---
@@ -98,5 +98,5 @@ A função `getHtmlFromBlock` é responsável por traduzir o estado visual do ed
 ## ⚡ 6. Sincronização em Tempo Real (Supabase Realtime)
 
 1. **Autosave do CMS:** O editor do CMS possui um mecanismo de Autosave que monitora as alterações nos blocos e faz a persistência de forma transparente com um debounce de `1.5s` na tabela `lessons` do Supabase.
-2. **Atualização Reativa do Usuário:** O aplicativo do aluno (`aluno-mobile`) utiliza **Supabase Realtime Channels** para se inscrever na aula ativa.
+2. **Atualização Reativa do Usuário:** O aplicativo do aluno (`student`) utiliza **Supabase Realtime Channels** para se inscrever na aula ativa.
 3. **Fidelidade Instantânea:** Quando o administrador atualiza ou publica um bloco no CMS, a alteração é gravada no banco de dados e enviada imediatamente via WebSockets para todos os alunos que estão visualizando a aula ativa, atualizando os blocos na tela do dispositivo em tempo real sem necessidade de recarregar o aplicativo.

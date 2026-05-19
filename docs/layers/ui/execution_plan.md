@@ -23,13 +23,13 @@ Completar a reforma do Design System (DSv2): modularizar tokens, migrar apps par
 - [x] **TASK-13:** Refatorar `tamagui.config.ts` para importar de `./tokens/*`
 - [x] **TASK-14:** Preencher `docs/layers/ui/token-governance.md` com regras de nomenclatura, criação e proibição de hardcoded
 
-## 📌 FASE 1 — Adoção em `admin-web`
+## 📌 FASE 1 — Adoção em `admin`
 - [x] **TASK-15:** Mapear/substituir `<button>` por `<Button>` do `@projeto/ui`
 - [x] **TASK-16:** Substituir `<div>`/`<span>` por `<YStack>`/`<XStack>`/`<Text>` do Tamagui
 - [x] **TASK-17:** Migrar `globals.css` — remover tokens CSS duplicados
 - [x] **TASK-18:** Eliminar `page.module.css`
 
-## 📌 FASE 2 — Adoção em `aluno-mobile`
+## 📌 FASE 2 — Adoção em `student`
 - [x] **TASK-19:** Substituir `<View>` por `<YStack>`/`<XStack>` do Tamagui
 - [x] **TASK-20:** Substituir `<Text>` nativo por `<Text>` do `@projeto/ui`
 - [x] **TASK-21:** Substituir `<TouchableOpacity>` por `<Button>` ou `Pressable` Tamagui
@@ -45,9 +45,9 @@ Completar a reforma do Design System (DSv2): modularizar tokens, migrar apps par
 - [x] **TASK-29:** Criar `blocks/HTMLBlock.tsx` — raw HTML sanitizado
 - [x] **TASK-30:** Extrair `renderSimpleMarkdown` para `packages/ui/src/utils/markdown.tsx`
 - [x] **TASK-31:** Reexportar blocos em `packages/ui/src/index.ts`
-- [x] **Fase 3 — Refatoração:** `aluno-mobile/BlockRenderer.tsx` atualizado para importar blocos de `@projeto/ui`
+- [x] **Fase 3 — Refatoração:** `student/BlockRenderer.tsx` atualizado para importar blocos de `@projeto/ui`
 - [x] **Fase 3 — Infra:** `@projeto/ui` com entry points separados (`.main` + `./native`) para evitar dependências RN em web
-- [x] **Fase 3 — Fix:** `admin-web` — Providers wrapper + TamaguiProvider no layout
+- [x] **Fase 3 — Fix:** `admin` — Providers wrapper + TamaguiProvider no layout
 - [x] **Fase 3 — Fix:** `packages/core` — `setTimeout` type error (`ReturnType<typeof setTimeout>`)
 
 ## 📌 FASE 4 — Sistema de Ícones

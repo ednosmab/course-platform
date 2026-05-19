@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "aluno-mobile",
-    "slug": "aluno-mobile",
+    "name": "student",
+    "slug": "student",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

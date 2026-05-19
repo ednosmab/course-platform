@@ -2,7 +2,7 @@
 
 **Status:** Aceito  
 **Data:** 2026-05-17  
-**Contexto:** Editor CMS estilo Canva (`apps/admin-web`)  
+**Contexto:** Editor CMS estilo Canva (`apps/admin`)  
 **Autor:** Edson
 
 ---
@@ -32,7 +32,7 @@ O Preview existe para eliminar surpresas: o admin deve ter total confiança de q
 O componente `MobileCanvas` (em `EditorCanvas.tsx`) é o **único renderer** autorizado para:
 - O Preview lido pelo admin (`PreviewCanvas`)
 - O mobile viewport de edição (`MobileViewport`)
-- A tela real do aluno (app `aluno-mobile`)
+- A tela real do aluno (app `student`)
 
 **Nunca criar um renderer paralelo para o preview.** Qualquer divergência entre preview e resultado final é um bug crítico.
 
@@ -78,6 +78,6 @@ Antes de qualquer PR que modifique o editor ou o app do aluno, verificar:
 
 ## Referências
 
-- `apps/admin-web/src/components/editor/EditorCanvas.tsx` — constantes `PAGE_W`, `MOBILE_W`, funções `MobileCanvas`, `PreviewCanvas`, `MobileViewport`
+- `apps/admin/src/components/editor/EditorCanvas.tsx` — constantes `PAGE_W`, `MOBILE_W`, funções `MobileCanvas`, `PreviewCanvas`, `MobileViewport`
 - `docs/Requisitos_plataforma.md` — Requisitos originais do projeto
 - `docs/context_buffer.md` — Estado atual do sistema

@@ -1,7 +1,7 @@
 # Plano do Estúdio Canvas (Admin Web)
 
 ## 🎯 Objetivo
-Projetar a arquitetura técnica, fluxo de dados e experiência do usuário (UX) para o construtor visual de aulas (Canvas estilo Canva) no portal do Administrador (`apps/admin-web`), integrando o sistema de estilização Tamagui e validação Zod.
+Projetar a arquitetura técnica, fluxo de dados e experiência do usuário (UX) para o construtor visual de aulas (Canvas estilo Canva) no portal do Administrador (`apps/admin`), integrando o sistema de estilização Tamagui e validação Zod.
 
 ---
 
