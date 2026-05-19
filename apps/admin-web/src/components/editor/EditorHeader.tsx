@@ -22,7 +22,7 @@ export const EditorHeader: React.FC = () => {
   };
 
   return (
-    <header className="topbar">
+    <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', height: '56px', borderBottom: '1px solid #e2e8f0', backgroundColor: '#ffffff', gap: '16px' }}>
       {/* Left Area */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <button className="btn-icon" title="Voltar">
