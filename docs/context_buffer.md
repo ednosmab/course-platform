@@ -1,33 +1,33 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-FASE 3 CONCLUÍDA — Blocos CMS criados em `@projeto/ui`. Build do admin passa limpo.
+SESSAO ENCERRADA — Student (`apps/student`) com tela em branco no Expo Web. Bloqueio: Metro não resolve `react` do pnpm `.pnpm` store.
 
 ## 🎯 Últimas Conquistas
-- **DSv2 Reform - Fase 0 concluída:** Tokens modularizados em `packages/ui/src/tokens/` (6 arquivos), `tamagui.config.ts` refatorado, `token-governance.md` preenchido (TASK-08 a TASK-14)
-- **Plano de Escalabilidade criado:** `docs/roadmaps/scalability-plan.md` — 4 fases, 16 tasks (SCL-01 a SCL-16)
-- **Estratégia de Testes integrada:** `docs/layers/testing/estratégia_de_testes.md`, `e2e_playwright_plan.md`
-- **FORBIDDEN_OPERATIONS expandido:** 6 seções, 21 regras vinculantes
-- **DSv2 Reform - Fase 2 concluída:** `student` migrado para `@projeto/ui`
-- **DSv2 Reform - Fase 3 concluída:** Blocos CMS em `packages/ui/src/blocks/` (Text, Video, Quiz, Image, Quote, Html) + utils/markdown.tsx
-- **Regra de nomenclatura adicionada:** Inglês obrigatório em código-fonte (AGENTS.md + clean_code_standards.md)
-- **admin fix:** TamaguiProvider + Providers wrapper — build Next.js passa sem erros
-- **packages/core fix:** `setTimeout` type error resolvido
+- **Renomeação:** `admin-web→admin`, `aluno-mobile→student` (diretórios + package names + docs)
+- **TamaguiProvider:** Envolvendo App.tsx (3 branches: error/loading/main)
+- **native.ts shim:** `packages/ui/native.ts` para Metro resolver `@projeto/ui/native`
+- **metro.config.js:** Criado com `watchFolders` + `unstable_enablePackageExports`
+- **babel.config.js:** Criado com `babel-preset-expo` (plugin tamagui removido por má configuração)
+- **packages/ui:** Removido `"type": "module"` que conflitava com Metro
+- **EditorHeader fix:** Text nodes em `<Button>` wrappeado em `<Text>` + layout flex no header
+- **Admin build:** ✅ `pnpm --filter admin build` passa limpo
 
 ## 🕹️ Estado Atual do Projeto
-- **Branch atual:** `feat/dsv2-reform` (reforma DS) / `develop` (produção)
-- **Próxima ação:** Fase 4 — Sistema de Ícones (TASK-32 a TASK-33)
-- **Pendências:** Fase 4-6, Plano de Escalabilidade, Testes E2E
+- **Branch atual:** `feat/dsv2-reform`
+- **Impedimento crítico:** Student app branco — Metro não resolve `react` do pnpm virtual store (`.pnpm/expo@...`)
+- **Tentativas:** TamaguiProvider, native.ts shim, babel.config.js, metro.config.js (watchFolders + nodeModulesPaths + unstable_enablePackageExports), rnx-kit resolver instalado mas não ativado no config
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
-- *Nenhum erro ativo.*
-- Build admin: ✅ `pnpm --filter admin build` compila, type-checka e gera páginas
+- **Erro:** `Unable to resolve "react" from "node_modules/.pnpm/expo@.../expo/src/hooks/useEvent.ts"` — Metro não segue symlinks do pnpm dentro do virtual store
+- **Hipótese:** `watchFolders` não inclui `.pnpm` store, ou resolutor padrão do Metro 0.85 não segue symlinks além do project root
+- **Próximo passo sugerido:** Adicionar `@rnx-kit/metro-resolver-symlinks` ao `resolveRequest` no metro.config.js, ou usar `node-linker=hoisted` no `.npmrc`
 
 ## 🎬 Sessão Atual (19/05/2026)
-- **Assuntos tratados:** Fase 2 (completa), Regra de nomenclatura inglês, Fase 3 (completa), Fix build admin
-- **Arquivos alterados:** App.tsx, BlockRenderer.tsx, packages/ui/src/index.ts, layout.tsx, providers.tsx, progress.ts, varios blocks, package.json, clean_code_standards.md, AGENTS.md, execution_plan.md
-- **Próxima sessão:** Fase 4 — Sistema de Ícones (TASK-32 a TASK-33)
-- **Consumo da sessão:** ~95%
+- **Assuntos tratados:** Fix tela branca student (TamaguiProvider, native.ts, babel, metro.config), rename apps, EditorHeader flex layout
+- **Arquivos alterados:** EditorHeader.tsx, App.tsx, BlockRenderer.tsx, metro.config.js, babel.config.js, native.ts, package.json (admin, student, ui), pnpm-lock.yaml, globals.css, layout.tsx, providers.tsx, + dezenas de docs
+- **Próxima sessão:** Resolver Student blank screen → Metro + pnpm resolution
+- **Consumo da sessão:** 100% (encerrada)
 
 ## 📋 Checklist de Progresso
 - [x] DSv2 Reform - Fase 0 (TASK-08 a TASK-14) — Token modular + governança
@@ -39,4 +39,6 @@ FASE 3 CONCLUÍDA — Blocos CMS criados em `@projeto/ui`. Build do admin passa 
 - [x] **Fase 3:** Blocos CMS em `@projeto/ui` (TASK-24 a TASK-31)
 - [x] Regra de nomenclatura: inglês obrigatório
 - [x] Fix build admin + coreservices
+- [x] Rename: `admin-web→admin`, `aluno-mobile→student`
+- [ ] **BLOQUEADO:** Student tela branca — Metro + pnpm resolution
 - [ ] **Fase 4+:** Ícones, Storybook, Governança final
