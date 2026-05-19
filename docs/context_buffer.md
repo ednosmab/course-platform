@@ -19,6 +19,12 @@ PLANEJAMENTO_COMPLETO — 4 assuntos tratados e commitados. Próxima ação: ini
 ## ⚠️ Impedimentos & Logs de Erro Recentes
 - *Nenhum erro ativo.*
 
+## 🎬 Sessão Atual (19/05/2026)
+- **Assuntos tratados:** DSv2 Fase 0+1, Plano de Escalabilidade, Estratégia de Testes, FORBIDDEN_OPERATIONS expandido
+- **10 commits** realizados na branch `feat/dsv2-reform`
+- **Próxima sessão:** Iniciar em Fase 2 — Migrar `aluno-mobile` para `@projeto/ui` (TASK-19 a TASK-23)
+- **Consumo da sessão:** ~56%
+
 ## 📋 Checklist de Progresso
 - [x] DSv2 Reform - Fase 0 (TASK-08 a TASK-14) — Token modular + governança
 - [x] Plano de Escalabilidade — `docs/roadmaps/scalability-plan.md`
