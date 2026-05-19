@@ -435,8 +435,10 @@ function MobileCanvas({ blocks, onImageDrop, editMode = false }: {
   );
 }
 
-// ─── Preview Mode — usa os mesmos componentes do Student ───────────────────
+// ─── Preview Mode ────────────────────────────────────────────────────────
 function PreviewCanvas({ blocks, isMobile }: { blocks: AnyBlock[]; isMobile?: boolean }) {
+  const pageH = Math.max(800, ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
+  const sortedBlocks = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
   return (
     <div className="canvas-area" style={{
       backgroundColor: '#F1F2F8',
@@ -467,11 +469,21 @@ function PreviewCanvas({ blocks, isMobile }: { blocks: AnyBlock[]; isMobile?: bo
         </div>
       ) : (
         <div style={{
+          position: 'relative',
           width: PAGE_W,
+          minHeight: pageH,
           backgroundColor: '#FFFFFF',
           borderRadius: 8,
+          boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)',
         }}>
-          <StudentPreview blocks={blocks} />
+          {sortedBlocks.map((block) => {
+            const layout = getLayout(block);
+            return (
+              <div key={block.id} style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.zIndex + 1 }}>
+                <BlockContent block={block} />
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
