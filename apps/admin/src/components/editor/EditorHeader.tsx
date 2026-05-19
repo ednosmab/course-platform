@@ -63,25 +63,23 @@ export const EditorHeader: React.FC = () => {
         </div>
       </div>
 
-      {/* View Toggle — aparece apenas no preview para simular dispositivos */}
-      {previewMode && (
-        <div className="toggle-group" style={{ width: '120px' }}>
-          <button
-            className={`toggle-btn ${viewportMode === 'desktop' ? 'active' : ''}`}
-            onClick={() => setViewportMode('desktop')}
-            title="Preview Desktop"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
-          </button>
-          <button
-            className={`toggle-btn ${viewportMode === 'mobile' ? 'active' : ''}`}
-            onClick={() => setViewportMode('mobile')}
-            title="Preview Mobile"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-          </button>
-        </div>
-      )}
+      {/* View Toggle — alterna entre Desktop e Mobile no editor e preview */}
+      <div className="toggle-group" style={{ width: '120px' }}>
+        <button
+          className={`toggle-btn ${viewportMode === 'desktop' ? 'active' : ''}`}
+          onClick={() => setViewportMode('desktop')}
+          title="Viewport Desktop"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+        </button>
+        <button
+          className={`toggle-btn ${viewportMode === 'mobile' ? 'active' : ''}`}
+          onClick={() => setViewportMode('mobile')}
+          title="Viewport Mobile"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+        </button>
+      </div>
 
       {/* Right Area: Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

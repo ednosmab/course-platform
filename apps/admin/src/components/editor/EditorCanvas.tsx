@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useEditor } from '../../context/EditorContext';
-import { Icon, useMedia } from '@projeto/ui';
+import { Icon } from '@projeto/ui';
 import { StudentPreview } from '../preview/StudentPreview';
 import { AnyBlock } from '@projeto/types';
 
@@ -497,7 +497,6 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
 // ─── Main EditorCanvas ────────────────────────────────────────────────────────
 export const EditorCanvas: React.FC = () => {
   const { blocks, activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent, previewMode, viewportMode } = useEditor();
-  const media = useMedia();
   const [mounted, setMounted] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
 
@@ -590,8 +589,7 @@ export const EditorCanvas: React.FC = () => {
 
   if (previewMode) return <PreviewCanvas blocks={blocks} isMobile={viewportMode === 'mobile'} />;
 
-  const isNarrowScreen = media.md || media.sm || media.xs;
-  if (isNarrowScreen) return <MobileViewport blocks={blocks} onImageDrop={handleImageDrop} />;
+  if (viewportMode === 'mobile') return <MobileViewport blocks={blocks} onImageDrop={handleImageDrop} />;
 
   // ── Desktop Edit Mode ────────────────────────────────────────────────────────
   const sortedBlocks = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
