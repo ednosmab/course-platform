@@ -1,5 +1,6 @@
 {
   "$schema": "https://opencode.ai",
+  "model": "opencode/deepseek-v4-flash-free",
   "agent": {
     "profile": {
       "model_tier": "medium",

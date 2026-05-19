@@ -5,6 +5,9 @@ export {
   styled,
   Theme,
   createTamagui,
+  TamaguiProvider,
+  ScrollView,
+  Spinner,
 } from 'tamagui';
 
 export { default as config } from './tamagui.config';
@@ -12,3 +15,6 @@ export * from './components/Button';
 export * from './components/Card';
 export * from './components/Text';
 export * from './components/Container';
+export * from './utils/markdown';
+export * from './blocks/TextBlock';
+export * from './blocks/QuoteBlock';

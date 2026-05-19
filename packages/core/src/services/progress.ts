@@ -4,7 +4,7 @@ import { StudentProgress, StudentProgressSchema } from '@projeto/types';
 // Cache em memória para agrupamento e gerenciamento de debounce por aluno/aula
 interface DebounceCache {
   [key: string]: {
-    timer: NodeJS.Timeout | null;
+    timer: ReturnType<typeof setTimeout> | null;
     lastPlayedSeconds: number;
     percentageWatched: number;
   };

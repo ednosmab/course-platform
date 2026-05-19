@@ -1,29 +1,33 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-PLANEJAMENTO_COMPLETO — 4 assuntos tratados e commitados. Próxima ação: iniciar execução das fases seguintes.
+FASE 3 CONCLUÍDA — Blocos CMS criados em `@projeto/ui`. Build do admin-web passa limpo.
 
 ## 🎯 Últimas Conquistas
 - **DSv2 Reform - Fase 0 concluída:** Tokens modularizados em `packages/ui/src/tokens/` (6 arquivos), `tamagui.config.ts` refatorado, `token-governance.md` preenchido (TASK-08 a TASK-14)
-- **Plano de Escalabilidade criado:** `docs/roadmaps/scalability-plan.md` — 4 fases, 16 tasks (SCL-01 a SCL-16) cobrindo 3k/10k/50k+ conexões
-- **Estratégia de Testes integrada:** `docs/layers/testing/estratégia_de_testes.md` movido do root, `e2e_playwright_plan.md` criado
-- **FORBIDDEN_OPERATIONS expandido:** 6 seções, 21 regras vinculantes com níveis de violação e consequências
-- **AGENTS.md atualizado:** Referência obrigatória ao FORBIDDEN_OPERATIONS adicionada
-- **CONTEXT_MAP.md atualizado:** P0.1 = FORBIDDEN_OPERATIONS, nova seção 10 (Escalabilidade)
+- **Plano de Escalabilidade criado:** `docs/roadmaps/scalability-plan.md` — 4 fases, 16 tasks (SCL-01 a SCL-16)
+- **Estratégia de Testes integrada:** `docs/layers/testing/estratégia_de_testes.md`, `e2e_playwright_plan.md`
+- **FORBIDDEN_OPERATIONS expandido:** 6 seções, 21 regras vinculantes
+- **DSv2 Reform - Fase 2 concluída:** `aluno-mobile` migrado para `@projeto/ui`
+- **DSv2 Reform - Fase 3 concluída:** Blocos CMS em `packages/ui/src/blocks/` (Text, Video, Quiz, Image, Quote, Html) + utils/markdown.tsx
+- **Regra de nomenclatura adicionada:** Inglês obrigatório em código-fonte (AGENTS.md + clean_code_standards.md)
+- **admin-web fix:** TamaguiProvider + Providers wrapper — build Next.js passa sem erros
+- **packages/core fix:** `setTimeout` type error resolvido
 
 ## 🕹️ Estado Atual do Projeto
 - **Branch atual:** `feat/dsv2-reform` (reforma DS) / `develop` (produção)
-- **Próxima ação:** Iniciar Fase 2 — Migrar `aluno-mobile` para `@projeto/ui` (TASK-19 a TASK-23)
-- **Pendências:** `aluno-mobile` não consome `@projeto/ui`, tasks de escala não iniciadas, testes não configurados
+- **Próxima ação:** Fase 4 — Sistema de Ícones (TASK-32 a TASK-33)
+- **Pendências:** Fase 4-6, Plano de Escalabilidade, Testes E2E
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
 - *Nenhum erro ativo.*
+- Build admin-web: ✅ `pnpm --filter admin-web build` compila, type-checka e gera páginas
 
 ## 🎬 Sessão Atual (19/05/2026)
-- **Assuntos tratados:** DSv2 Fase 0+1, Plano de Escalabilidade, Estratégia de Testes, FORBIDDEN_OPERATIONS expandido
-- **10 commits** realizados na branch `feat/dsv2-reform`
-- **Próxima sessão:** Iniciar em Fase 2 — Migrar `aluno-mobile` para `@projeto/ui` (TASK-19 a TASK-23)
-- **Consumo da sessão:** ~56%
+- **Assuntos tratados:** Fase 2 (completa), Regra de nomenclatura inglês, Fase 3 (completa), Fix build admin-web
+- **Arquivos alterados:** App.tsx, BlockRenderer.tsx, packages/ui/src/index.ts, layout.tsx, providers.tsx, progress.ts, varios blocks, package.json, clean_code_standards.md, AGENTS.md, execution_plan.md
+- **Próxima sessão:** Fase 4 — Sistema de Ícones (TASK-32 a TASK-33)
+- **Consumo da sessão:** ~95%
 
 ## 📋 Checklist de Progresso
 - [x] DSv2 Reform - Fase 0 (TASK-08 a TASK-14) — Token modular + governança
@@ -31,5 +35,8 @@ PLANEJAMENTO_COMPLETO — 4 assuntos tratados e commitados. Próxima ação: ini
 - [x] Estratégia de Testes — `docs/layers/testing/`
 - [x] FORBIDDEN_OPERATIONS expandido + vinculante no AGENTS.md
 - [x] **Fase 1:** Migrar `admin-web` para `@projeto/ui` (TASK-15 a TASK-18)
-- [ ] **Fase 2:** Migrar `aluno-mobile` para `@projeto/ui` (TASK-19 a TASK-23)
-- [ ] **Fase 3+:** Blocos CMS, Ícones, Storybook, Governança final
+- [x] **Fase 2:** Migrar `aluno-mobile` para `@projeto/ui` (TASK-19 a TASK-23)
+- [x] **Fase 3:** Blocos CMS em `@projeto/ui` (TASK-24 a TASK-31)
+- [x] Regra de nomenclatura: inglês obrigatório
+- [x] Fix build admin-web + coreservices
+- [ ] **Fase 4+:** Ícones, Storybook, Governança final

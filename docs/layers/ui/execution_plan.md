@@ -30,21 +30,25 @@ Completar a reforma do Design System (DSv2): modularizar tokens, migrar apps par
 - [x] **TASK-18:** Eliminar `page.module.css`
 
 ## 📌 FASE 2 — Adoção em `aluno-mobile`
-- [ ] **TASK-19:** Substituir `<View>` por `<YStack>`/`<XStack>` do Tamagui
-- [ ] **TASK-20:** Substituir `<Text>` nativo por `<Text>` do `@projeto/ui`
-- [ ] **TASK-21:** Substituir `<TouchableOpacity>` por `<Button>` ou `Pressable` Tamagui
-- [ ] **TASK-22:** Remover `StyleSheet.create()` — usar tokens Tamagui
-- [ ] **TASK-23:** Eliminar cores hex/rgb hardcoded
+- [x] **TASK-19:** Substituir `<View>` por `<YStack>`/`<XStack>` do Tamagui
+- [x] **TASK-20:** Substituir `<Text>` nativo por `<Text>` do `@projeto/ui`
+- [x] **TASK-21:** Substituir `<TouchableOpacity>` por `<Button>` ou `Pressable` Tamagui
+- [x] **TASK-22:** Remover `StyleSheet.create()` — usar tokens Tamagui
+- [x] **TASK-23:** Eliminar cores hex/rgb hardcoded
 
 ## 📌 FASE 3 — Componentes de Bloco CMS em `@projeto/ui`
-- [ ] **TASK-24:** Criar `blocks/TextBlock.tsx` — markdown renderer com Tamagui
-- [ ] **TASK-25:** Criar `blocks/VideoBlock.tsx` — YouTube/Vimeo/HTML5
-- [ ] **TASK-26:** Criar `blocks/QuizBlock.tsx` — alternativas, múltipla escolha
-- [ ] **TASK-27:** Criar `blocks/ImageBlock.tsx` — imagem com caption
-- [ ] **TASK-28:** Criar `blocks/QuoteBlock.tsx` — citação destacada
-- [ ] **TASK-29:** Criar `blocks/HTMLBlock.tsx` — raw HTML sanitizado
-- [ ] **TASK-30:** Extrair `renderSimpleMarkdown` para `packages/ui/src/utils/markdown.ts`
-- [ ] **TASK-31:** Reexportar blocos em `packages/ui/src/index.ts`
+- [x] **TASK-24:** Criar `blocks/TextBlock.tsx` — markdown renderer com Tamagui
+- [x] **TASK-25:** Criar `blocks/VideoBlock.tsx` — YouTube/Vimeo/HTML5
+- [x] **TASK-26:** Criar `blocks/QuizBlock.tsx` — alternativas, múltipla escolha
+- [x] **TASK-27:** Criar `blocks/ImageBlock.tsx` — imagem com caption
+- [x] **TASK-28:** Criar `blocks/QuoteBlock.tsx` — citação destacada
+- [x] **TASK-29:** Criar `blocks/HTMLBlock.tsx` — raw HTML sanitizado
+- [x] **TASK-30:** Extrair `renderSimpleMarkdown` para `packages/ui/src/utils/markdown.tsx`
+- [x] **TASK-31:** Reexportar blocos em `packages/ui/src/index.ts`
+- [x] **Fase 3 — Refatoração:** `aluno-mobile/BlockRenderer.tsx` atualizado para importar blocos de `@projeto/ui`
+- [x] **Fase 3 — Infra:** `@projeto/ui` com entry points separados (`.main` + `./native`) para evitar dependências RN em web
+- [x] **Fase 3 — Fix:** `admin-web` — Providers wrapper + TamaguiProvider no layout
+- [x] **Fase 3 — Fix:** `packages/core` — `setTimeout` type error (`ReturnType<typeof setTimeout>`)
 
 ## 📌 FASE 4 — Sistema de Ícones
 - [ ] **TASK-32:** Criar `Icon.tsx` — wrapper cross-platform lucide
