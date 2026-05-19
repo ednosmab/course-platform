@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
+import { Button } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { X, MoveUp, MoveDown, ArrowUpToLine, ArrowDownToLine, AlignHorizontalJustifyStart, AlignHorizontalJustifyCenter, AlignHorizontalJustifyEnd, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, Type, Image, Video, FileQuestion, Quote, Code, Layers, GripVertical } from 'lucide-react';
 import { AnyBlock } from '@projeto/types';
@@ -274,9 +275,9 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border-light)' }}>
         <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Posição</h3>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', display: 'flex', padding: '2px' }}>
+        <Button variant="ghost" onClick={onClose} style={{ padding: '2px' }}>
           <X size={16} />
-        </button>
+        </Button>
       </div>
 
       {/* Tabs */}
@@ -315,18 +316,18 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
                 {/* Z-Index */}
                 <div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <button className="btn-outline" onClick={handleBringForward} style={{ fontSize: '11px', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    <Button variant="ghost" onClick={handleBringForward}>
                       <MoveUp size={14} /> Para frente
-                    </button>
-                    <button className="btn-outline" onClick={handleSendBackward} style={{ fontSize: '11px', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    </Button>
+                    <Button variant="ghost" onClick={handleSendBackward}>
                       <MoveDown size={14} /> Para trás
-                    </button>
-                    <button className="btn-outline" onClick={handleBringToFront} style={{ fontSize: '11px', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    </Button>
+                    <Button variant="ghost" onClick={handleBringToFront}>
                       <ArrowUpToLine size={14} /> Para o topo
-                    </button>
-                    <button className="btn-outline" onClick={handleSendToBack} style={{ fontSize: '11px', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    </Button>
+                    <Button variant="ghost" onClick={handleSendToBack}>
                       <ArrowDownToLine size={14} /> Para o fundo
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -334,24 +335,24 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
                 <div>
                   <h4 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px' }}>Alinhar à página</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <button className="btn-outline" onClick={() => handleAlign('top')} style={{ fontSize: '11px', padding: '8px', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-start' }}>
+                    <Button variant="ghost" onClick={() => handleAlign('top')}>
                       <AlignVerticalJustifyStart size={14} /> Em cima
-                    </button>
-                    <button className="btn-outline" onClick={() => handleAlign('left')} style={{ fontSize: '11px', padding: '8px', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-start' }}>
+                    </Button>
+                    <Button variant="ghost" onClick={() => handleAlign('left')}>
                       <AlignHorizontalJustifyStart size={14} /> À esquerda
-                    </button>
-                    <button className="btn-outline" onClick={() => handleAlign('middle')} style={{ fontSize: '11px', padding: '8px', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-start' }}>
+                    </Button>
+                    <Button variant="ghost" onClick={() => handleAlign('middle')}>
                       <AlignVerticalJustifyCenter size={14} /> No meio
-                    </button>
-                    <button className="btn-outline" onClick={() => handleAlign('center')} style={{ fontSize: '11px', padding: '8px', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-start' }}>
+                    </Button>
+                    <Button variant="ghost" onClick={() => handleAlign('center')}>
                       <AlignHorizontalJustifyCenter size={14} /> Ao centro
-                    </button>
-                    <button className="btn-outline" onClick={() => handleAlign('bottom')} style={{ fontSize: '11px', padding: '8px', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-start' }}>
+                    </Button>
+                    <Button variant="ghost" onClick={() => handleAlign('bottom')}>
                       <AlignVerticalJustifyEnd size={14} /> Embaixo
-                    </button>
-                    <button className="btn-outline" onClick={() => handleAlign('right')} style={{ fontSize: '11px', padding: '8px', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-start' }}>
+                    </Button>
+                    <Button variant="ghost" onClick={() => handleAlign('right')}>
                       <AlignHorizontalJustifyEnd size={14} /> À direita
-                    </button>
+                    </Button>
                   </div>
                 </div>
 

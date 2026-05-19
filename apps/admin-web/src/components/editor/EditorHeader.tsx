@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Button } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { Undo2, Redo2, CloudLightning, Eye, EyeOff, CheckCircle2, Layers } from 'lucide-react';
 import { PositionPanel } from './PositionPanel';
@@ -91,38 +92,31 @@ export const EditorHeader: React.FC = () => {
           </button>
         </div>
 
-        <button
-          className="btn-outline"
+        <Button
+          variant="ghost"
           onClick={() => setPreviewMode(!previewMode)}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
         >
           {previewMode ? <EyeOff size={15} /> : <Eye size={15} />}
           {previewMode ? 'Sair do Preview' : 'Visualizar como aluno'}
-        </button>
+        </Button>
 
-        <button
-          className={`btn-outline ${isPositionPanelOpen ? 'active' : ''}`}
+        <Button
+          variant="ghost"
           onClick={() => setIsPositionPanelOpen(!isPositionPanelOpen)}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: isPositionPanelOpen ? 'var(--bg-surface)' : undefined, color: isPositionPanelOpen ? 'var(--accent-blue)' : undefined, borderColor: isPositionPanelOpen ? 'var(--accent-blue)' : undefined }}
         >
           <Layers size={15} /> Posição
-        </button>
+        </Button>
 
-        <button
-          className="btn-primary"
+        <Button
+          variant="primary"
           onClick={handlePublish}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '6px',
-            backgroundColor: published ? '#10b981' : undefined,
-            transition: 'background-color 0.3s',
-          }}
         >
           {published ? (
             <><CheckCircle2 size={15} /> Publicado!</>
           ) : (
             'Publicar'
           )}
-        </button>
+        </Button>
       </div>
 
       {/* Popover/Modal do Painel de Posição */}

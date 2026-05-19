@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Button } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AlignLeft, AlignCenter, AlignRight, AlignJustify, Trash2, Plus, AlertCircle, Code } from 'lucide-react';
 import { AnyBlock } from '@projeto/types';
@@ -418,29 +419,16 @@ export const BlockSettings: React.FC = () => {
               onChange={(e) => updateBlock(activeBlock.id, { content: e.target.value })}
               rows={4}
             />
-            <button
-              type="button"
+            <Button
+              variant="ghost"
               onClick={() => {
                 const currentContent = activeBlock.content || '';
                 const divider = currentContent ? '\n' : '';
                 updateBlock(activeBlock.id, { content: currentContent + divider + '> "Insira sua citação aqui"\n— Autor' });
               }}
-              style={{
-                marginTop: '6px',
-                fontSize: '11px',
-                color: 'var(--accent-blue)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '4px 0',
-                fontWeight: 500
-              }}
             >
               💬 Inserir Citação Formatada
-            </button>
+            </Button>
           </div>
 
           <div className="form-group">
@@ -552,42 +540,29 @@ export const BlockSettings: React.FC = () => {
               rows={3}
               placeholder="Digite a pergunta do quiz aqui..."
             />
-            <button
-              type="button"
+            <Button
+              variant="ghost"
               onClick={() => {
                 const currentQuestion = activeBlock.question || '';
                 const divider = currentQuestion ? '\n' : '';
                 updateBlock(activeBlock.id, { question: currentQuestion + divider + '> "Insira sua citação aqui"\n— Autor' });
               }}
-              style={{
-                marginTop: '6px',
-                fontSize: '11px',
-                color: 'var(--accent-blue)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '4px 0',
-                fontWeight: 500
-              }}
             >
               💬 Inserir Citação Formatada
-            </button>
+            </Button>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px', marginBottom: '8px' }}>
             <label className="form-label" style={{ marginBottom: 0 }}>Opções de Resposta</label>
-            <button
+            <Button
+              variant="ghost"
               onClick={() => {
                 const newOption = { id: crypto.randomUUID(), text: 'Nova Opção', isCorrect: false, feedback: 'Dica do professor.' };
                 updateBlock(activeBlock.id, { options: [...activeBlock.options, newOption] });
               }}
-              style={{ color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 500 }}
             >
               <Plus size={14} /> Add Opção
-            </button>
+            </Button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
