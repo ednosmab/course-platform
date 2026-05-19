@@ -24,6 +24,7 @@
     "react-native-web": "~0.21.2"
   },
   "devDependencies": {
+    "@rnx-kit/metro-resolver-symlinks": "^0.3.0",
     "@tamagui/babel-plugin": "2.0.0-rc.42",
     "@types/react": "~19.1.0",
     "typescript": "~5.9.2"
