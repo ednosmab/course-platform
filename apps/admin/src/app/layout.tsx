@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk, DM_Sans } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -13,8 +13,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-display",
+  subsets: ["latin"],
+});
+
+const dmSans = DM_Sans({
+  variable: "--font-sans",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "CMS Studio",
+  title: "Mosaico — Estúdio",
   description: "Plataforma de Cursos EAD com CMS",
 };
 
@@ -24,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+    <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <Providers>
           {children}

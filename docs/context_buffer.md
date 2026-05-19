@@ -9,6 +9,9 @@ SESSAO ATIVA — Zod schemas relaxados, SafeAreaProvider corrigido, escalabilida
 - **BACKLOG expandido:** Tasks de escalabilidade (SCL-01 a SCL-16), testes E2E (E2E-01 a E2E-10), infra (TASK-01 a TASK-07), design extraction (DASH-01, EDIT-01 a EDIT-07, TOKEN-01/02), 10 ADRs pendentes (ADR-007 a ADR-016), seção bloqueada (pagamentos, aulas ao vivo, fóruns, dashboard aluno).
 - **ADR-006:** Criado — Student JSON headless rendering architecture.
 - **30 decisões técnicas auditadas** no código vs documentação — 10 candidatas a ADR formal.
+- **TOKEN-01 — Cloud White palette migrada:** 30 novos tokens `cw*`, 2 shadow presets, 2 fontes (Space Grotesk, DM Sans), tema `cloudWhite` com 28 variantes semânticas. OKLCH convertido para hex cross-platform.
+- **TOKEN-02 — BrandMark component:** Sparkles + gradient + "Mosaico."
+- **DASH-01 — Admin dashboard:** Rota `/` com top bar, hero, stats, course grid. Editor movido para `/studio/[courseId]`.
 
 ## 🕹️ Estado Atual do Projeto
 - **Branch atual:** `feat/dsv2-reform`
@@ -28,4 +31,7 @@ SESSAO ATIVA — Zod schemas relaxados, SafeAreaProvider corrigido, escalabilida
 - [x] **ADR-006:** Student JSON headless rendering
 - [x] **BACKLOG:** Expandido com escalabilidade, E2E, design extraction, ADRs pendentes, itens bloqueados
 - [x] **Auditoria:** 30 decisões técnicas não documentadas identificadas
-- [ ] **Próximo passo:** TOKEN-01 — Migrar paleta Cloud White para tokens Tamagui
+- [x] **TOKEN-01:** Cloud White palette migrada para tokens Tamagui (30 `cw*` color tokens, 2 shadow presets, 2 novas fontes, tema `cloudWhite` com 28 variantes semânticas. OKLCH convertido para hex cross-platform)
+- [x] **TOKEN-02 — BrandMark component:** Sparkles + gradient + "Mosaico."
+- [x] **DASH-01 — Admin dashboard:** Rota `/` com top bar, hero, stats, course grid. Editor movido para `/studio/[courseId]`
+- [ ] **Próximo passo:** EDIT-01 — Layout 3 colunas do Estúdio (ou decidir próxima prioridade)

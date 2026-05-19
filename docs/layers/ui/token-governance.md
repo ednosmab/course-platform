@@ -36,3 +36,25 @@ packages/ui/src/tokens/
   shadows.ts     — shadow presets
   animations.ts  — spring animation presets
 ```
+
+## Tokens da Paleta Cloud White
+
+Os tokens Cloud White usam prefixo `cw` (ex: `cwBackground`, `cwPrimary`, `cwForeground`) e estão definidos em `colors.ts`. Foram convertidos de OKLCH para hex para compatibilidade cross-platform.
+
+### Tema Cloud White
+
+O tema `cloudWhite` está registrado em `tamagui.config.ts` e mapeia todos os tokens `cw*` para nomes semânticos (`$background`, `$primary`, `$foreground`, etc.).
+
+**Fontes adicionais:**
+- `$display` — Space Grotesk (display/headings alternativos)
+- `$sans` — DM Sans (body alternativo)
+
+**Sombras adicionais:** `cwSoft` e `cwPop` em `shadows.ts`.
+
+### Ativação
+
+O tema ativo é `dark` (default). Para usar Cloud White em runtime:
+```ts
+import { useThemeName } from '@tamagui/core';
+// ou via TamaguiProvider com theme="cloudWhite"
+```

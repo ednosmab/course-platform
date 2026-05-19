@@ -28,10 +28,13 @@
 
 Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Estúdio e Dashboard. Implementar no nosso ecossistema (Next.js + Tamagui + `@projeto/ui`).
 
-- [ ] **DASH-01 — Dashboard do admin**
-  - Top bar: brand (`Mosaico.`), navegação (Cursos, Alunos, Mídia, Relatórios), busca, notificações, avatar do usuário
-  - Hero: status pill, headline, stats cards (cursos ativos, alunos, aulas, conclusão média)
-  - Grid de cursos: card com cover gradient, status badge, título, metadata, progress bar, menu de contexto
+- [x] **DASH-01 — Dashboard do admin**
+  - Rota `/`: Top bar (BrandMark, navegação, busca, notificações, avatar)
+  - Hero (status pill, headline, botões, 4 stats cards)
+  - Grid de cursos (6 cards mockados, cover gradient, badge, metadata, progress bar)
+  - Editor realocado para `/studio/[courseId]`
+  - Tema `cloudWhite` aplicado via `<Theme name="cloudWhite">`
+  - Fontes Space Grotesk + DM Sans via `next/font/google`
   - Referência: `design/create-teach-module/src/routes/index.tsx`
 - [ ] **EDIT-01 — Layout 3 colunas do Estúdio**
   - Esquerda: paleta de blocos (9 tipos) com drag-and-drop (referência: `studio.$courseId.tsx:27-37`)
@@ -59,16 +62,18 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
   - Ícones: reordenar (grip), duplicar, mais opções, excluir
   - Aparece no hover ou quando o bloco está selecionado
   - Referência: `studio.$courseId.tsx:310-320`
-- [ ] **TOKEN-01 — Migrar paleta "Cloud White" (OKLCH) para Tamagui**
-  - Cores: `--background`, `--surface`, `--card`, `--primary`, `--success`, `--destructive`, etc.
-  - Sombras: `--shadow-soft`, `--shadow-pop`
-  - Gradientes: `--gradient-primary`, `--gradient-surface`
-  - Fontes: Space Grotesk (display), DM Sans (body)
-  - Grid pattern: `bg-grid` utility
+- [x] **TOKEN-01 — Migrar paleta "Cloud White" (OKLCH) para Tamagui**
+  - Cores: 30 tokens `cw*` em `colors.ts` (convertidos OKLCH → hex)
+  - Sombras: `cwSoft` e `cwPop` em `shadows.ts`
+  - Gradientes: `cwGradientFrom`, `cwGradientTo` em `colors.ts`
+  - Fontes: `spaceGroteskFont`, `dmSansFont` em `typography.ts`
+  - Tema: `cloudWhite` em `tamagui.config.ts` (28 variantes semânticas)
+  - Grid pattern: item em separado (não tokenizável — utility CSS puro)
   - Referência: `design/create-teach-module/src/styles.css:54-104`
-- [ ] **TOKEN-02 — Atualizar Brand Mark**
-  - Nome "Mosaico" com gradient e Sparkles icon
-  - Referência: `design/create-teach-module/src/components/brand-mark.tsx`
+- [x] **TOKEN-02 — Atualizar Brand Mark**
+  - Componente `apps/admin/src/components/brand-mark.tsx`
+  - Sparkles icon + gradient primary + "Mosaico." com ponto azul
+  - Integrado no dashboard (`/`) e exportado para uso no editor
 
 ### P2 — Média
 

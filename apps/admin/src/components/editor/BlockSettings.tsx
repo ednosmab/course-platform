@@ -322,7 +322,7 @@ export const BlockSettings: React.FC = () => {
 
   if (!activeBlock) {
     return (
-      <div className="sidebar-right" style={{ justifyContent: 'center', alignItems: 'center', padding: '24px', textAlign: 'center' }}>
+      <div className="sidebar-right" style={{ width: 320, minWidth: 320, justifyContent: 'center', alignItems: 'center', padding: '24px', textAlign: 'center' }}>
         <Icon name="AlertCircle" size={32} color="var(--text-tertiary)" style={{ marginBottom: '16px' }} />
         <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)' }}>Nenhum bloco selecionado</span>
         <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '8px' }}>
@@ -344,7 +344,7 @@ export const BlockSettings: React.FC = () => {
   };
 
   return (
-    <div className="sidebar-right">
+    <div className="sidebar-right" style={{ width: 320, minWidth: 320, overflowY: 'auto', borderLeft: '1px solid #DEE1EB', backgroundColor: '#FFFFFF' }}>
       {/* Header com tabs */}
       <div style={{ padding: '16px 20px 0', borderBottom: '1px solid var(--border-light)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Button, Text, Icon } from '@projeto/ui';
+import Link from 'next/link';
 import { useEditor } from '../../context/EditorContext';
 import { PositionPanel } from './PositionPanel';
 
@@ -21,12 +22,12 @@ export const EditorHeader: React.FC = () => {
   };
 
   return (
-    <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', height: '56px', borderBottom: '1px solid #e2e8f0', backgroundColor: '#ffffff', gap: '16px' }}>
+    <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', height: '56px', borderBottom: '1px solid #DEE1EB', backgroundColor: '#FFFFFF', gap: '16px' }}>
       {/* Left Area */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <button className="btn-icon" title="Voltar">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        </button>
+        <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+          <Icon name="ArrowLeft" size={20} color="#808498" />
+        </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -66,14 +67,14 @@ export const EditorHeader: React.FC = () => {
       <div className="toggle-group" style={{ width: '120px' }}>
         <button
           className={`toggle-btn ${viewportMode === 'desktop' ? 'active' : ''}`}
-          onClick={() => { setViewportMode('desktop'); setPreviewMode(false); }}
+          onClick={() => setViewportMode('desktop')}
           title="Viewport Desktop"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
         </button>
         <button
           className={`toggle-btn ${viewportMode === 'mobile' ? 'active' : ''}`}
-          onClick={() => { setViewportMode('mobile'); setPreviewMode(false); }}
+          onClick={() => setViewportMode('mobile')}
           title="Viewport Mobile"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>

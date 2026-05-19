@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useEditor } from '../../context/EditorContext';
 import { Icon } from '@projeto/ui';
+import { StudentPreview } from '../preview/StudentPreview';
 import { AnyBlock } from '@projeto/types';
 
 // ─── Viewport sizes (real-world viewport boundaries) ────────────────────────
@@ -434,22 +435,36 @@ function MobileCanvas({ blocks, onImageDrop, editMode = false }: {
   );
 }
 
-// ─── Preview Mode — LAW: mesmo renderer do MobileCanvas ────────────────────
-function PreviewCanvas({ blocks }: { blocks: AnyBlock[] }) {
+// ─── Preview Mode — usa os mesmos componentes do Student ───────────────────
+function PreviewCanvas({ blocks, isMobile }: { blocks: AnyBlock[]; isMobile?: boolean }) {
   return (
-    <div className="canvas-area" style={{ backgroundColor: '#e8edf2', alignItems: 'center', justifyContent: 'flex-start', padding: '24px', overflowY: 'auto' }}>
-      <div style={{ width: MOBILE_W + 24, backgroundColor: 'white', borderRadius: '28px', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', overflow: 'hidden', border: '6px solid #1e293b', flexShrink: 0 }}>
-        {/* Phone chrome bar */}
-        <div style={{ backgroundColor: '#1e293b', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
-          <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#ef4444' }} />
-          <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
-          <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#10b981' }} />
-          <span style={{ marginLeft: 'auto', fontSize: '10px', color: '#64748b' }}>Preview — Visão do Aluno</span>
-        </div>
-        {/* Scrollable content: sem altura máxima — todo o conteúdo é exibido */}
-        <div style={{ overflowY: 'auto', overflowX: 'hidden', backgroundColor: 'white' }}>
-          <MobileCanvas blocks={blocks} />
-        </div>
+    <div className="canvas-area" style={{
+      backgroundColor: '#F1F2F8',
+      display: 'flex',
+      alignItems: isMobile ? 'center' : 'stretch',
+      justifyContent: 'flex-start',
+      padding: '24px',
+      overflowY: 'auto',
+    }}>
+      <div style={{
+        width: isMobile ? MOBILE_W + 24 : '100%',
+        maxWidth: isMobile ? MOBILE_W + 24 : 860,
+        backgroundColor: '#FFFFFF',
+        borderRadius: isMobile ? 28 : 8,
+        boxShadow: isMobile ? '0 24px 64px rgba(0,0,0,0.2)' : 'none',
+        overflow: 'hidden',
+        border: isMobile ? '6px solid #1e293b' : 'none',
+        flexShrink: 0,
+      }}>
+        {isMobile && (
+          <div style={{ backgroundColor: '#1e293b', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#ef4444' }} />
+            <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#f59e0b' }} />
+            <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#10b981' }} />
+            <span style={{ marginLeft: 'auto', fontSize: 10, color: '#94a3b8' }}>Preview Mobile</span>
+          </div>
+        )}
+        <StudentPreview blocks={blocks} />
       </div>
     </div>
   );
@@ -572,7 +587,7 @@ export const EditorCanvas: React.FC = () => {
 
   if (!mounted) return <div className="canvas-area canvas-bg"><div style={{ color: 'var(--text-tertiary)' }}>Carregando...</div></div>;
 
-  if (previewMode) return <PreviewCanvas blocks={blocks} />;
+  if (previewMode) return <PreviewCanvas blocks={blocks} isMobile={viewportMode === 'mobile'} />;
 
   if (viewportMode === 'mobile') return <MobileViewport blocks={blocks} onImageDrop={handleImageDrop} />;
 

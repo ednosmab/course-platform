@@ -8,7 +8,7 @@ export const BlockPalette: React.FC = () => {
   const { addBlock } = useEditor();
 
   return (
-    <div className="sidebar-left">
+    <div className="sidebar-left" style={{ width: 240, minWidth: 240, overflowY: 'auto', borderRight: '1px solid #DEE1EB', backgroundColor: '#FFFFFF' }}>
       <div style={{ padding: '24px 24px 0 24px' }}>
         <h3 style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Conteúdo

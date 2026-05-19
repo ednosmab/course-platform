@@ -1,5 +1,5 @@
 import { createTamagui, createTokens } from '@tamagui/core';
-import { color, size, space, radius, zIndex, outfitFont, interFont, animations } from './tokens';
+import { color, size, space, radius, zIndex, outfitFont, interFont, spaceGroteskFont, dmSansFont, animations } from './tokens';
 
 const tokens = createTokens({
   size,
@@ -42,6 +42,8 @@ const config = createTamagui({
   fonts: {
     heading: outfitFont,
     body: interFont,
+    display: spaceGroteskFont,
+    sans: dmSansFont,
   },
   tokens,
   themes: {
@@ -70,6 +72,46 @@ const config = createTamagui({
       warning: tokens.color.warning,
       danger: tokens.color.danger,
       info: tokens.color.info,
+    },
+    cloudWhite: {
+      background: tokens.color.cwBackground,
+      surface: tokens.color.cwSurface,
+      primary: tokens.color.cwPrimary,
+      secondary: tokens.color.cwSecondary,
+      text: tokens.color.cwForeground,
+      textMuted: tokens.color.cwMutedForeground,
+      border: tokens.color.cwBorder,
+      success: tokens.color.cwSuccess,
+      warning: tokens.color.warning,
+      danger: tokens.color.cwDestructive,
+      info: tokens.color.cwPrimary,
+      foreground: tokens.color.cwForeground,
+      card: tokens.color.cwCard,
+      cardForeground: tokens.color.cwCardForeground,
+      popover: tokens.color.cwPopover,
+      popoverForeground: tokens.color.cwPopoverForeground,
+      primaryForeground: tokens.color.cwPrimaryForeground,
+      secondaryForeground: tokens.color.cwSecondaryForeground,
+      muted: tokens.color.cwMuted,
+      mutedForeground: tokens.color.cwMutedForeground,
+      accent: tokens.color.cwAccent,
+      accentForeground: tokens.color.cwAccentForeground,
+      destructive: tokens.color.cwDestructive,
+      destructiveForeground: tokens.color.cwDestructiveForeground,
+      successForeground: tokens.color.cwSuccessForeground,
+      borderStrong: tokens.color.cwBorderStrong,
+      input: tokens.color.cwInput,
+      ring: tokens.color.cwRing,
+      sidebar: tokens.color.cwSidebar,
+      sidebarForeground: tokens.color.cwSidebarForeground,
+      sidebarPrimary: tokens.color.cwSidebarPrimary,
+      sidebarPrimaryForeground: tokens.color.cwSidebarPrimaryForeground,
+      sidebarAccent: tokens.color.cwSidebarAccent,
+      sidebarAccentForeground: tokens.color.cwSidebarAccentForeground,
+      sidebarBorder: tokens.color.cwSidebarBorder,
+      sidebarRing: tokens.color.cwSidebarRing,
+      gradientFrom: tokens.color.cwGradientFrom,
+      gradientTo: tokens.color.cwGradientTo,
     },
   },
   media: {

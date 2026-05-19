@@ -31,4 +31,20 @@ export const shadowPresets = {
     shadowRadius: 40,
     elevation: 16,
   },
+
+  // Cloud White shadow presets
+  cwSoft: {
+    shadowColor: '#282836',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  cwPop: {
+    shadowColor: '#282836',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.12,
+    shadowRadius: 40,
+    elevation: 16,
+  },
 } as const;
