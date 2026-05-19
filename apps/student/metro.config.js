@@ -5,11 +5,9 @@ const config = getDefaultConfig(__dirname);
 
 config.watchFolders = [
   path.resolve(__dirname, '../../packages'),
-];
-
-config.resolver.nodeModulesPaths = [
-  path.resolve(__dirname, 'node_modules'),
   path.resolve(__dirname, '../../node_modules'),
 ];
+
+config.resolver.unstable_enablePackageExports = true;
 
 module.exports = config;

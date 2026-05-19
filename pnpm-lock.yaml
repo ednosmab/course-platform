@@ -100,6 +100,9 @@ importers:
         specifier: ~0.21.2
         version: 0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
     devDependencies:
+      '@rnx-kit/metro-resolver-symlinks':
+        specifier: ^0.3.0
+        version: 0.3.0(metro@0.84.4)
       '@tamagui/babel-plugin':
         specifier: 2.0.0-rc.42
         version: 2.0.0-rc.42(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -1616,6 +1619,69 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  '@rnx-kit/console@3.0.0':
+    resolution: {integrity: sha512-O8VULudO4zOkoHc6ktkL4Bcz6DFmEhJ1Gao6MO6Xj0PGbDtQAVMyHMEm+5QL0yYCKSJAPGwX44kxU6Qh10AqIQ==}
+    engines: {node: '>=20.18'}
+
+  '@rnx-kit/metro-resolver-symlinks@0.3.0':
+    resolution: {integrity: sha512-OU5uD3hdyrV2820t4Rimq9IMJ8qV7PlroX/nKp7BCrTDeyFphAI7+GB8srtFnM0w94WxNMuqsENT6WxDGU7L4A==}
+    engines: {node: '>=20.18'}
+    peerDependencies:
+      oxc-resolver: ^11.0.0
+    peerDependenciesMeta:
+      oxc-resolver:
+        optional: true
+
+  '@rnx-kit/tools-filesystem@0.2.0':
+    resolution: {integrity: sha512-r5YTy8yy8DWMGdM8yNFlFdX8gE71CHJ2KtpsdSAQN4mol9FFMoAYMwIHrz1i5TyUbtdLd7N/lwWCAK0ZxJYqyQ==}
+    engines: {node: '>=18.12'}
+    peerDependencies:
+      memfs: '>=4.0.0'
+    peerDependenciesMeta:
+      memfs:
+        optional: true
+
+  '@rnx-kit/tools-node@3.0.4':
+    resolution: {integrity: sha512-jkBrQC71S1rjuWH3y+YPtT/1rgjF69z0EhzY7znUzQJGajKHtb4jjGjS85G41ZB0Bnt45N3NjliiVqUo4O1dzA==}
+    engines: {node: '>=16.17'}
+
+  '@rnx-kit/tools-react-native@2.3.7':
+    resolution: {integrity: sha512-AkJJPnpgfrp3pU+AFuM5OIz3stpzZZKMeoREGND85b0q38RcRAiBhk9wH/meTdVvxIsx1dRl9Nysj0v8T0XGqg==}
+    engines: {node: '>=16.17'}
+
+  '@rnx-kit/types-bundle-config@1.0.0':
+    resolution: {integrity: sha512-nM5EEWr1pvi1bxKLBfHyj5LB5tv5cpRP0e4Pms8OIhIBMdhRJg6JWYDJSZTL57ZB7FigrAXESBYTWi8CjyqTog==}
+    engines: {node: '>=18.12'}
+    peerDependencies:
+      metro: '>=0.83.0'
+    peerDependenciesMeta:
+      metro:
+        optional: true
+
+  '@rnx-kit/types-kit-config@1.0.0':
+    resolution: {integrity: sha512-2ZeAWxgqbnK5rUdty0OeUHn6R9sc8fxSYzjQsa3OYxCwY2ASfKb/8zMr8M7KH2maAU2AQofFi8ud90WPoP9CQQ==}
+    engines: {node: '>=18.12'}
+
+  '@rnx-kit/types-metro-serializer-esbuild@1.0.1':
+    resolution: {integrity: sha512-GgSMtc7VHmAdsARLzWFDiLXCP/+S2FQ57Xm7BVpFeyAdYm0vYxhscFqxCAYKgDc4Q7ZzV2DLNg+Z74AyZekeXQ==}
+    engines: {node: '>=18.12'}
+
+  '@rnx-kit/types-node@1.0.0':
+    resolution: {integrity: sha512-MSSb47OqfpcboyLQfSN/UfDk5zeUP7mMGBDbBIGXyhBwkKfHKEhSj/rY32uv8B0qIsxLaQ7o6+QLx2kLKGOd3Q==}
+    engines: {node: '>=18.12'}
+
+  '@rnx-kit/types-plugin-cyclic-dependencies@1.0.0':
+    resolution: {integrity: sha512-L/Gi2OzKHYJxqe+w9mOnXBu9uhsLi5LvdCf1Xu/xSWOlHFG/M20qt22iaAiIlWnHSoDKkNQEmHTrBpKZd43HIQ==}
+    engines: {node: '>=18.12'}
+
+  '@rnx-kit/types-plugin-duplicates-checker@1.0.0':
+    resolution: {integrity: sha512-y3JjElRuDe9+jdUQxalLb1nQlhaTpId39Qr4vdXjdOR4Z3/NEi9SUcmxWzgtsIh5rwaq/1AXDsSx7llEEASEjg==}
+    engines: {node: '>=18.12'}
+
+  '@rnx-kit/types-plugin-typescript@1.0.0':
+    resolution: {integrity: sha512-5zFk5wPiAEinfT5XH+t7Ka5I/CUnRf/fqnCS7LDj21ReOgGfdrUQ1wXVsV7EoClCNCgUHvWFDdWkbNOFeFa60A==}
+    engines: {node: '>=18.12'}
 
   '@rollup/rollup-android-arm-eabi@4.60.4':
     resolution: {integrity: sha512-F5QXMSiFebS9hKZj02XhWLLnRpJ3B3AROP0tWbFBSj+6kCbg5m9j5JoHKd4mmSVy5mS/IMQloYgYxCuJC0fxEQ==}
@@ -3246,6 +3312,10 @@ packages:
   encodeurl@2.0.0:
     resolution: {integrity: sha512-Q0n9HRi4m6JuGIV1eFlmvJB7ZEVxu93IrMyiMsGC0lrMJMWzRgx6WGquyfQgZVb31vhGgXnfmPNNXmxnOkRBrg==}
     engines: {node: '>= 0.8'}
+
+  enhanced-resolve@5.21.3:
+    resolution: {integrity: sha512-QyL119InA+XXEkNLNTPCXPugSvOfhwv0JOlGNzvxs0hZaiHLNvXSpudUWsOlsXGWJh8G6ckCScEkVHfX3kw/2Q==}
+    engines: {node: '>=10.13.0'}
 
   entities@4.5.0:
     resolution: {integrity: sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==}
@@ -5469,6 +5539,10 @@ packages:
     peerDependencies:
       react: '>=19'
 
+  tapable@2.3.3:
+    resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
+    engines: {node: '>=6'}
+
   tar@7.5.15:
     resolution: {integrity: sha512-dzGK0boVlC4W5QFuQN1EFSl3bIDYsk7Tj40U6eIBnK2k/8ml7TZ5agbI5j5+qnoVcAA+rNtBml8SEiLxZpNqRQ==}
     engines: {node: '>=18'}
@@ -7657,6 +7731,64 @@ snapshots:
       react-native: 0.81.5(@babel/core@7.29.0)(@react-native/metro-config@0.85.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.4)
     optionalDependencies:
       '@types/react': 19.2.14
+
+  '@rnx-kit/console@3.0.0': {}
+
+  '@rnx-kit/metro-resolver-symlinks@0.3.0(metro@0.84.4)':
+    dependencies:
+      '@rnx-kit/console': 3.0.0
+      '@rnx-kit/tools-node': 3.0.4(metro@0.84.4)
+      '@rnx-kit/tools-react-native': 2.3.7(metro@0.84.4)
+      enhanced-resolve: 5.21.3
+    transitivePeerDependencies:
+      - memfs
+      - metro
+
+  '@rnx-kit/tools-filesystem@0.2.0': {}
+
+  '@rnx-kit/tools-node@3.0.4(metro@0.84.4)':
+    dependencies:
+      '@rnx-kit/types-node': 1.0.0(metro@0.84.4)
+    transitivePeerDependencies:
+      - metro
+
+  '@rnx-kit/tools-react-native@2.3.7(metro@0.84.4)':
+    dependencies:
+      '@rnx-kit/tools-filesystem': 0.2.0
+      '@rnx-kit/tools-node': 3.0.4(metro@0.84.4)
+      '@rnx-kit/types-bundle-config': 1.0.0(metro@0.84.4)
+    transitivePeerDependencies:
+      - memfs
+      - metro
+
+  '@rnx-kit/types-bundle-config@1.0.0(metro@0.84.4)':
+    dependencies:
+      '@rnx-kit/types-metro-serializer-esbuild': 1.0.1
+      '@rnx-kit/types-plugin-cyclic-dependencies': 1.0.0
+      '@rnx-kit/types-plugin-duplicates-checker': 1.0.0
+      '@rnx-kit/types-plugin-typescript': 1.0.0
+    optionalDependencies:
+      metro: 0.84.4
+
+  '@rnx-kit/types-kit-config@1.0.0(metro@0.84.4)':
+    dependencies:
+      '@rnx-kit/types-bundle-config': 1.0.0(metro@0.84.4)
+    transitivePeerDependencies:
+      - metro
+
+  '@rnx-kit/types-metro-serializer-esbuild@1.0.1': {}
+
+  '@rnx-kit/types-node@1.0.0(metro@0.84.4)':
+    dependencies:
+      '@rnx-kit/types-kit-config': 1.0.0(metro@0.84.4)
+    transitivePeerDependencies:
+      - metro
+
+  '@rnx-kit/types-plugin-cyclic-dependencies@1.0.0': {}
+
+  '@rnx-kit/types-plugin-duplicates-checker@1.0.0': {}
+
+  '@rnx-kit/types-plugin-typescript@1.0.0': {}
 
   '@rollup/rollup-android-arm-eabi@4.60.4':
     optional: true
@@ -10227,6 +10359,11 @@ snapshots:
 
   encodeurl@2.0.0: {}
 
+  enhanced-resolve@5.21.3:
+    dependencies:
+      graceful-fs: 4.2.11
+      tapable: 2.3.3
+
   entities@4.5.0: {}
 
   env-editor@0.4.2: {}
@@ -10416,7 +10553,7 @@ snapshots:
       eslint: 9.39.4
       eslint-import-resolver-node: 0.3.10
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4)(typescript@5.9.3))(eslint@9.39.4))(eslint@9.39.4)
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4)(typescript@5.9.3))(eslint@9.39.4))(eslint@9.39.4))(eslint@9.39.4)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.4)
       eslint-plugin-react: 7.37.5(eslint@9.39.4)
       eslint-plugin-react-hooks: 7.1.1(eslint@9.39.4)
@@ -10449,7 +10586,7 @@ snapshots:
       tinyglobby: 0.2.16
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4)(typescript@5.9.3))(eslint@9.39.4))(eslint@9.39.4))(eslint@9.39.4)
     transitivePeerDependencies:
       - supports-color
 
@@ -10464,7 +10601,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4)(typescript@5.9.3))(eslint@9.39.4))(eslint@9.39.4))(eslint@9.39.4):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -13345,6 +13482,8 @@ snapshots:
     transitivePeerDependencies:
       - react-dom
       - react-native
+
+  tapable@2.3.3: {}
 
   tar@7.5.15:
     dependencies:
