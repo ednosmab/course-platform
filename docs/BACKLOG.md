@@ -183,6 +183,19 @@ Tasks do plano `docs/layers/testing/e2e_playwright_plan.md`:
 - [ ] **E2E-09:** Quiz
 - [ ] **E2E-10:** Certificado
 
+### 📜 ADRs Pendentes (decisões técnicas não documentadas)
+
+- [ ] **ADR-007:** Zod `safeParse` + fallback — validação estrita com degradação graciosa
+- [ ] **ADR-008:** Draft/Published lesson versioning via UUID mangling
+- [ ] **ADR-009:** Undo/Redo via `useReducer` + history stack (snapshots completos)
+- [ ] **ADR-010:** RLS-First security — anon key exposto, toda autorização no banco
+- [ ] **ADR-011:** Offline outbox pattern — AsyncStorage + flush síncrono
+- [ ] **ADR-012:** Cross-platform file convention (`.tsx` vs `.native.tsx`)
+- [ ] **ADR-013:** Supabase Realtime subscriptions direto do student app (sem API layer)
+- [ ] **ADR-014:** Auto-save com debounce 1.5s + state machine (`idle→saving→saved→error`)
+- [ ] **ADR-015:** Gap arquitetural — TanStack Query/Zustand prescritos mas não implementados
+- [ ] **ADR-016:** Tamagui compile-time optimization (babel plugin, zero runtime CSS-in-JS)
+
 ### 🧹 Documentação
 
 - [ ] **Atualizar `docs/layers/ui/execution_plan.md`** — marcar TASK-32 a TASK-38 como concluídas
