@@ -10,7 +10,7 @@ interface EditorState {
   history: AnyBlock[][];
   historyIndex: number;
   previewMode: boolean;
-  viewportMode: 'desktop' | 'mobile';
+  viewportMode: 'desktop' | 'tablet' | 'mobile';
 }
 
 type EditorAction =
@@ -25,7 +25,7 @@ type EditorAction =
   | { type: 'SET_BLOCKS'; payload: { blocks: AnyBlock[] } }
   | { type: 'REORDER_BLOCKS'; payload: { blocks: AnyBlock[] } }
   | { type: 'SET_PREVIEW_MODE'; payload: { active: boolean } }
-  | { type: 'SET_VIEWPORT_MODE'; payload: { mode: 'desktop' | 'mobile' } };
+  | { type: 'SET_VIEWPORT_MODE'; payload: { mode: 'desktop' | 'tablet' | 'mobile' } };
 
 const initialState: EditorState = {
   blocks: [],
@@ -230,7 +230,7 @@ interface EditorContextType extends EditorState {
   setBlocks: (blocks: AnyBlock[]) => void;
   reorderBlocks: (blocks: AnyBlock[]) => void;
   setPreviewMode: (active: boolean) => void;
-  setViewportMode: (mode: 'desktop' | 'mobile') => void;
+  setViewportMode: (mode: 'desktop' | 'tablet' | 'mobile') => void;
   canUndo: boolean;
   canRedo: boolean;
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
@@ -256,7 +256,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const setBlocks = (blocks: AnyBlock[]) => dispatch({ type: 'SET_BLOCKS', payload: { blocks } });
   const reorderBlocks = (blocks: AnyBlock[]) => dispatch({ type: 'REORDER_BLOCKS', payload: { blocks } });
   const setPreviewMode = (active: boolean) => dispatch({ type: 'SET_PREVIEW_MODE', payload: { active } });
-  const setViewportMode = (mode: 'desktop' | 'mobile') => dispatch({ type: 'SET_VIEWPORT_MODE', payload: { mode } });
+  const setViewportMode = (mode: 'desktop' | 'tablet' | 'mobile') => dispatch({ type: 'SET_VIEWPORT_MODE', payload: { mode } });
   const updateBlockSilent = (id: string, updates: Partial<AnyBlock>) => dispatch({ type: 'UPDATE_BLOCK_SILENT', payload: { id, updates } });
 
   const canUndo = state.historyIndex > 0;

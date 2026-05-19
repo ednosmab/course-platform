@@ -12,7 +12,8 @@ import { AnyBlock } from '@projeto/types';
 const CANVAS_W = 1100; // Largura do canvas livre de edição
 const CANVAS_H = 3000; // Altura total do canvas (scrollable)
 const PAGE_W   = 1100; // Largura do delimitador de página (desktop viewport)
-const MOBILE_W = 390;  // iPhone 14 / Android padrão
+const MOBILE_W = 390;   // iPhone 14 / Android padrão
+const TABLET_W = 768;   // iPad portrait
 const MOBILE_H = 720;   // Altura visível do frame mobile (viewport sem barra)
 const MIN_W = 80;
 const MIN_H = 40;
@@ -347,10 +348,11 @@ function groupBlocksByRow(blocks: AnyBlock[]): AnyBlock[][] {
 }
 
 // ─── Mobile canvas — suporta editMode interativo ──────────────────────────
-function MobileCanvas({ blocks, onImageDrop, editMode = false }: {
+function MobileCanvas({ blocks, onImageDrop, editMode = false, viewportWidth = MOBILE_W }: {
   blocks: AnyBlock[];
   onImageDrop?: (id: string, file: File) => void;
   editMode?: boolean;
+  viewportWidth?: number;
 }) {
   const { activeBlockId, setActiveBlockId, removeBlock, updateBlock } = useEditor();
   const rows = groupBlocksByRow(blocks);
@@ -380,7 +382,7 @@ function MobileCanvas({ blocks, onImageDrop, editMode = false }: {
                     display: 'flex',
                     flexDirection: 'column',
                     flex: `1 1 ${flexBasis}`, minWidth: '140px',
-                    minHeight: l.h * (MOBILE_W / CANVAS_W),
+                    minHeight: l.h * (viewportWidth / CANVAS_W),
                     position: 'relative', borderRadius: '6px',
                     outline: isSelected ? '2px solid #3b82f6' : 'none',
                     outlineOffset: '2px',
@@ -436,7 +438,10 @@ function MobileCanvas({ blocks, onImageDrop, editMode = false }: {
 }
 
 // ─── Preview Mode ────────────────────────────────────────────────────────
-function PreviewCanvas({ blocks, isMobile }: { blocks: AnyBlock[]; isMobile?: boolean }) {
+function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportMode: 'desktop' | 'tablet' | 'mobile' }) {
+  const isMobile = viewportMode === 'mobile';
+  const isTablet = viewportMode === 'tablet';
+  const isDesktop = viewportMode === 'desktop';
   const pageH = Math.max(800, ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
   const sortedBlocks = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
   return (
@@ -449,25 +454,7 @@ function PreviewCanvas({ blocks, isMobile }: { blocks: AnyBlock[]; isMobile?: bo
       overflowY: 'auto',
       flex: 1,
     }}>
-      {isMobile ? (
-        <div style={{
-          width: MOBILE_W + 24,
-          maxWidth: MOBILE_W + 24,
-          backgroundColor: '#FFFFFF',
-          borderRadius: 28,
-          boxShadow: '0 24px 64px rgba(0,0,0,0.2)',
-          overflow: 'hidden',
-          border: '6px solid #1e293b',
-        }}>
-          <div style={{ backgroundColor: '#1e293b', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#ef4444' }} />
-            <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#f59e0b' }} />
-            <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#10b981' }} />
-            <span style={{ marginLeft: 'auto', fontSize: 10, color: '#94a3b8' }}>Preview Mobile</span>
-          </div>
-          <StudentPreview blocks={blocks} />
-        </div>
-      ) : (
+      {isDesktop ? (
         <div style={{
           position: 'relative',
           width: PAGE_W,
@@ -484,6 +471,31 @@ function PreviewCanvas({ blocks, isMobile }: { blocks: AnyBlock[]; isMobile?: bo
               </div>
             );
           })}
+        </div>
+      ) : (
+        <div style={{
+          width: (isMobile ? MOBILE_W : TABLET_W) + 24,
+          maxWidth: (isMobile ? MOBILE_W : TABLET_W) + 24,
+          backgroundColor: '#FFFFFF',
+          borderRadius: isMobile ? 28 : 12,
+          boxShadow: '0 24px 64px rgba(0,0,0,0.2)',
+          overflow: 'hidden',
+          border: '6px solid #1e293b',
+        }}>
+          {isMobile ? (
+            <div style={{ backgroundColor: '#1e293b', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#ef4444' }} />
+              <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#f59e0b' }} />
+              <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#10b981' }} />
+              <span style={{ marginLeft: 'auto', fontSize: 10, color: '#94a3b8' }}>Preview Mobile</span>
+            </div>
+          ) : (
+            <div style={{ backgroundColor: '#1e293b', padding: '4px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#0f172a', border: '1px solid #334155' }} />
+              <span style={{ marginLeft: 'auto', fontSize: 10, color: '#94a3b8' }}>Preview Tablet</span>
+            </div>
+          )}
+          <MobileCanvas blocks={blocks} viewportWidth={isMobile ? MOBILE_W : TABLET_W} />
         </div>
       )}
     </div>
@@ -507,6 +519,30 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
         </div>
         {/* Home bar */}
         <div style={{ backgroundColor: 'white', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{ width: '40px', height: '4px', borderRadius: '2px', backgroundColor: '#e2e8f0' }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Tablet Viewport (edit mode interativo) ────────────────────────────
+function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDrop: (id: string, file: File) => void }) {
+  return (
+    <div className="canvas-area canvas-bg" style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', padding: '24px', overflowY: 'auto' }}>
+      <div style={{ border: '6px solid #1e293b', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', backgroundColor: 'white', width: TABLET_W + 12, flexShrink: 0 }}>
+        {/* Top bar (camera) */}
+        <div style={{ backgroundColor: '#1e293b', height: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0f172a', border: '1px solid #334155' }} />
+        </div>
+        {/* Scrollable + editMode ativo */}
+        <div style={{ overflowY: 'auto', overflowX: 'hidden', backgroundColor: '#f8fafc',
+          backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)',
+          backgroundSize: '32px 32px' }}>
+          <MobileCanvas blocks={blocks} onImageDrop={onImageDrop} editMode viewportWidth={TABLET_W} />
+        </div>
+        {/* Home bar */}
+        <div style={{ backgroundColor: 'white', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <div style={{ width: '40px', height: '4px', borderRadius: '2px', backgroundColor: '#e2e8f0' }} />
         </div>
       </div>
@@ -607,9 +643,10 @@ export const EditorCanvas: React.FC = () => {
 
   if (!mounted) return <div className="canvas-area canvas-bg" style={{ flex: 1 }}><div style={{ color: 'var(--text-tertiary)' }}>Carregando...</div></div>;
 
-  if (previewMode) return <PreviewCanvas blocks={blocks} isMobile={viewportMode === 'mobile'} />;
+  if (previewMode) return <PreviewCanvas blocks={blocks} viewportMode={viewportMode} />;
 
   if (viewportMode === 'mobile') return <MobileViewport blocks={blocks} onImageDrop={handleImageDrop} />;
+  if (viewportMode === 'tablet') return <TableViewport blocks={blocks} onImageDrop={handleImageDrop} />;
 
   // ── Desktop Edit Mode ────────────────────────────────────────────────────────
   const sortedBlocks = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);

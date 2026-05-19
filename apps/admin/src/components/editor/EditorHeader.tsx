@@ -64,13 +64,20 @@ export const EditorHeader: React.FC = () => {
       </div>
 
       {/* View Toggle — alterna entre Desktop e Mobile no editor e preview */}
-      <div className="toggle-group" style={{ width: '120px' }}>
+      <div className="toggle-group" style={{ width: '180px' }}>
         <button
           className={`toggle-btn ${viewportMode === 'desktop' ? 'active' : ''}`}
           onClick={() => setViewportMode('desktop')}
           title="Viewport Desktop"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+        </button>
+        <button
+          className={`toggle-btn ${viewportMode === 'tablet' ? 'active' : ''}`}
+          onClick={() => setViewportMode('tablet')}
+          title="Viewport Tablet"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="22" x="4" y="1" rx="3"/><line x1="12" x2="12.01" y1="18" y2="18"/></svg>
         </button>
         <button
           className={`toggle-btn ${viewportMode === 'mobile' ? 'active' : ''}`}
