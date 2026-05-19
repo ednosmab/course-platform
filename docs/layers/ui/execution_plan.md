@@ -15,13 +15,13 @@ Completar a reforma do Design System (DSv2): modularizar tokens, migrar apps par
 - [x] TASK-07: Lint na pasta UI — compilação cross-platform OK
 
 ## 📌 FASE 0 — Fundação (Token Modular + Governança)
-- [ ] **TASK-08:** Criar `packages/ui/src/tokens/colors.ts` — extrair cores do `tamagui.config.ts`
-- [ ] **TASK-09:** Criar `packages/ui/src/tokens/spacing.ts` — extrair size/space/radius/zIndex
-- [ ] **TASK-10:** Criar `packages/ui/src/tokens/typography.ts` — extrair font definitions
-- [ ] **TASK-11:** Criar `packages/ui/src/tokens/shadows.ts` — extrair shadow presets
-- [ ] **TASK-12:** Criar `packages/ui/src/tokens/animations.ts` — extrair animation presets
-- [ ] **TASK-13:** Refatorar `tamagui.config.ts` para importar de `./tokens/*`
-- [ ] **TASK-14:** Preencher `docs/layers/ui/token-governance.md` com regras de nomenclatura, criação e proibição de hardcoded
+- [x] **TASK-08:** Criar `packages/ui/src/tokens/colors.ts` — extrair cores do `tamagui.config.ts`
+- [x] **TASK-09:** Criar `packages/ui/src/tokens/spacing.ts` — extrair size/space/radius/zIndex
+- [x] **TASK-10:** Criar `packages/ui/src/tokens/typography.ts` — extrair font definitions
+- [x] **TASK-11:** Criar `packages/ui/src/tokens/shadows.ts` — extrair shadow presets
+- [x] **TASK-12:** Criar `packages/ui/src/tokens/animations.ts` — extrair animation presets
+- [x] **TASK-13:** Refatorar `tamagui.config.ts` para importar de `./tokens/*`
+- [x] **TASK-14:** Preencher `docs/layers/ui/token-governance.md` com regras de nomenclatura, criação e proibição de hardcoded
 
 ## 📌 FASE 1 — Adoção em `admin-web`
 - [ ] **TASK-15:** Mapear/substituir `<button>` por `<Button>` do `@projeto/ui`
