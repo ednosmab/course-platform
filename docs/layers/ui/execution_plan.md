@@ -28,6 +28,7 @@ Completar a reforma do Design System (DSv2): modularizar tokens, migrar apps par
 - [x] **TASK-16:** Substituir `<div>`/`<span>` por `<YStack>`/`<XStack>`/`<Text>` do Tamagui
 - [x] **TASK-17:** Migrar `globals.css` — remover tokens CSS duplicados
 - [x] **TASK-18:** Eliminar `page.module.css`
+  > ⚠️ **Nota:** Tasks 15-16 foram marcadas como concluídas, mas `apps/admin/src/components/editor/` (5 arquivos) ainda usam extensivamente `<div>`, `<button>`, CSS classes e cores hardcoded. Refatoração real ainda pendente — ver `docs/BACKLOG.md` P0.
 
 ## 📌 FASE 2 — Adoção em `student`
 - [x] **TASK-19:** Substituir `<View>` por `<YStack>`/`<XStack>` do Tamagui
@@ -51,14 +52,14 @@ Completar a reforma do Design System (DSv2): modularizar tokens, migrar apps par
 - [x] **Fase 3 — Fix:** `packages/core` — `setTimeout` type error (`ReturnType<typeof setTimeout>`)
 
 ## 📌 FASE 4 — Sistema de Ícones
-- [ ] **TASK-32:** Criar `Icon.tsx` — wrapper cross-platform lucide
-- [ ] **TASK-33:** Substituir imports diretos de lucide nos apps
+- [x] **TASK-32:** Criar `Icon.tsx` / `Icon.native.tsx` — wrapper cross-platform lucide
+- [x] **TASK-33:** Substituir imports diretos de lucide nos apps (51 usos em 8 arquivos)
 
 ## 📌 FASE 5 — Preview de Componentes
-- [ ] **TASK-34:** Configurar Ladle ou Storybook em `packages/ui`
-- [ ] **TASK-35:** Criar stories para primitivos e blocos
+- [x] **TASK-34:** Configurar Ladle em `packages/ui`
+- [x] **TASK-35:** Criar 6 stories (Button, Card, Text, Icon, TextBlock, QuoteBlock)
 
 ## 📌 FASE 6 — Governança Final
-- [ ] **TASK-36:** Criar script `verify-ui-rules.ts` — proibir CSS nativo/StyleSheet
-- [ ] **TASK-37:** Atualizar `docs/AGENTS.md` com regras de governança
-- [ ] **TASK-38:** Lint final — `pnpm run lint` em todo monorepo
+- [x] **TASK-36:** Criar script `scripts/verify-ui-rules.ts` (4 regras)
+- [x] **TASK-37:** Atualizar `docs/AGENTS.md` com regras de governança do DS
+- [x] **TASK-38:** CI workflow (`.github/workflows/ci.yml`) — build:verify + react-consistency + verify:ui + ladle:build

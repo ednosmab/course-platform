@@ -345,26 +345,26 @@ const getDraftId = (lessonId: string) => {
             // Seed Lesson
             const defaultBlocks = [
               {
-                id: 'block-text-1',
+                id: crypto.randomUUID(),
                 type: 'text',
                 content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.',
                 styles: { align: 'left', fontSize: 'medium' },
                 layout: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 },
               },
               {
-                id: 'block-video-1',
+                id: crypto.randomUUID(),
                 type: 'video',
                 url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
                 provider: 'youtube',
                 layout: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 },
               },
               {
-                id: 'block-quiz-1',
+                id: crypto.randomUUID(),
                 type: 'quiz',
                 question: 'Qual banco de dados relacional é utilizado no Supabase?',
                 options: [
-                  { id: 'opt-pg-1', text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' },
-                  { id: 'opt-pg-2', text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }
+                  { id: crypto.randomUUID(), text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' },
+                  { id: crypto.randomUUID(), text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }
                 ],
                 layout: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 },
               }

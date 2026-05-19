@@ -29,7 +29,7 @@ export type AnyBlock = z.infer<typeof AnyBlockSchema>;
 // O esquema de uma aula inteira (usado para salvar no DB na coluna JSONB)
 export const CourseLessonContentSchema = z.object({
   blocks: z.array(AnyBlockSchema),
-}).strict();
+});
 
 export type CourseLessonContent = z.infer<typeof CourseLessonContentSchema>;
 

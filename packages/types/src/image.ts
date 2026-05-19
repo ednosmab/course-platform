@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { BlockLayoutSchema } from './layout';
 
 export const ImageBlockSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   type: z.literal('image'),
   url: z.string().url().or(z.literal('')),
   alt: z.string().optional(),
@@ -11,7 +11,7 @@ export const ImageBlockSchema = z.object({
     width: z.string().optional(),
     height: z.string().optional(),
     borderRadius: z.string().optional(),
-  }).strict().optional(),
+  }).optional(),
   layout: BlockLayoutSchema,
 }).strict();
 

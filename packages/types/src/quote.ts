@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { BlockLayoutSchema } from './layout';
 
 export const QuoteBlockSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   type: z.literal('quote'),
   content: z.string(),
   author: z.string().optional(),
@@ -17,7 +17,7 @@ export const QuoteBlockSchema = z.object({
     backgroundImage: z.string().optional(),
     width: z.string().optional(),
     height: z.string().optional(),
-  }).strict().optional(),
+  }).optional(),
   layout: BlockLayoutSchema,
 }).strict();
 

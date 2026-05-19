@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { YStack, XStack, Text, Button, ScrollView, Spinner, TamaguiProvider, config, Icon } from '@projeto/ui';
 import { useMobileProgress } from './src/hooks/useMobileProgress';
 import { BlockRenderer } from './src/components/BlockRenderer';
@@ -188,39 +188,43 @@ export default function App() {
 
   if (error) {
     return (
-      <TamaguiProvider config={config} defaultTheme={null}>
-        <SafeAreaView style={{ flex: 1 }}>
-          <YStack flex={1} jc="center" ai="center" p="$6" bg="$gray1">
-            <StatusBar barStyle="light-content" />
-            <Icon name="AlertCircle" size={48} color="#f43f5e" />
-            <Text color="$danger" fontSize={16} fontWeight="700" mt="$4" textAlign="center">
-              Erro ao Conectar ao Supabase
-            </Text>
-            <Text color="$gray4" fontSize={12} mt="$2" textAlign="center" lineHeight={18}>
-              {error}
-            </Text>
-            <Button variant="secondary" mt="$6" onPress={loadCourseData}>
-              Tentar Novamente
-            </Button>
-          </YStack>
-        </SafeAreaView>
-      </TamaguiProvider>
+      <SafeAreaProvider>
+        <TamaguiProvider config={config} defaultTheme={null}>
+          <SafeAreaView style={{ flex: 1 }}>
+            <YStack flex={1} jc="center" ai="center" p="$6" bg="$gray1">
+              <StatusBar barStyle="light-content" />
+              <Icon name="AlertCircle" size={48} color="#f43f5e" />
+              <Text color="$danger" fontSize={16} fontWeight="700" mt="$4" textAlign="center">
+                Erro ao Conectar ao Supabase
+              </Text>
+              <Text color="$gray4" fontSize={12} mt="$2" textAlign="center" lineHeight={18}>
+                {error}
+              </Text>
+              <Button variant="secondary" mt="$6" onPress={loadCourseData}>
+                Tentar Novamente
+              </Button>
+            </YStack>
+          </SafeAreaView>
+        </TamaguiProvider>
+      </SafeAreaProvider>
     );
   }
 
   if (loading || !activeLesson) {
     return (
-      <TamaguiProvider config={config} defaultTheme={null}>
-        <SafeAreaView style={{ flex: 1 }}>
-          <YStack flex={1} jc="center" ai="center" bg="$gray1">
-            <StatusBar barStyle="light-content" />
-            <Spinner size="large" color="$primary" />
-            <Text color="$gray4" mt="$4" fontSize={13} fontWeight="600">
-              Carregando plataforma de alunos real...
-            </Text>
-          </YStack>
-        </SafeAreaView>
-      </TamaguiProvider>
+      <SafeAreaProvider>
+        <TamaguiProvider config={config} defaultTheme={null}>
+          <SafeAreaView style={{ flex: 1 }}>
+            <YStack flex={1} jc="center" ai="center" bg="$gray1">
+              <StatusBar barStyle="light-content" />
+              <Spinner size="large" color="$primary" />
+              <Text color="$gray4" mt="$4" fontSize={13} fontWeight="600">
+                Carregando plataforma de alunos real...
+              </Text>
+            </YStack>
+          </SafeAreaView>
+        </TamaguiProvider>
+      </SafeAreaProvider>
     );
   }
 
@@ -228,6 +232,7 @@ export default function App() {
   const progressPercent = lessons.length > 0 ? Math.round((completedCount / lessons.length) * 100) : 0;
 
   return (
+    <SafeAreaProvider>
     <TamaguiProvider config={config} defaultTheme={null}>
     <SafeAreaView style={{ flex: 1 }}>
       <YStack flex={1} bg="$gray1">
@@ -299,5 +304,6 @@ export default function App() {
       </YStack>
     </SafeAreaView>
     </TamaguiProvider>
+    </SafeAreaProvider>
   );
 }
