@@ -441,25 +441,31 @@ function MobileCanvas({ blocks, onImageDrop, editMode = false, viewportWidth = M
 function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportMode: 'desktop' | 'tablet' | 'mobile' }) {
   const isMobile = viewportMode === 'mobile';
   const isTablet = viewportMode === 'tablet';
+  const isStretchy = viewportMode === 'desktop';
+
+  const cardW = isMobile ? MOBILE_W + 24 : isTablet ? TABLET_W + 24 : '100%';
+  const cardMaxW = isMobile ? MOBILE_W + 24 : isTablet ? TABLET_W + 24 : PAGE_W;
+  const boxShadow = (isMobile || isTablet) ? '0 24px 64px rgba(0,0,0,0.2)' : 'none';
+  const cardBorder = (isMobile || isTablet) ? '6px solid #1e293b' : 'none';
+  const cardRadius = isMobile ? 28 : isTablet ? 12 : 8;
+
   return (
     <div className="canvas-area" style={{
       backgroundColor: '#F1F2F8',
-      display: 'flex',
-      alignItems: (isMobile || isTablet) ? 'flex-start' : 'stretch',
-      justifyContent: 'center',
       padding: '24px',
       overflowY: 'auto',
       flex: 1,
+      ...(isStretchy ? {} : { display: 'flex', flexDirection: 'column', alignItems: 'center' }),
     }}>
       <div style={{
-        width: isMobile ? MOBILE_W + 24 : isTablet ? TABLET_W + 24 : '100%',
-        maxWidth: isMobile ? MOBILE_W + 24 : isTablet ? TABLET_W + 24 : PAGE_W,
+        width: cardW,
+        maxWidth: cardMaxW,
+        margin: isStretchy ? '0 auto' : undefined,
         backgroundColor: '#FFFFFF',
-        borderRadius: isMobile ? 28 : isTablet ? 12 : 8,
-        boxShadow: (isMobile || isTablet) ? '0 24px 64px rgba(0,0,0,0.2)' : 'none',
+        borderRadius: cardRadius,
+        boxShadow,
         overflow: 'hidden',
-        border: (isMobile || isTablet) ? '6px solid #1e293b' : 'none',
-        flexShrink: 0,
+        border: cardBorder,
       }}>
         {isMobile && (
           <div style={{ backgroundColor: '#1e293b', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
