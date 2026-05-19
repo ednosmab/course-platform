@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button } from '@projeto/ui';
+import { Button, Text } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { Undo2, Redo2, CloudLightning, Eye, EyeOff, CheckCircle2, Layers } from 'lucide-react';
 import { PositionPanel } from './PositionPanel';
@@ -96,15 +96,14 @@ export const EditorHeader: React.FC = () => {
           variant="ghost"
           onClick={() => setPreviewMode(!previewMode)}
         >
-          {previewMode ? <EyeOff size={15} /> : <Eye size={15} />}
-          {previewMode ? 'Sair do Preview' : 'Visualizar como aluno'}
+          {previewMode ? <EyeOff size={15} /> : <Eye size={15} />}<Text>{previewMode ? 'Sair do Preview' : 'Visualizar como aluno'}</Text>
         </Button>
 
         <Button
           variant="ghost"
           onClick={() => setIsPositionPanelOpen(!isPositionPanelOpen)}
         >
-          <Layers size={15} /> Posição
+          <Layers size={15} /><Text>Posição</Text>
         </Button>
 
         <Button
@@ -112,7 +111,7 @@ export const EditorHeader: React.FC = () => {
           onClick={handlePublish}
         >
           {published ? (
-            <><CheckCircle2 size={15} /> Publicado!</>
+            <><CheckCircle2 size={15} /><Text>Publicado!</Text></>
           ) : (
             'Publicar'
           )}
