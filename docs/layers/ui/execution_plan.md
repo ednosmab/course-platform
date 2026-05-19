@@ -24,10 +24,10 @@ Completar a reforma do Design System (DSv2): modularizar tokens, migrar apps par
 - [x] **TASK-14:** Preencher `docs/layers/ui/token-governance.md` com regras de nomenclatura, criação e proibição de hardcoded
 
 ## 📌 FASE 1 — Adoção em `admin-web`
-- [ ] **TASK-15:** Mapear/substituir `<button>` por `<Button>` do `@projeto/ui`
-- [ ] **TASK-16:** Substituir `<div>`/`<span>` por `<YStack>`/`<XStack>`/`<Text>` do Tamagui
-- [ ] **TASK-17:** Migrar `globals.css` — remover tokens CSS duplicados
-- [ ] **TASK-18:** Eliminar `page.module.css`
+- [x] **TASK-15:** Mapear/substituir `<button>` por `<Button>` do `@projeto/ui`
+- [x] **TASK-16:** Substituir `<div>`/`<span>` por `<YStack>`/`<XStack>`/`<Text>` do Tamagui
+- [x] **TASK-17:** Migrar `globals.css` — remover tokens CSS duplicados
+- [x] **TASK-18:** Eliminar `page.module.css`
 
 ## 📌 FASE 2 — Adoção em `aluno-mobile`
 - [ ] **TASK-19:** Substituir `<View>` por `<YStack>`/`<XStack>` do Tamagui
