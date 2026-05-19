@@ -2,8 +2,10 @@
   "name": "plataforma-cursos-cms",
   "version": "1.0.0",
   "scripts": {
+    "build:verify": "pnpm --filter student run build:web && pnpm --filter admin run build",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:react-consistency": "bash scripts/check-react-consistency.sh"
   },
   "engines": {
     "node": ">=20.0.0"

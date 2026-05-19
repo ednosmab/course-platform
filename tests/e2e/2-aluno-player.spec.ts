@@ -88,6 +88,13 @@ test.describe('Portal do Aluno - Player Móvel/Web', () => {
     });
   });
 
+  test('Smoke: app carrega sem crash', async ({ page }) => {
+    await page.goto('/');
+    // Se o app carregou sem JS crash, o console não tem erros fatais
+    // e o loading state (Spinner) deve aparecer
+    await expect(page.locator('text=Carregando')).toBeVisible({ timeout: 30000 });
+  });
+
   test('Deve renderizar o iFrame do YouTube e respeitar a regra Try Again do Quiz', async ({ page }) => {
     // Navega para a home do app do Aluno
     await page.goto('/');
