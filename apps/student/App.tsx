@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StatusBar } from 'react-native';
-import { YStack, XStack, Text, Button, ScrollView, Spinner, TamaguiProvider, config } from '@projeto/ui';
+import { StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { YStack, XStack, Text, Button, ScrollView, Spinner, TamaguiProvider, config, Icon } from '@projeto/ui';
 import { useMobileProgress } from './src/hooks/useMobileProgress';
 import { BlockRenderer } from './src/components/BlockRenderer';
 import { AnyBlock } from '@projeto/types';
 import { CourseService, supabase } from '@projeto/core';
-import { Wifi, WifiOff, BookOpen, RefreshCw, AlertCircle } from 'lucide-react-native';
 
 export default function App() {
   const { isOffline, setIsOffline, pendingCount, saveProgressMobile, syncPending } = useMobileProgress();
@@ -192,7 +192,7 @@ export default function App() {
         <SafeAreaView style={{ flex: 1 }}>
           <YStack flex={1} jc="center" ai="center" p="$6" bg="$gray1">
             <StatusBar barStyle="light-content" />
-            <AlertCircle size={48} color="#f43f5e" />
+            <Icon name="AlertCircle" size={48} color="#f43f5e" />
             <Text color="$danger" fontSize={16} fontWeight="700" mt="$4" textAlign="center">
               Erro ao Conectar ao Supabase
             </Text>
@@ -245,12 +245,12 @@ export default function App() {
         <XStack ai="center" gap="$2">
           {isOffline ? (
             <>
-              <WifiOff size={14} color="#f43f5e" />
+              <Icon name="WifiOff" size={14} color="#f43f5e" />
               <Text color="$gray3" fontSize={11} fontWeight="600">Modo Offline</Text>
             </>
           ) : (
             <>
-              <Wifi size={14} color="#10b981" />
+              <Icon name="Wifi" size={14} color="#10b981" />
               <Text color="$gray3" fontSize={11} fontWeight="600">Modo Online Conectado</Text>
             </>
           )}
@@ -267,7 +267,7 @@ export default function App() {
             {refreshing ? (
               <Spinner size="small" color="$primary" />
             ) : (
-              <RefreshCw size={12} color="$primary" />
+              <Icon name="RefreshCw" size={12} color="$primary" />
             )}
             <Text color="$primary" fontSize={9} fontWeight="700" ml="$1">Sincronizar CMS</Text>
           </Button>

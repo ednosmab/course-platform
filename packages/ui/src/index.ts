@@ -15,6 +15,8 @@ export * from './components/Button';
 export * from './components/Card';
 export * from './components/Text';
 export * from './components/Container';
+export { Icon } from './components/Icon';
+export type { IconProps } from './components/Icon';
 export * from './utils/markdown';
 export * from './blocks/TextBlock';
 export * from './blocks/QuoteBlock';

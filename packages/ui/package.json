@@ -15,12 +15,13 @@
     }
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "ladle": "ladle serve",
+    "ladle:build": "ladle build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-
   "dependencies": {
     "@tamagui/animations-react-native": "2.0.0-rc.42",
     "@tamagui/config": "2.0.0-rc.42",
@@ -29,11 +30,13 @@
     "tamagui": "2.0.0-rc.42"
   },
   "devDependencies": {
+    "@ladle/react": "^5.1.1",
     "@projeto/types": "workspace:*",
     "@tamagui/babel-plugin": "2.0.0-rc.42",
     "@types/react": "^19.2.14",
     "@types/react-native": "^0.73.0",
     "expo-av": "^15.0.2",
+    "lucide-react": "^0.378.0",
     "lucide-react-native": "^0.475.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -43,6 +46,7 @@
   "peerDependencies": {
     "@projeto/types": "workspace:*",
     "expo-av": "*",
+    "lucide-react": "*",
     "lucide-react-native": "*",
     "react": "*",
     "react-dom": "*",

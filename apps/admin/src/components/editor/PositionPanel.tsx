@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Button } from '@projeto/ui';
+import { Button, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
-import { X, MoveUp, MoveDown, ArrowUpToLine, ArrowDownToLine, AlignHorizontalJustifyStart, AlignHorizontalJustifyCenter, AlignHorizontalJustifyEnd, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, Type, Image, Video, FileQuestion, Quote, Code, Layers, GripVertical } from 'lucide-react';
 import { AnyBlock } from '@projeto/types';
 
 interface PositionPanelProps {
@@ -26,15 +25,12 @@ function getLayout(block: AnyBlock) {
 
 /** Ícone representativo de cada tipo de bloco */
 function BlockIcon({ type }: { type: string }) {
-  switch (type) {
-    case 'text': return <Type size={14} />;
-    case 'image': return <Image size={14} />;
-    case 'video': return <Video size={14} />;
-    case 'quiz': return <FileQuestion size={14} />;
-    case 'quote': return <Quote size={14} />;
-    case 'html': return <Code size={14} />;
-    default: return <Layers size={14} />;
-  }
+  const iconMap: Record<string, string> = {
+    text: 'Type', image: 'Image', video: 'Video',
+    quiz: 'FileQuestion', quote: 'Quote', html: 'Code',
+  };
+  const name = iconMap[type] || 'Layers';
+  return <Icon name={name} size={14} />;
 }
 
 /** Título legível e curto de cada bloco */
@@ -276,7 +272,7 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border-light)' }}>
         <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Posição</h3>
         <Button variant="ghost" onClick={onClose} style={{ padding: '2px' }}>
-          <X size={16} />
+          <Icon name="X" size={16} />
         </Button>
       </div>
 
@@ -317,16 +313,16 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
                 <div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                     <Button variant="ghost" onClick={handleBringForward}>
-                      <MoveUp size={14} /> Para frente
+                      <Icon name="MoveUp" size={14} /> Para frente
                     </Button>
                     <Button variant="ghost" onClick={handleSendBackward}>
-                      <MoveDown size={14} /> Para trás
+                      <Icon name="MoveDown" size={14} /> Para trás
                     </Button>
                     <Button variant="ghost" onClick={handleBringToFront}>
-                      <ArrowUpToLine size={14} /> Para o topo
+                      <Icon name="ArrowUpToLine" size={14} /> Para o topo
                     </Button>
                     <Button variant="ghost" onClick={handleSendToBack}>
-                      <ArrowDownToLine size={14} /> Para o fundo
+                      <Icon name="ArrowDownToLine" size={14} /> Para o fundo
                     </Button>
                   </div>
                 </div>
@@ -336,22 +332,22 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
                   <h4 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px' }}>Alinhar à página</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                     <Button variant="ghost" onClick={() => handleAlign('top')}>
-                      <AlignVerticalJustifyStart size={14} /> Em cima
+                      <Icon name="AlignVerticalJustifyStart" size={14} /> Em cima
                     </Button>
                     <Button variant="ghost" onClick={() => handleAlign('left')}>
-                      <AlignHorizontalJustifyStart size={14} /> À esquerda
+                      <Icon name="AlignHorizontalJustifyStart" size={14} /> À esquerda
                     </Button>
                     <Button variant="ghost" onClick={() => handleAlign('middle')}>
-                      <AlignVerticalJustifyCenter size={14} /> No meio
+                      <Icon name="AlignVerticalJustifyCenter" size={14} /> No meio
                     </Button>
                     <Button variant="ghost" onClick={() => handleAlign('center')}>
-                      <AlignHorizontalJustifyCenter size={14} /> Ao centro
+                      <Icon name="AlignHorizontalJustifyCenter" size={14} /> Ao centro
                     </Button>
                     <Button variant="ghost" onClick={() => handleAlign('bottom')}>
-                      <AlignVerticalJustifyEnd size={14} /> Embaixo
+                      <Icon name="AlignVerticalJustifyEnd" size={14} /> Embaixo
                     </Button>
                     <Button variant="ghost" onClick={() => handleAlign('right')}>
-                      <AlignHorizontalJustifyEnd size={14} /> À direita
+                      <Icon name="AlignHorizontalJustifyEnd" size={14} /> À direita
                     </Button>
                   </div>
                 </div>
@@ -426,7 +422,7 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
                     >
                       {/* Drag Handle */}
                       <div style={{ cursor: 'grab', color: 'var(--text-tertiary)', display: 'flex', flexShrink: 0 }}>
-                        <GripVertical size={14} />
+                        <Icon name="GripVertical" size={14} />
                       </div>
 
                       {/* Icon + Title */}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { YStack, XStack, Text } from 'tamagui';
 import { QuizBlock } from '@projeto/types';
 import { renderSimpleMarkdown } from '../utils/markdown';
-import { HelpCircle, CheckCircle, AlertTriangle } from 'lucide-react-native';
+import { Icon } from '../components/Icon';
 
 type Props = {
   block: QuizBlock;
@@ -31,7 +31,7 @@ export const QuizBlockRenderer: React.FC<Props> = ({ block }) => {
   return (
     <YStack width="100%" bg="$gray1" borderRadius="$6" borderWidth={1} borderColor="$gray2" p="$4" gap="$3.5">
       <XStack ai="center" gap="$2">
-        <HelpCircle size={18} color="#ec4899" style={{ marginTop: 2 }} />
+        <Icon name="HelpCircle" size={18} color="#ec4899" style={{ marginTop: 2 }} />
         <YStack flex={1} ml="$2">
           {renderSimpleMarkdown(block.question, {
             color: '$gray9',
@@ -72,8 +72,8 @@ export const QuizBlockRenderer: React.FC<Props> = ({ block }) => {
                 {opt.text}
               </Text>
 
-              {showCorrectStyle && <CheckCircle size={16} color="$primary" />}
-              {showIncorrectStyle && <AlertTriangle size={16} color="#ec4899" />}
+              {showCorrectStyle && <Icon name="CheckCircle" size={16} color="$primary" />}
+              {showIncorrectStyle && <Icon name="AlertTriangle" size={16} color="#ec4899" />}
             </XStack>
           );
         })}

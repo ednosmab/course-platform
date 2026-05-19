@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button, Text } from '@projeto/ui';
+import { Button, Text, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
-import { Undo2, Redo2, CloudLightning, Eye, EyeOff, CheckCircle2, Layers } from 'lucide-react';
 import { PositionPanel } from './PositionPanel';
 
 export const EditorHeader: React.FC = () => {
@@ -32,7 +31,7 @@ export const EditorHeader: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '24px', height: '24px', backgroundColor: 'var(--accent-blue)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <CloudLightning size={14} color="white" />
+              <Icon name="CloudLightning" size={14} color="white" />
             </div>
             <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>
               Onboarding 2026 / <span style={{ fontWeight: 600 }}>Aula 03 — Feedback</span>
@@ -85,10 +84,10 @@ export const EditorHeader: React.FC = () => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <div style={{ display: 'flex', gap: '4px', marginRight: '8px' }}>
           <button className="btn-icon" onClick={undo} disabled={!canUndo} style={{ opacity: canUndo ? 1 : 0.4 }} title="Desfazer">
-            <Undo2 size={16} />
+            <Icon name="Undo2" size={16} />
           </button>
           <button className="btn-icon" onClick={redo} disabled={!canRedo} style={{ opacity: canRedo ? 1 : 0.4 }} title="Refazer">
-            <Redo2 size={16} />
+            <Icon name="Redo2" size={16} />
           </button>
         </div>
 
@@ -96,14 +95,14 @@ export const EditorHeader: React.FC = () => {
           variant="ghost"
           onClick={() => setPreviewMode(!previewMode)}
         >
-          {previewMode ? <EyeOff size={15} /> : <Eye size={15} />}<Text>{previewMode ? 'Sair do Preview' : 'Visualizar como aluno'}</Text>
+          {previewMode ? <Icon name="EyeOff" size={15} /> : <Icon name="Eye" size={15} />}<Text>{previewMode ? 'Sair do Preview' : 'Visualizar como aluno'}</Text>
         </Button>
 
         <Button
           variant="ghost"
           onClick={() => setIsPositionPanelOpen(!isPositionPanelOpen)}
         >
-          <Layers size={15} /><Text>Posição</Text>
+          <Icon name="Layers" size={15} /><Text>Posição</Text>
         </Button>
 
         <Button
@@ -111,7 +110,7 @@ export const EditorHeader: React.FC = () => {
           onClick={handlePublish}
         >
           {published ? (
-            <><CheckCircle2 size={15} /><Text>Publicado!</Text></>
+            <><Icon name="CheckCircle2" size={15} /><Text>Publicado!</Text></>
           ) : (
             'Publicar'
           )}

@@ -14,6 +14,17 @@
 
 ---
 
+## 🎨 GOVERNANÇA DO DESIGN SYSTEM (OBRIGATÓRIO)
+
+- **Ícones:** É PROIBIDO importar diretamente de `lucide-react` ou `lucide-react-native`. Use exclusivamente `<Icon name="IconName" />` de `@projeto/ui`.
+- **Estilização:** Zero `<div>`, `<span>`, `<button>`, `<p>`, `<h1-6>` nos componentes — use `YStack`, `XStack`, `Text`, `Button` de `@projeto/ui`.
+- **Cores Hardcoded:** Proibido usar valores hex/rgb nos apps. Use tokens `$color` do Tamagui.
+- **StyleSheet.create():** Proibido no student app. Use Tamagui stylying.
+- **Verificação:** Execute `pnpm run verify:ui` para validar as regras acima.
+- **Ladle:** Mantenha stories atualizadas em `packages/ui/src/**/*.stories.tsx`. Execute `pnpm --filter @projeto/ui ladle:build` para verificar.
+
+---
+
 ## 🛑 REGRAS CRUCIAIS DE WORKFLOW E GIT (LEI ABSOLUTA)
 
 1. **NUNCA FAÇA COMMIT SEM PERMISSÃO:** É ESTREITAMENTE PROIBIDO executar comandos de `git commit` ou `git push` de forma automatizada. Você deve SEMPRE solicitar que o usuário teste as alterações localmente primeiro. Apenas após a confirmação visual e autorização explícita do usuário você poderá avançar ou sugerir o commit.

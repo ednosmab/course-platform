@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
+import { Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
-import { Type, Video, HelpCircle, Image as ImageIcon, Code, Quote } from 'lucide-react';
 
 export const BlockPalette: React.FC = () => {
   const { addBlock } = useEditor();
@@ -22,7 +22,7 @@ export const BlockPalette: React.FC = () => {
         {/* Bloco de Texto */}
         <button onClick={() => addBlock('text')} className="palette-item">
           <div className="palette-item-icon">
-            <Type size={18} />
+            <Icon name="Type" size={18} />
           </div>
           <span className="palette-item-label">Texto</span>
         </button>
@@ -30,7 +30,7 @@ export const BlockPalette: React.FC = () => {
         {/* Bloco de Imagem */}
         <button onClick={() => addBlock('image')} className="palette-item">
           <div className="palette-item-icon">
-            <ImageIcon size={18} />
+            <Icon name="Image" size={18} />
           </div>
           <span className="palette-item-label">Imagem</span>
         </button>
@@ -38,7 +38,7 @@ export const BlockPalette: React.FC = () => {
         {/* Bloco de Vídeo */}
         <button onClick={() => addBlock('video')} className="palette-item">
           <div className="palette-item-icon">
-            <Video size={18} />
+            <Icon name="Video" size={18} />
           </div>
           <span className="palette-item-label">Vídeo</span>
         </button>
@@ -46,7 +46,7 @@ export const BlockPalette: React.FC = () => {
         {/* Bloco de Quiz */}
         <button onClick={() => addBlock('quiz')} className="palette-item">
           <div className="palette-item-icon">
-            <HelpCircle size={18} />
+            <Icon name="HelpCircle" size={18} />
           </div>
           <span className="palette-item-label">Quiz</span>
         </button>
@@ -54,7 +54,7 @@ export const BlockPalette: React.FC = () => {
         {/* Bloco de Citação */}
         <button onClick={() => addBlock('quote')} className="palette-item">
           <div className="palette-item-icon">
-            <Quote size={18} />
+            <Icon name="Quote" size={18} />
           </div>
           <span className="palette-item-label">Citação</span>
         </button>
@@ -62,7 +62,7 @@ export const BlockPalette: React.FC = () => {
         {/* Bloco de HTML Raw */}
         <button onClick={() => addBlock('html')} className="palette-item">
           <div className="palette-item-icon">
-            <Code size={18} />
+            <Icon name="Code" size={18} />
           </div>
           <span className="palette-item-label">HTML</span>
         </button>

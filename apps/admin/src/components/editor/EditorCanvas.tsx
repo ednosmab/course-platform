@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useEditor } from '../../context/EditorContext';
-import { Trash2 } from 'lucide-react';
+import { Icon } from '@projeto/ui';
 import { AnyBlock } from '@projeto/types';
 
 // ─── Viewport sizes (real-world viewport boundaries) ────────────────────────
@@ -651,7 +651,7 @@ export const EditorCanvas: React.FC = () => {
               {/* Delete button */}
               {isActive && (
                 <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }} style={{ position: 'absolute', top: -34, right: 0, zIndex: 20, backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '5px', padding: '4px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 500 }}>
-                  <Trash2 size={12} /> Excluir
+                  <Icon name="Trash2" size={12} /> Excluir
                 </button>
               )}
 

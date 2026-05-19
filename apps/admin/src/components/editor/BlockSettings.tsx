@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@projeto/ui';
+import { Button, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
-import { AlignLeft, AlignCenter, AlignRight, AlignJustify, Trash2, Plus, AlertCircle, Code } from 'lucide-react';
 import { AnyBlock } from '@projeto/types';
 
 /** Gera HTML representativo de qualquer bloco (fora do componente para evitar re-renders) */
@@ -324,7 +323,7 @@ export const BlockSettings: React.FC = () => {
   if (!activeBlock) {
     return (
       <div className="sidebar-right" style={{ justifyContent: 'center', alignItems: 'center', padding: '24px', textAlign: 'center' }}>
-        <AlertCircle size={32} color="var(--text-tertiary)" style={{ marginBottom: '16px' }} />
+        <Icon name="AlertCircle" size={32} color="var(--text-tertiary)" style={{ marginBottom: '16px' }} />
         <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)' }}>Nenhum bloco selecionado</span>
         <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '8px' }}>
           Clique num bloco no canvas para editar suas propriedades.
@@ -351,7 +350,7 @@ export const BlockSettings: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
           <h3 style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Editar Bloco</h3>
           <button onClick={() => removeBlock(activeBlock.id)} style={{ color: '#ef4444', padding: '4px', display: 'flex', alignItems: 'center', cursor: 'pointer' }} title="Excluir bloco">
-            <Trash2 size={14} />
+            <Icon name="Trash2" size={14} />
           </button>
         </div>
         {/* Tab switcher */}
@@ -368,7 +367,7 @@ export const BlockSettings: React.FC = () => {
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
               }}
             >
-              {tab === 'props' ? 'Propriedades' : <><Code size={11} /> HTML Fonte</>}
+              {tab === 'props' ? 'Propriedades' : <><Icon name="Code" size={11} /> HTML Fonte</>}
             </button>
           ))}
         </div>
@@ -457,8 +456,7 @@ export const BlockSettings: React.FC = () => {
             <div style={{ display: 'flex', backgroundColor: 'var(--bg-canvas)', borderRadius: '6px', padding: '4px', border: '1px solid var(--border-light)' }}>
               {(['left', 'center', 'right', 'justify'] as const).map((align) => {
                 const isSelected = activeBlock.styles?.align === align;
-                const Icons = { left: AlignLeft, center: AlignCenter, right: AlignRight, justify: AlignJustify };
-                const Icon = Icons[align];
+                const iconName: Record<string, string> = { left: 'AlignLeft', center: 'AlignCenter', right: 'AlignRight', justify: 'AlignJustify' };
                 return (
                   <button
                     key={align}
@@ -470,7 +468,7 @@ export const BlockSettings: React.FC = () => {
                       boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
                     }}
                   >
-                    <Icon size={16} />
+                    <Icon name={iconName[align]} size={16} />
                   </button>
                 );
               })}
@@ -561,7 +559,7 @@ export const BlockSettings: React.FC = () => {
                 updateBlock(activeBlock.id, { options: [...activeBlock.options, newOption] });
               }}
             >
-              <Plus size={14} /> Add Opção
+              <Icon name="Plus" size={14} /> Add Opção
             </Button>
           </div>
 
@@ -602,7 +600,7 @@ export const BlockSettings: React.FC = () => {
                       className="btn-icon"
                       style={{ color: '#ef4444', width: '24px', height: '24px' }}
                     >
-                      <Trash2 size={12} />
+                      <Icon name="Trash2" size={12} />
                     </button>
                   )}
                 </div>
@@ -665,8 +663,7 @@ export const BlockSettings: React.FC = () => {
             <div style={{ display: 'flex', backgroundColor: 'var(--bg-canvas)', borderRadius: '6px', padding: '4px', border: '1px solid var(--border-light)' }}>
               {(['left', 'center', 'right'] as const).map((align) => {
                 const isSelected = activeBlock.styles?.align === align;
-                const Icons = { left: AlignLeft, center: AlignCenter, right: AlignRight };
-                const Icon = Icons[align];
+                const iconName: Record<string, string> = { left: 'AlignLeft', center: 'AlignCenter', right: 'AlignRight' };
                 return (
                   <button
                     key={align}
@@ -678,7 +675,7 @@ export const BlockSettings: React.FC = () => {
                       boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
                     }}
                   >
-                    <Icon size={16} />
+                    <Icon name={iconName[align]} size={16} />
                   </button>
                 );
               })}
@@ -778,13 +775,9 @@ export const BlockSettings: React.FC = () => {
           <div className="form-group">
             <label className="form-label">Alinhamento</label>
             <div style={{ display: 'flex', backgroundColor: 'var(--bg-canvas)', borderRadius: '6px', padding: '4px', border: '1px solid var(--border-light)' }}>
-              {([
-                { id: 'left', Icon: AlignLeft },
-                { id: 'center', Icon: AlignCenter },
-                { id: 'right', Icon: AlignRight },
-                { id: 'justify', Icon: AlignJustify },
-              ] as const).map(({ id: align, Icon }) => {
+              {(['left', 'center', 'right', 'justify'] as const).map((align) => {
                 const isSelected = activeBlock.styles?.align === align;
+                const iconName: Record<string, string> = { left: 'AlignLeft', center: 'AlignCenter', right: 'AlignRight', justify: 'AlignJustify' };
                 return (
                   <button
                     key={align}
@@ -796,7 +789,7 @@ export const BlockSettings: React.FC = () => {
                       boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
                     }}
                   >
-                    <Icon size={16} />
+                    <Icon name={iconName[align]} size={16} />
                   </button>
                 );
               })}

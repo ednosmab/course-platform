@@ -3,7 +3,7 @@ import { Platform, Dimensions } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import { YStack, XStack, Text } from 'tamagui';
 import { VideoBlock } from '@projeto/types';
-import { BookOpen, Play } from 'lucide-react-native';
+import { Icon } from '../components/Icon';
 
 type Props = {
   block: VideoBlock;
@@ -56,7 +56,7 @@ export const VideoBlockRenderer: React.FC<Props> = ({ block, onVideoProgress, sa
           }}
         />
         <XStack ai="center" gap="$1.5" p="$3" borderTopWidth={1} borderTopColor="$gray2">
-          <BookOpen size={12} color="#a78bfa" />
+          <Icon name="BookOpen" size={12} color="#a78bfa" />
           <Text color="$gray5" fontSize={10} flex={1}>YouTube | {block.url}</Text>
         </XStack>
       </YStack>
@@ -103,7 +103,7 @@ export const VideoBlockRenderer: React.FC<Props> = ({ block, onVideoProgress, sa
             jc="center"
             ai="center"
           >
-            <Play size={24} color="$white" style={{ marginLeft: 4 }} />
+            <Icon name="Play" size={24} color="$white" style={{ marginLeft: 4 }} />
           </YStack>
         </YStack>
       )}
