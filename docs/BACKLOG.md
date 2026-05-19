@@ -190,6 +190,14 @@ Tasks do plano `docs/layers/testing/e2e_playwright_plan.md`:
 
 ---
 
+### 🔒 Bloqueado (aguardando aprovação do PO)
+
+- [ ] **Pagamentos** — Pix, cartão, assinatura recorrente, checkout, webhooks de billing
+- [ ] **Aulas ao vivo** — WebRTC, sinalização, chat em tempo real, gravação
+- [ ] **Fóruns de discussão** — Threads por aula, moderação, notificações
+
+---
+
 ## 📊 Legenda
 
 | Prefixo | Significado |
