@@ -75,10 +75,10 @@ function BlockBtn({ icon, label, collapsed, onClick }: {
     <YStack
       onPress={onClick}
       cursor="pointer"
-      p={collapsed ? '$2' : '$3'}
-      ai={collapsed ? 'center' : 'flex-start'}
+      p={collapsed ? '$2' : '$2'}
+      ai="center"
       jc="center"
-      gap="$1.5"
+      gap="$1"
       borderRadius="$3"
       borderWidth={1} borderColor="$border"
       bg="$background"
