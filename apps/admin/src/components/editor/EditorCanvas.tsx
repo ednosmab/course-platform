@@ -15,6 +15,7 @@ const TABLET_W = 650;   // Tablet médio (edição confortável com sidebars)
 const MOBILE_H = 720;   // Altura visível do frame mobile (viewport sem barra)
 const MIN_W = 80;
 const MIN_H = 40;
+const ALIGN_THRESHOLD = 5;
 
 // Detecta se um bloco está fora dos limites da página
 function isOutOfBounds(block: AnyBlock, pageW: number): boolean {
@@ -106,6 +107,7 @@ function parseSimpleMarkdown(text: string): React.ReactNode[] {
 type HandleDir = 'n' | 's' | 'e' | 'w' | 'nw' | 'ne' | 'sw' | 'se';
 
 interface Layout { x: number; y: number; w: number; h: number; zIndex: number; }
+interface MeasureGuide { pos: number; start: number; end: number; value: number; orientation: 'h' | 'v'; }
 
 function getLayout(block: AnyBlock, viewport?: 'desktop' | 'tablet' | 'mobile'): Layout {
   const vp = viewport || 'desktop';
@@ -118,6 +120,72 @@ function getLayout(block: AnyBlock, viewport?: 'desktop' | 'tablet' | 'mobile'):
     h: typeof l?.h === 'number' ? l.h : 120,
     zIndex: typeof l?.zIndex === 'number' ? l.zIndex : 0,
   };
+}
+
+function computeBlockGuides(
+  draggedLayout: Layout,
+  draggedBlockId: string,
+  blocks: AnyBlock[],
+  viewportMode: 'desktop' | 'tablet' | 'mobile',
+): { v: number[]; h: number[]; m: MeasureGuide[] } {
+  const pageH = Math.max(800, ...blocks.map(b => {
+    const l = getLayout(b, viewportMode);
+    return l.y + l.h + 120;
+  }));
+  const dcx = draggedLayout.x + draggedLayout.w / 2;
+  const dcy = draggedLayout.y + draggedLayout.h / 2;
+  const dr = draggedLayout.x + draggedLayout.w;
+  const db = draggedLayout.y + draggedLayout.h;
+
+  const vSet = new Set<number>();
+  const hSet = new Set<number>();
+  const measurements: MeasureGuide[] = [];
+
+  // ── Layout center alignment (blue) ──
+  if (Math.abs(dcx - CANVAS_W / 2) < ALIGN_THRESHOLD) vSet.add(CANVAS_W / 2);
+  if (Math.abs(dcy - pageH / 2) < ALIGN_THRESHOLD) hSet.add(pageH / 2);
+
+  // ── Block-to-block alignment + spacing measurements (lilac) ──
+  interface Nearest { edge: number; oStart: number; oEnd: number; }
+  let left: Nearest | null = null;
+  let right: Nearest | null = null;
+  let above: Nearest | null = null;
+  let below: Nearest | null = null;
+
+  for (const block of blocks) {
+    if (block.id === draggedBlockId) continue;
+    const l = getLayout(block, viewportMode);
+    const br = l.x + l.w;
+    const bb = l.y + l.h;
+
+    // Alignment guides
+    if (Math.abs(dcx - (l.x + l.w / 2)) < ALIGN_THRESHOLD) vSet.add(l.x + l.w / 2);
+    if (Math.abs(draggedLayout.x - l.x) < ALIGN_THRESHOLD) vSet.add(l.x);
+    if (Math.abs(dr - br) < ALIGN_THRESHOLD) vSet.add(br);
+    if (Math.abs(dcy - (l.y + l.h / 2)) < ALIGN_THRESHOLD) hSet.add(l.y + l.h / 2);
+    if (Math.abs(draggedLayout.y - l.y) < ALIGN_THRESHOLD) hSet.add(l.y);
+    if (Math.abs(db - bb) < ALIGN_THRESHOLD) hSet.add(bb);
+
+    // Spacing measurements
+    const vyOverlap = Math.min(db, bb) - Math.max(draggedLayout.y, l.y);
+    const vxOverlap = Math.min(dr, br) - Math.max(draggedLayout.x, l.x);
+
+    if (vyOverlap > 0 && br <= draggedLayout.x && (!left || br > left.edge))
+      left = { edge: br, oStart: Math.max(draggedLayout.y, l.y), oEnd: Math.min(db, bb) };
+    if (vyOverlap > 0 && l.x >= dr && (!right || l.x < right.edge))
+      right = { edge: l.x, oStart: Math.max(draggedLayout.y, l.y), oEnd: Math.min(db, bb) };
+    if (vxOverlap > 0 && bb <= draggedLayout.y && (!above || bb > above.edge))
+      above = { edge: bb, oStart: Math.max(draggedLayout.x, l.x), oEnd: Math.min(dr, br) };
+    if (vxOverlap > 0 && l.y >= db && (!below || l.y < below.edge))
+      below = { edge: l.y, oStart: Math.max(draggedLayout.x, l.x), oEnd: Math.min(dr, br) };
+  }
+
+  if (left) measurements.push({ orientation: 'h', pos: (left.oStart + left.oEnd) / 2, start: left.edge, end: draggedLayout.x, value: Math.round(draggedLayout.x - left.edge) });
+  if (right) measurements.push({ orientation: 'h', pos: (right.oStart + right.oEnd) / 2, start: dr, end: right.edge, value: Math.round(right.edge - dr) });
+  if (above) measurements.push({ orientation: 'v', pos: (above.oStart + above.oEnd) / 2, start: above.edge, end: draggedLayout.y, value: Math.round(draggedLayout.y - above.edge) });
+  if (below) measurements.push({ orientation: 'v', pos: (below.oStart + below.oEnd) / 2, start: db, end: below.edge, value: Math.round(below.edge - db) });
+
+  return { v: Array.from(vSet), h: Array.from(hSet), m: measurements };
 }
 
 const HANDLES: { id: HandleDir; cursor: string; style: React.CSSProperties }[] = [
@@ -326,8 +394,9 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
 
 // ─── Edit viewport helpers ─────────────────────────────────────────────
 function useViewportInteraction(scale: number) {
-  const { activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent, viewportMode } = useEditor();
+  const { blocks, activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent, viewportMode } = useEditor();
   const [isInteracting, setIsInteracting] = useState(false);
+  const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
   const interactionRef = useRef<{
     mode: 'move' | 'resize';
     blockId: string;
@@ -392,7 +461,10 @@ function useViewportInteraction(scale: number) {
     const onMouseMove = (e: MouseEvent) => {
       if (!interactionRef.current) return;
       const newLayout = applyLayout(e);
-      if (newLayout) updateBlockSilent(interactionRef.current.blockId, buildUpdate(newLayout) as any);
+      if (newLayout) {
+        updateBlockSilent(interactionRef.current.blockId, buildUpdate(newLayout) as any);
+        setGuides(computeBlockGuides(newLayout, interactionRef.current.blockId, blocks, viewportMode));
+      }
     };
 
     const onMouseUp = (e: MouseEvent) => {
@@ -401,6 +473,7 @@ function useViewportInteraction(scale: number) {
       if (newLayout) updateBlock(interactionRef.current.blockId, buildUpdate(newLayout) as any);
       interactionRef.current = null;
       setIsInteracting(false);
+      setGuides({ v: [], h: [], m: [] });
     };
 
     document.addEventListener('mousemove', onMouseMove);
@@ -411,7 +484,7 @@ function useViewportInteraction(scale: number) {
     };
   }, [updateBlock, updateBlockSilent, scale, viewportMode]);
 
-  return { activeBlockId, setActiveBlockId, removeBlock, updateBlock, isInteracting, onBlockMouseDown, onHandleMouseDown };
+  return { activeBlockId, setActiveBlockId, removeBlock, updateBlock, isInteracting, onBlockMouseDown, onHandleMouseDown, guides };
 }
 
 function renderViewportBlocks(args: {
@@ -425,6 +498,7 @@ function renderViewportBlocks(args: {
   isInteracting: boolean;
   onBlockMouseDown: (e: React.MouseEvent, block: AnyBlock) => void;
   onHandleMouseDown: (e: React.MouseEvent, block: AnyBlock, handle: HandleDir) => void;
+  guides?: { v: number[]; h: number[]; m: MeasureGuide[] };
 }) {
   const scale = args.viewportW / CANVAS_W;
   const pageH = Math.max(800, ...args.blocks.map(b => { const l = getLayout(b, args.viewportMode); return l.y + l.h + 120; }));
@@ -471,6 +545,34 @@ function renderViewportBlocks(args: {
               />
             ))}
           </div>
+        );
+      })}
+
+      {args.guides?.v.map((x, i) => (
+        <div key={`gv-${i}`} style={{ position: 'absolute', left: x * scale, top: 0, width: 0, height: pageH * scale, borderLeft: '1.5px dashed #3b82f6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+      ))}
+      {args.guides?.h.map((y, i) => (
+        <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y * scale, width: args.viewportW, height: 0, borderTop: '1.5px dashed #3b82f6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+      ))}
+      {args.guides?.m.map((m, i) => {
+        const s = scale;
+        if (m.orientation === 'h') {
+          return (
+            <React.Fragment key={`gm-${i}`}>
+              <div style={{ position: 'absolute', left: m.start * s, top: m.pos * s, width: (m.end - m.start) * s, height: 0, borderTop: '1px dashed #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.start * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.end * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: (m.start + m.end) / 2 * s, top: m.pos * s, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#a78bfa', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #a78bfa', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+            </React.Fragment>
+          );
+        }
+        return (
+          <React.Fragment key={`gm-${i}`}>
+            <div style={{ position: 'absolute', left: m.pos * s, top: m.start * s, width: 0, height: (m.end - m.start) * s, borderLeft: '1px dashed #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
+            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.start * s, width: 6, height: 0, borderTop: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
+            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.end * s, width: 6, height: 0, borderTop: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
+            <div style={{ position: 'absolute', left: m.pos * s, top: (m.start + m.end) / 2 * s, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#a78bfa', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #a78bfa', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+          </React.Fragment>
         );
       })}
     </div>
@@ -581,6 +683,7 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
             isInteracting: viewInteraction.isInteracting,
             onBlockMouseDown: viewInteraction.onBlockMouseDown,
             onHandleMouseDown: viewInteraction.onHandleMouseDown,
+            guides: viewInteraction.guides,
           })}
         </div>
         <div style={{ backgroundColor: 'white', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -611,6 +714,7 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
             isInteracting: viewInteraction.isInteracting,
             onBlockMouseDown: viewInteraction.onBlockMouseDown,
             onHandleMouseDown: viewInteraction.onHandleMouseDown,
+            guides: viewInteraction.guides,
           })}
         </div>
         <div style={{ backgroundColor: 'white', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -626,6 +730,7 @@ export const EditorCanvas: React.FC = () => {
   const { blocks, activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent, previewMode, viewportMode } = useEditor();
   const [mounted, setMounted] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
+  const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
 
   const interactionRef = useRef<{
     mode: 'move' | 'resize';
@@ -701,7 +806,10 @@ export const EditorCanvas: React.FC = () => {
     const onMouseMove = (e: MouseEvent) => {
       if (!interactionRef.current) return;
       const layout = applyLayout(e);
-      if (layout) updateBlockSilent(interactionRef.current.blockId, buildUpdate(layout) as any);
+      if (layout) {
+        updateBlockSilent(interactionRef.current.blockId, buildUpdate(layout) as any);
+        setGuides(computeBlockGuides(layout, interactionRef.current.blockId, blocks, viewportMode));
+      }
     };
 
     const onMouseUp = (e: MouseEvent) => {
@@ -710,6 +818,7 @@ export const EditorCanvas: React.FC = () => {
       if (layout) updateBlock(interactionRef.current.blockId, buildUpdate(layout) as any);
       interactionRef.current = null;
       setIsInteracting(false);
+      setGuides({ v: [], h: [], m: [] });
     };
 
     document.addEventListener('mousemove', onMouseMove);
@@ -816,6 +925,33 @@ export const EditorCanvas: React.FC = () => {
                 />
               ))}
             </div>
+          );
+        })}
+
+        {guides.v.map((x, i) => (
+          <div key={`gv-${i}`} style={{ position: 'absolute', left: x, top: 0, width: 0, height: pageH, borderLeft: '1.5px dashed #3b82f6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+        ))}
+        {guides.h.map((y, i) => (
+          <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y, width: PAGE_W, height: 0, borderTop: '1.5px dashed #3b82f6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+        ))}
+        {guides.m.map((m, i) => {
+          if (m.orientation === 'h') {
+            return (
+              <React.Fragment key={`gm-${i}`}>
+                <div style={{ position: 'absolute', left: m.start, top: m.pos, width: m.end - m.start, height: 0, borderTop: '1px dashed #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
+                <div style={{ position: 'absolute', left: m.start, top: m.pos - 3, width: 0, height: 6, borderLeft: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
+                <div style={{ position: 'absolute', left: m.end, top: m.pos - 3, width: 0, height: 6, borderLeft: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
+                <div style={{ position: 'absolute', left: (m.start + m.end) / 2, top: m.pos, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#a78bfa', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #a78bfa', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+              </React.Fragment>
+            );
+          }
+          return (
+            <React.Fragment key={`gm-${i}`}>
+              <div style={{ position: 'absolute', left: m.pos, top: m.start, width: 0, height: m.end - m.start, borderLeft: '1px dashed #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.pos - 3, top: m.start, width: 6, height: 0, borderTop: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.pos - 3, top: m.end, width: 6, height: 0, borderTop: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.pos, top: (m.start + m.end) / 2, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#a78bfa', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #a78bfa', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+            </React.Fragment>
           );
         })}
       </div>
