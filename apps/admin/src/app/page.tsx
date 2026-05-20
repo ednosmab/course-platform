@@ -97,7 +97,7 @@ export default function Dashboard() {
         <XStack
           position="sticky" top={0} zIndex={40}
           borderBottomWidth={1} borderBottomColor="$border"
-          backgroundColor="rgba(247, 248, 252, 0.8)"
+          bg="$background"
           style={{ backdropFilter: 'blur(12px)' }}
           px={24} height={64} ai="center" jc="space-between"
         >

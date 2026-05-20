@@ -206,7 +206,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
         px={24} height={56} ai="center" gap={16}
       >
         <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-          <Icon name="ArrowLeft" size={20} color="#808498" />
+          <Icon name="ArrowLeft" size={20} color="$textMuted" />
         </Link>
         <Text fontSize={16} fontWeight="600">{course?.title || 'Carregando...'}</Text>
       </XStack>
@@ -214,8 +214,8 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
       <YStack f={1} maxWidth={800} alignSelf="center" w="100%" p={24} gap={16}>
         <XStack ai="center" jc="space-between">
           <Text fontFamily="$display" fontSize={24} fontWeight="$6">Módulos e aulas</Text>
-          <Button onPress={() => { setNewTitle(''); setShowModuleInput(true); }}>
-            <Icon name="Plus" size={14} color="white" /><Text ml={4} color="white" fontSize={13}>Novo módulo</Text>
+          <Button onPress={() => { setNewTitle(''); setShowModuleInput(true); }} variant="ghost" borderWidth={1} borderColor="$border">
+            <Icon name="Plus" size={14} /><Text ml={4} fontSize={13}>Novo módulo</Text>
           </Button>
         </XStack>
 
@@ -229,7 +229,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
               style={{ flex: 1, height: 36, borderRadius: 6, border: '1px solid #DEE1EB', padding: '0 12px', fontSize: 14, outline: 'none' }}
               onKeyDown={e => { if (e.key === 'Enter') createModule(); if (e.key === 'Escape') setShowModuleInput(false); }}
             />
-            <Button onPress={createModule} disabled={!newTitle.trim()}>Adicionar</Button>
+            <Button onPress={createModule} disabled={!newTitle.trim()} variant="ghost" borderWidth={1} borderColor="$border">Adicionar</Button>
             <Button variant="secondary" onPress={() => setShowModuleInput(false)}>Cancelar</Button>
           </XStack>
         )}
@@ -257,8 +257,8 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
                     style={{ flex: 1, height: 32, borderRadius: 6, border: '1px solid #3B82F6', padding: '0 10px', fontSize: 14, outline: 'none' }}
                     onKeyDown={e => { if (e.key === 'Enter') renameModule(mod.id); if (e.key === 'Escape') setEditingModuleId(null); }}
                   />
-                  <Button onPress={() => renameModule(mod.id)} px="$3" py="$1">
-                    <Text color="white" fontSize={12}>Salvar</Text>
+                  <Button onPress={() => renameModule(mod.id)} px="$3" py="$1" variant="ghost" borderWidth={1} borderColor="$border">
+                    <Text fontSize={12}>Salvar</Text>
                   </Button>
                 </XStack>
               ) : (
@@ -293,8 +293,8 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
                       style={{ flex: 1, height: 32, borderRadius: 6, border: '1px solid #DEE1EB', padding: '0 12px', fontSize: 13, outline: 'none' }}
                       onKeyDown={e => { if (e.key === 'Enter') createLesson(mod.id); if (e.key === 'Escape') setShowLessonInput(null); }}
                     />
-                    <Button onPress={() => createLesson(mod.id)} disabled={!newTitle.trim()} px="$3" py="$1">
-                      <Text color="white" fontSize={12}>Adicionar</Text>
+                    <Button onPress={() => createLesson(mod.id)} disabled={!newTitle.trim()} px="$3" py="$1" variant="ghost" borderWidth={1} borderColor="$border">
+                      <Text fontSize={12}>Adicionar</Text>
                     </Button>
                     <Button variant="secondary" onPress={() => setShowLessonInput(null)} px="$3" py="$1">
                       <Text fontSize={12}>Cancelar</Text>
@@ -326,8 +326,8 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
                           style={{ flex: 1, height: 28, borderRadius: 6, border: '1px solid #3B82F6', padding: '0 8px', fontSize: 13, outline: 'none' }}
                           onKeyDown={e => { if (e.key === 'Enter') renameLesson(lesson.id); if (e.key === 'Escape') setEditingLessonId(null); }}
                         />
-                        <Button onPress={() => renameLesson(lesson.id)} px="$3" py="$1">
-                          <Text color="white" fontSize={12}>Salvar</Text>
+                        <Button onPress={() => renameLesson(lesson.id)} px="$3" py="$1" variant="ghost" borderWidth={1} borderColor="$border">
+                          <Text fontSize={12}>Salvar</Text>
                         </Button>
                       </XStack>
                     ) : (
@@ -338,7 +338,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
                           px={6} py={1} borderRadius={4}
                           bg={(lesson as any).is_published ? 'rgba(34, 197, 94, 0.15)' : 'rgba(247, 248, 252, 0.7)'}
                         >
-                          <Text fontSize={10} fontWeight="600" color={(lesson as any).is_published ? '#166534' : '#808498'}>
+                          <Text fontSize={10} fontWeight="600" color={(lesson as any).is_published ? '$successForeground' : '$textMuted'}>
                             {(lesson as any).is_published ? 'Publicada' : 'Rascunho'}
                           </Text>
                         </XStack>
@@ -414,7 +414,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
               <XStack ai="center" gap={12}>
                 <Text fontSize={13} fontWeight="500">Publicado</Text>
                 <XStack
-                  w={44} h={24} br={12} bg={course?.is_published ? '#22C55E' : '#DEE1EB'}
+                  w={44} h={24} br={12} bg={course?.is_published ? '$success' : '$border'}
                   ai="center" px={3}
                   cursor="pointer"
                   onPress={togglePublish}
@@ -435,7 +435,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
                 <XStack ai="center" gap={12}>
                   <Text fontSize={13} fontWeight="500">Emitir certificado</Text>
                   <XStack
-                    w={44} h={24} br={12} bg={certificateEnabled ? '#22C55E' : '#DEE1EB'}
+                    w={44} h={24} br={12} bg={certificateEnabled ? '$success' : '$border'}
                     ai="center" px={3}
                     cursor="pointer"
                     onPress={() => setCertificateEnabled(!certificateEnabled)}
@@ -447,13 +447,13 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
               </YStack>
 
               {saveMessage && (
-                <XStack p={10} borderRadius={6} bg={saveMessage.type === 'success' ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)'} ai="center" gap={8}>
-                  <Icon name={saveMessage.type === 'success' ? 'CheckCircle' : 'AlertCircle'} size={16} color={saveMessage.type === 'success' ? '#22C55E' : '#EF4444'} />
-                  <Text fontSize={13} color={saveMessage.type === 'success' ? '#166534' : '#991B1B'}>{saveMessage.text}</Text>
+                <XStack p={10} borderRadius={6} borderWidth={1} borderColor={saveMessage.type === 'success' ? '$success' : '$danger'} bg="white" ai="center" gap={8}>
+                  <Icon name={saveMessage.type === 'success' ? 'CheckCircle' : 'AlertCircle'} size={16} color={saveMessage.type === 'success' ? '$success' : '$danger'} />
+                  <Text fontSize={13} color={saveMessage.type === 'success' ? '$successForeground' : '$text'}>{saveMessage.text}</Text>
                 </XStack>
               )}
-              <Button onPress={saveCourseSettings}>
-                <Text color="white" fontSize={13} fontWeight="600">Salvar configurações</Text>
+              <Button onPress={saveCourseSettings} variant="ghost" borderWidth={1} borderColor="$border">
+                <Text fontSize={13} fontWeight="600">Salvar configurações</Text>
               </Button>
             </YStack>
           )}

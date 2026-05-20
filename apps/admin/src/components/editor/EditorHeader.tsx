@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button, Text, Icon } from '@projeto/ui';
+import { XStack, YStack, Text, Button, Icon } from '@projeto/ui';
 import Link from 'next/link';
 import { useEditor } from '../../context/EditorContext';
 import { PositionPanel } from './PositionPanel';
@@ -26,101 +26,101 @@ export const EditorHeader: React.FC = () => {
   };
 
   return (
-    <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', height: '56px', borderBottom: '1px solid #DEE1EB', backgroundColor: '#FFFFFF', gap: '16px' }}>
-      {/* Left Area */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+    <XStack
+      ai="center" jc="space-between"
+      px="$4" height={56}
+      borderBottomWidth={1} borderBottomColor="$border"
+      bg="$background"
+      gap="$4"
+    >
+      <XStack ai="center" gap="$4">
         <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-          <Icon name="ArrowLeft" size={20} color="#808498" />
+          <Icon name="ArrowLeft" size={20} color="$textMuted" />
         </Link>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '24px', height: '24px', backgroundColor: 'var(--accent-blue)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name="CloudLightning" size={14} color="white" />
-            </div>
-            <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>
-              {courseTitle || 'Curso'} / {moduleTitle || 'Módulo'} / <span style={{ fontWeight: 600 }}>{lessonTitle}</span>
-            </span>
-          </div>
+        <XStack ai="center" gap="$3">
+          <XStack ai="center" gap="$2">
+            <XStack w={24} h={24} borderRadius="$2" borderWidth={1} borderColor="$border" ai="center" jc="center">
+              <Icon name="CloudLightning" size={14} color="$textMuted" />
+            </XStack>
+            <Text fontSize={14} fontWeight="500">
+              {courseTitle || 'Curso'} / {moduleTitle || 'Módulo'} / <Text fontWeight="600">{lessonTitle}</Text>
+            </Text>
+          </XStack>
 
-          {/* Save Status */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px', fontSize: '11px', color: 'var(--text-tertiary)' }}>
+          <XStack ai="center" gap={6} ml="$3">
             {saveStatus === 'saving' && (
               <>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
-                <span>Salvando...</span>
+                <XStack w={6} h={6} borderRadius={3} bg="$warning" />
+                <Text fontSize={11}>Salvando...</Text>
               </>
             )}
             {(saveStatus === 'saved' || saveStatus === 'idle') && (
               <>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} />
-                <span>Salvo</span>
+                <XStack w={6} h={6} borderRadius={3} bg="$success" />
+                <Text fontSize={11}>Salvo</Text>
               </>
             )}
             {saveStatus === 'error' && (
               <>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#ef4444' }} />
-                <span style={{ color: '#ef4444' }}>Erro ao salvar</span>
+                <XStack w={6} h={6} borderRadius={3} bg="$danger" />
+                <Text fontSize={11} color="$danger">Erro ao salvar</Text>
               </>
             )}
-          </div>
-        </div>
-      </div>
+          </XStack>
+        </XStack>
+      </XStack>
 
-      {/* View Toggle — alterna entre Desktop e Mobile no editor e preview */}
-      <div className="toggle-group" style={{ width: '180px' }}>
-        <button
-          className={`toggle-btn ${viewportMode === 'desktop' ? 'active' : ''}`}
-          onClick={() => setViewportMode('desktop')}
-          title="Viewport Desktop"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
-        </button>
-        <button
-          className={`toggle-btn ${viewportMode === 'tablet' ? 'active' : ''}`}
-          onClick={() => setViewportMode('tablet')}
-          title="Viewport Tablet"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="22" x="4" y="1" rx="3"/><line x1="12" x2="12.01" y1="18" y2="18"/></svg>
-        </button>
-        <button
-          className={`toggle-btn ${viewportMode === 'mobile' ? 'active' : ''}`}
-          onClick={() => setViewportMode('mobile')}
-          title="Viewport Mobile"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-        </button>
-      </div>
+      <XStack ai="center" gap={1} borderWidth={1} borderColor="$border" borderRadius={8} bg="$background" p={4}>
+        {[
+          { id: 'desktop' as const, icon: 'Monitor' as const },
+          { id: 'tablet' as const, icon: 'Tablet' as const },
+          { id: 'mobile' as const, icon: 'Smartphone' as const },
+        ].map(({ id, icon }) => (
+          <XStack
+            key={id}
+            onPress={() => setViewportMode(id)}
+            w={36} h={28}
+            ai="center" jc="center"
+            borderRadius={6}
+            bg={viewportMode === id ? '$secondary' : 'transparent'}
+            cursor="pointer"
+            hoverStyle={{ bg: viewportMode === id ? '$secondary' : '$muted' }}
+          >
+            <Icon name={icon} size={16} color={viewportMode === id ? '$text' : '$textMuted'} />
+          </XStack>
+        ))}
+      </XStack>
 
-      {/* Right Area: Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ display: 'flex', gap: '4px', marginRight: '8px' }}>
-          <button className="btn-icon" onClick={undo} disabled={!canUndo} style={{ opacity: canUndo ? 1 : 0.4 }} title="Desfazer">
+      <XStack ai="center" gap="$3">
+        <XStack gap={1} mr="$2">
+          <Button variant="ghost" onPress={undo} disabled={!canUndo} opacity={canUndo ? 1 : 0.4} px="$1">
             <Icon name="Undo2" size={16} />
-          </button>
-          <button className="btn-icon" onClick={redo} disabled={!canRedo} style={{ opacity: canRedo ? 1 : 0.4 }} title="Refazer">
+          </Button>
+          <Button variant="ghost" onPress={redo} disabled={!canRedo} opacity={canRedo ? 1 : 0.4} px="$1">
             <Icon name="Redo2" size={16} />
-          </button>
-        </div>
+          </Button>
+        </XStack>
 
         <Button
           variant="ghost"
-          onClick={() => setPreviewMode(!previewMode)}
+          onPress={() => setPreviewMode(!previewMode)}
         >
           {previewMode ? <Icon name="EyeOff" size={15} /> : <Icon name="Eye" size={15} />}<Text>{previewMode ? 'Sair do Preview' : 'Visualizar como aluno'}</Text>
         </Button>
 
         <Button
           variant="ghost"
-          onClick={() => setIsPositionPanelOpen(!isPositionPanelOpen)}
+          onPress={() => setIsPositionPanelOpen(!isPositionPanelOpen)}
         >
           <Icon name="Layers" size={15} /><Text>Posição</Text>
         </Button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <XStack ai="center" gap="$2">
           <Button
-            variant="primary"
-            onClick={handlePublish}
+            variant="ghost"
+            borderWidth={1} borderColor="$border"
+            onPress={handlePublish}
           >
             {published ? (
               <><Icon name="CheckCircle2" size={15} /><Text>Publicado!</Text></>
@@ -129,17 +129,16 @@ export const EditorHeader: React.FC = () => {
             )}
           </Button>
           {publishError && (
-            <div style={{ fontSize: '12px', color: '#ef4444', maxWidth: '220px', lineHeight: '1.3' }}>
+            <Text fontSize={12} color="$danger" maxWidth={220} lineHeight={1.3}>
               {publishError}
-            </div>
+            </Text>
           )}
-        </div>
-      </div>
+        </XStack>
+      </XStack>
 
-      {/* Popover/Modal do Painel de Posição */}
       {isPositionPanelOpen && (
         <PositionPanel onClose={() => setIsPositionPanelOpen(false)} />
       )}
-    </header>
+    </XStack>
   );
 };

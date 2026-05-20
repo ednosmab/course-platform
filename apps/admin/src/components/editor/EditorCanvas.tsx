@@ -1,37 +1,30 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { YStack, XStack, Text, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
-import { Icon } from '@projeto/ui';
 import { AnyBlock } from '@projeto/types';
 
-// ─── Viewport sizes (real-world viewport boundaries) ────────────────────────
-// LAW: O que é apresentado no Preview é o resultado final da tela do usuário.
-//      MobileCanvas e PreviewCanvas DEVEM usar o mesmo renderer. Não há exceções.
-const CANVAS_W = 1100; // Largura do canvas livre de edição
-const PAGE_W   = 1100; // Largura do delimitador de página (desktop viewport)
-const MOBILE_W = 390;   // iPhone 14 / Android padrão
-const TABLET_W = 650;   // Tablet médio (edição confortável com sidebars)
-const MOBILE_H = 720;   // Altura visível do frame mobile (viewport sem barra)
+const CANVAS_W = 1100;
+const PAGE_W   = 1100;
+const MOBILE_W = 390;
+const TABLET_W = 650;
+const MOBILE_H = 720;
 const MIN_W = 80;
 const MIN_H = 40;
 const ALIGN_THRESHOLD = 5;
 
-// Detecta se um bloco está fora dos limites da página
 function isOutOfBounds(block: AnyBlock, pageW: number): boolean {
   const l = getLayout(block);
   return l.x < 0 || l.x + l.w > pageW || l.y < 0;
 }
 
-// Parser simples de Markdown para ênfase, negrito, combinados (strong + em) e blockquotes (>) inline
 function parseSimpleMarkdown(text: string): React.ReactNode[] {
   if (!text) return [];
 
-  // Divide o texto por quebras de linha para detectar blockquotes
   const lines = text.split('\n');
   const renderedLines: React.ReactNode[] = [];
 
-  // Helper para analisar formatação negrito/itálico inline em uma linha
   const parseInline = (inlineText: string, keyPrefix: string): React.ReactNode[] => {
     const regex = /(\*\*\*.*?\*\*\*|___.*?___|\*\*\_.*?\_\*\*|\_\*\*.*?\*\*\_|\*\*.*?\*\*|__.*?__|\*.*?\*|_.*?_)/g;
     const parts = inlineText.split(regex);
@@ -74,17 +67,10 @@ function parseSimpleMarkdown(text: string): React.ReactNode[] {
           key={lineIdx}
           style={{
             borderLeft: '4px solid var(--accent-blue)',
-            paddingLeft: '12px',
-            marginLeft: '0',
-            marginRight: '0',
-            marginTop: '8px',
-            marginBottom: '8px',
-            fontStyle: 'italic',
-            color: 'var(--text-secondary)',
+            paddingLeft: '12px', margin: '8px 0',
+            fontStyle: 'italic', color: 'var(--text-secondary)',
             backgroundColor: 'var(--bg-canvas)',
-            paddingTop: '6px',
-            paddingBottom: '6px',
-            paddingRight: '12px',
+            padding: '6px 12px',
             borderRadius: '0 6px 6px 0',
           }}
         >
@@ -103,7 +89,6 @@ function parseSimpleMarkdown(text: string): React.ReactNode[] {
   return renderedLines;
 }
 
-// ─── Resize handle directions ─────────────────────────────────────────────────
 type HandleDir = 'n' | 's' | 'e' | 'w' | 'nw' | 'ne' | 'sw' | 'se';
 
 interface Layout { x: number; y: number; w: number; h: number; zIndex: number; }
@@ -123,10 +108,8 @@ function getLayout(block: AnyBlock, viewport?: 'desktop' | 'tablet' | 'mobile'):
 }
 
 function computeBlockGuides(
-  draggedLayout: Layout,
-  draggedBlockId: string,
-  blocks: AnyBlock[],
-  viewportMode: 'desktop' | 'tablet' | 'mobile',
+  draggedLayout: Layout, draggedBlockId: string,
+  blocks: AnyBlock[], viewportMode: 'desktop' | 'tablet' | 'mobile',
 ): { v: number[]; h: number[]; m: MeasureGuide[] } {
   const pageH = Math.max(800, ...blocks.map(b => {
     const l = getLayout(b, viewportMode);
@@ -141,11 +124,9 @@ function computeBlockGuides(
   const hSet = new Set<number>();
   const measurements: MeasureGuide[] = [];
 
-  // ── Layout center alignment (blue) ──
   if (Math.abs(dcx - CANVAS_W / 2) < ALIGN_THRESHOLD) vSet.add(CANVAS_W / 2);
   if (Math.abs(dcy - pageH / 2) < ALIGN_THRESHOLD) hSet.add(pageH / 2);
 
-  // ── Block-to-block alignment + spacing measurements (lilac) ──
   interface Nearest { edge: number; oStart: number; oEnd: number; }
   let left: Nearest | null = null;
   let right: Nearest | null = null;
@@ -158,7 +139,6 @@ function computeBlockGuides(
     const br = l.x + l.w;
     const bb = l.y + l.h;
 
-    // Alignment guides
     if (Math.abs(dcx - (l.x + l.w / 2)) < ALIGN_THRESHOLD) vSet.add(l.x + l.w / 2);
     if (Math.abs(draggedLayout.x - l.x) < ALIGN_THRESHOLD) vSet.add(l.x);
     if (Math.abs(dr - br) < ALIGN_THRESHOLD) vSet.add(br);
@@ -166,7 +146,6 @@ function computeBlockGuides(
     if (Math.abs(draggedLayout.y - l.y) < ALIGN_THRESHOLD) hSet.add(l.y);
     if (Math.abs(db - bb) < ALIGN_THRESHOLD) hSet.add(bb);
 
-    // Spacing measurements
     const vyOverlap = Math.min(db, bb) - Math.max(draggedLayout.y, l.y);
     const vxOverlap = Math.min(dr, br) - Math.max(draggedLayout.x, l.x);
 
@@ -199,12 +178,9 @@ const HANDLES: { id: HandleDir; cursor: string; style: React.CSSProperties }[] =
   { id: 'se', cursor: 'se-resize', style: { bottom: -5, right: -5 } },
 ];
 
-// Tipografia responsiva padrão comercial
 const FONT_DESKTOP: Record<string, string> = { small: '13px', medium: '16px', large: '24px', xlarge: '32px' };
 const FONT_MOBILE:  Record<string, string> = { small: '12px', medium: '15px', large: '19px', xlarge: '24px' };
-const FONT_WEIGHT:  Record<string, number> = { small: 400, medium: 400, large: 600, xlarge: 700 };
 
-// ─── Block content ────────────────────────────────────────────────────────────
 function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = false }: {
   block: AnyBlock;
   onImageDrop?: (blockId: string, file: File) => void;
@@ -215,47 +191,34 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     const styles = (block.styles || {}) as any;
     const fs = styles.fontSize || 'medium';
     const fontSize = isMobile ? FONT_MOBILE[fs] : FONT_DESKTOP[fs];
-    
-    // Configura o estilo visual do texto com tipografia e background
+
     const style: React.CSSProperties = {
-      fontSize,
-      fontFamily: styles.fontFamily || 'inherit',
+      fontSize, fontFamily: styles.fontFamily || 'inherit',
       color: styles.color || 'var(--text-primary)',
       backgroundColor: styles.backgroundColor || 'transparent',
       backgroundImage: styles.backgroundImage ? `url(${styles.backgroundImage})` : 'none',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      textAlign: styles.align || 'left',
-      lineHeight: 1.6,
-      width: '100%',
-      height: '100%',
+      backgroundSize: 'cover', backgroundPosition: 'center',
+      textAlign: styles.align || 'left', lineHeight: 1.6,
+      width: '100%', height: '100%',
       padding: styles.backgroundColor || styles.backgroundImage ? '16px' : '0',
       borderRadius: styles.backgroundColor || styles.backgroundImage ? '8px' : '0',
       overflow: isMobile ? 'visible' : 'hidden',
     };
 
     let textElement: React.ReactNode = <>{parseSimpleMarkdown(block.content)}</>;
-    if (styles.bold) {
-      textElement = <strong>{textElement}</strong>;
-    }
-    if (styles.italic) {
-      textElement = <em>{textElement}</em>;
-    }
+    if (styles.bold) textElement = <strong>{textElement}</strong>;
+    if (styles.italic) textElement = <em>{textElement}</em>;
 
-    return (
-      <div style={style}>
-        {textElement}
-      </div>
-    );
+    return <div style={style}>{textElement}</div>;
   }
   if (block.type === 'video') {
     return (
-      <div style={{ width: '100%', height: '100%', backgroundColor: '#1e293b', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="#1e293b" style={{ marginLeft: '3px' }}><path d="M5 3l14 9-14 9V3z"/></svg>
-        </div>
-        <div style={{ position: 'absolute', bottom: '8px', left: '12px', color: 'white', fontSize: '11px', opacity: 0.6 }}>{block.provider}</div>
-      </div>
+      <YStack w="100%" h="100%" bg="#1e293b" borderRadius="$3" ai="center" jc="center" position="relative" overflow="hidden">
+        <XStack w={44} h={44} borderRadius={22} bg="white" ai="center" jc="center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#1e293b" style={{ marginLeft: 3 }}><path d="M5 3l14 9-14 9V3z"/></svg>
+        </XStack>
+        <Text position="absolute" bottom="$2" left="$3" color="white" fontSize={11} opacity={0.6}>{block.provider}</Text>
+      </YStack>
     );
   }
   if (block.type === 'image') {
@@ -263,26 +226,20 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
       e.preventDefault();
       e.stopPropagation();
       const file = e.dataTransfer.files[0];
-      if (file && file.type.startsWith('image/') && onImageDrop) {
-        onImageDrop(block.id, file);
-      }
+      if (file && file.type.startsWith('image/') && onImageDrop) onImageDrop(block.id, file);
     };
     return (
-      <div
-        onDrop={handleDrop}
-        onDragOver={(e) => e.preventDefault()}
-        style={{ width: '100%', height: '100%' }}
-      >
+      <YStack w="100%" h="100%" onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
         {block.url ? (
           <img src={block.url} alt={block.alt || ''} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px', display: 'block' }} />
         ) : (
-          <div style={{ width: '100%', height: '100%', border: '2px dashed #93c5fd', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)', gap: '8px', backgroundColor: '#eff6ff' }}>
+          <YStack w="100%" h="100%" borderWidth={2} borderColor="#93c5fd" borderRadius="$3" borderStyle="dashed" ai="center" jc="center" gap="$2" bg="#eff6ff">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-            <span style={{ fontSize: '12px', color: '#60a5fa', fontWeight: 500 }}>Arraste uma imagem aqui</span>
-            <span style={{ fontSize: '11px' }}>ou cole a URL no painel →</span>
-          </div>
+            <Text fontSize={12} color="#60a5fa" fontWeight="500">Arraste uma imagem aqui</Text>
+            <Text fontSize={11}>ou cole a URL no painel →</Text>
+          </YStack>
         )}
-      </div>
+      </YStack>
     );
   }
   if (block.type === 'quote') {
@@ -293,46 +250,34 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     const cardStyle: React.CSSProperties = {
       backgroundColor: styles.backgroundColor || 'transparent',
       backgroundImage: styles.backgroundImage ? `url(${styles.backgroundImage})` : 'none',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
+      backgroundSize: 'cover', backgroundPosition: 'center',
       borderRadius: styles.backgroundColor || styles.backgroundImage ? '8px' : '0',
       padding: styles.backgroundColor || styles.backgroundImage ? '16px' : '0',
       borderLeft: styles.backgroundColor || styles.backgroundImage ? 'none' : '4px solid var(--accent-blue)',
       paddingLeft: styles.backgroundColor || styles.backgroundImage ? '16px' : '16px',
-      height: '100%',
-      overflow: 'auto',
+      height: '100%', overflow: 'auto',
       color: styles.color || 'var(--text-secondary)',
       fontFamily: styles.fontFamily || 'inherit',
       textAlign: styles.align || 'left',
     };
 
     let textElement: React.ReactNode = <>{parseSimpleMarkdown(block.content)}</>;
-    if (styles.bold) {
-      textElement = <strong>{textElement}</strong>;
-    }
-    if (styles.italic) {
-      textElement = <em>{textElement}</em>;
-    }
+    if (styles.bold) textElement = <strong>{textElement}</strong>;
+    if (styles.italic) textElement = <em>{textElement}</em>;
 
     return (
       <div style={cardStyle}>
-        {/* Ícone sutil de aspas se houver espaço e fundo */}
         {(styles.backgroundColor || styles.backgroundImage) && (
           <div style={{ opacity: 0.15, fontSize: '32px', lineHeight: 0.5, marginBottom: '4px', fontFamily: 'serif' }}>“</div>
         )}
-        <div style={{ fontSize, fontStyle: 'italic', lineHeight: 1.6 }}>
-          {textElement}
-        </div>
+        <div style={{ fontSize, fontStyle: 'italic', lineHeight: 1.6 }}>{textElement}</div>
         {block.author && (
-          <div style={{ fontSize: '11px', marginTop: '8px', opacity: 0.7, fontWeight: 500 }}>
-            — {block.author}
-          </div>
+          <Text fontSize={11} mt="$2" opacity={0.7} fontWeight="500">— {block.author}</Text>
         )}
       </div>
     );
   }
   if (block.type === 'html') {
-    // iframe srcdoc: garante 100% de largura e altura no html/body para objetos 3D escalarem perfeitamente
     const srcDoc = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}html,body{margin:0;padding:0;width:100%;height:100%;font-family:system-ui,sans-serif;overflow:auto}</style></head><body>${block.htmlContent}</body></html>`;
     return (
       <iframe
@@ -351,48 +296,40 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     const cardStyle: React.CSSProperties = {
       backgroundColor: styles.backgroundColor || 'var(--bg-canvas)',
       backgroundImage: styles.backgroundImage ? `url(${styles.backgroundImage})` : 'none',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      borderRadius: '8px',
-      padding: '12px',
+      backgroundSize: 'cover', backgroundPosition: 'center',
+      borderRadius: '8px', padding: '12px',
       border: styles.backgroundColor || styles.backgroundImage ? 'none' : '1px solid var(--border-light)',
-      height: '100%',
-      overflow: 'auto',
+      height: '100%', overflow: 'auto',
       color: styles.color || 'var(--text-primary)',
       fontFamily: styles.fontFamily || 'inherit',
     };
 
     let questionElement: React.ReactNode = <>{parseSimpleMarkdown(block.question)}</>;
-    if (styles.bold) {
-      questionElement = <strong>{questionElement}</strong>;
-    }
-    if (styles.italic) {
-      questionElement = <em>{questionElement}</em>;
-    }
+    if (styles.bold) questionElement = <strong>{questionElement}</strong>;
+    if (styles.italic) questionElement = <em>{questionElement}</em>;
 
     return (
       <div style={cardStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-          <span style={{ backgroundColor: 'var(--accent-blue-light)', color: 'var(--accent-blue)', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '3px', flexShrink: 0 }}>QUIZ</span>
-          <span style={{ fontSize, lineHeight: 1.4 }}>
-            {questionElement}
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        <XStack ai="center" gap={1} mb="$2">
+          <XStack borderWidth={1} borderColor="$primary" px={2} py={0} borderRadius={1} bg="white">
+            <Text fontSize={9} fontWeight="700" color="$primary">QUIZ</Text>
+          </XStack>
+          <Text style={{ fontSize }} lineHeight={1.4}>{questionElement}</Text>
+        </XStack>
+        <YStack gap={1}>
           {block.options.map((opt, i) => (
-            <div key={opt.id} style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', borderRadius: '5px', border: opt.isCorrect ? '1px solid #10b981' : '1px solid var(--border-light)', backgroundColor: opt.isCorrect ? '#ecfdf5' : 'white', fontSize: '11px' }}>
-              <span style={{ marginRight: '6px', fontWeight: 600, color: 'var(--text-tertiary)', flexShrink: 0 }}>{String.fromCharCode(65 + i)}</span>
-              <span style={{ color: opt.isCorrect ? '#065f46' : 'var(--text-secondary)' }}>{opt.text}</span>
-            </div>
+            <XStack key={opt.id} ai="center" p={1} borderRadius={1} borderWidth={1} borderColor={opt.isCorrect ? '$success' : '$border'} bg={opt.isCorrect ? '#ecfdf5' : 'white'}>
+              <Text mr={1} fontWeight="600" color="$textMuted" flexShrink={0}>{String.fromCharCode(65 + i)}</Text>
+              <Text color={opt.isCorrect ? '#065f46' : '$textSecondary'}>{opt.text}</Text>
+            </XStack>
           ))}
-        </div>
+        </YStack>
       </div>
     );
   }
   return null;
 }
 
-// ─── Edit viewport helpers ─────────────────────────────────────────────
 function useViewportInteraction(scale: number) {
   const { blocks, activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent, viewportMode } = useEditor();
   const [isInteracting, setIsInteracting] = useState(false);
@@ -517,25 +454,18 @@ function renderViewportBlocks(args: {
             onClick={(e) => { e.stopPropagation(); args.setActiveBlockId(block.id); }}
             style={{ position: 'absolute', left: layout.x * scale, top: layout.y * scale, width: layout.w * scale, height: layout.h * scale, zIndex: layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none', isolation: 'isolate' }}
           >
-            <div style={{
-              position: 'absolute', inset: 0,
-              border: isActive ? '2px solid #3b82f6' : '2px solid transparent',
-              borderRadius: '6px', pointerEvents: 'none', zIndex: 2,
-            }} />
-
+            <div style={{ position: 'absolute', inset: 0, border: isActive ? '2px solid #3b82f6' : '2px solid transparent', borderRadius: '6px', pointerEvents: 'none', zIndex: 2 }} />
             <div style={{ position: 'absolute', inset: 2, borderRadius: '4px', overflow: 'hidden', zIndex: 1 }}>
               <BlockContent block={block} onImageDrop={args.onImageDrop} isMobile isInteracting={args.isInteracting} />
               {(block.type === 'html' || block.type === 'video') && (
                 <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'move', backgroundColor: 'transparent' }} />
               )}
             </div>
-
             {isActive && (
-              <button onClick={(e) => { e.stopPropagation(); args.removeBlock(block.id); }} style={{ position: 'absolute', top: -34, right: 0, zIndex: 20, backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '5px', padding: '4px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 500 }}>
-                <Icon name="Trash2" size={12} /> Excluir
-              </button>
+              <XStack onPress={(e: any) => { e.stopPropagation(); args.removeBlock(block.id); }} position="absolute" top={-34} right={0} zIndex={20} bg="white" borderWidth={1} borderColor="$danger" borderRadius={1} px="$2" py={1} cursor="pointer" ai="center" gap={1}>
+                <Icon name="Trash2" size={12} color="$danger" /><Text color="$danger" fontSize={11} fontWeight="500">Excluir</Text>
+              </XStack>
             )}
-
             {isActive && HANDLES.map(({ id, cursor, style }) => (
               <div
                 key={id}
@@ -547,7 +477,6 @@ function renderViewportBlocks(args: {
           </div>
         );
       })}
-
       {args.guides?.v.map((x, i) => (
         <div key={`gv-${i}`} style={{ position: 'absolute', left: x * scale, top: 0, width: 0, height: pageH * scale, borderLeft: '1.5px dashed #3b82f6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
       ))}
@@ -579,7 +508,6 @@ function renderViewportBlocks(args: {
   );
 }
 
-// ─── Preview Mode ────────────────────────────────────────────────────────
 function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportMode: 'desktop' | 'tablet' | 'mobile' }) {
   const isMobile = viewportMode === 'mobile';
   const isTablet = viewportMode === 'tablet';
@@ -587,94 +515,61 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
   const pageH = Math.max(800, ...blocks.map(b => { const l = getLayout(b, viewportMode); return l.y + l.h + 120; }));
   const sortedBlocks = [...blocks].sort((a, b) => getLayout(a, viewportMode).zIndex - getLayout(b, viewportMode).zIndex);
   return (
-    <div className="canvas-area" style={{
-      backgroundColor: '#F1F2F8',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: '24px',
-      overflowY: 'auto',
-      flex: 1,
-    }}>
+    <YStack flex={1} ai="center" p="$5" overflowY="auto" bg="$background">
       {isDesktop ? (
-        <div style={{
-          position: 'relative',
-          width: PAGE_W,
-          minHeight: pageH,
-          backgroundColor: '#FFFFFF',
-          borderRadius: 8,
-          boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)',
-        }}>
+        <div style={{ position: 'relative', width: PAGE_W, minHeight: pageH, backgroundColor: 'white', borderRadius: 8, boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)' }}>
           {sortedBlocks.map((block) => {
             const layout = getLayout(block, viewportMode);
             return (
               <div key={block.id} style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.zIndex + 1 }}>
-                <BlockContent block={block} />
+                <BlockContent block={block} isMobile={false} />
               </div>
             );
           })}
         </div>
       ) : (
-        <div style={{
-          width: (isMobile ? MOBILE_W : TABLET_W),
-          maxWidth: (isMobile ? MOBILE_W : TABLET_W),
-          backgroundColor: '#FFFFFF',
-          borderRadius: isMobile ? 36 : 12,
-          boxShadow: '0 24px 64px rgba(0,0,0,0.2)',
-          overflow: 'hidden',
-          border: '6px solid #1e293b',
-          display: 'flex',
-          flexDirection: 'column',
-          maxHeight: '80vh',
-        }}>
+        <YStack w={isMobile ? MOBILE_W : TABLET_W} maxWidth={isMobile ? MOBILE_W : TABLET_W} bg="white" borderRadius={isMobile ? 36 : 12} style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} overflow="hidden" borderWidth={6} borderColor="#1e293b" maxHeight="80vh">
           {isMobile ? (
-            <div style={{ backgroundColor: '#1e293b', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <div style={{ width: '60px', height: '6px', borderRadius: '3px', backgroundColor: '#475569' }} />
-            </div>
+            <XStack bg="#1e293b" height={28} ai="center" jc="center" flexShrink={0}>
+              <XStack w={60} height={6} borderRadius={3} bg="#475569" />
+            </XStack>
           ) : (
-            <div style={{ backgroundColor: '#1e293b', padding: '4px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#0f172a', border: '1px solid #334155' }} />
-              <span style={{ marginLeft: 'auto', fontSize: 10, color: '#94a3b8' }}>Preview Tablet</span>
-            </div>
+            <XStack bg="#1e293b" px="$4" py={1} ai="center" jc="center" flexShrink={0}>
+              <XStack w={8} h={8} borderRadius={4} bg="#0f172a" borderWidth={1} borderColor="#334155" />
+              <Text ml="auto" fontSize={10} color="#94a3b8">Preview Tablet</Text>
+            </XStack>
           )}
-          <div style={{ overflowY: 'auto', overflowX: 'hidden', flex: 1 }}>
-            <div style={{
-              position: 'relative',
-              width: (isMobile ? MOBILE_W : TABLET_W),
-              minHeight: pageH * ((isMobile ? MOBILE_W : TABLET_W) / CANVAS_W),
-            }}>
+          <YStack overflowY="auto" overflowX="hidden" flex={1}>
+            <div style={{ position: 'relative', width: (isMobile ? MOBILE_W : TABLET_W), minHeight: pageH * ((isMobile ? MOBILE_W : TABLET_W) / CANVAS_W) }}>
               {sortedBlocks.map((block) => {
                 const layout = getLayout(block, viewportMode);
                 const scale = (isMobile ? MOBILE_W : TABLET_W) / CANVAS_W;
                 return (
                   <div key={block.id} style={{ position: 'absolute', left: layout.x * scale, top: layout.y * scale, width: layout.w * scale, height: layout.h * scale, zIndex: layout.zIndex + 1 }}>
-                    <BlockContent block={block} />
+                    <BlockContent block={block} isMobile={!isDesktop} />
                   </div>
                 );
               })}
             </div>
-          </div>
-          <div style={{ backgroundColor: 'white', height: isMobile ? 20 : 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <div style={{ width: '40px', height: '4px', borderRadius: '2px', backgroundColor: '#e2e8f0' }} />
-          </div>
-        </div>
+          </YStack>
+          <XStack bg="white" height={isMobile ? 20 : 16} ai="center" jc="center" flexShrink={0}>
+            <XStack w={40} height={4} borderRadius={2} bg="#e2e8f0" />
+          </XStack>
+        </YStack>
       )}
-    </div>
+    </YStack>
   );
 }
 
-// ─── Mobile Viewport (edit mode interativo) ─────────────────────────────
 function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDrop: (id: string, file: File) => void }) {
   const viewInteraction = useViewportInteraction(MOBILE_W / CANVAS_W);
   return (
-    <div className="canvas-area canvas-bg" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px', overflowY: 'auto' }}>
-      <div style={{ border: '6px solid #1e293b', borderRadius: '36px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.25)', backgroundColor: 'white', width: MOBILE_W, flexShrink: 0 }}>
-        <div style={{ backgroundColor: '#1e293b', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <div style={{ width: '60px', height: '6px', borderRadius: '3px', backgroundColor: '#475569' }} />
-        </div>
-        <div style={{ overflowY: 'auto', overflowX: 'hidden', backgroundColor: '#f8fafc',
-          backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)',
-          backgroundSize: '32px 32px' }}>
+    <YStack flex={1} ai="center" p="$5" overflowY="auto">
+      <YStack borderWidth={6} borderColor="#1e293b" borderRadius={36} overflow="hidden" style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.25)' }} bg="white" w={MOBILE_W} flexShrink={0}>
+        <XStack bg="#1e293b" height={28} ai="center" jc="center" flexShrink={0}>
+          <XStack w={60} height={6} borderRadius={3} bg="#475569" />
+        </XStack>
+        <YStack overflowY="auto" overflowX="hidden" bg="#f8fafc" style={{ backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
           {renderViewportBlocks({
             blocks, viewportW: MOBILE_W, viewportMode: 'mobile', onImageDrop,
             activeBlockId: viewInteraction.activeBlockId,
@@ -685,27 +580,24 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
             onHandleMouseDown: viewInteraction.onHandleMouseDown,
             guides: viewInteraction.guides,
           })}
-        </div>
-        <div style={{ backgroundColor: 'white', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <div style={{ width: '40px', height: '4px', borderRadius: '2px', backgroundColor: '#e2e8f0' }} />
-        </div>
-      </div>
-    </div>
+        </YStack>
+        <XStack bg="white" height={20} ai="center" jc="center" flexShrink={0}>
+          <XStack w={40} height={4} borderRadius={2} bg="#e2e8f0" />
+        </XStack>
+      </YStack>
+    </YStack>
   );
 }
 
-// ─── Tablet Viewport (edit mode interativo) ────────────────────────────
 function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDrop: (id: string, file: File) => void }) {
   const viewInteraction = useViewportInteraction(TABLET_W / CANVAS_W);
   return (
-    <div className="canvas-area canvas-bg" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px', overflowY: 'auto' }}>
-      <div style={{ border: '6px solid #1e293b', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', backgroundColor: 'white', width: TABLET_W, flexShrink: 0 }}>
-        <div style={{ backgroundColor: '#1e293b', height: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0f172a', border: '1px solid #334155' }} />
-        </div>
-        <div style={{ overflowY: 'auto', overflowX: 'hidden', backgroundColor: '#f8fafc',
-          backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)',
-          backgroundSize: '32px 32px' }}>
+    <YStack flex={1} ai="center" p="$5" overflowY="auto">
+      <YStack borderWidth={6} borderColor="#1e293b" borderRadius={12} overflow="hidden" style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} bg="white" w={TABLET_W} flexShrink={0}>
+        <XStack bg="#1e293b" height={8} ai="center" jc="center" flexShrink={0}>
+          <XStack w={8} h={8} borderRadius={4} bg="#0f172a" borderWidth={1} borderColor="#334155" />
+        </XStack>
+        <YStack overflowY="auto" overflowX="hidden" bg="#f8fafc" style={{ backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
           {renderViewportBlocks({
             blocks, viewportW: TABLET_W, viewportMode: 'tablet', onImageDrop,
             activeBlockId: viewInteraction.activeBlockId,
@@ -716,16 +608,15 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
             onHandleMouseDown: viewInteraction.onHandleMouseDown,
             guides: viewInteraction.guides,
           })}
-        </div>
-        <div style={{ backgroundColor: 'white', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <div style={{ width: '40px', height: '4px', borderRadius: '2px', backgroundColor: '#e2e8f0' }} />
-        </div>
-      </div>
-    </div>
+        </YStack>
+        <XStack bg="white" height={16} ai="center" jc="center" flexShrink={0}>
+          <XStack w={40} height={4} borderRadius={2} bg="#e2e8f0" />
+        </XStack>
+      </YStack>
+    </YStack>
   );
 }
 
-// ─── Main EditorCanvas ────────────────────────────────────────────────────────
 export const EditorCanvas: React.FC = () => {
   const { blocks, activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent, previewMode, viewportMode } = useEditor();
   const [mounted, setMounted] = useState(false);
@@ -829,46 +720,33 @@ export const EditorCanvas: React.FC = () => {
     };
   }, [updateBlock, updateBlockSilent, viewportMode]);
 
-  if (!mounted) return <div className="canvas-area canvas-bg" style={{ flex: 1 }}><div style={{ color: 'var(--text-tertiary)' }}>Carregando...</div></div>;
+  if (!mounted) return <YStack flex={1} bg="$background"><Text color="$textMuted">Carregando...</Text></YStack>;
 
   if (previewMode) return <PreviewCanvas blocks={blocks} viewportMode={viewportMode} />;
 
   if (viewportMode === 'mobile') return <MobileViewport blocks={blocks} onImageDrop={handleImageDrop} />;
   if (viewportMode === 'tablet') return <TableViewport blocks={blocks} onImageDrop={handleImageDrop} />;
 
-  // ── Desktop Edit Mode ────────────────────────────────────────────────────────
   const sortedBlocks = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
-
-  // Altura dinâmica da página baseada no bloco mais baixo
   const pageH = Math.max(800, ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
 
   return (
-    <div
-      className="canvas-area canvas-bg"
-      style={{ flex: 1, padding: '40px 24px', overflow: 'auto' }}
-      onClick={() => setActiveBlockId(null)}
+    <YStack
+      flex={1} p="$5" style={{ overflow: 'auto' }}
+      bg="$background"
+      onPress={() => setActiveBlockId(null)}
     >
-      {/* ── White page card: delimitador de página desktop com margin auto para centralizar ── */}
       <div
-        style={{
-          position: 'relative',
-          width: PAGE_W,
-          minHeight: pageH,
-          margin: '0 auto',
-          backgroundColor: 'white',
-          borderRadius: '8px',
-          boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)',
-        }}
+        style={{ position: 'relative', width: PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)' }}
       >
-        {/* Indicador de largura da página */}
-        <div style={{ position: 'absolute', top: -22, left: 0, fontSize: '10px', color: 'var(--text-tertiary)', fontFamily: 'monospace', userSelect: 'none', pointerEvents: 'none' }}>
+        <Text position="absolute" top={-22} left={0} fontSize={10} color="$textMuted" userSelect="none" style={{ fontFamily: 'monospace', pointerEvents: 'none' }}>
           {PAGE_W}px — Desktop
-        </div>
+        </Text>
 
         {blocks.length === 0 && (
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'var(--text-tertiary)', fontSize: '14px', textAlign: 'center', pointerEvents: 'none' }}>
+          <Text position="absolute" top="50%" left="50%" style={{ transform: 'translate(-50%, -50%)' }} color="$textMuted" fontSize={14} textAlign="center" pointerEvents="none">
             + Clique nos blocos à esquerda para adicionar conteúdo
-          </div>
+          </Text>
         )}
 
         {sortedBlocks.map((block) => {
@@ -883,7 +761,6 @@ export const EditorCanvas: React.FC = () => {
               onClick={(e) => { e.stopPropagation(); setActiveBlockId(block.id); }}
               style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none', isolation: 'isolate' }}
             >
-              {/* Selection / out-of-bounds border */}
               <div style={{
                 position: 'absolute', inset: 0,
                 border: isActive ? '2px solid #3b82f6' : outOfBounds ? '2px solid #f97316' : '2px solid transparent',
@@ -891,31 +768,25 @@ export const EditorCanvas: React.FC = () => {
                 boxShadow: isActive ? '0 0 0 1px rgba(59,130,246,0.25)' : outOfBounds ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
               }} />
 
-              {/* Out-of-bounds warning badge */}
               {outOfBounds && !isActive && (
-                <div style={{ position: 'absolute', top: -22, left: 0, zIndex: 25, backgroundColor: '#f97316', color: 'white', fontSize: '10px', fontWeight: 600, padding: '2px 7px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '3px', pointerEvents: 'none', whiteSpace: 'nowrap' }}>
-                  ⚠️ Fora da página
-                </div>
+                <XStack position="absolute" top={-22} left={0} zIndex={25} bg="$warning" py={0} px={1} borderRadius={1} ai="center" gap={1} style={{ pointerEvents: 'none', whiteSpace: 'nowrap' }}>
+                  <Text fontSize={10} fontWeight="600" color="white">⚠️ Fora da página</Text>
+                </XStack>
               )}
 
-              {/* Content */}
               <div style={{ position: 'absolute', inset: 2, borderRadius: '4px', overflow: 'hidden', zIndex: 1 }}>
                 <BlockContent block={block} onImageDrop={handleImageDrop} isInteracting={isInteracting} />
-                
-                {/* Overlay transparente sobre iframe/video para capturar cliques no editor pai */}
                 {(block.type === 'html' || block.type === 'video') && (
                   <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'move', backgroundColor: 'transparent' }} />
                 )}
               </div>
 
-              {/* Delete button */}
               {isActive && (
-                <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }} style={{ position: 'absolute', top: -34, right: 0, zIndex: 20, backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '5px', padding: '4px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 500 }}>
-                  <Icon name="Trash2" size={12} /> Excluir
-                </button>
+                <XStack onPress={(e: any) => { e.stopPropagation(); removeBlock(block.id); }} position="absolute" top={-34} right={0} zIndex={20} bg="white" borderWidth={1} borderColor="$danger" borderRadius={1} px="$2" py={1} cursor="pointer" ai="center" gap={1}>
+                  <Icon name="Trash2" size={12} color="$danger" /><Text color="$danger" fontSize={11} fontWeight="500">Excluir</Text>
+                </XStack>
               )}
 
-              {/* Resize handles */}
               {isActive && HANDLES.map(({ id, cursor, style }) => (
                 <div
                   key={id}
@@ -955,6 +826,6 @@ export const EditorCanvas: React.FC = () => {
           );
         })}
       </div>
-    </div>
+    </YStack>
   );
 };

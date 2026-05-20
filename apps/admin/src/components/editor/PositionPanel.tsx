@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Button, Icon } from '@projeto/ui';
+import { XStack, YStack, Text, Button, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
 
@@ -11,7 +11,6 @@ interface PositionPanelProps {
 
 const PAGE_W = 1100;
 
-/** Extrai o layout de qualquer bloco a partir do layouts.desktop (padrão) */
 function getLayout(block: AnyBlock) {
   const l = (block as any).layouts?.desktop;
   return {
@@ -23,7 +22,6 @@ function getLayout(block: AnyBlock) {
   };
 }
 
-/** Ícone representativo de cada tipo de bloco */
 function BlockIcon({ type }: { type: string }) {
   const iconMap: Record<string, string> = {
     text: 'Type', image: 'Image', video: 'Video',
@@ -33,7 +31,6 @@ function BlockIcon({ type }: { type: string }) {
   return <Icon name={name} size={14} />;
 }
 
-/** Título legível e curto de cada bloco */
 function getBlockTitle(block: AnyBlock): string {
   switch (block.type) {
     case 'text': return (block.content || '').substring(0, 24) || 'Texto vazio';
@@ -46,7 +43,6 @@ function getBlockTitle(block: AnyBlock): string {
   }
 }
 
-/** Verifica colisão AABB entre dois retângulos */
 function rectsOverlap(a: ReturnType<typeof getLayout>, b: ReturnType<typeof getLayout>): boolean {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }
@@ -60,15 +56,7 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
 
   const activeBlock = blocks.find(b => b.id === activeBlockId);
 
-  // ──────────────────────────────────────────────────────
-  // Z-INDEX: Recalcula zIndex de TODOS os blocos para
-  // garantir integridade sequencial (0, 1, 2, ..., n-1).
-  // Isso é mais robusto que incrementar/decrementar unitariamente.
-  // ──────────────────────────────────────────────────────
-
-  /** Normaliza os zIndex de todos os blocos para valores sequenciais */
   const normalizeAndApply = useCallback((orderedBlockIds: string[]) => {
-    // orderedBlockIds[0] = fundo (menor z), last = topo (maior z)
     const newBlocks = blocks.map(b => {
       const idx = orderedBlockIds.indexOf(b.id);
       const anyBlock = b as any;
@@ -79,12 +67,9 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
         desktop: { ...desktopL, zIndex: idx >= 0 ? idx : (desktopL.zIndex ?? 0) },
       } };
     });
-    
-    // LAW: Devemos garantir que o estado seja atualizado com uma nova referência
     reorderBlocks([...newBlocks] as AnyBlock[]);
   }, [blocks, reorderBlocks]);
 
-  /** Retorna os IDs de blocos ordenados do fundo ao topo (ascendente por zIndex) */
   const getOrderedIds = useCallback((): string[] => {
     return [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex).map(b => b.id);
   }, [blocks]);
@@ -94,7 +79,6 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     const ordered = getOrderedIds();
     const idx = ordered.indexOf(activeBlock.id);
     if (idx < 0 || idx >= ordered.length - 1) return;
-    
     const newOrdered = [...ordered];
     [newOrdered[idx], newOrdered[idx + 1]] = [newOrdered[idx + 1], newOrdered[idx]];
     normalizeAndApply(newOrdered);
@@ -105,7 +89,6 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     const ordered = getOrderedIds();
     const idx = ordered.indexOf(activeBlock.id);
     if (idx <= 0) return;
-    
     const newOrdered = [...ordered];
     [newOrdered[idx], newOrdered[idx - 1]] = [newOrdered[idx - 1], newOrdered[idx]];
     normalizeAndApply(newOrdered);
@@ -116,7 +99,6 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     const ordered = getOrderedIds();
     const idx = ordered.indexOf(activeBlock.id);
     if (idx < 0) return;
-    
     const newOrdered = [...ordered];
     newOrdered.splice(idx, 1);
     newOrdered.push(activeBlock.id);
@@ -128,16 +110,11 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     const ordered = getOrderedIds();
     const idx = ordered.indexOf(activeBlock.id);
     if (idx < 0) return;
-    
     const newOrdered = [...ordered];
     newOrdered.splice(idx, 1);
     newOrdered.unshift(activeBlock.id);
     normalizeAndApply(newOrdered);
   };
-
-  // ──────────────────────────────────────────────────────
-  // ALINHAMENTO à página
-  // ──────────────────────────────────────────────────────
 
   const getPageHeight = (): number => {
     return Math.max(800, ...blocks.map(b => {
@@ -168,18 +145,12 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     updateBlock(activeBlock.id, { layouts: { ...currentLayouts, desktop: { ...l, x: newX, y: newY } } } as any);
   };
 
-  // ──────────────────────────────────────────────────────
-  // CAMADAS — Lista visual e DnD
-  // ──────────────────────────────────────────────────────
-
-  // Camadas exibidas: do TOPO (maior z) ao FUNDO (menor z)
   const displayLayers = [...blocks].sort((a, b) => getLayout(b).zIndex - getLayout(a).zIndex);
 
   const filteredLayers = layersFilter === 'sobreposicao' && activeBlock
     ? displayLayers.filter(b => b.id === activeBlock.id || rectsOverlap(getLayout(b), getLayout(activeBlock)))
     : displayLayers;
 
-  // DnD nativo
   const onDragStart = (e: React.DragEvent, blockId: string) => {
     setDraggedId(blockId);
     setDropIndex(null);
@@ -200,12 +171,9 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
   const onDragOverItem = (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    
     const rect = e.currentTarget.getBoundingClientRect();
     const y = e.clientY - rect.top;
     const midPoint = rect.height / 2;
-    
-    // filteredLayers é top-to-bottom. dropIndex = posição visual onde inserir.
     const idx = filteredLayers.findIndex(b => b.id === targetId);
     setDropIndex(y < midPoint ? idx : idx + 1);
   };
@@ -218,29 +186,26 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     e.preventDefault();
     if (!draggedId || draggedId === targetId) { setDraggedId(null); setDropIndex(null); return; }
 
-    const currentOrderedIds = getOrderedIds(); // bottom-to-top
+    const currentOrderedIds = getOrderedIds();
     const dragIdx = currentOrderedIds.indexOf(draggedId);
-    
+
     const rect = e.currentTarget.getBoundingClientRect();
     const y = e.clientY - rect.top;
     const midPoint = rect.height / 2;
     const targetVisualIdx = filteredLayers.findIndex(b => b.id === targetId);
     const dropVisualIdx = y < midPoint ? targetVisualIdx : targetVisualIdx + 1;
-    
-    // filteredLayers é top-to-bottom. Converte para a ordem global displayLayers.
+
     const displayIds = displayLayers.map(b => b.id);
     let globalDropPos: number;
     if (dropVisualIdx >= filteredLayers.length) {
-      globalDropPos = displayIds.length; // final da lista global
+      globalDropPos = displayIds.length;
     } else {
       const dropBlockId = filteredLayers[dropVisualIdx].id;
       globalDropPos = displayIds.indexOf(dropBlockId);
     }
-    
-    // Converte posição global top-to-bottom para bottom-to-top (zIndex)
-    // displayLayers[0] = topo = último em currentOrderedIds
+
     const insertAt = currentOrderedIds.length - globalDropPos;
-    
+
     const newOrdered = [...currentOrderedIds];
     newOrdered.splice(dragIdx, 1);
     const adjustedInsert = dragIdx < insertAt ? insertAt - 1 : insertAt;
@@ -251,149 +216,130 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     setDropIndex(null);
   };
 
-  // ──────────────────────────────────────────────────────
-  // PREVENT deselection: o painel é um popover acima do
-  // canvas. Paramos a propagação do click para NÃO
-  // acionar o canvas's onClick → setActiveBlockId(null).
-  // ──────────────────────────────────────────────────────
-
   return (
-    <div
-      onClick={(e) => e.stopPropagation()}
-      onMouseDown={(e) => e.stopPropagation()}
-      style={{
-        position: 'fixed',
-        top: '60px',
-        right: '0',
-        width: '280px',
-        height: 'calc(100vh - 60px)',
-        backgroundColor: '#ffffff',
-        borderLeft: '1px solid #e2e8f0',
-        boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
-        zIndex: 99999,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
+    <YStack
+      position="fixed"
+      top={60}
+      right={0}
+      w={280}
+      h="calc(100vh - 60px)"
+      bg="$background"
+      borderLeftWidth={1}
+      borderLeftColor="$border"
+      style={{ boxShadow: '-4px 0 24px rgba(0,0,0,0.08)', zIndex: 99999 }}
+      onPress={(e: any) => e.stopPropagation()}
+      onMouseDown={(e: any) => e.stopPropagation()}
     >
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border-light)' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Posição</h3>
-        <Button variant="ghost" onClick={onClose} style={{ padding: '2px' }}>
+      <XStack ai="center" jc="space-between" px="$4" py="$3" borderBottomWidth={1} borderBottomColor="$border" flexShrink={0}>
+        <Text fontSize={14} fontWeight="600">Posição</Text>
+        <Button variant="ghost" onPress={onClose} px="$1">
           <Icon name="X" size={16} />
         </Button>
-      </div>
+      </XStack>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-light)' }}>
+      <XStack borderBottomWidth={1} borderBottomColor="$border" flexShrink={0}>
         {(['organizar', 'camadas'] as const).map(tab => (
-          <button
+          <Button
             key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              flex: 1, padding: '11px 0', fontSize: '12px', fontWeight: 600,
-              background: 'none', border: 'none',
-              borderBottom: activeTab === tab ? '2px solid var(--accent-blue)' : '2px solid transparent',
-              color: activeTab === tab ? 'var(--accent-blue)' : 'var(--text-secondary)',
-              cursor: 'pointer', textTransform: 'capitalize',
-            }}
+            variant="ghost"
+            onPress={() => setActiveTab(tab)}
+            flex={1}
+            borderRadius={0}
+            borderBottomWidth={2}
+            borderBottomColor={activeTab === tab ? '$primary' : 'transparent'}
+            py="$2"
           >
-            {tab === 'organizar' ? 'Organizar' : 'Camadas'}
-          </button>
+            <Text fontSize={12} fontWeight="600" color={activeTab === tab ? '$primary' : '$textSecondary'}>
+              {tab === 'organizar' ? 'Organizar' : 'Camadas'}
+            </Text>
+          </Button>
         ))}
-      </div>
+      </XStack>
 
-      {/* Content */}
-      <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
-
-        {/* ── TAB ORGANIZAR ── */}
+      <YStack p="$4" overflowY="auto" f={1}>
         {activeTab === 'organizar' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <YStack gap="$5">
             {!activeBlock && (
-              <div style={{ textAlign: 'center', padding: '16px', color: 'var(--text-tertiary)', fontSize: '12px' }}>
+              <Text textAlign="center" p="$4" color="$textMuted" fontSize={12}>
                 Selecione um bloco no canvas para posicioná-lo.
-              </div>
+              </Text>
             )}
 
             {activeBlock && (
               <>
-                {/* Z-Index */}
-                <div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <Button variant="ghost" onClick={handleBringForward}>
+                <YStack>
+                  <XStack flexWrap="wrap" gap="$2">
+                    <Button variant="ghost" onPress={handleBringForward} flex={1}>
                       <Icon name="MoveUp" size={14} /> Para frente
                     </Button>
-                    <Button variant="ghost" onClick={handleSendBackward}>
+                    <Button variant="ghost" onPress={handleSendBackward} flex={1}>
                       <Icon name="MoveDown" size={14} /> Para trás
                     </Button>
-                    <Button variant="ghost" onClick={handleBringToFront}>
+                    <Button variant="ghost" onPress={handleBringToFront} flex={1}>
                       <Icon name="ArrowUpToLine" size={14} /> Para o topo
                     </Button>
-                    <Button variant="ghost" onClick={handleSendToBack}>
+                    <Button variant="ghost" onPress={handleSendToBack} flex={1}>
                       <Icon name="ArrowDownToLine" size={14} /> Para o fundo
                     </Button>
-                  </div>
-                </div>
+                  </XStack>
+                </YStack>
 
-                {/* Alinhamento */}
-                <div>
-                  <h4 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px' }}>Alinhar à página</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <Button variant="ghost" onClick={() => handleAlign('top')}>
+                <YStack>
+                  <Text fontSize={11} fontWeight="700" textTransform="uppercase" color="$textSecondary" mb="$3">
+                    Alinhar à página
+                  </Text>
+                  <XStack flexWrap="wrap" gap="$2">
+                    <Button variant="ghost" onPress={() => handleAlign('top')} flex={1} minWidth="40%">
                       <Icon name="AlignVerticalJustifyStart" size={14} /> Em cima
                     </Button>
-                    <Button variant="ghost" onClick={() => handleAlign('left')}>
+                    <Button variant="ghost" onPress={() => handleAlign('left')} flex={1} minWidth="40%">
                       <Icon name="AlignHorizontalJustifyStart" size={14} /> À esquerda
                     </Button>
-                    <Button variant="ghost" onClick={() => handleAlign('middle')}>
+                    <Button variant="ghost" onPress={() => handleAlign('middle')} flex={1} minWidth="40%">
                       <Icon name="AlignVerticalJustifyCenter" size={14} /> No meio
                     </Button>
-                    <Button variant="ghost" onClick={() => handleAlign('center')}>
+                    <Button variant="ghost" onPress={() => handleAlign('center')} flex={1} minWidth="40%">
                       <Icon name="AlignHorizontalJustifyCenter" size={14} /> Ao centro
                     </Button>
-                    <Button variant="ghost" onClick={() => handleAlign('bottom')}>
+                    <Button variant="ghost" onPress={() => handleAlign('bottom')} flex={1} minWidth="40%">
                       <Icon name="AlignVerticalJustifyEnd" size={14} /> Embaixo
                     </Button>
-                    <Button variant="ghost" onClick={() => handleAlign('right')}>
+                    <Button variant="ghost" onPress={() => handleAlign('right')} flex={1} minWidth="40%">
                       <Icon name="AlignHorizontalJustifyEnd" size={14} /> À direita
                     </Button>
-                  </div>
-                </div>
-
-                
+                  </XStack>
+                </YStack>
               </>
             )}
-          </div>
+          </YStack>
         )}
 
-        {/* ── TAB CAMADAS ── */}
         {activeTab === 'camadas' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-
-            {/* Filter */}
-            <div style={{ display: 'flex', backgroundColor: 'var(--bg-canvas)', borderRadius: '6px', padding: '3px' }}>
+          <YStack gap="$3">
+            <XStack bg="$background" borderRadius="$3" p={3} gap={0}>
               {(['todas', 'sobreposicao'] as const).map(f => (
-                <button
+                <Button
                   key={f}
-                  onClick={() => setLayersFilter(f)}
-                  style={{
-                    flex: 1, padding: '6px', fontSize: '11px', fontWeight: 600, borderRadius: '4px',
-                    background: layersFilter === f ? 'var(--bg-surface)' : 'transparent',
-                    color: layersFilter === f ? 'var(--accent-blue)' : 'var(--text-secondary)',
-                    boxShadow: layersFilter === f ? 'var(--shadow-sm)' : 'none',
-                    border: 'none', cursor: 'pointer',
-                  }}
+                  variant="ghost"
+                  onPress={() => setLayersFilter(f)}
+                  flex={1}
+                  py="$1"
+                  borderRadius="$2"
+                  borderWidth={layersFilter === f ? 1 : 0}
+                  borderColor={layersFilter === f ? '$border' : 'transparent'}
                 >
-                  {f === 'todas' ? 'Todas' : 'Em sobreposição'}
-                </button>
+                  <Text fontSize={11} fontWeight="600">
+                    {f === 'todas' ? 'Todas' : 'Em sobreposição'}
+                  </Text>
+                </Button>
               ))}
-            </div>
+            </XStack>
 
-            {/* Layers List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <YStack gap={1}>
               {filteredLayers.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-tertiary)', fontSize: '12px' }}>
+                <Text textAlign="center" p="$5" color="$textMuted" fontSize={12}>
                   Nenhuma camada encontrada.
-                </div>
+                </Text>
               )}
               {filteredLayers.map(block => {
                 const isActive = block.id === activeBlockId;
@@ -401,10 +347,9 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
                 const showDropLine = dropIndex === filteredLayers.indexOf(block);
 
                 return (
-                  <div key={block.id} style={{ position: 'relative' }}>
-                    {/* Drop indicator line */}
+                  <YStack key={block.id} position="relative">
                     {showDropLine && (
-                      <div style={{ position: 'absolute', top: -2, left: 0, right: 0, height: '3px', backgroundColor: '#3b82f6', borderRadius: '2px', zIndex: 10, pointerEvents: 'none' }} />
+                      <YStack position="absolute" top={-2} left={0} right={0} height={3} bg="$primary" borderRadius={1} zIndex={10} style={{ pointerEvents: 'none' }} />
                     )}
                     <div
                       draggable
@@ -413,49 +358,45 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
                       onDragLeave={onDragLeaveItem}
                       onDrop={(e) => onDrop(e, block.id)}
                       onDragEnd={onDragEnd}
-                      onClick={() => setActiveBlockId(block.id)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '8px 10px',
-                        backgroundColor: isActive ? '#eff6ff' : 'var(--bg-canvas)',
-                        border: isActive ? '1.5px solid var(--accent-blue)' : '1px solid var(--border-light)',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        opacity: isDragging ? 0.35 : 1,
-                        gap: '8px',
-                        transition: 'opacity 0.15s, border-color 0.15s',
-                      }}
+                      style={{ cursor: 'pointer' }}
                     >
-                      {/* Drag Handle */}
-                      <div style={{ cursor: 'grab', color: 'var(--text-tertiary)', display: 'flex', flexShrink: 0 }}>
+                    <XStack
+                      onPress={() => setActiveBlockId(block.id)}
+                      ai="center"
+                      p="$2"
+                      bg={isActive ? '$secondary' : '$background'}
+                      borderWidth={isActive ? 1.5 : 1}
+                      borderColor={isActive ? '$primary' : '$border'}
+                      borderRadius="$3"
+                      opacity={isDragging ? 0.35 : 1}
+                      gap="$2"
+                    >
+                      <XStack cursor="grab" flexShrink={0}>
                         <Icon name="GripVertical" size={14} />
-                      </div>
+                      </XStack>
 
-                      {/* Icon + Title */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0 }}>
-                        <div style={{ color: isActive ? 'var(--accent-blue)' : 'var(--text-secondary)', flexShrink: 0 }}>
+                      <XStack ai="center" gap={1} flex={1} minWidth={0}>
+                        <XStack flexShrink={0}>
                           <BlockIcon type={block.type} />
-                        </div>
-                        <span style={{ fontSize: '11px', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        </XStack>
+                        <Text fontSize={11} numberOfLines={1} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {getBlockTitle(block)}
-                        </span>
-                      </div>
-
+                        </Text>
+                      </XStack>
+                    </XStack>
                     </div>
-                  </div>
+                  </YStack>
                 );
               })}
-              {/* Drop indicator at the bottom when inserting at end */}
               {dropIndex === filteredLayers.length && (
-                <div style={{ position: 'relative', height: '4px' }}>
-                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', backgroundColor: '#3b82f6', borderRadius: '2px', zIndex: 10, pointerEvents: 'none' }} />
-                </div>
+                <YStack position="relative" height={4}>
+                  <YStack position="absolute" top={0} left={0} right={0} height={3} bg="$primary" borderRadius={1} zIndex={10} style={{ pointerEvents: 'none' }} />
+                </YStack>
               )}
-            </div>
-          </div>
+            </YStack>
+          </YStack>
         )}
-      </div>
-    </div>
+      </YStack>
+    </YStack>
   );
 };

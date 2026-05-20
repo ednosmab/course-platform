@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button, Icon } from '@projeto/ui';
+import { YStack, XStack, Text, Button, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
 
-/** Gera HTML representativo de qualquer bloco (fora do componente para evitar re-renders) */
 function parseMarkdownToHtml(text: string): string {
   if (!text) return '';
   const lines = text.split('\n');
@@ -129,46 +128,39 @@ ${block.options.map((o, i) => `    <div style="display: flex; align-items: cente
   }
 }
 
-/** Controles universais de dimensão aplicáveis a qualquer bloco */
 const DimensionControls: React.FC<{ block: any; updateBlock: any }> = ({ block, updateBlock }) => (
-  <div style={{ borderTop: '1px solid var(--border-light)', marginTop: '16px', paddingTop: '16px' }}>
-    <label className="form-label" style={{ marginBottom: '8px', display: 'block' }}>Dimensões</label>
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-      <div className="form-group" style={{ marginBottom: 0 }}>
-        <label className="form-label" style={{ fontSize: '10px' }}>Largura</label>
+  <YStack borderTopWidth={1} borderTopColor="$border" mt="$4" pt="$4">
+    <Text fontSize={11} fontWeight="500" mb="$2">Dimensões</Text>
+    <XStack gap="$2">
+      <YStack flex={1}>
+        <Text fontSize={10} color="$textMuted">Largura</Text>
         <input
           type="text"
-          className="form-input"
           placeholder="ex: 100%, 400px"
           value={block.styles?.width || ''}
           onChange={(e) => updateBlock(block.id, { styles: { ...block.styles, width: e.target.value } })}
+          style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 10px', fontSize: 12, outline: 'none', width: '100%' }}
         />
-      </div>
-      <div className="form-group" style={{ marginBottom: 0 }}>
-        <label className="form-label" style={{ fontSize: '10px' }}>Altura</label>
+      </YStack>
+      <YStack flex={1}>
+        <Text fontSize={10} color="$textMuted">Altura</Text>
         <input
           type="text"
-          className="form-input"
           placeholder="ex: auto, 200px"
           value={block.styles?.height || ''}
           onChange={(e) => updateBlock(block.id, { styles: { ...block.styles, height: e.target.value } })}
+          style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 10px', fontSize: 12, outline: 'none', width: '100%' }}
         />
-      </div>
-    </div>
-  </div>
+      </YStack>
+    </XStack>
+  </YStack>
 );
 
-/** Controles de tipografia, cores e background para Texto e Quiz */
 const TypographyAndBackgroundControls: React.FC<{ block: any; updateBlock: any }> = ({ block, updateBlock }) => {
   const styles = block.styles || {};
   
   const setStyle = (key: string, value: any) => {
-    updateBlock(block.id, {
-      styles: {
-        ...styles,
-        [key]: value
-      }
-    });
+    updateBlock(block.id, { styles: { ...styles, [key]: value } });
   };
 
   const fontOptions = [
@@ -184,135 +176,123 @@ const TypographyAndBackgroundControls: React.FC<{ block: any; updateBlock: any }
   ];
 
   return (
-    <div style={{ borderTop: '1px solid var(--border-light)', marginTop: '16px', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      <label className="form-label" style={{ fontWeight: 600, fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Tipografia e Visual</label>
+    <YStack borderTopWidth={1} borderTopColor="$border" mt="$4" pt="$4" gap="$3">
+      <Text fontSize={11} fontWeight="600" textTransform="uppercase" color="$textSecondary">Tipografia e Visual</Text>
       
-      {/* Fonte e Formatação Semântica */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'end' }}>
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <label className="form-label" style={{ fontSize: '10px' }}>Família da Fonte</label>
+      <YStack>
+        <Text fontSize={10} color="$textMuted">Família da Fonte</Text>
+        <XStack gap="$2" ai="flex-end">
           <select
-            className="form-input"
             value={styles.fontFamily || ''}
             onChange={(e) => setStyle('fontFamily', e.target.value)}
-            style={{ fontSize: '12px' }}
+            style={{ flex: 1, height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 8px', fontSize: 12, outline: 'none', background: 'white' }}
           >
             {fontOptions.map(f => (
               <option key={f.value} value={f.value}>{f.label}</option>
             ))}
           </select>
-        </div>
 
-        {/* Toggles Negrito e Itálico */}
-        <div style={{ display: 'flex', gap: '4px', height: '34px' }}>
-          <button
-            onClick={() => setStyle('bold', !styles.bold)}
-            style={{
-              width: '34px', height: '34px', borderRadius: '6px', border: '1px solid var(--border-light)',
-              backgroundColor: styles.bold ? 'var(--accent-blue-light)' : 'var(--bg-canvas)',
-              color: styles.bold ? 'var(--accent-blue)' : 'var(--text-primary)',
-              fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}
-            title="Negrito semântico (<strong>)"
-          >
-            B
-          </button>
-          <button
-            onClick={() => setStyle('italic', !styles.italic)}
-            style={{
-              width: '34px', height: '34px', borderRadius: '6px', border: '1px solid var(--border-light)',
-              backgroundColor: styles.italic ? 'var(--accent-blue-light)' : 'var(--bg-canvas)',
-              color: styles.italic ? 'var(--accent-blue)' : 'var(--text-primary)',
-              fontStyle: 'italic', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}
-            title="Itálico semântico (<em>)"
-          >
-            I
-          </button>
-        </div>
-      </div>
+          <XStack gap={1} height={34}>
+            <Button
+              variant="ghost"
+              onPress={() => setStyle('bold', !styles.bold)}
+              w={34} h={34} p={0}
+              borderWidth={styles.bold ? 1 : 0}
+              borderColor={styles.bold ? '$border' : 'transparent'}
+            >
+              <Text fontWeight="bold" fontSize={14}>B</Text>
+            </Button>
+            <Button
+              variant="ghost"
+              onPress={() => setStyle('italic', !styles.italic)}
+              w={34} h={34} p={0}
+              borderWidth={styles.italic ? 1 : 0}
+              borderColor={styles.italic ? '$border' : 'transparent'}
+            >
+              <Text fontStyle="italic" fontSize={14}>I</Text>
+            </Button>
+          </XStack>
+        </XStack>
+      </YStack>
 
-      {/* Cor da Fonte */}
-      <div className="form-group" style={{ marginBottom: 0 }}>
-        <label className="form-label" style={{ fontSize: '10px', display: 'flex', justifyContent: 'space-between' }}>
-          <span>Cor do Texto</span>
-          <span style={{ fontSize: '9px', color: 'var(--text-tertiary)' }}>{styles.color || 'Padrão'}</span>
-        </label>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <YStack>
+        <XStack ai="center" jc="space-between">
+          <Text fontSize={10} color="$textMuted">Cor do Texto</Text>
+          <Text fontSize={9} color="$textMuted">{styles.color || 'Padrão'}</Text>
+        </XStack>
+        <XStack gap="$2" ai="center">
           <input
             type="color"
             value={styles.color || '#1e293b'}
             onChange={(e) => setStyle('color', e.target.value)}
-            style={{ width: '32px', height: '32px', padding: 0, border: '1px solid var(--border-light)', borderRadius: '4px', cursor: 'pointer' }}
+            style={{ width: 32, height: 32, padding: 0, border: '1px solid var(--border-light)', borderRadius: '4px', cursor: 'pointer' }}
           />
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', flex: 1 }}>
+          <XStack flexWrap="wrap" gap={1} flex={1}>
             {presetColors.slice(0, 8).map(c => (
-              <button
+              <XStack
                 key={c}
-                onClick={() => setStyle('color', c)}
-                style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: c, border: '1px solid rgba(0,0,0,0.1)', cursor: 'pointer', padding: 0 }}
+                onPress={() => setStyle('color', c)}
+                w={16} h={16}
+                borderRadius={8}
+                bg={c}
+                style={{ border: '1px solid rgba(0,0,0,0.1)', cursor: 'pointer' }}
               />
             ))}
-          </div>
-        </div>
-      </div>
+          </XStack>
+        </XStack>
+      </YStack>
 
-      {/* Cor do Background */}
-      <div className="form-group" style={{ marginBottom: 0 }}>
-        <label className="form-label" style={{ fontSize: '10px', display: 'flex', justifyContent: 'space-between' }}>
-          <span>Cor de Fundo</span>
-          <span style={{ fontSize: '9px', color: 'var(--text-tertiary)' }}>{styles.backgroundColor || 'Transparente'}</span>
-        </label>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <YStack>
+        <XStack ai="center" jc="space-between">
+          <Text fontSize={10} color="$textMuted">Cor de Fundo</Text>
+          <Text fontSize={9} color="$textMuted">{styles.backgroundColor || 'Transparente'}</Text>
+        </XStack>
+        <XStack gap="$2" ai="center">
           <input
             type="color"
             value={styles.backgroundColor || '#ffffff'}
             onChange={(e) => setStyle('backgroundColor', e.target.value)}
-            style={{ width: '32px', height: '32px', padding: 0, border: '1px solid var(--border-light)', borderRadius: '4px', cursor: 'pointer' }}
+            style={{ width: 32, height: 32, padding: 0, border: '1px solid var(--border-light)', borderRadius: '4px', cursor: 'pointer' }}
           />
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', flex: 1 }}>
+          <XStack flexWrap="wrap" gap={1} flex={1} ai="center">
             {presetColors.map(c => (
-              <button
+              <XStack
                 key={c}
-                onClick={() => setStyle('backgroundColor', c)}
-                style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: c, border: '1px solid rgba(0,0,0,0.1)', cursor: 'pointer', padding: 0 }}
+                onPress={() => setStyle('backgroundColor', c)}
+                w={16} h={16}
+                borderRadius={8}
+                bg={c}
+                style={{ border: '1px solid rgba(0,0,0,0.1)', cursor: 'pointer' }}
               />
             ))}
-            <button
-              onClick={() => setStyle('backgroundColor', '')}
-              style={{ fontSize: '9px', padding: '1px 5px', borderRadius: '3px', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-canvas)', cursor: 'pointer' }}
-            >
+            <Button variant="ghost" onPress={() => setStyle('backgroundColor', '')} px="$1" py={0}>
               Limpar
-            </button>
-          </div>
-        </div>
-      </div>
+            </Button>
+          </XStack>
+        </XStack>
+      </YStack>
 
-      {/* Background Image URL */}
-      <div className="form-group" style={{ marginBottom: 0 }}>
-        <label className="form-label" style={{ fontSize: '10px' }}>URL da Imagem de Fundo</label>
+      <YStack>
+        <Text fontSize={10} color="$textMuted">URL da Imagem de Fundo</Text>
         <input
           type="text"
-          className="form-input"
           value={styles.backgroundImage || ''}
           onChange={(e) => setStyle('backgroundImage', e.target.value)}
           placeholder="https://exemplo.com/background.jpg"
-          style={{ fontSize: '12px' }}
+          style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 10px', fontSize: 12, outline: 'none', width: '100%' }}
         />
-      </div>
-    </div>
+      </YStack>
+    </YStack>
   );
 };
 
 export const BlockSettings: React.FC = () => {
   const { blocks, activeBlockId, updateBlock, removeBlock } = useEditor();
   const [activeTab, setActiveTab] = useState<'props' | 'html'>('props');
-  // Local draft evita cursor jumping ao editar HTML
   const [htmlDraft, setHtmlDraft] = useState('');
 
   const activeBlock = blocks.find((b) => b.id === activeBlockId);
 
-  // Sincroniza o draft quando o bloco muda
   useEffect(() => {
     if (!activeBlock) return;
     const html = getHtmlFromBlock(activeBlock);
@@ -322,18 +302,18 @@ export const BlockSettings: React.FC = () => {
 
   if (!activeBlock) {
     return (
-      <div className="sidebar-right" style={{ width: 320, minWidth: 320, justifyContent: 'center', alignItems: 'center', padding: '24px', textAlign: 'center' }}>
-        <Icon name="AlertCircle" size={32} color="var(--text-tertiary)" style={{ marginBottom: '16px' }} />
-        <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)' }}>Nenhum bloco selecionado</span>
-        <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '8px' }}>
+      <YStack w={320} minWidth={320} jc="center" ai="center" p="$5">
+        <Icon name="AlertCircle" size={32} color="$textMuted" style={{ marginBottom: 16 }} />
+        <Text fontSize={14} fontWeight="500" color="$textSecondary">Nenhum bloco selecionado</Text>
+        <Text fontSize={12} color="$textMuted" mt="$2">
           Clique num bloco no canvas para editar suas propriedades.
-        </p>
-      </div>
+        </Text>
+      </YStack>
     );
   }
 
   const handleHtmlEdit = (value: string) => {
-    setHtmlDraft(value); // atualiza draft local imediatamente (sem cursor jump)
+    setHtmlDraft(value);
     if (activeBlock.type === 'html') {
       updateBlock(activeBlock.id, { htmlContent: value });
     } else if (activeBlock.type === 'text') {
@@ -344,83 +324,84 @@ export const BlockSettings: React.FC = () => {
   };
 
   return (
-    <div className="sidebar-right" style={{ width: 320, minWidth: 320, overflowY: 'auto', borderLeft: '1px solid #DEE1EB', backgroundColor: '#FFFFFF' }}>
-      {/* Header com tabs */}
-      <div style={{ padding: '16px 20px 0', borderBottom: '1px solid var(--border-light)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <h3 style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Editar Bloco</h3>
-          <button onClick={() => removeBlock(activeBlock.id)} style={{ color: '#ef4444', padding: '4px', display: 'flex', alignItems: 'center', cursor: 'pointer' }} title="Excluir bloco">
-            <Icon name="Trash2" size={14} />
-          </button>
-        </div>
-        {/* Tab switcher */}
-        <div style={{ display: 'flex', gap: '2px', backgroundColor: 'var(--bg-canvas)', borderRadius: '7px', padding: '3px' }}>
+    <YStack w={320} minWidth={320} overflowY="auto" borderLeftWidth={1} borderLeftColor="$border" bg="$background">
+      <YStack px="$5" pt="$4" borderBottomWidth={1} borderBottomColor="$border" flexShrink={0}>
+        <XStack ai="center" jc="space-between" mb="$3">
+          <Text fontSize={11} fontWeight="700" textTransform="uppercase" color="$textSecondary" letterSpacing={0.5}>Editar Bloco</Text>
+          <Button variant="ghost" onPress={() => removeBlock(activeBlock.id)} px="$1">
+            <Icon name="Trash2" size={14} color="$danger" />
+          </Button>
+        </XStack>
+        <XStack bg="$background" borderRadius={7} p={3} gap={1}>
           {(['props', 'html'] as const).map((tab) => (
-            <button
+            <Button
               key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                flex: 1, padding: '5px 8px', borderRadius: '5px', fontSize: '11px', fontWeight: 600,
-                backgroundColor: activeTab === tab ? 'var(--bg-surface)' : 'transparent',
-                color: activeTab === tab ? 'var(--accent-blue)' : 'var(--text-secondary)',
-                boxShadow: activeTab === tab ? 'var(--shadow-sm)' : 'none',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
-              }}
+              variant="ghost"
+              onPress={() => setActiveTab(tab)}
+              flex={1}
+              py="$1"
+              borderRadius={5}
+              ai="center" jc="center"
+              borderWidth={activeTab === tab ? 1 : 0}
+              borderColor={activeTab === tab ? '$border' : 'transparent'}
             >
-              {tab === 'props' ? 'Propriedades' : <><Icon name="Code" size={11} /> HTML Fonte</>}
-            </button>
+              {tab === 'props' ? (
+                <Text fontSize={11} fontWeight="600">Propriedades</Text>
+              ) : (
+                <XStack ai="center" gap={1}>
+                  <Icon name="Code" size={11} />
+                  <Text fontSize={11} fontWeight="600">HTML Fonte</Text>
+                </XStack>
+              )}
+            </Button>
           ))}
-        </div>
-      </div>
+        </XStack>
+      </YStack>
 
-      {/* ── HTML FONTE TAB ──── */}
       {activeTab === 'html' && (
-        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, overflow: 'hidden' }}>
-          <label className="form-label">Código — HTML / CSS / JavaScript</label>
+        <YStack p="$4" gap="$2" flex={1} overflow="hidden">
+          <Text fontSize={11} fontWeight="500">Código — HTML / CSS / JavaScript</Text>
           <textarea
-            className="form-textarea"
             value={htmlDraft}
             onChange={(e) => handleHtmlEdit(e.target.value)}
             rows={20}
             spellCheck={false}
-            style={{ fontFamily: 'monospace', fontSize: '11px', lineHeight: 1.6, flex: 1, resize: 'vertical' }}
+            style={{ fontFamily: 'monospace', fontSize: 11, lineHeight: 1.6, flex: 1, resize: 'vertical', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', outline: 'none', color: 'var(--text-primary)', backgroundColor: 'var(--bg-canvas)' }}
             placeholder={activeBlock.type === 'html'
               ? '<div style="color:red">HTML direto</div>\n<style>p{color:blue}</style>\n<script>console.log("JS")</script>'
               : 'Visualização do HTML gerado pelo bloco'}
           />
           {activeBlock.type === 'html' && (
-            <div className="tip-box" style={{ marginTop: 0 }}>
-              <div className="tip-title">✅ SUPORTE COMPLETO</div>
-              <div className="tip-text">Aceita HTML, CSS (<code>&lt;style&gt;</code>) e JavaScript (<code>&lt;script&gt;</code>) — executados em iframe isolado.</div>
-            </div>
+            <YStack p="$3" borderRadius="$3" bg="$secondary" mt={0}>
+              <Text fontSize={11} fontWeight="600">✅ SUPORTE COMPLETO</Text>
+              <Text fontSize={11} color="$textMuted">Aceita HTML, CSS e JavaScript — executados em iframe isolado.</Text>
+            </YStack>
           )}
           {activeBlock.type !== 'html' && activeBlock.type !== 'text' && (
-            <div className="tip-box" style={{ marginTop: 0 }}>
-              <div className="tip-title">SOMENTE LEITURA</div>
-              <div className="tip-text">Edite pelo painel "Propriedades". Para código livre, use o bloco HTML.</div>
-            </div>
+            <YStack p="$3" borderRadius="$3" bg="$secondary" mt={0}>
+              <Text fontSize={11} fontWeight="600">SOMENTE LEITURA</Text>
+              <Text fontSize={11} color="$textMuted">Edite pelo painel "Propriedades". Para código livre, use o bloco HTML.</Text>
+            </YStack>
           )}
-        </div>
+        </YStack>
       )}
 
-      {/* ── PROPERTIES TAB ─────────────────────────────────────────── */}
       {activeTab === 'props' && (
-      <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
+      <YStack p="$4" overflowY="auto" flex={1}>
 
-      {/* --- SETTINGS FOR TEXT BLOCK --- */}
       {activeBlock.type === 'text' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div className="form-group">
-            <label className="form-label">Conteúdo do Texto</label>
+        <YStack gap="$2">
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Conteúdo do Texto</Text>
             <textarea
-              className="form-textarea"
               value={activeBlock.content}
               onChange={(e) => updateBlock(activeBlock.id, { content: e.target.value })}
               rows={4}
+              style={{ width: '100%', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', fontSize: 13, outline: 'none', resize: 'vertical', color: 'var(--text-primary)', backgroundColor: 'var(--bg-canvas)' }}
             />
             <Button
               variant="ghost"
-              onClick={() => {
+              onPress={() => {
                 const currentContent = activeBlock.content || '';
                 const divider = currentContent ? '\n' : '';
                 updateBlock(activeBlock.id, { content: currentContent + divider + '> "Insira sua citação aqui"\n— Autor' });
@@ -428,119 +409,108 @@ export const BlockSettings: React.FC = () => {
             >
               💬 Inserir Citação Formatada
             </Button>
-          </div>
+          </YStack>
 
-          <div className="form-group">
-            <label className="form-label">Tamanho da Fonte</label>
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Tamanho da Fonte</Text>
             <select
-              className="form-input"
               value={activeBlock.styles?.fontSize || 'medium'}
-              onChange={(e) =>
-                updateBlock(activeBlock.id, {
-                  styles: {
-                    ...activeBlock.styles,
-                    fontSize: e.target.value as any,
-                  },
-                })
-              }
+              onChange={(e) => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, fontSize: e.target.value as any } })}
+              style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 8px', fontSize: 12, outline: 'none', background: 'white', width: '100%' }}
             >
               <option value="small">Pequena</option>
               <option value="medium">Média</option>
               <option value="large">Grande</option>
               <option value="xlarge">Muito Grande</option>
             </select>
-          </div>
+          </YStack>
 
-          <div className="form-group">
-            <label className="form-label">Alinhamento</label>
-            <div style={{ display: 'flex', backgroundColor: 'var(--bg-canvas)', borderRadius: '6px', padding: '4px', border: '1px solid var(--border-light)' }}>
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Alinhamento</Text>
+            <XStack bg="$background" borderRadius="$3" p={1} borderWidth={1} borderColor="$border">
               {(['left', 'center', 'right', 'justify'] as const).map((align) => {
                 const isSelected = activeBlock.styles?.align === align;
                 const iconName: Record<string, string> = { left: 'AlignLeft', center: 'AlignCenter', right: 'AlignRight', justify: 'AlignJustify' };
                 return (
-                  <button
+                  <Button
                     key={align}
-                    onClick={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, align } })}
-                    style={{
-                      flex: 1, display: 'flex', justifyContent: 'center', padding: '6px', borderRadius: '4px',
-                      backgroundColor: isSelected ? 'var(--bg-surface)' : 'transparent',
-                      color: isSelected ? 'var(--accent-blue)' : 'var(--text-secondary)',
-                      boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
-                    }}
+                    variant="ghost"
+                    borderWidth={isSelected ? 1 : 0}
+                    borderColor={isSelected ? '$border' : 'transparent'}
+                    onPress={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, align } })}
+                    flex={1}
+                    py="$1"
                   >
                     <Icon name={iconName[align]} size={16} />
-                  </button>
+                  </Button>
                 );
               })}
-            </div>
-          </div>
+            </XStack>
+          </YStack>
 
-          <div className="tip-box">
-            <div className="tip-title">✨ ÊNFASE INLINE (MARKDOWN)</div>
-            <div className="tip-text">
-              Para destacar palavras específicas, digite <code>**negrito**</code> ou <code>*itálico*</code> no texto. O editor gera as tags semânticas <code>&lt;strong&gt;</code> e <code>&lt;em&gt;</code> automaticamente!
-            </div>
-          </div>
+          <YStack p="$3" borderRadius="$3" bg="$secondary">
+            <Text fontSize={11} fontWeight="600">✨ ÊNFASE INLINE (MARKDOWN)</Text>
+            <Text fontSize={11} color="$textMuted">
+              Para destacar palavras específicas, digite <Text fontSize={11} style={{ fontFamily: 'monospace' }}>**negrito**</Text> ou <Text fontSize={11} style={{ fontFamily: 'monospace' }}>*itálico*</Text> no texto.
+            </Text>
+          </YStack>
 
           <TypographyAndBackgroundControls block={activeBlock} updateBlock={updateBlock} />
-
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
-        </div>
+        </YStack>
       )}
 
-      {/* --- SETTINGS FOR VIDEO BLOCK --- */}
       {activeBlock.type === 'video' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div className="form-group">
-            <label className="form-label">Provedor de Vídeo</label>
+        <YStack gap="$2">
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Provedor de Vídeo</Text>
             <select
-              className="form-input"
               value={activeBlock.provider}
               onChange={(e) => updateBlock(activeBlock.id, { provider: e.target.value as any })}
+              style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 8px', fontSize: 12, outline: 'none', background: 'white', width: '100%' }}
             >
               <option value="youtube">YouTube</option>
               <option value="vimeo">Vimeo</option>
               <option value="storage_supabase">Supabase Storage</option>
             </select>
-          </div>
+          </YStack>
 
-          <div className="form-group">
-            <label className="form-label">URL do Vídeo</label>
+          <YStack>
+            <Text fontSize={11} fontWeight="500">URL do Vídeo</Text>
             <input
               type="text"
-              className="form-input"
               value={activeBlock.url}
               onChange={(e) => updateBlock(activeBlock.id, { url: e.target.value })}
               placeholder="Ex: https://youtube.com/watch?v=..."
+              style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 10px', fontSize: 12, outline: 'none', width: '100%' }}
             />
-          </div>
+          </YStack>
 
-          <div className="tip-box">
-            <div className="tip-title">DICA DE EMBED</div>
-            <div className="tip-text">
+          <YStack p="$3" borderRadius="$3" bg="$secondary">
+            <Text fontSize={11} fontWeight="600">DICA DE EMBED</Text>
+            <Text fontSize={11} color="$textMuted">
               Certifique-se de colar a URL completa do vídeo. O sistema converterá automaticamente para o formato de incorporação sem barras pretas laterais (16:9).
-            </div>
-          </div>
+            </Text>
+          </YStack>
 
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
-        </div>
+        </YStack>
       )}
 
-      {/* --- SETTINGS FOR QUIZ BLOCK --- */}
       {activeBlock.type === 'quiz' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div className="form-group">
-            <label className="form-label">Pergunta</label>
+        <YStack gap="$2">
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Pergunta</Text>
             <textarea
-              className="form-textarea"
               value={activeBlock.question}
               onChange={(e) => updateBlock(activeBlock.id, { question: e.target.value })}
               rows={3}
               placeholder="Digite a pergunta do quiz aqui..."
+              style={{ width: '100%', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', fontSize: 13, outline: 'none', resize: 'vertical', color: 'var(--text-primary)', backgroundColor: 'var(--bg-canvas)' }}
             />
             <Button
               variant="ghost"
-              onClick={() => {
+              onPress={() => {
                 const currentQuestion = activeBlock.question || '';
                 const divider = currentQuestion ? '\n' : '';
                 updateBlock(activeBlock.id, { question: currentQuestion + divider + '> "Insira sua citação aqui"\n— Autor' });
@@ -548,27 +518,25 @@ export const BlockSettings: React.FC = () => {
             >
               💬 Inserir Citação Formatada
             </Button>
-          </div>
+          </YStack>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px', marginBottom: '8px' }}>
-            <label className="form-label" style={{ marginBottom: 0 }}>Opções de Resposta</label>
+          <XStack ai="center" jc="space-between" mt="$4" mb="$2">
+            <Text fontSize={11} fontWeight="500" mb={0}>Opções de Resposta</Text>
             <Button
               variant="ghost"
-              onClick={() => {
+              onPress={() => {
                 const newOption = { id: crypto.randomUUID(), text: 'Nova Opção', isCorrect: false, feedback: 'Dica do professor.' };
                 updateBlock(activeBlock.id, { options: [...activeBlock.options, newOption] });
               }}
             >
               <Icon name="Plus" size={14} /> Add Opção
             </Button>
-          </div>
+          </XStack>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <YStack gap="$3">
             {activeBlock.options.map((opt) => (
-              <div key={opt.id} style={{
-                backgroundColor: 'var(--bg-canvas)', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <YStack key={opt.id} p="$3" borderRadius="$3" bg="$background" borderWidth={1} borderColor="$border" gap="$2">
+                <XStack ai="center" gap="$2">
                   <input
                     type="radio"
                     name={`correct-option-${activeBlock.id}`}
@@ -577,7 +545,7 @@ export const BlockSettings: React.FC = () => {
                       const updatedOptions = activeBlock.options.map((o) => ({ ...o, isCorrect: o.id === opt.id }));
                       updateBlock(activeBlock.id, { options: updatedOptions });
                     }}
-                    style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
+                    style={{ cursor: 'pointer' }}
                   />
                   <input
                     type="text"
@@ -586,24 +554,18 @@ export const BlockSettings: React.FC = () => {
                       const updatedOptions = activeBlock.options.map((o) => o.id === opt.id ? { ...o, text: e.target.value } : o);
                       updateBlock(activeBlock.id, { options: updatedOptions });
                     }}
-                    style={{
-                      border: 'none', background: 'transparent', fontSize: '13px', flex: 1, color: 'var(--text-primary)', outline: 'none', padding: '4px 0'
-                    }}
+                    style={{ border: 'none', background: 'transparent', fontSize: 13, flex: 1, color: 'var(--text-primary)', outline: 'none', padding: '4px 0' }}
                   />
                   {activeBlock.options.length > 2 && (
-                    <button
-                      onClick={() => {
-                        const updatedOptions = activeBlock.options.filter((o) => o.id !== opt.id);
-                        if (opt.isCorrect && updatedOptions.length > 0) updatedOptions[0].isCorrect = true;
-                        updateBlock(activeBlock.id, { options: updatedOptions });
-                      }}
-                      className="btn-icon"
-                      style={{ color: '#ef4444', width: '24px', height: '24px' }}
-                    >
-                      <Icon name="Trash2" size={12} />
-                    </button>
+                    <Button variant="ghost" onPress={() => {
+                      const updatedOptions = activeBlock.options.filter((o) => o.id !== opt.id);
+                      if (opt.isCorrect && updatedOptions.length > 0) updatedOptions[0].isCorrect = true;
+                      updateBlock(activeBlock.id, { options: updatedOptions });
+                    }} w={24} h={24} p={0}>
+                      <Icon name="Trash2" size={12} color="$danger" />
+                    </Button>
                   )}
-                </div>
+                </XStack>
                 <input
                   type="text"
                   placeholder="Feedback para o aluno ao marcar esta opção..."
@@ -612,204 +574,187 @@ export const BlockSettings: React.FC = () => {
                     const updatedOptions = activeBlock.options.map((o) => o.id === opt.id ? { ...o, feedback: e.target.value } : o);
                     updateBlock(activeBlock.id, { options: updatedOptions });
                   }}
-                  style={{
-                    backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-light)', borderRadius: '4px', padding: '6px 8px', fontSize: '11px', color: 'var(--text-secondary)', outline: 'none'
-                  }}
+                  style={{ borderRadius: '4px', border: '1px solid var(--border-light)', padding: '6px 8px', fontSize: 11, color: 'var(--text-secondary)', outline: 'none', width: '100%' }}
                 />
-              </div>
+              </YStack>
             ))}
-          </div>
+          </YStack>
 
-          <div className="tip-box">
-            <div className="tip-title">FEEDBACK ESTRUTURADO</div>
-            <div className="tip-text">
-              O texto preenchido no "Feedback" só aparecerá para o aluno após ele responder a questão. Use isso para explicar a lógica por trás da alternativa correta ou incorreta.
-            </div>
-          </div>
+          <YStack p="$3" borderRadius="$3" bg="$secondary">
+            <Text fontSize={11} fontWeight="600">FEEDBACK ESTRUTURADO</Text>
+            <Text fontSize={11} color="$textMuted">
+              O texto preenchido no "Feedback" só aparecerá para o aluno após ele responder a questão.
+            </Text>
+          </YStack>
 
           <TypographyAndBackgroundControls block={activeBlock} updateBlock={updateBlock} />
-
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
-        </div>
+        </YStack>
       )}
 
-      {/* --- SETTINGS FOR IMAGE BLOCK --- */}
       {activeBlock.type === 'image' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div className="form-group">
-            <label className="form-label">URL da Imagem</label>
+        <YStack gap="$2">
+          <YStack>
+            <Text fontSize={11} fontWeight="500">URL da Imagem</Text>
             <input
               type="text"
-              className="form-input"
               value={activeBlock.url}
               onChange={(e) => updateBlock(activeBlock.id, { url: e.target.value })}
               placeholder="https://exemplo.com/imagem.jpg"
+              style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 10px', fontSize: 12, outline: 'none', width: '100%' }}
             />
-          </div>
+          </YStack>
 
-          <div className="form-group">
-            <label className="form-label">Texto Alternativo (Alt)</label>
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Texto Alternativo (Alt)</Text>
             <input
               type="text"
-              className="form-input"
               value={activeBlock.alt || ''}
               onChange={(e) => updateBlock(activeBlock.id, { alt: e.target.value })}
               placeholder="Descrição da imagem para acessibilidade"
+              style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 10px', fontSize: 12, outline: 'none', width: '100%' }}
             />
-          </div>
+          </YStack>
 
-          <div className="form-group">
-            <label className="form-label">Alinhamento</label>
-            <div style={{ display: 'flex', backgroundColor: 'var(--bg-canvas)', borderRadius: '6px', padding: '4px', border: '1px solid var(--border-light)' }}>
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Alinhamento</Text>
+            <XStack bg="$background" borderRadius="$3" p={1} borderWidth={1} borderColor="$border">
               {(['left', 'center', 'right'] as const).map((align) => {
                 const isSelected = activeBlock.styles?.align === align;
                 const iconName: Record<string, string> = { left: 'AlignLeft', center: 'AlignCenter', right: 'AlignRight' };
                 return (
-                  <button
+                  <Button
                     key={align}
-                    onClick={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, align } })}
-                    style={{
-                      flex: 1, display: 'flex', justifyContent: 'center', padding: '6px', borderRadius: '4px',
-                      backgroundColor: isSelected ? 'var(--bg-surface)' : 'transparent',
-                      color: isSelected ? 'var(--accent-blue)' : 'var(--text-secondary)',
-                      boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
-                    }}
+                    variant="ghost"
+                    borderWidth={isSelected ? 1 : 0}
+                    borderColor={isSelected ? '$border' : 'transparent'}
+                    onPress={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, align } })}
+                    flex={1}
+                    py="$1"
                   >
                     <Icon name={iconName[align]} size={16} />
-                  </button>
+                  </Button>
                 );
               })}
-            </div>
-          </div>
+            </XStack>
+          </YStack>
 
           {activeBlock.url && (
-            <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+            <YStack borderRadius="$3" overflow="hidden" borderWidth={1} borderColor="$border">
               <img src={activeBlock.url} alt={activeBlock.alt} style={{ width: '100%', height: 'auto', display: 'block' }} />
-            </div>
+            </YStack>
           )}
 
-          <div className="tip-box">
-            <div className="tip-title">UPLOAD DE IMAGENS</div>
-            <div className="tip-text">
+          <YStack p="$3" borderRadius="$3" bg="$secondary">
+            <Text fontSize={11} fontWeight="600">UPLOAD DE IMAGENS</Text>
+            <Text fontSize={11} color="$textMuted">
               Cole a URL de uma imagem existente ou hospedada. Suporte a upload direto para o Supabase Storage será habilitado em breve.
-            </div>
-          </div>
+            </Text>
+          </YStack>
 
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
-        </div>
+        </YStack>
       )}
 
-      {/* --- SETTINGS FOR HTML BLOCK --- */}
       {activeBlock.type === 'html' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div className="form-group">
-            <label className="form-label">Código HTML</label>
+        <YStack gap="$2">
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Código HTML</Text>
             <textarea
-              className="form-textarea"
               value={activeBlock.htmlContent}
               onChange={(e) => updateBlock(activeBlock.id, { htmlContent: e.target.value })}
               rows={12}
               spellCheck={false}
-              style={{ fontFamily: 'monospace', fontSize: '12px', lineHeight: 1.5 }}
+              style={{ fontFamily: 'monospace', fontSize: 12, lineHeight: 1.5, width: '100%', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', outline: 'none', color: 'var(--text-primary)', backgroundColor: 'var(--bg-canvas)' }}
               placeholder={'<div>\n  Seu HTML aqui...\n</div>'}
             />
-          </div>
+          </YStack>
 
-          <div className="tip-box">
-            <div className="tip-title">⚠️ AVISO DE SEGURANÇA</div>
-            <div className="tip-text">
-              Este bloco executa HTML bruto na tela do aluno. Certifique-se de usar apenas código confiável. Scripts externos e iframes de origens desconhecidas podem comprometer a segurança.
-            </div>
-          </div>
+          <YStack p="$3" borderRadius="$3" bg="$secondary">
+            <Text fontSize={11} fontWeight="600">⚠️ AVISO DE SEGURANÇA</Text>
+            <Text fontSize={11} color="$textMuted">
+              Este bloco executa HTML bruto na tela do aluno. Certifique-se de usar apenas código confiável.
+            </Text>
+          </YStack>
 
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
-        </div>
+        </YStack>
       )}
 
-      {/* --- SETTINGS FOR QUOTE BLOCK --- */}
       {activeBlock.type === 'quote' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div className="form-group">
-            <label className="form-label">Conteúdo da Citação</label>
+        <YStack gap="$2">
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Conteúdo da Citação</Text>
             <textarea
-              className="form-textarea"
               value={activeBlock.content}
               onChange={(e) => updateBlock(activeBlock.id, { content: e.target.value })}
               rows={4}
               placeholder="Digite a citação aqui..."
+              style={{ width: '100%', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', fontSize: 13, outline: 'none', resize: 'vertical', color: 'var(--text-primary)', backgroundColor: 'var(--bg-canvas)' }}
             />
-          </div>
+          </YStack>
 
-          <div className="form-group">
-            <label className="form-label">Autor / Fonte</label>
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Autor / Fonte</Text>
             <input
               type="text"
-              className="form-input"
               value={(activeBlock as any).author || ''}
               onChange={(e) => updateBlock(activeBlock.id, { author: e.target.value })}
               placeholder="— Nome do Autor, Livro, etc."
+              style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 10px', fontSize: 12, outline: 'none', width: '100%' }}
             />
-          </div>
+          </YStack>
 
-          <div className="form-group">
-            <label className="form-label">Tamanho da Fonte</label>
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Tamanho da Fonte</Text>
             <select
-              className="form-input"
               value={activeBlock.styles?.fontSize || 'medium'}
-              onChange={(e) =>
-                updateBlock(activeBlock.id, {
-                  styles: {
-                    ...activeBlock.styles,
-                    fontSize: e.target.value as any,
-                  },
-                })
-              }
+              onChange={(e) => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, fontSize: e.target.value as any } })}
+              style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 8px', fontSize: 12, outline: 'none', background: 'white', width: '100%' }}
             >
               <option value="small">Pequeno (13px)</option>
               <option value="medium">Médio (16px)</option>
               <option value="large">Grande (24px)</option>
               <option value="xlarge">Gigante (32px)</option>
             </select>
-          </div>
+          </YStack>
 
-          <div className="form-group">
-            <label className="form-label">Alinhamento</label>
-            <div style={{ display: 'flex', backgroundColor: 'var(--bg-canvas)', borderRadius: '6px', padding: '4px', border: '1px solid var(--border-light)' }}>
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Alinhamento</Text>
+            <XStack bg="$background" borderRadius="$3" p={1} borderWidth={1} borderColor="$border">
               {(['left', 'center', 'right', 'justify'] as const).map((align) => {
                 const isSelected = activeBlock.styles?.align === align;
                 const iconName: Record<string, string> = { left: 'AlignLeft', center: 'AlignCenter', right: 'AlignRight', justify: 'AlignJustify' };
                 return (
-                  <button
+                  <Button
                     key={align}
-                    onClick={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, align } })}
-                    style={{
-                      flex: 1, display: 'flex', justifyContent: 'center', padding: '6px', borderRadius: '4px',
-                      backgroundColor: isSelected ? 'var(--bg-surface)' : 'transparent',
-                      color: isSelected ? 'var(--accent-blue)' : 'var(--text-secondary)',
-                      boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
-                    }}
+                    variant="ghost"
+                    borderWidth={isSelected ? 1 : 0}
+                    borderColor={isSelected ? '$border' : 'transparent'}
+                    onPress={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, align } })}
+                    flex={1}
+                    py="$1"
                   >
                     <Icon name={iconName[align]} size={16} />
-                  </button>
+                  </Button>
                 );
               })}
-            </div>
-          </div>
+            </XStack>
+          </YStack>
 
-          <div className="tip-box">
-            <div className="tip-title">✨ ÊNFASE INLINE (MARKDOWN)</div>
-            <div className="tip-text">
-              Assim como no texto, você pode usar <code>**negrito**</code> ou <code>*itálico*</code> no conteúdo da citação para destacar palavras específicas.
-            </div>
-          </div>
+          <YStack p="$3" borderRadius="$3" bg="$secondary">
+            <Text fontSize={11} fontWeight="600">✨ ÊNFASE INLINE (MARKDOWN)</Text>
+            <Text fontSize={11} color="$textMuted">
+              Assim como no texto, você pode usar <Text fontSize={11} style={{ fontFamily: 'monospace' }}>**negrito**</Text> ou <Text fontSize={11} style={{ fontFamily: 'monospace' }}>*itálico*</Text> no conteúdo da citação.
+            </Text>
+          </YStack>
 
           <TypographyAndBackgroundControls block={activeBlock} updateBlock={updateBlock} />
-
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
-        </div>
+        </YStack>
       )}
-      </div>
+      </YStack>
       )}
-    </div>
+    </YStack>
   );
 };
