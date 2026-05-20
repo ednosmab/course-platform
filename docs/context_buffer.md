@@ -1,31 +1,23 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-SESSAO ENCERRADA — Preview desktop/mobile/tablet com posicionamento absoluto, tablet viewport adicionado, mockups centralizados, notch unificado.
+SESSAO ATIVA — Reordenação de módulos/aulas, rename inline, breadcrumb dinâmico, spinner contextual.
 
 ## 🎯 Últimas Conquistas
-- **Schemas relaxados:** IDs de `z.string().uuid()` → `z.string()`, `.strict()` removido dos `styles` em todos os 6 block schemas + QuizOptionSchema + CourseLessonContentSchema. Seed data corrigido para `crypto.randomUUID()`.
-- **SafeAreaProvider fix:** Envolvidos os 3 blocos de renderização em `App.tsx` para eliminar crash "No safe area value available".
-- **BACKLOG expandido:** Tasks de escalabilidade (SCL-01 a SCL-16), testes E2E (E2E-01 a E2E-10), infra (TASK-01 a TASK-07), design extraction (DASH-01, EDIT-01 a EDIT-07, TOKEN-01/02), 10 ADRs pendentes (ADR-007 a ADR-016), seção bloqueada (pagamentos, aulas ao vivo, fóruns, dashboard aluno).
-- **ADR-006:** Criado — Student JSON headless rendering architecture.
-- **30 decisões técnicas auditadas** no código vs documentação — 10 candidatas a ADR formal.
-- **TOKEN-01 — Cloud White palette migrada:** 30 novos tokens `cw*`, 2 shadow presets, 2 fontes (Space Grotesk, DM Sans), tema `cloudWhite` com 28 variantes semânticas. OKLCH convertido para hex cross-platform.
-- **TOKEN-02 — BrandMark component:** Sparkles + gradient + "Mosaico."
-- **DASH-01 — Admin dashboard:** Rota `/` com top bar, hero, stats, course grid. Editor movido para `/studio/[courseId]`.
-- **Sidebars ocultas no preview:** BlockPalette e BlockSettings não renderizam em preview mode.
-- **flex:1 no canvas-area:** Todos os containers canvas-area agora preenchem o espaço disponível.
-- **Tablet viewport (768px):** Adicionado toggle Desktop/Tablet/Mobile com TableViewport para edição e preview.
-- **Preview desktop com posicionamento absoluto:** Blocos renderizados com x, y, z-index (match edit mode), em vez de row-based layout.
-- **Preview mobile/tablet com posicionamento absoluto:** Blocos escalados proporcionalmente (390/1100 ou 768/1100) com `BlockContent`, em vez de `MobileCanvas` flex.
-- **Mockups centralizados:** MobileViewport e TableViewport agora usam `justifyContent: center`.
-- **Preview mobile com notch idêntico ao edit mode:** Removido signal bar, mesmo notch pill + borderRadius 36.
+- **Reordenação de módulos e aulas:** Setas ↑↓ em cada módulo/aula com swap de `order_index` no Supabase. Ordem persistida via `order_index` ASC.
+- **Rename inline:** Clicar "Renomear" → input inline com botão "Salvar". Enter/blur salvam, Escape cancela. Cor `$secondaryForeground` (`#38384A`).
+- **Breadcrumb dinâmico no editor:** Cabeçalho agora mostra `Curso / Módulo / Aula` (buscado do Supabase via `lessonMeta.module_id`).
+- **courseTitle, moduleTitle, lessonTitle** expostos no `EditorContext` — fetch das tabelas `modules` e `courses` ao carregar metadados.
+- **Novas aulas/módulos no topo revertido:** Volta ao append (1ª criada = primeira na lista, última criada = última).
+- **Spinner contextual:** "Carregando cursos…" (dashboard) e "Carregando curso…" (studio) adicionados.
+- **BACKLOG expandido:** Bugs de salvar configurações e expansão do painel de settings adicionados. Spinner task marcado como concluído.
 
 ## 🕹️ Estado Atual do Projeto
 - **Branch atual:** `feat/dsv2-reform`
 - **Student app:** ✅ Build (Expo Web)
 - **Admin app:** ✅ Build (Next.js)
 - **Ladle:** ✅ Build (6 stories)
-- **MVP ~30% completo** — Fundação sólida, aplicações (admin editor + student player) ainda precisam ser finalizadas.
+- **MVP ~35% completo** — CRUD de cursos, módulos e aulas funcional; reordenação e rename operacionais; certificado com toggle + pendências de escopo.
 
 ## 📋 Checklist de Progresso
 - [x] DSv2 Reform - Fase 0 (Tokens modulares + governança)
@@ -33,19 +25,27 @@ SESSAO ENCERRADA — Preview desktop/mobile/tablet com posicionamento absoluto, 
 - [x] **Fase 4:** Sistema de Ícones (`Icon` wrapper + substituição)
 - [x] **Fase 5:** Preview de Componentes (Ladle + stories)
 - [x] **Fase 6:** Governança final (verify-ui-rules, AGENTS.md, CONTEXT_MAP)
-- [x] **CI:** GitHub Actions workflow (build:verify + react-consistency + verify:ui + ladle:build)
-- [x] **Schemas:** IDs relaxados, `.strict()` removido dos styles
-- [x] **ADR-006:** Student JSON headless rendering
-- [x] **BACKLOG:** Expandido com escalabilidade, E2E, design extraction, ADRs pendentes, itens bloqueados
-- [x] **Auditoria:** 30 decisões técnicas não documentadas identificadas
-- [x] **TOKEN-01:** Cloud White palette migrada para tokens Tamagui (30 `cw*` color tokens, 2 shadow presets, 2 novas fontes, tema `cloudWhite` com 28 variantes semânticas. OKLCH convertido para hex cross-platform)
-- [x] **TOKEN-02 — BrandMark component:** Sparkles + gradient + "Mosaico."
-- [x] **DASH-01 — Admin dashboard:** Rota `/` com top bar, hero, stats, course grid. Editor movido para `/studio/[courseId]`
-- [x] **Sidebars ocultas no preview:** BlockPalette e BlockSettings não renderizam em preview mode
-- [x] **flex:1 no canvas-area:** containers preenchem espaço disponível
-- [x] **Tablet viewport:** toggle Desktop/Tablet/Mobile com TableViewport (768px)
-- [x] **Preview desktop com posicionamento absoluto:** BlockContent com x, y, z-index
-- [x] **Preview mobile/tablet com posicionamento absoluto:** blocos escalados (viewportWidth / CANVAS_W)
-- [x] **Mockups centralizados:** justify-content center no MobileViewport e TableViewport
-- [x] **Notch unificado:** preview mobile usa mesmo notch pill + borderRadius 36 do edit mode
+- [x] **CI:** GitHub Actions workflow
+- [x] **DASH-01:** Admin dashboard + course CRUD + thumbnail upload
+- [x] **Module/Lesson CRUD:** Criar, renomear, excluir, reordenar módulos e aulas
+- [x] **Editor header dinâmico:** Breadcrumb Curso / Módulo / Aula
+- [x] **Spinner contextual:** Mensagens amigáveis em todos os loading states
+- [x] **Certificates:** Toggle no studio + migration + tabela `certificates` + pendência de escopo (por módulo/curso)
+- [x] **BACKLOG:** Expandido com bugs de settings, certificado por módulo vs curso, spinner
+- [ ] **BUG: Salvar configurações do curso** — Sem feedback de sucesso/erro
+- [ ] **BUG: Painel de configurações** — Container não expande com `overflow="hidden"`
+- [ ] **Certificado — decisão de escopo:** Por módulo, por curso ou ambos
 - [ ] **Próximo passo:** A definir
+
+## Key Decisions
+- **order_index append:** 1ª aula criada = topo, última = final. Reordenação manual via ↑↓.
+- **Inline rename:** Input + botão "Salvar" (Enter/blur também salvam). Cor `$secondaryForeground`.
+- **Editor breadcrumb:** Dados vivos do Supabase via `lessonMeta.module_id` → module.title → course.title.
+- **Backlog items:** Bugs de settings (P1) e decisão de certificado (bloqueado) adicionados.
+
+## Relevant Files
+- `apps/admin/src/app/studio/[courseId]/page.tsx`: CourseOverview (module/lesson CRUD, reorder, rename, settings, certificate)
+- `apps/admin/src/context/EditorContext.tsx`: courseTitle, moduleTitle, lessonTitle expostos; fetch de nomes via module_id
+- `apps/admin/src/components/editor/EditorHeader.tsx`: Breadcrumb dinâmico (Curso / Módulo / Aula)
+- `apps/admin/src/app/page.tsx`: Dashboard com spinner contextual "Carregando cursos…"
+- `docs/BACKLOG.md`: Bugs de settings, certificado por módulo vs curso, spinner concluído

@@ -31,6 +31,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
   const [editModuleTitle, setEditModuleTitle] = useState('');
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [editLessonTitle, setEditLessonTitle] = useState('');
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const flashHighlight = (id: string) => {
     setHighlightedId(id);
@@ -161,24 +162,30 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
   };
 
   const saveCourseSettings = async () => {
-    let thumbnail_url = course?.thumbnail_url || null;
-    if (editThumbnail) {
-      const ext = editThumbnail.name.split('.').pop();
-      const path = `${courseId}/thumbnail.${ext}`;
-      await supabase.storage.from('course-thumbnails').upload(path, editThumbnail, { upsert: true });
-      const { data: { publicUrl } } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
-      thumbnail_url = publicUrl;
-    }
-    const { error } = await supabase.from('courses').update({
-      title: editTitle.trim(),
-      description: editDescription.trim(),
-      certificate_enabled: certificateEnabled,
-      thumbnail_url,
-    }).eq('id', courseId);
-    if (!error) {
+    setSaveMessage(null);
+    try {
+      let thumbnail_url = course?.thumbnail_url || null;
+      if (editThumbnail) {
+        const ext = editThumbnail.name.split('.').pop();
+        const path = `${courseId}/thumbnail.${ext}`;
+        const { error: uploadError } = await supabase.storage.from('course-thumbnails').upload(path, editThumbnail, { upsert: true });
+        if (uploadError) throw uploadError;
+        const { data: { publicUrl } } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
+        thumbnail_url = publicUrl;
+      }
+      const { error } = await supabase.from('courses').update({
+        title: editTitle.trim(),
+        description: editDescription.trim(),
+        certificate_enabled: certificateEnabled,
+        thumbnail_url,
+      }).eq('id', courseId);
+      if (error) throw error;
       setCourse((prev: any) => ({ ...prev, title: editTitle.trim(), description: editDescription.trim(), certificate_enabled: certificateEnabled, thumbnail_url }));
       setEditThumbnail(null);
+      setSaveMessage({ type: 'success', text: 'Configurações salvas com sucesso!' });
       setShowSettings(false);
+    } catch (err) {
+      setSaveMessage({ type: 'error', text: err instanceof Error ? err.message : 'Erro ao salvar configurações.' });
     }
   };
 
@@ -188,7 +195,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
     setCourse((prev: any) => ({ ...prev, is_published: next }));
   };
 
-  if (loading) return <XStack f={1} ai="center" jc="center"><Spinner size="large" color="$primary" /></XStack>;
+  if (loading) return <XStack f={1} ai="center" jc="center" gap={12}><Spinner size="large" color="$primary" /><Text color="$textMuted" fontSize={14}>Carregando curso…</Text></XStack>;
 
   return (
     <YStack f={1} bg="$background">
@@ -353,7 +360,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
         ))}
 
         {/* Settings & Certificates */}
-        <YStack borderWidth={1} borderColor="$border" borderRadius={12} overflow="hidden" bg="$card" mt={8}>
+        <YStack borderWidth={1} borderColor="$border" borderRadius={12} bg="$card" mt={8}>
           <XStack p={16} bg="$background" ai="center" jc="space-between" cursor="pointer" onPress={() => setShowSettings(!showSettings)} hoverStyle={{ bg: '$secondary' }}>
             <XStack ai="center" gap={8}>
               <Icon name="Settings" size={16} color="$textMuted" />
@@ -439,6 +446,12 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
                 </XStack>
               </YStack>
 
+              {saveMessage && (
+                <XStack p={10} borderRadius={6} bg={saveMessage.type === 'success' ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)'} ai="center" gap={8}>
+                  <Icon name={saveMessage.type === 'success' ? 'CheckCircle' : 'AlertCircle'} size={16} color={saveMessage.type === 'success' ? '#22C55E' : '#EF4444'} />
+                  <Text fontSize={13} color={saveMessage.type === 'success' ? '#166534' : '#991B1B'}>{saveMessage.text}</Text>
+                </XStack>
+              )}
               <Button onPress={saveCourseSettings}>
                 <Text color="white" fontSize={13} fontWeight="600">Salvar configurações</Text>
               </Button>

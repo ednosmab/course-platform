@@ -14,6 +14,8 @@
 
 ### P1 — Alta
 
+- [ ] **BUG: Salvar configurações do curso não funciona** — `saveCourseSettings` não dá feedback de sucesso/erro ao usuário. Investigar se o update no Supabase falha silenciosamente.
+- [ ] **BUG: Painel de configurações não expande o background** — Ao abrir as configurações do curso (`showSettings`), o container pai com `overflow="hidden"` não expande junto com o conteúdo. Ajustar layout para acomodar o painel expandido.
 - [ ] **Compatibilizar versões do React entre apps**
   - `student` usa React 19.1.0, `admin` usa 19.2.4
   - Unificar para evitar conflitos de resolução
@@ -77,6 +79,7 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
 
 ### P2 — Média
 
+- [x] **Mensagem amigável no Spinner por contexto** — Adicionado texto "Carregando cursos…" (dashboard admin) e "Carregando curso…" (studio admin). Student app já tinha "Carregando plataforma de alunos real...".
 - [ ] **Criar stories faltantes no Ladle**
   - VideoBlock, QuizBlock, ImageBlock, HtmlBlock, Container
 - [ ] **Criar testes unitários para `@projeto/ui`**
