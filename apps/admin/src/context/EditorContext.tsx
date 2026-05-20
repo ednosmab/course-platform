@@ -71,7 +71,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           type: 'text',
           content: 'Clique aqui para editar este texto...',
           styles: { align: 'left', fontSize: 'medium' },
-          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 80, zIndex: nextZ } },
+          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 80, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 80, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 80, zIndex: nextZ } },
         };
       } else if (action.payload.type === 'video') {
         newBlock = {
@@ -79,7 +79,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           type: 'video',
           url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
           provider: 'youtube',
-          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 340, zIndex: nextZ } },
+          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 340, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 340, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 340, zIndex: nextZ } },
         };
       } else if (action.payload.type === 'image') {
         newBlock = {
@@ -88,7 +88,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           url: '',
           alt: 'Nova imagem',
           styles: { align: 'center' },
-          layouts: { desktop: { x: 40, y: defaultY, w: 500, h: 300, zIndex: nextZ } },
+          layouts: { desktop: { x: 40, y: defaultY, w: 500, h: 300, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 500, h: 300, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 500, h: 300, zIndex: nextZ } },
         };
       } else if (action.payload.type === 'quote') {
         newBlock = {
@@ -97,21 +97,21 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           content: 'Digite sua citação aqui...',
           author: 'Autor da citação',
           styles: { align: 'left', fontSize: 'medium' },
-          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 100, zIndex: nextZ } },
+          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 100, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 100, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 100, zIndex: nextZ } },
         };
       } else if (action.payload.type === 'html') {
         newBlock = {
           id,
           type: 'html',
           htmlContent: '<div style="padding: 20px; background: #f0f0f0;">\n  <h2>Código Customizado</h2>\n</div>',
-          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 120, zIndex: nextZ } },
+          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 120, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 120, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 120, zIndex: nextZ } },
         };
       } else {
         newBlock = {
           id,
           type: 'quiz',
           question: 'Digite sua pergunta de quiz aqui...',
-          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 280, zIndex: nextZ } },
+          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 280, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 280, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 280, zIndex: nextZ } },
           options: [
             { id: crypto.randomUUID(), text: 'Opção A', isCorrect: true, feedback: 'Excelente!' },
             { id: crypto.randomUUID(), text: 'Opção B', isCorrect: false, feedback: 'Tente novamente.' },
@@ -210,7 +210,17 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     }
 
     case 'SET_VIEWPORT_MODE': {
-      return { ...state, viewportMode: action.payload.mode };
+      const newMode = action.payload.mode;
+      const newBlocks = state.blocks.map((block) => {
+        const layouts = (block as any).layouts || {};
+        if (layouts[newMode]) return block;
+        const dl = layouts.desktop;
+        if (dl) {
+          return { ...block, layouts: { ...layouts, [newMode]: { ...dl } } } as AnyBlock;
+        }
+        return block;
+      });
+      return { ...state, viewportMode: newMode, blocks: newBlocks };
     }
 
     default:
@@ -349,14 +359,14 @@ const getDraftId = (lessonId: string) => {
                 type: 'text',
                 content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.',
                 styles: { align: 'left', fontSize: 'medium' },
-                layouts: { desktop: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 } },
+                layouts: { desktop: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, tablet: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, mobile: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 } },
               },
               {
                 id: crypto.randomUUID(),
                 type: 'video',
                 url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
                 provider: 'youtube',
-                layouts: { desktop: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 } },
+                layouts: { desktop: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, tablet: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, mobile: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 } },
               },
               {
                 id: crypto.randomUUID(),
@@ -366,7 +376,7 @@ const getDraftId = (lessonId: string) => {
                   { id: crypto.randomUUID(), text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' },
                   { id: crypto.randomUUID(), text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }
                 ],
-                layouts: { desktop: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 } },
+                layouts: { desktop: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, tablet: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, mobile: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 } },
               }
             ] as AnyBlock[];
 

@@ -112,7 +112,7 @@ interface MeasureGuide { pos: number; start: number; end: number; value: number;
 function getLayout(block: AnyBlock, viewport?: 'desktop' | 'tablet' | 'mobile'): Layout {
   const vp = viewport || 'desktop';
   const layouts = (block as any).layouts;
-  const l = layouts?.[vp] || layouts?.desktop;
+  const l = layouts?.[vp];
   return {
     x: typeof l?.x === 'number' ? l.x : 40,
     y: typeof l?.y === 'number' ? l.y : 40,
