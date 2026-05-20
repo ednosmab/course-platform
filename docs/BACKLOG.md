@@ -221,7 +221,7 @@ Tasks do plano `docs/layers/testing/e2e_playwright_plan.md`:
 - [ ] **Aulas ao vivo** — WebRTC, sinalização, chat em tempo real, gravação
 - [ ] **Fóruns de discussão** — Threads por aula, moderação, notificações
 - [ ] **Dashboard do aluno** — Página inicial do app mobile com overview de cursos, progresso, próximas aulas
-- [ ] **Decisão: certificado por módulo, por curso, ou ambos** — Definir escopo de emissão: certificado individual por módulo concluído, certificado único por curso completo, ou ambos. Impacta schema (`certificates`), lógica de conclusão e UI do aluno.
+- [ ] **Certificado do curso** — Fornecido ao aluno após conclusão do curso (não por módulo). Upload do certificado em PDF e imagem, com editor de tamanho no mesmo esquema dos blocos (ao clicar, exibir pontos de arrasto para redimensionar). Impacta schema (`certificates`), storage (PDF/imagem), lógica de conclusão, UI do admin (upload + editor de tamanho) e UI do aluno (visualização/download).
 
 ---
 
