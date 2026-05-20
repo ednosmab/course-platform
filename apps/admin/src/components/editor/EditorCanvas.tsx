@@ -495,7 +495,26 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
               <span style={{ marginLeft: 'auto', fontSize: 10, color: '#94a3b8' }}>Preview Tablet</span>
             </div>
           )}
-          <MobileCanvas blocks={blocks} viewportWidth={isMobile ? MOBILE_W : TABLET_W} />
+          <div style={{ overflowY: 'auto', overflowX: 'hidden' }}>
+            <div style={{
+              position: 'relative',
+              width: (isMobile ? MOBILE_W : TABLET_W),
+              minHeight: pageH * ((isMobile ? MOBILE_W : TABLET_W) / CANVAS_W),
+            }}>
+              {sortedBlocks.map((block) => {
+                const layout = getLayout(block);
+                const scale = (isMobile ? MOBILE_W : TABLET_W) / CANVAS_W;
+                return (
+                  <div key={block.id} style={{ position: 'absolute', left: layout.x * scale, top: layout.y * scale, width: layout.w * scale, height: layout.h * scale, zIndex: layout.zIndex + 1 }}>
+                    <BlockContent block={block} />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div style={{ backgroundColor: 'white', height: isMobile ? 20 : 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ width: '40px', height: '4px', borderRadius: '2px', backgroundColor: '#e2e8f0' }} />
+          </div>
         </div>
       )}
     </div>
