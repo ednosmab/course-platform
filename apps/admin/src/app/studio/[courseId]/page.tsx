@@ -10,7 +10,7 @@ import { EditorCanvas } from '../../../components/editor/EditorCanvas';
 import { BlockSettings } from '../../../components/editor/BlockSettings';
 
 function StudioLayout() {
-  const { previewMode } = useEditor();
+  const { previewMode, activeBlockId } = useEditor();
 
   return (
     <YStack f={1} h="100vh" w="100vw" overflow="hidden">
@@ -18,7 +18,7 @@ function StudioLayout() {
       <XStack f={1} overflow="hidden" w="100%">
         {!previewMode && <BlockPalette />}
         <EditorCanvas />
-        {!previewMode && <BlockSettings />}
+        {!previewMode && activeBlockId && <BlockSettings />}
       </XStack>
     </YStack>
   );
