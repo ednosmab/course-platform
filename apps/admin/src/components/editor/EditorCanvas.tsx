@@ -367,7 +367,7 @@ function MobileCanvas({ blocks, onImageDrop, editMode = false, viewportWidth = M
       {rows.map((row, ri) => {
         const totalW = row.reduce((s, b) => s + getLayout(b).w, 0);
         return (
-          <div key={ri} style={{ display: 'flex', flexWrap: 'nowrap', gap: '8px', alignItems: 'flex-start' }}>
+          <div key={ri} style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'flex-start' }}>
             {row.map(block => {
               const l = getLayout(block);
               const flexBasis = `${Math.max(40, Math.round((l.w / totalW) * 100))}%`;
@@ -477,17 +477,14 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
           width: (isMobile ? MOBILE_W : TABLET_W) + 12,
           maxWidth: (isMobile ? MOBILE_W : TABLET_W) + 12,
           backgroundColor: '#FFFFFF',
-          borderRadius: isMobile ? 28 : 12,
+          borderRadius: isMobile ? 36 : 12,
           boxShadow: '0 24px 64px rgba(0,0,0,0.2)',
           overflow: 'hidden',
           border: '6px solid #1e293b',
         }}>
           {isMobile ? (
-            <div style={{ backgroundColor: '#1e293b', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
-              <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#ef4444' }} />
-              <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#f59e0b' }} />
-              <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#10b981' }} />
-              <span style={{ marginLeft: 'auto', fontSize: 10, color: '#94a3b8' }}>Preview Mobile</span>
+            <div style={{ backgroundColor: '#1e293b', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: '60px', height: '6px', borderRadius: '3px', backgroundColor: '#475569' }} />
             </div>
           ) : (
             <div style={{ backgroundColor: '#1e293b', padding: '4px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -524,7 +521,7 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
 // ─── Mobile Viewport (edit mode interativo) ─────────────────────────────
 function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDrop: (id: string, file: File) => void }) {
   return (
-    <div className="canvas-area canvas-bg" style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', padding: '24px', overflowY: 'auto' }}>
+    <div className="canvas-area canvas-bg" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: '24px', overflowY: 'auto' }}>
       <div style={{ border: '6px solid #1e293b', borderRadius: '36px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.25)', backgroundColor: 'white', width: MOBILE_W + 12, flexShrink: 0 }}>
         {/* Notch */}
         <div style={{ backgroundColor: '#1e293b', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -548,7 +545,7 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
 // ─── Tablet Viewport (edit mode interativo) ────────────────────────────
 function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDrop: (id: string, file: File) => void }) {
   return (
-    <div className="canvas-area canvas-bg" style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', padding: '24px', overflowY: 'auto' }}>
+    <div className="canvas-area canvas-bg" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: '24px', overflowY: 'auto' }}>
       <div style={{ border: '6px solid #1e293b', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', backgroundColor: 'white', width: TABLET_W + 12, flexShrink: 0 }}>
         {/* Top bar (camera) */}
         <div style={{ backgroundColor: '#1e293b', height: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
