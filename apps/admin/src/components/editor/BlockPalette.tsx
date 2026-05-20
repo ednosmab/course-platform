@@ -75,25 +75,25 @@ function BlockBtn({ icon, label, collapsed, onClick }: {
     <YStack
       onPress={onClick}
       cursor="pointer"
-      p={collapsed ? '$2' : '$2'}
+      p="$1.5"
       ai="center"
       jc="center"
       gap="$1"
-      borderRadius="$3"
+      borderRadius="$2"
       borderWidth={1} borderColor="$border"
       bg="$background"
-      hoverStyle={{ y: -2, borderColor: '$primary' }}
+      hoverStyle={{ y: -1, borderColor: '$primary' }}
       w={collapsed ? '100%' : 'calc(50% - 4px)'}
     >
       <XStack
-        w={28} h={28}
+        w={22} h={22}
         ai="center" jc="center"
-        borderRadius="$2"
+        borderRadius="$1"
         bg="$accent"
       >
-        <Icon name={icon} size={14} color="$accentForeground" />
+        <Icon name={icon} size={11} color="$accentForeground" />
       </XStack>
-      {!collapsed && <Text fontSize={12} fontWeight="500">{label}</Text>}
+      {!collapsed && <Text fontSize={11} fontWeight="500">{label}</Text>}
     </YStack>
   );
 }
