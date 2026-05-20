@@ -367,7 +367,7 @@ function MobileCanvas({ blocks, onImageDrop, editMode = false, viewportWidth = M
       {rows.map((row, ri) => {
         const totalW = row.reduce((s, b) => s + getLayout(b).w, 0);
         return (
-          <div key={ri} style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'flex-start' }}>
+          <div key={ri} style={{ display: 'flex', flexWrap: 'nowrap', gap: '8px', alignItems: 'flex-start' }}>
             {row.map(block => {
               const l = getLayout(block);
               const flexBasis = `${Math.max(40, Math.round((l.w / totalW) * 100))}%`;
@@ -381,7 +381,7 @@ function MobileCanvas({ blocks, onImageDrop, editMode = false, viewportWidth = M
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    flex: `1 1 ${flexBasis}`, minWidth: '140px',
+                    flex: `1 1 ${flexBasis}`, minWidth: `${Math.max(60, Math.round(viewportWidth * 0.18))}px`,
                     minHeight: l.h * (viewportWidth / CANVAS_W),
                     position: 'relative', borderRadius: '6px',
                     outline: isSelected ? '2px solid #3b82f6' : 'none',
@@ -474,8 +474,8 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
         </div>
       ) : (
         <div style={{
-          width: (isMobile ? MOBILE_W : TABLET_W) + 24,
-          maxWidth: (isMobile ? MOBILE_W : TABLET_W) + 24,
+          width: (isMobile ? MOBILE_W : TABLET_W) + 12,
+          maxWidth: (isMobile ? MOBILE_W : TABLET_W) + 12,
           backgroundColor: '#FFFFFF',
           borderRadius: isMobile ? 28 : 12,
           boxShadow: '0 24px 64px rgba(0,0,0,0.2)',
