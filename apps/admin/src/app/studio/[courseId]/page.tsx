@@ -65,16 +65,11 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
 
   const createModule = async () => {
     if (!newTitle.trim()) return;
-    const existing = await supabase.from('modules').select('id, order_index').eq('course_id', courseId);
-    if (existing.data) {
-      for (const m of existing.data) {
-        await supabase.from('modules').update({ order_index: m.order_index + 1 }).eq('id', m.id);
-      }
-    }
+    const nextIndex = modules.length + 1;
     const { data, error } = await supabase.from('modules').insert({
       course_id: courseId,
       title: newTitle.trim(),
-      order_index: 1,
+      order_index: nextIndex,
     }).select().single();
     if (!error && data) {
       setNewTitle('');
@@ -86,16 +81,12 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
 
   const createLesson = async (moduleId: string) => {
     if (!newTitle.trim()) return;
-    const existing = await supabase.from('lessons').select('id, order_index').eq('module_id', moduleId);
-    if (existing.data) {
-      for (const l of existing.data) {
-        await supabase.from('lessons').update({ order_index: l.order_index + 1 }).eq('id', l.id);
-      }
-    }
+    const mod = modules.find(m => m.id === moduleId);
+    const nextIndex = (mod?.lessons?.length || 0) + 1;
     const { data, error } = await supabase.from('lessons').insert({
       module_id: moduleId,
       title: newTitle.trim(),
-      order_index: 1,
+      order_index: nextIndex,
       is_published: false,
       blocks: [],
     }).select().single();
