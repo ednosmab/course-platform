@@ -95,7 +95,50 @@ A função `getHtmlFromBlock` é responsável por traduzir o estado visual do ed
 
 ---
 
-## ⚡ 6. Sincronização em Tempo Real (Supabase Realtime)
+## 🚦 6. Publicação de Aulas (Publish Gate)
+
+A publicação de aulas segue uma hierarquia de dependência com o curso pai:
+
+1. **Auto-save (rascunho):** Toda alteração nos blocos é salva automaticamente no registro `draftId` da tabela `lessons` com `is_published: false`. Este salvamento é incondicional — não depende do estado de publicação do curso.
+
+2. **Publicação explícita (publishLesson):** O botão "Publicar" no header do editor copia o conteúdo do rascunho para a aula ativa (`activeLessonId`) com `is_published: true`. Antes de executar, o sistema consulta a cadeia `lesson.module_id → modules.course_id → courses.is_published`:
+   - Se `courses.is_published === false` → a publicação é **bloqueada** e um erro é exibido: *"O curso precisa estar publicado antes de publicar aulas."*
+   - Se o curso estiver publicado → a publicação prossegue normalmente.
+
+3. **Toggle "Publicado" no curso:** O painel Configurações do curso (`/studio/[courseId]`) altera exclusivamente `courses.is_published`. Não há cascata automática para módulos ou aulas — cada aula mantém seu estado individual de publicação.
+
+| Ação | Tabela | `is_published` | Gate do curso? |
+|---|---|---|---|
+| Auto-save (debounce 1.5s) | `lessons` (draftId) | `false` | ❌ |
+| Publicar aula | `lessons` (activeLessonId) | `true` | ✅ |
+| Toggle curso | `courses` | toggle | N/A |
+
+---
+
+## 🖼️ 7. Thumbnail de Curso (Upload e Especificações)
+
+### A. Especificações Técnicas
+| Atributo | Valor |
+| :--- | :--- |
+| Resolução | **1280×720px** (16:9) |
+| Formato | JPEG (menor peso) ou **WebP** (melhor compressão) |
+| Tamanho máximo | **2MB** |
+| Espaço de cor | sRGB |
+
+### B. Armazenamento
+- Bucket no Supabase Storage: `course-thumbnails`
+- O URL gerado no upload é salvo no campo `thumbnail_url` da tabela `courses`
+- Política RLS: Apenas admins podem fazer upload; leitura pública para usuários autenticados
+
+### C. Comportamento na Interface
+- Modal de criação/edição de curso exibe um botão "Selecionar imagem" que abre o seletor de arquivos
+- Após selecionar, o preview do thumbnail é mostrado antes do salvamento
+- O upload ocorre no momento do salvamento do formulário (ou separadamente com feedback de progresso)
+- Caso o curso não tenha thumbnail, o card exibe um gradiente padrão (definido no componente)
+
+---
+
+## ⚡ 8. Sincronização em Tempo Real (Supabase Realtime)
 
 1. **Autosave do CMS:** O editor do CMS possui um mecanismo de Autosave que monitora as alterações nos blocos e faz a persistência de forma transparente com um debounce de `1.5s` na tabela `lessons` do Supabase.
 2. **Atualização Reativa do Usuário:** O aplicativo do aluno (`student`) utiliza **Supabase Realtime Channels** para se inscrever na aula ativa.

@@ -7,17 +7,21 @@ import { useEditor } from '../../context/EditorContext';
 import { PositionPanel } from './PositionPanel';
 
 export const EditorHeader: React.FC = () => {
-  const { canUndo, canRedo, undo, redo, saveStatus, previewMode, setPreviewMode, viewportMode, setViewportMode, publishLesson } = useEditor();
+  const { canUndo, canRedo, undo, redo, saveStatus, previewMode, setPreviewMode, viewportMode, setViewportMode, publishLesson, courseTitle, moduleTitle, lessonTitle } = useEditor();
   const [published, setPublished] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const [isPositionPanelOpen, setIsPositionPanelOpen] = useState(false);
 
   const handlePublish = async () => {
     try {
+      setPublishError(null);
       await publishLesson();
       setPublished(true);
       setTimeout(() => setPublished(false), 3000);
     } catch (err) {
-      console.error('Falha ao publicar aula:', err);
+      const message = err instanceof Error ? err.message : 'Falha ao publicar aula';
+      setPublishError(message);
+      setTimeout(() => setPublishError(null), 5000);
     }
   };
 
@@ -35,7 +39,7 @@ export const EditorHeader: React.FC = () => {
               <Icon name="CloudLightning" size={14} color="white" />
             </div>
             <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>
-              Onboarding 2026 / <span style={{ fontWeight: 600 }}>Aula 03 — Feedback</span>
+              {courseTitle || 'Curso'} / {moduleTitle || 'Módulo'} / <span style={{ fontWeight: 600 }}>{lessonTitle}</span>
             </span>
           </div>
 
@@ -113,16 +117,23 @@ export const EditorHeader: React.FC = () => {
           <Icon name="Layers" size={15} /><Text>Posição</Text>
         </Button>
 
-        <Button
-          variant="primary"
-          onClick={handlePublish}
-        >
-          {published ? (
-            <><Icon name="CheckCircle2" size={15} /><Text>Publicado!</Text></>
-          ) : (
-            'Publicar'
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Button
+            variant="primary"
+            onClick={handlePublish}
+          >
+            {published ? (
+              <><Icon name="CheckCircle2" size={15} /><Text>Publicado!</Text></>
+            ) : (
+              'Publicar'
+            )}
+          </Button>
+          {publishError && (
+            <div style={{ fontSize: '12px', color: '#ef4444', maxWidth: '220px', lineHeight: '1.3' }}>
+              {publishError}
+            </div>
           )}
-        </Button>
+        </div>
       </div>
 
       {/* Popover/Modal do Painel de Posição */}

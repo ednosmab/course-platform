@@ -1,15 +1,465 @@
 'use client';
 
-import React from 'react';
-import { YStack, XStack } from '@projeto/ui';
-import { EditorProvider } from '../../../context/EditorContext';
-import { useEditor } from '../../../context/EditorContext';
+import React, { useState, useEffect, use } from 'react';
+import { YStack, XStack, Text, Button, Icon, Spinner, Theme } from '@projeto/ui';
+import Link from 'next/link';
+import { BrandMark } from '../../../components/brand-mark';
+import { EditorProvider, useEditor } from '../../../context/EditorContext';
 import { EditorHeader } from '../../../components/editor/EditorHeader';
 import { BlockPalette } from '../../../components/editor/BlockPalette';
 import { EditorCanvas } from '../../../components/editor/EditorCanvas';
 import { BlockSettings } from '../../../components/editor/BlockSettings';
+import { supabase } from '@projeto/core';
+import type { Module, Lesson } from '@projeto/types';
 
-function StudioLayout() {
+function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSelectLesson: (lessonId: string) => void }) {
+  const [course, setCourse] = useState<any>(null);
+  const [modules, setModules] = useState<(Module & { lessons: Lesson[] })[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showModuleInput, setShowModuleInput] = useState(false);
+  const [showLessonInput, setShowLessonInput] = useState<string | null>(null);
+  const [newTitle, setNewTitle] = useState('');
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
+  const [showSettings, setShowSettings] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [certificateEnabled, setCertificateEnabled] = useState(false);
+  const [editThumbnail, setEditThumbnail] = useState<File | null>(null);
+  const [editThumbnailPreview, setEditThumbnailPreview] = useState<string | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
+  const [editModuleTitle, setEditModuleTitle] = useState('');
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
+  const [editLessonTitle, setEditLessonTitle] = useState('');
+
+  const flashHighlight = (id: string) => {
+    setHighlightedId(id);
+    setTimeout(() => setHighlightedId(null), 2000);
+  };
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const { data: courseData } = await supabase.from('courses').select('*').eq('id', courseId).single();
+      setCourse(courseData);
+      setEditTitle(courseData?.title || '');
+      setEditDescription(courseData?.description || '');
+      setCertificateEnabled((courseData as any)?.certificate_enabled ?? false);
+      setEditThumbnailPreview(courseData?.thumbnail_url || null);
+
+      const { data: mods } = await supabase.from('modules').select('*').eq('course_id', courseId).order('order_index');
+      const modsWithLessons = await Promise.all((mods || []).map(async (m) => {
+        const { data: less } = await supabase.from('lessons').select('*').eq('module_id', m.id).order('order_index');
+        return { ...m, lessons: less || [] };
+      }));
+      setModules(modsWithLessons);
+      setExpandedModules(new Set(modsWithLessons.map(m => m.id)));
+    } catch (err) {
+      console.error('Erro ao carregar curso:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchData(); }, [courseId]);
+
+  const createModule = async () => {
+    if (!newTitle.trim()) return;
+    const existing = await supabase.from('modules').select('id, order_index').eq('course_id', courseId);
+    if (existing.data) {
+      for (const m of existing.data) {
+        await supabase.from('modules').update({ order_index: m.order_index + 1 }).eq('id', m.id);
+      }
+    }
+    const { data, error } = await supabase.from('modules').insert({
+      course_id: courseId,
+      title: newTitle.trim(),
+      order_index: 1,
+    }).select().single();
+    if (!error && data) {
+      setNewTitle('');
+      setShowModuleInput(false);
+      fetchData();
+      flashHighlight(data.id);
+    }
+  };
+
+  const createLesson = async (moduleId: string) => {
+    if (!newTitle.trim()) return;
+    const existing = await supabase.from('lessons').select('id, order_index').eq('module_id', moduleId);
+    if (existing.data) {
+      for (const l of existing.data) {
+        await supabase.from('lessons').update({ order_index: l.order_index + 1 }).eq('id', l.id);
+      }
+    }
+    const { data, error } = await supabase.from('lessons').insert({
+      module_id: moduleId,
+      title: newTitle.trim(),
+      order_index: 1,
+      is_published: false,
+      blocks: [],
+    }).select().single();
+    if (!error && data) {
+      setNewTitle('');
+      setShowLessonInput(null);
+      fetchData();
+      flashHighlight(data.id);
+    }
+  };
+
+  const renameModule = async (id: string) => {
+    if (!editModuleTitle.trim()) { setEditingModuleId(null); return; }
+    await supabase.from('modules').update({ title: editModuleTitle.trim() }).eq('id', id);
+    setEditingModuleId(null);
+    fetchData();
+  };
+
+  const renameLesson = async (id: string) => {
+    if (!editLessonTitle.trim()) { setEditingLessonId(null); return; }
+    await supabase.from('lessons').update({ title: editLessonTitle.trim() }).eq('id', id);
+    setEditingLessonId(null);
+    fetchData();
+  };
+
+  const deleteModule = async (id: string) => {
+    if (!confirm('Excluir módulo e todas as suas aulas?')) return;
+    await supabase.from('modules').delete().eq('id', id);
+    fetchData();
+  };
+
+  const deleteLesson = async (id: string) => {
+    if (!confirm('Excluir esta aula?')) return;
+    await supabase.from('lessons').delete().eq('id', id);
+    fetchData();
+  };
+
+  const moveModule = async (id: string, direction: 'up' | 'down') => {
+    const sorted = [...modules].sort((a, b) => a.order_index - b.order_index);
+    const idx = sorted.findIndex(m => m.id === id);
+    if (direction === 'up' && idx <= 0) return;
+    if (direction === 'down' && idx >= sorted.length - 1) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    const a = sorted[idx];
+    const b = sorted[swapIdx];
+    await supabase.from('modules').update({ order_index: b.order_index }).eq('id', a.id);
+    await supabase.from('modules').update({ order_index: a.order_index }).eq('id', b.id);
+    fetchData();
+  };
+
+  const moveLesson = async (lessonId: string, direction: 'up' | 'down') => {
+    const mod = modules.find(m => m.lessons.some(l => l.id === lessonId));
+    if (!mod) return;
+    const sorted = [...mod.lessons].sort((a, b) => a.order_index - b.order_index);
+    const idx = sorted.findIndex(l => l.id === lessonId);
+    if (direction === 'up' && idx <= 0) return;
+    if (direction === 'down' && idx >= sorted.length - 1) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    const a = sorted[idx];
+    const b = sorted[swapIdx];
+    await supabase.from('lessons').update({ order_index: b.order_index }).eq('id', a.id);
+    await supabase.from('lessons').update({ order_index: a.order_index }).eq('id', b.id);
+    fetchData();
+  };
+
+  const toggleModule = (id: string) => {
+    setExpandedModules(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const saveCourseSettings = async () => {
+    let thumbnail_url = course?.thumbnail_url || null;
+    if (editThumbnail) {
+      const ext = editThumbnail.name.split('.').pop();
+      const path = `${courseId}/thumbnail.${ext}`;
+      await supabase.storage.from('course-thumbnails').upload(path, editThumbnail, { upsert: true });
+      const { data: { publicUrl } } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
+      thumbnail_url = publicUrl;
+    }
+    const { error } = await supabase.from('courses').update({
+      title: editTitle.trim(),
+      description: editDescription.trim(),
+      certificate_enabled: certificateEnabled,
+      thumbnail_url,
+    }).eq('id', courseId);
+    if (!error) {
+      setCourse((prev: any) => ({ ...prev, title: editTitle.trim(), description: editDescription.trim(), certificate_enabled: certificateEnabled, thumbnail_url }));
+      setEditThumbnail(null);
+      setShowSettings(false);
+    }
+  };
+
+  const togglePublish = async () => {
+    const next = !course?.is_published;
+    await supabase.from('courses').update({ is_published: next }).eq('id', courseId);
+    setCourse((prev: any) => ({ ...prev, is_published: next }));
+  };
+
+  if (loading) return <XStack f={1} ai="center" jc="center"><Spinner size="large" color="$primary" /></XStack>;
+
+  return (
+    <YStack f={1} bg="$background">
+      <XStack
+        borderBottomWidth={1} borderBottomColor="$border"
+        backgroundColor="rgba(247, 248, 252, 0.8)"
+        style={{ backdropFilter: 'blur(12px)' }}
+        px={24} height={56} ai="center" gap={16}
+      >
+        <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+          <Icon name="ArrowLeft" size={20} color="#808498" />
+        </Link>
+        <Text fontSize={16} fontWeight="600">{course?.title || 'Carregando...'}</Text>
+      </XStack>
+
+      <YStack f={1} maxWidth={800} alignSelf="center" w="100%" p={24} gap={16}>
+        <XStack ai="center" jc="space-between">
+          <Text fontFamily="$display" fontSize={24} fontWeight="$6">Módulos e aulas</Text>
+          <Button onPress={() => { setNewTitle(''); setShowModuleInput(true); }}>
+            <Icon name="Plus" size={14} color="white" /><Text ml={4} color="white" fontSize={13}>Novo módulo</Text>
+          </Button>
+        </XStack>
+
+        {showModuleInput && (
+          <XStack gap={8} ai="center">
+            <input
+              value={newTitle}
+              onChange={e => setNewTitle(e.target.value)}
+              placeholder="Título do módulo"
+              autoFocus
+              style={{ flex: 1, height: 36, borderRadius: 6, border: '1px solid #DEE1EB', padding: '0 12px', fontSize: 14, outline: 'none' }}
+              onKeyDown={e => { if (e.key === 'Enter') createModule(); if (e.key === 'Escape') setShowModuleInput(false); }}
+            />
+            <Button onPress={createModule} disabled={!newTitle.trim()}>Adicionar</Button>
+            <Button variant="secondary" onPress={() => setShowModuleInput(false)}>Cancelar</Button>
+          </XStack>
+        )}
+
+        {modules.length === 0 && (
+          <YStack ai="center" jc="center" py={48} gap={8}>
+            <Icon name="FolderOpen" size={40} color="$textMuted" />
+            <Text color="$textMuted">Nenhum módulo ainda. Crie o primeiro!</Text>
+          </YStack>
+        )}
+
+        {modules.map(mod => (
+          <YStack key={mod.id} borderWidth={1} borderColor={highlightedId === mod.id ? '$success' : '$border'} borderRadius={12} overflow="hidden" bg="$card" style={highlightedId === mod.id ? { boxShadow: '0 0 0 2px rgba(34, 197, 94, 0.3)', transition: 'box-shadow 0.3s' } : undefined}>
+            <XStack
+              p={16} bg="$background" ai="center" jc="space-between" cursor="pointer"
+              onPress={() => { if (!editingModuleId) toggleModule(mod.id); }}
+              hoverStyle={{ bg: '$secondary' }}
+            >
+              {editingModuleId === mod.id ? (
+                <XStack ai="center" gap={8} flex={1} onPress={(e: any) => e.stopPropagation()}>
+                  <input
+                    value={editModuleTitle}
+                    onChange={e => setEditModuleTitle(e.target.value)}
+                    autoFocus
+                    style={{ flex: 1, height: 32, borderRadius: 6, border: '1px solid #3B82F6', padding: '0 10px', fontSize: 14, outline: 'none' }}
+                    onKeyDown={e => { if (e.key === 'Enter') renameModule(mod.id); if (e.key === 'Escape') setEditingModuleId(null); }}
+                  />
+                  <Button onPress={() => renameModule(mod.id)} px="$3" py="$1">
+                    <Text color="white" fontSize={12}>Salvar</Text>
+                  </Button>
+                </XStack>
+              ) : (
+                <XStack ai="center" gap={8}>
+                  <Icon name={expandedModules.has(mod.id) ? 'ChevronDown' : 'ChevronRight'} size={16} color="$textMuted" />
+                  <Text fontSize={15} fontWeight="600">{mod.title}</Text>
+                  <Text fontSize={12} color="$textMuted">({mod.lessons?.length || 0} aulas)</Text>
+                </XStack>
+              )}
+              <XStack gap={4}>
+                {editingModuleId !== mod.id && (
+                  <>
+                    <Text onPress={(e: any) => { e.stopPropagation(); moveModule(mod.id, 'up'); }} fontSize={14} color="$textMuted" style={{ cursor: 'pointer' }}>↑</Text>
+                    <Text onPress={(e: any) => { e.stopPropagation(); moveModule(mod.id, 'down'); }} fontSize={14} color="$textMuted" mr={4} style={{ cursor: 'pointer' }}>↓</Text>
+                    <Text onPress={(e: any) => { e.stopPropagation(); setEditModuleTitle(mod.title); setEditingModuleId(mod.id); }} fontSize={12} color="$secondaryForeground" style={{ cursor: 'pointer' }}>Renomear</Text>
+                    <Text onPress={(e: any) => { e.stopPropagation(); setShowLessonInput(mod.id); setNewTitle(''); }} fontSize={12} color="$primary" ml={8} style={{ cursor: 'pointer' }}>+ Aula</Text>
+                    <Text onPress={(e: any) => { e.stopPropagation(); deleteModule(mod.id); }} fontSize={12} color="$danger" ml={8} style={{ cursor: 'pointer' }}>Excluir</Text>
+                  </>
+                )}
+              </XStack>
+            </XStack>
+
+            {expandedModules.has(mod.id) && (
+              <YStack p={16} pt={0} gap={4}>
+                {showLessonInput === mod.id && (
+                  <XStack gap={8} ai="center" mt={8}>
+                    <input
+                      value={newTitle}
+                      onChange={e => setNewTitle(e.target.value)}
+                      placeholder="Título da aula"
+                      autoFocus
+                      style={{ flex: 1, height: 32, borderRadius: 6, border: '1px solid #DEE1EB', padding: '0 12px', fontSize: 13, outline: 'none' }}
+                      onKeyDown={e => { if (e.key === 'Enter') createLesson(mod.id); if (e.key === 'Escape') setShowLessonInput(null); }}
+                    />
+                    <Button onPress={() => createLesson(mod.id)} disabled={!newTitle.trim()} px="$3" py="$1">
+                      <Text color="white" fontSize={12}>Adicionar</Text>
+                    </Button>
+                    <Button variant="secondary" onPress={() => setShowLessonInput(null)} px="$3" py="$1">
+                      <Text fontSize={12}>Cancelar</Text>
+                    </Button>
+                  </XStack>
+                )}
+
+                {mod.lessons?.length === 0 && (
+                  <Text fontSize={13} color="$textMuted" py={8} pl={24}>Nenhuma aula ainda.</Text>
+                )}
+
+                {mod.lessons?.map(lesson => (
+                  <XStack
+                    key={lesson.id}
+                    p={10} pl={24} borderRadius={6}
+                    ai="center" jc="space-between"
+                    hoverStyle={{ bg: '$secondary' }}
+                    cursor="pointer"
+                    onPress={() => { if (editingLessonId !== lesson.id) onSelectLesson(lesson.id); }}
+                    bg={highlightedId === lesson.id ? 'rgba(34, 197, 94, 0.08)' : 'transparent'}
+                    style={highlightedId === lesson.id ? { transition: 'background-color 0.3s' } : undefined}
+                  >
+                    {editingLessonId === lesson.id ? (
+                      <XStack ai="center" gap={8} flex={1} onPress={(e: any) => e.stopPropagation()}>
+                        <input
+                          value={editLessonTitle}
+                          onChange={e => setEditLessonTitle(e.target.value)}
+                          autoFocus
+                          style={{ flex: 1, height: 28, borderRadius: 6, border: '1px solid #3B82F6', padding: '0 8px', fontSize: 13, outline: 'none' }}
+                          onKeyDown={e => { if (e.key === 'Enter') renameLesson(lesson.id); if (e.key === 'Escape') setEditingLessonId(null); }}
+                        />
+                        <Button onPress={() => renameLesson(lesson.id)} px="$3" py="$1">
+                          <Text color="white" fontSize={12}>Salvar</Text>
+                        </Button>
+                      </XStack>
+                    ) : (
+                      <XStack ai="center" gap={8}>
+                        <Icon name="FileText" size={14} color="$textMuted" />
+                        <Text fontSize={14}>{lesson.title}</Text>
+                        <XStack
+                          px={6} py={1} borderRadius={4}
+                          bg={(lesson as any).is_published ? 'rgba(34, 197, 94, 0.15)' : 'rgba(247, 248, 252, 0.7)'}
+                        >
+                          <Text fontSize={10} fontWeight="600" color={(lesson as any).is_published ? '#166534' : '#808498'}>
+                            {(lesson as any).is_published ? 'Publicada' : 'Rascunho'}
+                          </Text>
+                        </XStack>
+                      </XStack>
+                    )}
+                    {editingLessonId !== lesson.id && (
+                      <XStack gap={4} ai="center">
+                        <Text onPress={(e: any) => { e.stopPropagation(); moveLesson(lesson.id, 'up'); }} fontSize={14} color="$textMuted" style={{ cursor: 'pointer' }}>↑</Text>
+                        <Text onPress={(e: any) => { e.stopPropagation(); moveLesson(lesson.id, 'down'); }} fontSize={14} color="$textMuted" style={{ cursor: 'pointer' }}>↓</Text>
+                        <Text onPress={(e: any) => { e.stopPropagation(); setEditLessonTitle(lesson.title); setEditingLessonId(lesson.id); }} fontSize={12} color="$secondaryForeground" ml={4} style={{ cursor: 'pointer' }}>Renomear</Text>
+                        <Text onPress={(e: any) => { e.stopPropagation(); deleteLesson(lesson.id); }} fontSize={12} color="$danger" ml={8} style={{ cursor: 'pointer' }}>Excluir</Text>
+                      </XStack>
+                    )}
+                  </XStack>
+                ))}
+              </YStack>
+            )}
+          </YStack>
+        ))}
+
+        {/* Settings & Certificates */}
+        <YStack borderWidth={1} borderColor="$border" borderRadius={12} overflow="hidden" bg="$card" mt={8}>
+          <XStack p={16} bg="$background" ai="center" jc="space-between" cursor="pointer" onPress={() => setShowSettings(!showSettings)} hoverStyle={{ bg: '$secondary' }}>
+            <XStack ai="center" gap={8}>
+              <Icon name="Settings" size={16} color="$textMuted" />
+              <Text fontSize={15} fontWeight="600">Configurações</Text>
+            </XStack>
+            <Icon name={showSettings ? 'ChevronDown' : 'ChevronRight'} size={16} color="$textMuted" />
+          </XStack>
+
+          {showSettings && (
+            <YStack p={16} gap={16}>
+              <YStack gap={6}>
+                <Text fontSize={13} fontWeight="500">Título do curso</Text>
+                <input value={editTitle} onChange={e => setEditTitle(e.target.value)} style={{ height: 36, borderRadius: 6, border: '1px solid #DEE1EB', padding: '0 12px', fontSize: 14, outline: 'none' }} />
+              </YStack>
+              <YStack gap={6}>
+                <Text fontSize={13} fontWeight="500">Descrição</Text>
+                <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} rows={2} style={{ borderRadius: 6, border: '1px solid #DEE1EB', padding: 12, fontSize: 14, outline: 'none', resize: 'vertical' }} />
+              </YStack>
+              <YStack gap={6}>
+                <Text fontSize={13} fontWeight="500">Thumbnail (1280×720px, máx 2MB)</Text>
+                <YStack
+                  position="relative"
+                  height={140}
+                  borderRadius={8}
+                  borderWidth={1}
+                  borderColor="$border"
+                  style={{ borderStyle: 'dashed', backgroundImage: editThumbnailPreview ? `url(${editThumbnailPreview})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', cursor: 'pointer' }}
+                  ai="center"
+                  jc="center"
+                  overflow="hidden"
+                  bg={editThumbnailPreview ? 'transparent' : '$background'}
+                  onPress={() => document.getElementById('thumb-input-studio')?.click()}
+                >
+                  <input id="thumb-input-studio" type="file" accept="image/jpeg,image/webp,image/png" style={{ display: 'none' }} onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) {
+                      if (f.size > 2 * 1024 * 1024) { alert('Arquivo muito grande. Máximo: 2MB.'); return; }
+                      setEditThumbnail(f);
+                      setEditThumbnailPreview(URL.createObjectURL(f));
+                    }
+                  }} />
+                  {!editThumbnailPreview && (
+                    <XStack ai="center" gap={6}>
+                      <Icon name="Image" size={20} color="$textMuted" />
+                      <Text fontSize={13} color="$textMuted">Clique para selecionar</Text>
+                    </XStack>
+                  )}
+                </YStack>
+              </YStack>
+
+              <XStack ai="center" gap={12}>
+                <Text fontSize={13} fontWeight="500">Publicado</Text>
+                <XStack
+                  w={44} h={24} br={12} bg={course?.is_published ? '#22C55E' : '#DEE1EB'}
+                  ai="center" px={3}
+                  cursor="pointer"
+                  onPress={togglePublish}
+                  style={{ justifyContent: course?.is_published ? 'flex-end' : 'flex-start' }}
+                >
+                  <XStack w={18} h={18} br={9} bg="white" />
+                </XStack>
+              </XStack>
+
+              <YStack borderWidth={1} borderColor="$border" borderRadius={8} p={16} gap={12}>
+                <XStack ai="center" gap={8}>
+                  <Icon name="Award" size={20} color="$primary" />
+                  <Text fontSize={15} fontWeight="600">Certificado</Text>
+                </XStack>
+                <Text fontSize={13} color="$textMuted">
+                  Alunos que completarem todas as aulas receberão um certificado de conclusão com código único (BSGI).
+                </Text>
+                <XStack ai="center" gap={12}>
+                  <Text fontSize={13} fontWeight="500">Emitir certificado</Text>
+                  <XStack
+                    w={44} h={24} br={12} bg={certificateEnabled ? '#22C55E' : '#DEE1EB'}
+                    ai="center" px={3}
+                    cursor="pointer"
+                    onPress={() => setCertificateEnabled(!certificateEnabled)}
+                    style={{ justifyContent: certificateEnabled ? 'flex-end' : 'flex-start' }}
+                  >
+                    <XStack w={18} h={18} br={9} bg="white" />
+                  </XStack>
+                </XStack>
+              </YStack>
+
+              <Button onPress={saveCourseSettings}>
+                <Text color="white" fontSize={13} fontWeight="600">Salvar configurações</Text>
+              </Button>
+            </YStack>
+          )}
+        </YStack>
+      </YStack>
+    </YStack>
+  );
+}
+
+function StudioLayout({ lessonId }: { lessonId: string }) {
   const { previewMode, activeBlockId } = useEditor();
 
   return (
@@ -24,10 +474,23 @@ function StudioLayout() {
   );
 }
 
-export default function StudioPage({ params }: { params: { courseId: string } }) {
+export default function StudioPage({ params }: { params: Promise<{ courseId: string }> }) {
+  const { courseId } = use(params);
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+
+  if (!selectedLessonId) {
+    return (
+      <Theme name="cloudWhite">
+        <CourseOverview courseId={courseId} onSelectLesson={setSelectedLessonId} />
+      </Theme>
+    );
+  }
+
   return (
-    <EditorProvider>
-      <StudioLayout />
-    </EditorProvider>
+    <Theme name="cloudWhite">
+      <EditorProvider lessonId={selectedLessonId}>
+        <StudioLayout lessonId={selectedLessonId} />
+      </EditorProvider>
+    </Theme>
   );
 }

@@ -246,15 +246,21 @@ interface EditorContextType extends EditorState {
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
   activeLessonId: string;
   publishLesson: () => Promise<void>;
+  courseTitle: string;
+  moduleTitle: string;
+  lessonTitle: string;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
 
-export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: string }> = ({ children, lessonId }) => {
   const [state, dispatch] = useReducer(editorReducer, initialState);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [activeLessonId] = useState('11111111-1111-1111-1111-111111111111');
+  const [activeLessonId] = useState(lessonId || '11111111-1111-1111-1111-111111111111');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [lessonMeta, setLessonMeta] = useState<{ module_id: string; title: string; order_index: number } | null>(null);
+  const [courseTitle, setCourseTitle] = useState('');
+  const [moduleTitle, setModuleTitle] = useState('');
 
   const addBlock = (type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote') => dispatch({ type: 'ADD_BLOCK', payload: { type } });
   const removeBlock = (id: string) => dispatch({ type: 'REMOVE_BLOCK', payload: { id } });
@@ -293,6 +299,7 @@ const getDraftId = (lessonId: string) => {
         if (draftLesson) {
           console.log('Rascunho encontrado! Carregando blocos...', draftLesson.blocks);
           setBlocks(draftLesson.blocks || []);
+          setLessonMeta({ module_id: draftLesson.module_id, title: draftLesson.title, order_index: draftLesson.order_index });
         } else {
           // Se não há rascunho, tentamos carregar a publicada e clonar
           console.log('Rascunho não encontrado. Buscando versão publicada...');
@@ -315,93 +322,33 @@ const getDraftId = (lessonId: string) => {
               blocks: publishedLesson.blocks || []
             });
             setBlocks(publishedLesson.blocks || []);
+            setLessonMeta({ module_id: publishedLesson.module_id, title: publishedLesson.title, order_index: publishedLesson.order_index });
           } else {
-            console.log('Banco de dados vazio. Iniciando auto-seed de produção e rascunho...');
-            
-            // Seed Path
-            const pathId = '88888888-8888-8888-8888-888888888888';
-            await supabase.from('paths').upsert({
-              id: pathId,
-              title: 'Trilha Full Stack Developer',
-              description: 'Aprenda do zero ao deploy com arquiteturas resilientes e modernas.',
-              is_published: true
-            });
-
-            // Seed Course
-            const courseId = '99999999-9999-9999-9999-999999999999';
-            await supabase.from('courses').upsert({
-              id: courseId,
-              title: 'Desenvolvimento Web Full Stack',
-              description: 'Torne-se um desenvolvedor completo, do frontend ao backend e DevOps.',
-              is_published: true
-            });
-
-            // Link Path & Course
-            await supabase.from('path_courses').upsert({
-              path_id: pathId,
-              course_id: courseId,
-              order_index: 1
-            });
-
-            // Seed Module
-            const moduleId = '00000000-0000-0000-0000-000000000000';
-            await supabase.from('modules').upsert({
-              id: moduleId,
-              course_id: courseId,
-              title: 'Módulo 1: Introdução Básica',
-              order_index: 1
-            });
-
-            // Seed Lesson
-            const defaultBlocks = [
-              {
-                id: crypto.randomUUID(),
-                type: 'text',
-                content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.',
-                styles: { align: 'left', fontSize: 'medium' },
-                layouts: { desktop: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, tablet: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, mobile: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 } },
-              },
-              {
-                id: crypto.randomUUID(),
-                type: 'video',
-                url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-                provider: 'youtube',
-                layouts: { desktop: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, tablet: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, mobile: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 } },
-              },
-              {
-                id: crypto.randomUUID(),
-                type: 'quiz',
-                question: 'Qual banco de dados relacional é utilizado no Supabase?',
-                options: [
-                  { id: crypto.randomUUID(), text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' },
-                  { id: crypto.randomUUID(), text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }
-                ],
-                layouts: { desktop: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, tablet: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, mobile: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 } },
-              }
-            ] as AnyBlock[];
-
-            // Cria a versão de produção
-            await supabase.from('lessons').upsert({
-              id: activeLessonId,
-              module_id: moduleId,
-              title: '1. Introdução à Plataforma Híbrida',
-              order_index: 1,
-              is_published: true,
-              blocks: defaultBlocks
-            });
-
-            // Cria o rascunho de trabalho correspondente
-            await supabase.from('lessons').upsert({
-              id: draftId,
-              module_id: moduleId,
-              title: '1. Introdução à Plataforma Híbrida',
-              order_index: 1,
-              is_published: false,
-              blocks: defaultBlocks
-            });
-
-            setBlocks(defaultBlocks);
-            console.log('Auto-seed realizado com sucesso!');
+            console.log('Aula não encontrada. Iniciando com blocos vazios...');
+            setBlocks([]);
+            // Auto-seed apenas para o lessonId padrão de desenvolvimento
+            if (activeLessonId === '11111111-1111-1111-1111-111111111111') {
+              console.log('Auto-seed para lessonId padrão...');
+              const pathId = '88888888-8888-8888-8888-888888888888';
+              await supabase.from('paths').upsert({ id: pathId, title: 'Trilha Full Stack Developer', description: 'Aprenda do zero ao deploy com arquiteturas resilientes e modernas.', is_published: true });
+              const courseId = '99999999-9999-9999-9999-999999999999';
+              await supabase.from('courses').upsert({ id: courseId, title: 'Desenvolvimento Web Full Stack', description: 'Torne-se um desenvolvedor completo, do frontend ao backend e DevOps.', is_published: true });
+              await supabase.from('path_courses').upsert({ path_id: pathId, course_id: courseId, order_index: 1 });
+              const moduleId = '00000000-0000-0000-0000-000000000000';
+              await supabase.from('modules').upsert({ id: moduleId, course_id: courseId, title: 'Módulo 1: Introdução Básica', order_index: 1 });
+              const defaultBlocks = [
+                { id: crypto.randomUUID(), type: 'text', content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.', styles: { align: 'left', fontSize: 'medium' }, layouts: { desktop: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, tablet: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, mobile: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 } } },
+                { id: crypto.randomUUID(), type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', provider: 'youtube', layouts: { desktop: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, tablet: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, mobile: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 } } },
+                { id: crypto.randomUUID(), type: 'quiz', question: 'Qual banco de dados relacional é utilizado no Supabase?', options: [{ id: crypto.randomUUID(), text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' }, { id: crypto.randomUUID(), text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }], layouts: { desktop: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, tablet: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, mobile: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 } } }
+              ] as AnyBlock[];
+              await supabase.from('lessons').upsert({ id: activeLessonId, module_id: moduleId, title: '1. Introdução à Plataforma Híbrida', order_index: 1, is_published: true, blocks: defaultBlocks });
+              await supabase.from('lessons').upsert({ id: draftId, module_id: moduleId, title: '1. Introdução à Plataforma Híbrida', order_index: 1, is_published: false, blocks: defaultBlocks });
+              setBlocks(defaultBlocks);
+              setLessonMeta({ module_id: moduleId, title: '1. Introdução à Plataforma Híbrida', order_index: 1 });
+              console.log('Auto-seed realizado com sucesso!');
+            } else {
+              setLessonMeta({ module_id: '', title: 'Nova aula', order_index: 1 });
+            }
           }
         }
       } catch (err) {
@@ -415,6 +362,19 @@ const getDraftId = (lessonId: string) => {
     initDatabase();
   }, [activeLessonId]);
 
+  // 1b. Fetch course and module titles when lessonMeta changes
+  useEffect(() => {
+    if (!lessonMeta?.module_id) return;
+    (async () => {
+      const { data: mod } = await supabase.from('modules').select('title, course_id').eq('id', lessonMeta.module_id).single();
+      if (mod) {
+        setModuleTitle(mod.title);
+        const { data: course } = await supabase.from('courses').select('title').eq('id', mod.course_id).single();
+        if (course) setCourseTitle(course.title);
+      }
+    })();
+  }, [lessonMeta?.module_id]);
+
   // 2. Debounced Save para salvar no Supabase ao alterar blocos (Apenas na versão Rascunho!)
   useEffect(() => {
     if (!isLoaded) return; 
@@ -425,13 +385,14 @@ const getDraftId = (lessonId: string) => {
       try {
         console.log('Salvando rascunho no Supabase...', state.blocks);
         const draftId = getDraftId(activeLessonId);
+        const meta = lessonMeta || { module_id: '00000000-0000-0000-0000-000000000000', title: 'Sem título', order_index: 1 };
         const { error: saveErr } = await supabase
           .from('lessons')
           .upsert({
             id: draftId,
-            module_id: '00000000-0000-0000-0000-000000000000',
-            title: '1. Introdução à Plataforma Híbrida',
-            order_index: 1,
+            module_id: meta.module_id,
+            title: meta.title,
+            order_index: meta.order_index,
             is_published: false,
             blocks: state.blocks
           });
@@ -445,34 +406,59 @@ const getDraftId = (lessonId: string) => {
         console.error('Erro ao salvar rascunho no Supabase:', err);
         setSaveStatus('error');
       }
-    }, 1500); // 1.5s de debounce
+    }, 10000); // 10s de debounce
 
     return () => clearTimeout(timer);
-  }, [state.blocks, activeLessonId, isLoaded]);
+  }, [state.blocks, activeLessonId, isLoaded, lessonMeta]);
 
   // 3. Função oficial de publicação (Copia o rascunho para a aula publicada de produção)
   const publishLesson = async () => {
-    try {
-      setSaveStatus('saving');
-      console.log('Publicando rascunho na versão ativa...', state.blocks);
-      const { error: pubErr } = await supabase
-        .from('lessons')
-        .upsert({
-          id: activeLessonId,
-          module_id: '00000000-0000-0000-0000-000000000000',
-          title: '1. Introdução à Plataforma Híbrida',
-          order_index: 1,
-          is_published: true,
-          blocks: state.blocks
-        });
+    setSaveStatus('saving');
+    console.log('Publicando rascunho na versão ativa...', state.blocks);
+    const meta = lessonMeta || { module_id: '00000000-0000-0000-0000-000000000000', title: 'Sem título', order_index: 1 };
 
-      if (pubErr) throw pubErr;
-      setSaveStatus('saved');
-      const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch (err) {
-      console.error('Erro ao publicar aula no Supabase:', err);
+    const { data: mod, error: modErr } = await supabase
+      .from('modules')
+      .select('course_id')
+      .eq('id', meta.module_id)
+      .single();
+    if (modErr || !mod) {
       setSaveStatus('error');
+      throw new Error('Módulo não encontrado.');
     }
+
+    const { data: course, error: courseErr } = await supabase
+      .from('courses')
+      .select('is_published')
+      .eq('id', mod.course_id)
+      .single();
+    if (courseErr || !course) {
+      setSaveStatus('error');
+      throw new Error('Curso não encontrado.');
+    }
+
+    if (!course.is_published) {
+      setSaveStatus('error');
+      throw new Error('O curso precisa estar publicado antes de publicar aulas.');
+    }
+
+    const { error: pubErr } = await supabase
+      .from('lessons')
+      .upsert({
+        id: activeLessonId,
+        module_id: meta.module_id,
+        title: meta.title,
+        order_index: meta.order_index,
+        is_published: true,
+        blocks: state.blocks
+      });
+
+    if (pubErr) {
+      setSaveStatus('error');
+      throw new Error('Erro ao publicar aula.');
+    }
+    setSaveStatus('saved');
+    const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
   };
 
   return (
@@ -496,6 +482,9 @@ const getDraftId = (lessonId: string) => {
         saveStatus,
         activeLessonId,
         publishLesson,
+        courseTitle,
+        moduleTitle,
+        lessonTitle: lessonMeta?.title || 'Nova aula',
       }}
     >
       {children}
