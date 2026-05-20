@@ -3,17 +3,15 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useEditor } from '../../context/EditorContext';
 import { Icon } from '@projeto/ui';
-import { StudentPreview } from '../preview/StudentPreview';
 import { AnyBlock } from '@projeto/types';
 
 // ─── Viewport sizes (real-world viewport boundaries) ────────────────────────
 // LAW: O que é apresentado no Preview é o resultado final da tela do usuário.
 //      MobileCanvas e PreviewCanvas DEVEM usar o mesmo renderer. Não há exceções.
 const CANVAS_W = 1100; // Largura do canvas livre de edição
-const CANVAS_H = 3000; // Altura total do canvas (scrollable)
 const PAGE_W   = 1100; // Largura do delimitador de página (desktop viewport)
 const MOBILE_W = 390;   // iPhone 14 / Android padrão
-const TABLET_W = 768;   // iPad portrait
+const TABLET_W = 650;   // Tablet médio (edição confortável com sidebars)
 const MOBILE_H = 720;   // Altura visível do frame mobile (viewport sem barra)
 const MIN_W = 80;
 const MIN_H = 40;
@@ -324,112 +322,143 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
   return null;
 }
 
-// ─── Group blocks by visual row (for responsive reflow) ────────────────────────
-function groupBlocksByRow(blocks: AnyBlock[]): AnyBlock[][] {
-  if (!blocks.length) return [];
-  const sorted = [...blocks].sort((a, b) => getLayout(a).y - getLayout(b).y);
-  const rows: AnyBlock[][] = [];
-  let row = [sorted[0]];
-  for (let i = 1; i < sorted.length; i++) {
-    const bl = getLayout(sorted[i]);
-    const overlaps = row.some(rb => {
-      const rl = getLayout(rb);
-      return bl.y < rl.y + rl.h && bl.y + bl.h > rl.y;
-    });
-    if (overlaps) {
-      row.push(sorted[i]);
-    } else {
-      rows.push([...row].sort((a, b) => getLayout(a).x - getLayout(b).x));
-      row = [sorted[i]];
-    }
-  }
-  rows.push([...row].sort((a, b) => getLayout(a).x - getLayout(b).x));
-  return rows;
+// ─── Edit viewport helpers ─────────────────────────────────────────────
+function useViewportInteraction(scale: number) {
+  const { activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent } = useEditor();
+  const [isInteracting, setIsInteracting] = useState(false);
+  const interactionRef = useRef<{
+    mode: 'move' | 'resize';
+    blockId: string;
+    handle?: HandleDir;
+    startMouseX: number;
+    startMouseY: number;
+    startLayout: Layout;
+  } | null>(null);
+
+  const onBlockMouseDown = useCallback((e: React.MouseEvent, block: AnyBlock) => {
+    if ((e.target as HTMLElement).dataset.handle) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveBlockId(block.id);
+    setIsInteracting(true);
+    interactionRef.current = {
+      mode: 'move', blockId: block.id,
+      startMouseX: e.clientX, startMouseY: e.clientY,
+      startLayout: getLayout(block),
+    };
+  }, [setActiveBlockId]);
+
+  const onHandleMouseDown = useCallback((e: React.MouseEvent, block: AnyBlock, handle: HandleDir) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsInteracting(true);
+    interactionRef.current = {
+      mode: 'resize', blockId: block.id, handle,
+      startMouseX: e.clientX, startMouseY: e.clientY,
+      startLayout: getLayout(block),
+    };
+  }, []);
+
+  useEffect(() => {
+    const applyLayout = (e: MouseEvent): Layout | null => {
+      if (!interactionRef.current) return null;
+      const { mode, handle, startMouseX, startMouseY, startLayout } = interactionRef.current;
+      const dx = (e.clientX - startMouseX) / scale;
+      const dy = (e.clientY - startMouseY) / scale;
+      if (mode === 'move') {
+        return { ...startLayout, x: Math.max(0, startLayout.x + dx), y: Math.max(0, startLayout.y + dy) };
+      }
+      if (mode === 'resize' && handle) {
+        let { x, y, w, h, zIndex } = startLayout;
+        if (handle.includes('e')) w = Math.max(MIN_W, startLayout.w + dx);
+        if (handle.includes('s')) h = Math.max(MIN_H, startLayout.h + dy);
+        if (handle.includes('w')) { w = Math.max(MIN_W, startLayout.w - dx); x = startLayout.x + startLayout.w - w; }
+        if (handle.includes('n')) { h = Math.max(MIN_H, startLayout.h - dy); y = startLayout.y + startLayout.h - h; }
+        return { x, y, w, h, zIndex };
+      }
+      return null;
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!interactionRef.current) return;
+      const layout = applyLayout(e);
+      if (layout) updateBlockSilent(interactionRef.current.blockId, { layout } as any);
+    };
+
+    const onMouseUp = (e: MouseEvent) => {
+      if (!interactionRef.current) return;
+      const layout = applyLayout(e);
+      if (layout) updateBlock(interactionRef.current.blockId, { layout } as any);
+      interactionRef.current = null;
+      setIsInteracting(false);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [updateBlock, updateBlockSilent, scale]);
+
+  return { activeBlockId, setActiveBlockId, removeBlock, updateBlock, isInteracting, onBlockMouseDown, onHandleMouseDown };
 }
 
-// ─── Mobile canvas — suporta editMode interativo ──────────────────────────
-function MobileCanvas({ blocks, onImageDrop, editMode = false, viewportWidth = MOBILE_W }: {
+function renderViewportBlocks(args: {
   blocks: AnyBlock[];
+  viewportW: number;
   onImageDrop?: (id: string, file: File) => void;
-  editMode?: boolean;
-  viewportWidth?: number;
+  activeBlockId: string | null;
+  setActiveBlockId: (id: string | null) => void;
+  removeBlock: (id: string) => void;
+  isInteracting: boolean;
+  onBlockMouseDown: (e: React.MouseEvent, block: AnyBlock) => void;
+  onHandleMouseDown: (e: React.MouseEvent, block: AnyBlock, handle: HandleDir) => void;
 }) {
-  const { activeBlockId, setActiveBlockId, removeBlock, updateBlock } = useEditor();
-  const rows = groupBlocksByRow(blocks);
-
-  const widthPresets = [25, 50, 75, 100];
+  const scale = args.viewportW / CANVAS_W;
+  const pageH = Math.max(800, ...args.blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
+  const sortedBlocks = [...args.blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
 
   return (
-    <div
-      style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}
-      onClick={editMode ? () => setActiveBlockId(null) : undefined}
-    >
-      {rows.map((row, ri) => {
-        const totalW = row.reduce((s, b) => s + getLayout(b).w, 0);
+    <div style={{ position: 'relative', width: args.viewportW, minHeight: pageH * scale }}>
+      {sortedBlocks.map((block) => {
+        const isActive = block.id === args.activeBlockId;
+        const layout = getLayout(block);
+
         return (
-          <div key={ri} style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'flex-start' }}>
-            {row.map(block => {
-              const l = getLayout(block);
-              const flexBasis = `${Math.max(40, Math.round((l.w / totalW) * 100))}%`;
-              const isSelected = editMode && block.id === activeBlockId;
-              const currentPct = Math.round((l.w / CANVAS_W) * 100);
+          <div
+            key={block.id}
+            onMouseDown={(e) => args.onBlockMouseDown(e, block)}
+            onClick={(e) => { e.stopPropagation(); args.setActiveBlockId(block.id); }}
+            style={{ position: 'absolute', left: layout.x * scale, top: layout.y * scale, width: layout.w * scale, height: layout.h * scale, zIndex: layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none', isolation: 'isolate' }}
+          >
+            <div style={{
+              position: 'absolute', inset: 0,
+              border: isActive ? '2px solid #3b82f6' : '2px solid transparent',
+              borderRadius: '6px', pointerEvents: 'none', zIndex: 2,
+            }} />
 
-              return (
-                <div
-                  key={block.id}
-                  onClick={editMode ? (e) => { e.stopPropagation(); setActiveBlockId(block.id); } : undefined}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flex: `1 1 ${flexBasis}`, minWidth: `${Math.max(60, Math.round(viewportWidth * 0.18))}px`,
-                    minHeight: l.h * (viewportWidth / CANVAS_W),
-                    position: 'relative', borderRadius: '6px',
-                    outline: isSelected ? '2px solid #3b82f6' : 'none',
-                    outlineOffset: '2px',
-                    cursor: editMode ? 'pointer' : 'default',
-                    paddingTop: isSelected ? '8px' : '0',
-                    paddingBottom: isSelected ? '36px' : '0',
-                  }}
-                >
-                  <BlockContent block={block} onImageDrop={onImageDrop} isMobile />
+            <div style={{ position: 'absolute', inset: 2, borderRadius: '4px', overflow: 'hidden', zIndex: 1 }}>
+              <BlockContent block={block} onImageDrop={args.onImageDrop} isMobile isInteracting={args.isInteracting} />
+              {(block.type === 'html' || block.type === 'video') && (
+                <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'move', backgroundColor: 'transparent' }} />
+              )}
+            </div>
 
-                  {/* ── Mobile edit controls ── */}
-                  {isSelected && (
-                    <>
-                      {/* Delete */}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }}
-                        style={{ position: 'absolute', top: -28, right: 0, zIndex: 20, backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
-                      >
-                        🗑 Excluir
-                      </button>
+            {isActive && (
+              <button onClick={(e) => { e.stopPropagation(); args.removeBlock(block.id); }} style={{ position: 'absolute', top: -34, right: 0, zIndex: 20, backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '5px', padding: '4px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 500 }}>
+                <Icon name="Trash2" size={12} /> Excluir
+              </button>
+            )}
 
-                      {/* Width presets */}
-                      <div style={{ position: 'absolute', bottom: 4, left: 0, right: 0, display: 'flex', gap: '3px', justifyContent: 'center' }}>
-                        <span style={{ fontSize: '9px', color: 'var(--text-tertiary)', alignSelf: 'center', marginRight: '2px' }}>Largura:</span>
-                        {widthPresets.map(pct => (
-                          <button
-                            key={pct}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              updateBlock(block.id, { layout: { ...l, w: Math.round(CANVAS_W * pct / 100) } } as any);
-                            }}
-                            style={{
-                              backgroundColor: currentPct === pct ? '#3b82f6' : '#e2e8f0',
-                              color: currentPct === pct ? 'white' : '#475569',
-                              border: 'none', borderRadius: '3px', padding: '2px 6px',
-                              fontSize: '9px', fontWeight: 600, cursor: 'pointer',
-                            }}
-                          >
-                            {pct}%
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              );
-            })}
+            {isActive && HANDLES.map(({ id, cursor, style }) => (
+              <div
+                key={id}
+                data-handle={id}
+                onMouseDown={(e) => args.onHandleMouseDown(e, block, id)}
+                style={{ position: 'absolute', width: 10, height: 10, backgroundColor: 'white', border: '2px solid #3b82f6', borderRadius: '2px', cursor, zIndex: 30, ...style }}
+              />
+            ))}
           </div>
         );
       })}
@@ -474,13 +503,16 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
         </div>
       ) : (
         <div style={{
-          width: (isMobile ? MOBILE_W : TABLET_W) + 12,
-          maxWidth: (isMobile ? MOBILE_W : TABLET_W) + 12,
+          width: (isMobile ? MOBILE_W : TABLET_W),
+          maxWidth: (isMobile ? MOBILE_W : TABLET_W),
           backgroundColor: '#FFFFFF',
           borderRadius: isMobile ? 36 : 12,
           boxShadow: '0 24px 64px rgba(0,0,0,0.2)',
           overflow: 'hidden',
           border: '6px solid #1e293b',
+          display: 'flex',
+          flexDirection: 'column',
+          maxHeight: '80vh',
         }}>
           {isMobile ? (
             <div style={{ backgroundColor: '#1e293b', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -492,7 +524,7 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
               <span style={{ marginLeft: 'auto', fontSize: 10, color: '#94a3b8' }}>Preview Tablet</span>
             </div>
           )}
-          <div style={{ overflowY: 'auto', overflowX: 'hidden' }}>
+          <div style={{ overflowY: 'auto', overflowX: 'hidden', flex: 1 }}>
             <div style={{
               position: 'relative',
               width: (isMobile ? MOBILE_W : TABLET_W),
@@ -520,20 +552,26 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
 
 // ─── Mobile Viewport (edit mode interativo) ─────────────────────────────
 function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDrop: (id: string, file: File) => void }) {
+  const viewInteraction = useViewportInteraction(MOBILE_W / CANVAS_W);
   return (
-    <div className="canvas-area canvas-bg" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: '24px', overflowY: 'auto' }}>
-      <div style={{ border: '6px solid #1e293b', borderRadius: '36px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.25)', backgroundColor: 'white', width: MOBILE_W + 12, flexShrink: 0 }}>
-        {/* Notch */}
+    <div className="canvas-area canvas-bg" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px', overflowY: 'auto' }}>
+      <div style={{ border: '6px solid #1e293b', borderRadius: '36px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.25)', backgroundColor: 'white', width: MOBILE_W, flexShrink: 0 }}>
         <div style={{ backgroundColor: '#1e293b', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <div style={{ width: '60px', height: '6px', borderRadius: '3px', backgroundColor: '#475569' }} />
         </div>
-        {/* Scrollable + editMode ativo */}
         <div style={{ overflowY: 'auto', overflowX: 'hidden', backgroundColor: '#f8fafc',
           backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)',
           backgroundSize: '32px 32px' }}>
-          <MobileCanvas blocks={blocks} onImageDrop={onImageDrop} editMode />
+          {renderViewportBlocks({
+            blocks, viewportW: MOBILE_W, onImageDrop,
+            activeBlockId: viewInteraction.activeBlockId,
+            setActiveBlockId: viewInteraction.setActiveBlockId,
+            removeBlock: viewInteraction.removeBlock,
+            isInteracting: viewInteraction.isInteracting,
+            onBlockMouseDown: viewInteraction.onBlockMouseDown,
+            onHandleMouseDown: viewInteraction.onHandleMouseDown,
+          })}
         </div>
-        {/* Home bar */}
         <div style={{ backgroundColor: 'white', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <div style={{ width: '40px', height: '4px', borderRadius: '2px', backgroundColor: '#e2e8f0' }} />
         </div>
@@ -544,20 +582,26 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
 
 // ─── Tablet Viewport (edit mode interativo) ────────────────────────────
 function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDrop: (id: string, file: File) => void }) {
+  const viewInteraction = useViewportInteraction(TABLET_W / CANVAS_W);
   return (
-    <div className="canvas-area canvas-bg" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: '24px', overflowY: 'auto' }}>
-      <div style={{ border: '6px solid #1e293b', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', backgroundColor: 'white', width: TABLET_W + 12, flexShrink: 0 }}>
-        {/* Top bar (camera) */}
+    <div className="canvas-area canvas-bg" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px', overflowY: 'auto' }}>
+      <div style={{ border: '6px solid #1e293b', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', backgroundColor: 'white', width: TABLET_W, flexShrink: 0 }}>
         <div style={{ backgroundColor: '#1e293b', height: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0f172a', border: '1px solid #334155' }} />
         </div>
-        {/* Scrollable + editMode ativo */}
         <div style={{ overflowY: 'auto', overflowX: 'hidden', backgroundColor: '#f8fafc',
           backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)',
           backgroundSize: '32px 32px' }}>
-          <MobileCanvas blocks={blocks} onImageDrop={onImageDrop} editMode viewportWidth={TABLET_W} />
+          {renderViewportBlocks({
+            blocks, viewportW: TABLET_W, onImageDrop,
+            activeBlockId: viewInteraction.activeBlockId,
+            setActiveBlockId: viewInteraction.setActiveBlockId,
+            removeBlock: viewInteraction.removeBlock,
+            isInteracting: viewInteraction.isInteracting,
+            onBlockMouseDown: viewInteraction.onBlockMouseDown,
+            onHandleMouseDown: viewInteraction.onHandleMouseDown,
+          })}
         </div>
-        {/* Home bar */}
         <div style={{ backgroundColor: 'white', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <div style={{ width: '40px', height: '4px', borderRadius: '2px', backgroundColor: '#e2e8f0' }} />
         </div>
