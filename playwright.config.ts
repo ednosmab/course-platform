@@ -15,7 +15,7 @@ export default defineConfig({
   projects: [
     {
       name: 'Admin Web - Desktop Chrome',
-      testMatch: /.*1-admin-cms\.spec\.ts/,
+      testMatch: /.*admin-.*\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:3000' },
     },
     {
