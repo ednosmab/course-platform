@@ -51,8 +51,8 @@ export const BlockPalette: React.FC = () => {
       <YStack
         flexWrap="wrap"
         flexDirection={collapsed ? 'column' : 'row'}
-        p={collapsed ? '$2' : '$5'}
-        gap={collapsed ? '$2' : '$3'}
+        p={collapsed ? '$2' : '$3'}
+        gap={collapsed ? '$2' : '$2'}
       >
         <BlockBtn icon="Type" label="Texto" collapsed={collapsed} onClick={() => addBlock('text')} />
         <BlockBtn icon="Image" label="Imagem" collapsed={collapsed} onClick={() => addBlock('image')} />
@@ -83,7 +83,7 @@ function BlockBtn({ icon, label, collapsed, onClick }: {
       borderWidth={1} borderColor="$border"
       bg="$background"
       hoverStyle={{ y: -2, borderColor: '$primary' }}
-      w={collapsed ? '100%' : 'calc(50% - 6px)'}
+      w={collapsed ? '100%' : 'calc(50% - 4px)'}
     >
       <XStack
         w={28} h={28}
