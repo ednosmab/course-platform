@@ -416,10 +416,10 @@ function useViewportInteraction(scale: number) {
     interactionRef.current = {
       mode: 'move', blockId: block.id,
       startMouseX: e.clientX, startMouseY: e.clientY,
-      startLayout: getLayout(block),
+      startLayout: getLayout(block, viewportMode),
       currentLayouts: (block as any).layouts || {},
     };
-  }, [setActiveBlockId]);
+  }, [setActiveBlockId, viewportMode]);
 
   const onHandleMouseDown = useCallback((e: React.MouseEvent, block: AnyBlock, handle: HandleDir) => {
     e.preventDefault();
@@ -428,10 +428,10 @@ function useViewportInteraction(scale: number) {
     interactionRef.current = {
       mode: 'resize', blockId: block.id, handle,
       startMouseX: e.clientX, startMouseY: e.clientY,
-      startLayout: getLayout(block),
+      startLayout: getLayout(block, viewportMode),
       currentLayouts: (block as any).layouts || {},
     };
-  }, []);
+  }, [viewportMode]);
 
   useEffect(() => {
     const applyLayout = (e: MouseEvent): Layout | null => {
@@ -761,10 +761,10 @@ export const EditorCanvas: React.FC = () => {
     interactionRef.current = {
       mode: 'move', blockId: block.id,
       startMouseX: e.clientX, startMouseY: e.clientY,
-      startLayout: getLayout(block),
+      startLayout: getLayout(block, viewportMode),
       currentLayouts: (block as any).layouts || {},
     };
-  }, [setActiveBlockId]);
+  }, [setActiveBlockId, viewportMode]);
 
   const onHandleMouseDown = useCallback((e: React.MouseEvent, block: AnyBlock, handle: HandleDir) => {
     e.preventDefault();
@@ -773,10 +773,10 @@ export const EditorCanvas: React.FC = () => {
     interactionRef.current = {
       mode: 'resize', blockId: block.id, handle,
       startMouseX: e.clientX, startMouseY: e.clientY,
-      startLayout: getLayout(block),
+      startLayout: getLayout(block, viewportMode),
       currentLayouts: (block as any).layouts || {},
     };
-  }, []);
+  }, [viewportMode]);
 
   useEffect(() => {
     const applyLayout = (e: MouseEvent): Layout | null => {
