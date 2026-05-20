@@ -51,6 +51,7 @@ export const BlockPalette: React.FC = () => {
       <YStack
         flexWrap="wrap"
         flexDirection={collapsed ? 'column' : 'row'}
+        jc={collapsed ? undefined : 'center'}
         p={collapsed ? '$2' : '$3'}
         gap={collapsed ? '$2' : '$2'}
       >
@@ -75,7 +76,7 @@ function BlockBtn({ icon, label, collapsed, onClick }: {
     <YStack
       onPress={onClick}
       cursor="pointer"
-      p="$1.5"
+      p="$2"
       ai="center"
       jc="center"
       gap="$1"
@@ -83,17 +84,16 @@ function BlockBtn({ icon, label, collapsed, onClick }: {
       borderWidth={1} borderColor="$border"
       bg="$background"
       hoverStyle={{ y: -1, borderColor: '$primary' }}
-      w={collapsed ? '100%' : 'calc(50% - 4px)'}
+      flexShrink={0}
+      w={collapsed ? '100%' : 92}
     >
       <XStack
-        w={22} h={22}
+        w={28} h={28}
         ai="center" jc="center"
-        borderRadius="$1"
-        bg="$accent"
       >
-        <Icon name={icon} size={11} color="$accentForeground" />
+        <Icon name={icon} size={14} color="$secondaryForeground" />
       </XStack>
-      {!collapsed && <Text fontSize={11} fontWeight="500">{label}</Text>}
+      {!collapsed && <Text fontSize={12} fontWeight="500">{label}</Text>}
     </YStack>
   );
 }

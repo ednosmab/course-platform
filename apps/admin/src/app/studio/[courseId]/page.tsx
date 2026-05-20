@@ -195,7 +195,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
     setCourse((prev: any) => ({ ...prev, is_published: next }));
   };
 
-  if (loading) return <XStack f={1} ai="center" jc="center" gap={12}><Spinner size="large" color="$primary" /><Text color="$textMuted" fontSize={14}>Carregando curso…</Text></XStack>;
+  if (loading) return <YStack f={1} ai="center" jc="center" gap={12} opacity={0.7} h="100vh"><Spinner size="large" color="$primary" /><Text color="$textMuted" fontSize={14}>Carregando curso…</Text></YStack>;
 
   return (
     <YStack f={1} bg="$background">

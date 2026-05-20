@@ -176,10 +176,10 @@ export default function Dashboard() {
             </XStack>
 
             {loading ? (
-              <XStack ai="center" jc="center" py={64} gap={12}>
+              <YStack f={1} ai="center" jc="center" gap={12} opacity={0.7}>
                 <Spinner size="large" color="$primary" />
                 <Text color="$textMuted" fontSize={14}>Carregando cursos…</Text>
-              </XStack>
+              </YStack>
             ) : filteredCourses.length === 0 ? (
               <YStack ai="center" jc="center" py={64} gap={8}>
                 <Icon name="BookOpen" size={48} color="$textMuted" />

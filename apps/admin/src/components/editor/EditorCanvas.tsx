@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { YStack, XStack, Text, Icon } from '@projeto/ui';
+import { YStack, XStack, Text, Icon, Spinner } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
 
@@ -720,7 +720,7 @@ export const EditorCanvas: React.FC = () => {
     };
   }, [updateBlock, updateBlockSilent, viewportMode]);
 
-  if (!mounted) return <YStack flex={1} bg="$background"><Text color="$textMuted">Carregando...</Text></YStack>;
+  if (!mounted) return <YStack flex={1} bg="$background" ai="center" jc="center" gap={12} opacity={0.7}><Spinner size="large" color="$primary" /><Text color="$textMuted" fontSize={14}>Carregando canvas…</Text></YStack>;
 
   if (previewMode) return <PreviewCanvas blocks={blocks} viewportMode={viewportMode} />;
 
