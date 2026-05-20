@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BlockLayoutSchema } from './layout';
+import { BlockLayoutsSchema } from './layout';
 
 export const TextBlockSchema = z.object({
   id: z.string(),
@@ -12,7 +12,7 @@ export const TextBlockSchema = z.object({
     width: z.string().optional(),
     height: z.string().optional(),
   }).optional(),
-  layout: BlockLayoutSchema,
+  layouts: BlockLayoutsSchema,
 }).strict();
 
 export type TextBlock = z.infer<typeof TextBlockSchema>;

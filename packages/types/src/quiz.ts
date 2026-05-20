@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BlockLayoutSchema } from './layout';
+import { BlockLayoutsSchema } from './layout';
 
 export const QuizOptionSchema = z.object({
   id: z.string(),
@@ -20,7 +20,7 @@ export const QuizBlockSchema = z.object({
     width: z.string().optional(),
     height: z.string().optional(),
   }).optional(),
-  layout: BlockLayoutSchema,
+  layouts: BlockLayoutsSchema,
 }).strict();
 
 export type QuizOption = z.infer<typeof QuizOptionSchema>;

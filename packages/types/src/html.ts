@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BlockLayoutSchema } from './layout';
+import { BlockLayoutsSchema } from './layout';
 
 export const HtmlBlockSchema = z.object({
   id: z.string(),
@@ -9,7 +9,7 @@ export const HtmlBlockSchema = z.object({
     width: z.string().optional(),
     height: z.string().optional(),
   }).optional(),
-  layout: BlockLayoutSchema,
+  layouts: BlockLayoutsSchema,
 }).strict();
 
 export type HtmlBlock = z.infer<typeof HtmlBlockSchema>;

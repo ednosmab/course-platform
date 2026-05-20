@@ -1,12 +1,19 @@
 import { z } from 'zod';
 
-// Schema de posicionamento livre (estilo Canva)
-export const BlockLayoutSchema = z.object({
+export const ViewportLayoutSchema = z.object({
   x: z.number(),
   y: z.number(),
   w: z.number(),
   h: z.number(),
   zIndex: z.number().default(0),
+});
+
+export type ViewportLayout = z.infer<typeof ViewportLayoutSchema>;
+
+export const BlockLayoutsSchema = z.object({
+  desktop: ViewportLayoutSchema.optional(),
+  tablet: ViewportLayoutSchema.optional(),
+  mobile: ViewportLayoutSchema.optional(),
 }).optional();
 
-export type BlockLayout = z.infer<typeof BlockLayoutSchema>;
+export type BlockLayouts = z.infer<typeof BlockLayoutsSchema>;

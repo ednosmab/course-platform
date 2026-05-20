@@ -107,8 +107,10 @@ type HandleDir = 'n' | 's' | 'e' | 'w' | 'nw' | 'ne' | 'sw' | 'se';
 
 interface Layout { x: number; y: number; w: number; h: number; zIndex: number; }
 
-function getLayout(block: AnyBlock): Layout {
-  const l = (block as any).layout;
+function getLayout(block: AnyBlock, viewport?: 'desktop' | 'tablet' | 'mobile'): Layout {
+  const vp = viewport || 'desktop';
+  const layouts = (block as any).layouts;
+  const l = layouts?.[vp] || layouts?.desktop;
   return {
     x: typeof l?.x === 'number' ? l.x : 40,
     y: typeof l?.y === 'number' ? l.y : 40,
@@ -324,7 +326,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
 
 // ─── Edit viewport helpers ─────────────────────────────────────────────
 function useViewportInteraction(scale: number) {
-  const { activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent } = useEditor();
+  const { activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent, viewportMode } = useEditor();
   const [isInteracting, setIsInteracting] = useState(false);
   const interactionRef = useRef<{
     mode: 'move' | 'resize';
@@ -333,6 +335,7 @@ function useViewportInteraction(scale: number) {
     startMouseX: number;
     startMouseY: number;
     startLayout: Layout;
+    currentLayouts: Record<string, any>;
   } | null>(null);
 
   const onBlockMouseDown = useCallback((e: React.MouseEvent, block: AnyBlock) => {
@@ -345,6 +348,7 @@ function useViewportInteraction(scale: number) {
       mode: 'move', blockId: block.id,
       startMouseX: e.clientX, startMouseY: e.clientY,
       startLayout: getLayout(block),
+      currentLayouts: (block as any).layouts || {},
     };
   }, [setActiveBlockId]);
 
@@ -356,6 +360,7 @@ function useViewportInteraction(scale: number) {
       mode: 'resize', blockId: block.id, handle,
       startMouseX: e.clientX, startMouseY: e.clientY,
       startLayout: getLayout(block),
+      currentLayouts: (block as any).layouts || {},
     };
   }, []);
 
@@ -379,16 +384,21 @@ function useViewportInteraction(scale: number) {
       return null;
     };
 
+    const buildUpdate = (layout: Layout) => {
+      const { currentLayouts } = interactionRef.current!;
+      return { layouts: { ...currentLayouts, [viewportMode]: layout } };
+    };
+
     const onMouseMove = (e: MouseEvent) => {
       if (!interactionRef.current) return;
-      const layout = applyLayout(e);
-      if (layout) updateBlockSilent(interactionRef.current.blockId, { layout } as any);
+      const newLayout = applyLayout(e);
+      if (newLayout) updateBlockSilent(interactionRef.current.blockId, buildUpdate(newLayout) as any);
     };
 
     const onMouseUp = (e: MouseEvent) => {
       if (!interactionRef.current) return;
-      const layout = applyLayout(e);
-      if (layout) updateBlock(interactionRef.current.blockId, { layout } as any);
+      const newLayout = applyLayout(e);
+      if (newLayout) updateBlock(interactionRef.current.blockId, buildUpdate(newLayout) as any);
       interactionRef.current = null;
       setIsInteracting(false);
     };
@@ -399,7 +409,7 @@ function useViewportInteraction(scale: number) {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
-  }, [updateBlock, updateBlockSilent, scale]);
+  }, [updateBlock, updateBlockSilent, scale, viewportMode]);
 
   return { activeBlockId, setActiveBlockId, removeBlock, updateBlock, isInteracting, onBlockMouseDown, onHandleMouseDown };
 }
@@ -407,6 +417,7 @@ function useViewportInteraction(scale: number) {
 function renderViewportBlocks(args: {
   blocks: AnyBlock[];
   viewportW: number;
+  viewportMode: 'desktop' | 'tablet' | 'mobile';
   onImageDrop?: (id: string, file: File) => void;
   activeBlockId: string | null;
   setActiveBlockId: (id: string | null) => void;
@@ -416,14 +427,14 @@ function renderViewportBlocks(args: {
   onHandleMouseDown: (e: React.MouseEvent, block: AnyBlock, handle: HandleDir) => void;
 }) {
   const scale = args.viewportW / CANVAS_W;
-  const pageH = Math.max(800, ...args.blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
-  const sortedBlocks = [...args.blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
+  const pageH = Math.max(800, ...args.blocks.map(b => { const l = getLayout(b, args.viewportMode); return l.y + l.h + 120; }));
+  const sortedBlocks = [...args.blocks].sort((a, b) => getLayout(a, args.viewportMode).zIndex - getLayout(b, args.viewportMode).zIndex);
 
   return (
     <div style={{ position: 'relative', width: args.viewportW, minHeight: pageH * scale }}>
       {sortedBlocks.map((block) => {
         const isActive = block.id === args.activeBlockId;
-        const layout = getLayout(block);
+        const layout = getLayout(block, args.viewportMode);
 
         return (
           <div
@@ -471,8 +482,8 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
   const isMobile = viewportMode === 'mobile';
   const isTablet = viewportMode === 'tablet';
   const isDesktop = viewportMode === 'desktop';
-  const pageH = Math.max(800, ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
-  const sortedBlocks = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
+  const pageH = Math.max(800, ...blocks.map(b => { const l = getLayout(b, viewportMode); return l.y + l.h + 120; }));
+  const sortedBlocks = [...blocks].sort((a, b) => getLayout(a, viewportMode).zIndex - getLayout(b, viewportMode).zIndex);
   return (
     <div className="canvas-area" style={{
       backgroundColor: '#F1F2F8',
@@ -493,7 +504,7 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
           boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)',
         }}>
           {sortedBlocks.map((block) => {
-            const layout = getLayout(block);
+            const layout = getLayout(block, viewportMode);
             return (
               <div key={block.id} style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.zIndex + 1 }}>
                 <BlockContent block={block} />
@@ -531,7 +542,7 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
               minHeight: pageH * ((isMobile ? MOBILE_W : TABLET_W) / CANVAS_W),
             }}>
               {sortedBlocks.map((block) => {
-                const layout = getLayout(block);
+                const layout = getLayout(block, viewportMode);
                 const scale = (isMobile ? MOBILE_W : TABLET_W) / CANVAS_W;
                 return (
                   <div key={block.id} style={{ position: 'absolute', left: layout.x * scale, top: layout.y * scale, width: layout.w * scale, height: layout.h * scale, zIndex: layout.zIndex + 1 }}>
@@ -563,7 +574,7 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
           backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)',
           backgroundSize: '32px 32px' }}>
           {renderViewportBlocks({
-            blocks, viewportW: MOBILE_W, onImageDrop,
+            blocks, viewportW: MOBILE_W, viewportMode: 'mobile', onImageDrop,
             activeBlockId: viewInteraction.activeBlockId,
             setActiveBlockId: viewInteraction.setActiveBlockId,
             removeBlock: viewInteraction.removeBlock,
@@ -593,7 +604,7 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
           backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)',
           backgroundSize: '32px 32px' }}>
           {renderViewportBlocks({
-            blocks, viewportW: TABLET_W, onImageDrop,
+            blocks, viewportW: TABLET_W, viewportMode: 'tablet', onImageDrop,
             activeBlockId: viewInteraction.activeBlockId,
             setActiveBlockId: viewInteraction.setActiveBlockId,
             removeBlock: viewInteraction.removeBlock,
@@ -623,6 +634,7 @@ export const EditorCanvas: React.FC = () => {
     startMouseX: number;
     startMouseY: number;
     startLayout: Layout;
+    currentLayouts: Record<string, any>;
   } | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
@@ -645,6 +657,7 @@ export const EditorCanvas: React.FC = () => {
       mode: 'move', blockId: block.id,
       startMouseX: e.clientX, startMouseY: e.clientY,
       startLayout: getLayout(block),
+      currentLayouts: (block as any).layouts || {},
     };
   }, [setActiveBlockId]);
 
@@ -656,6 +669,7 @@ export const EditorCanvas: React.FC = () => {
       mode: 'resize', blockId: block.id, handle,
       startMouseX: e.clientX, startMouseY: e.clientY,
       startLayout: getLayout(block),
+      currentLayouts: (block as any).layouts || {},
     };
   }, []);
 
@@ -679,16 +693,21 @@ export const EditorCanvas: React.FC = () => {
       return null;
     };
 
+    const buildUpdate = (layout: Layout) => {
+      const { currentLayouts } = interactionRef.current!;
+      return { layouts: { ...currentLayouts, [viewportMode]: layout } };
+    };
+
     const onMouseMove = (e: MouseEvent) => {
       if (!interactionRef.current) return;
       const layout = applyLayout(e);
-      if (layout) updateBlockSilent(interactionRef.current.blockId, { layout } as any);
+      if (layout) updateBlockSilent(interactionRef.current.blockId, buildUpdate(layout) as any);
     };
 
     const onMouseUp = (e: MouseEvent) => {
       if (!interactionRef.current) return;
       const layout = applyLayout(e);
-      if (layout) updateBlock(interactionRef.current.blockId, { layout } as any);
+      if (layout) updateBlock(interactionRef.current.blockId, buildUpdate(layout) as any);
       interactionRef.current = null;
       setIsInteracting(false);
     };
@@ -699,7 +718,7 @@ export const EditorCanvas: React.FC = () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
-  }, [updateBlock, updateBlockSilent]);
+  }, [updateBlock, updateBlockSilent, viewportMode]);
 
   if (!mounted) return <div className="canvas-area canvas-bg" style={{ flex: 1 }}><div style={{ color: 'var(--text-tertiary)' }}>Carregando...</div></div>;
 

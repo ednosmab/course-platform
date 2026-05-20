@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BlockLayoutSchema } from './layout';
+import { BlockLayoutsSchema } from './layout';
 
 export const ImageBlockSchema = z.object({
   id: z.string(),
@@ -12,7 +12,7 @@ export const ImageBlockSchema = z.object({
     height: z.string().optional(),
     borderRadius: z.string().optional(),
   }).optional(),
-  layout: BlockLayoutSchema,
+  layouts: BlockLayoutsSchema,
 }).strict();
 
 export type ImageBlock = z.infer<typeof ImageBlockSchema>;

@@ -11,9 +11,9 @@ interface PositionPanelProps {
 
 const PAGE_W = 1100;
 
-/** Extrai o layout de qualquer bloco (com defaults seguros) */
+/** Extrai o layout de qualquer bloco a partir do layouts.desktop (padrão) */
 function getLayout(block: AnyBlock) {
-  const l = (block as any).layout;
+  const l = (block as any).layouts?.desktop;
   return {
     x: typeof l?.x === 'number' ? l.x : 40,
     y: typeof l?.y === 'number' ? l.y : 40,
@@ -71,8 +71,13 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     // orderedBlockIds[0] = fundo (menor z), last = topo (maior z)
     const newBlocks = blocks.map(b => {
       const idx = orderedBlockIds.indexOf(b.id);
-      const l = getLayout(b);
-      return { ...b, layout: { ...l, zIndex: idx >= 0 ? idx : (l.zIndex ?? 0) } };
+      const anyBlock = b as any;
+      const currentLayouts = anyBlock.layouts || {};
+      const desktopL = currentLayouts.desktop || {};
+      return { ...b, layouts: {
+        ...currentLayouts,
+        desktop: { ...desktopL, zIndex: idx >= 0 ? idx : (desktopL.zIndex ?? 0) },
+      } };
     });
     
     // LAW: Devemos garantir que o estado seja atualizado com uma nova referência
@@ -158,7 +163,9 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
       case 'right': newX = Math.max(0, PAGE_W - l.w); break;
     }
 
-    updateBlock(activeBlock.id, { layout: { ...l, x: newX, y: newY } } as any);
+    const anyBlock = activeBlock as any;
+    const currentLayouts = anyBlock.layouts || {};
+    updateBlock(activeBlock.id, { layouts: { ...currentLayouts, desktop: { ...l, x: newX, y: newY } } } as any);
   };
 
   // ──────────────────────────────────────────────────────
