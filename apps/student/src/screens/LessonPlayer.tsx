@@ -42,8 +42,6 @@ export function LessonPlayer({ onBack }: LessonPlayerProps) {
     try {
       setLoading(true);
       setError(null);
-      console.log('Buscando dados dinâmicos do curso no Supabase...');
-
       const { data: coursesCheck, error: checkErr } = await supabase
         .from('courses')
         .select('*');
@@ -81,7 +79,6 @@ export function LessonPlayer({ onBack }: LessonPlayerProps) {
     try {
       setRefreshing(true);
       setError(null);
-      console.log(`Carregando blocos atualizados para a aula: ${activeLessonId}`);
       const { data: lessonData, error } = await supabase
         .from('lessons')
         .select('*')
@@ -114,7 +111,6 @@ export function LessonPlayer({ onBack }: LessonPlayerProps) {
   useEffect(() => {
     if (!activeLessonId) return;
 
-    console.log(`Iniciando escuta em tempo real para a aula: ${activeLessonId}`);
     const channel = supabase
       .channel(`lesson-realtime-${activeLessonId}`)
       .on(
@@ -126,7 +122,6 @@ export function LessonPlayer({ onBack }: LessonPlayerProps) {
           filter: `id=eq.${activeLessonId}`,
         },
         (payload: any) => {
-          console.log('Aula atualizada recebida via Realtime:', payload.new);
           if (payload.new && payload.new.blocks) {
             setLessons((prev) =>
               prev.map((les) => {
@@ -146,7 +141,6 @@ export function LessonPlayer({ onBack }: LessonPlayerProps) {
       .subscribe();
 
     return () => {
-      console.log(`Cancelando escuta em tempo real para a aula: ${activeLessonId}`);
       supabase.removeChannel(channel);
     };
   }, [activeLessonId]);

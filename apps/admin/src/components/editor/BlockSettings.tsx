@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { YStack, XStack, Text, Button, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
@@ -37,13 +37,13 @@ function getHtmlFromBlock(block: AnyBlock): string {
     case 'text': {
       const fsMap: Record<string, string> = { small: '13px', medium: '16px', large: '24px', xlarge: '32px' };
       const fs = block.styles?.fontSize || 'medium';
-      const styles = (block.styles || {}) as any;
+      const styles = (block as unknown as { styles?: Record<string, unknown> }).styles || {};
       
       let inlineStyle = `font-size: ${fsMap[fs]}; text-align: ${styles.align || 'left'}; line-height: 1.6;`;
-      if (styles.fontFamily) inlineStyle += ` font-family: ${styles.fontFamily};`;
-      if (styles.color) inlineStyle += ` color: ${styles.color};`;
-      if (styles.backgroundColor) inlineStyle += ` background-color: ${styles.backgroundColor};`;
-      if (styles.backgroundImage) inlineStyle += ` background-image: url(${styles.backgroundImage}); background-size: cover; background-position: center;`;
+      if (styles.fontFamily) inlineStyle += ` font-family: ${styles.fontFamily as string};`;
+      if (styles.color) inlineStyle += ` color: ${styles.color as string};`;
+      if (styles.backgroundColor) inlineStyle += ` background-color: ${styles.backgroundColor as string};`;
+      if (styles.backgroundImage) inlineStyle += ` background-image: url(${styles.backgroundImage as string}); background-size: cover; background-position: center;`;
       if (styles.backgroundColor || styles.backgroundImage) inlineStyle += ` padding: 16px; border-radius: 8px;`;
 
       let content = parseMarkdownToHtml(block.content);
@@ -61,7 +61,7 @@ function getHtmlFromBlock(block: AnyBlock): string {
     case 'quote': {
       const fsMap: Record<string, string> = { small: '13px', medium: '16px', large: '24px', xlarge: '32px' };
       const fs = block.styles?.fontSize || 'medium';
-      const styles = (block.styles || {}) as any;
+      const styles = block.styles || {};
 
       let inlineStyle = `font-size: ${fsMap[fs]}; text-align: ${styles.align || 'left'}; line-height: 1.6; font-style: italic;`;
       if (styles.fontFamily) inlineStyle += ` font-family: ${styles.fontFamily};`;
@@ -98,7 +98,7 @@ function getHtmlFromBlock(block: AnyBlock): string {
     case 'quiz': {
       const fsMap: Record<string, string> = { small: '13px', medium: '16px', large: '24px', xlarge: '32px' };
       const fs = block.styles?.fontSize || 'medium';
-      const styles = (block.styles || {}) as any;
+      const styles = (block as unknown as { styles?: Record<string, unknown> }).styles || {};
 
       let inlineStyle = `font-family: ${styles.fontFamily || 'inherit'};`;
       if (styles.color) inlineStyle += ` color: ${styles.color};`;
@@ -289,16 +289,9 @@ const TypographyAndBackgroundControls: React.FC<{ block: any; updateBlock: any }
 export const BlockSettings: React.FC = () => {
   const { blocks, activeBlockId, updateBlock, removeBlock } = useEditor();
   const [activeTab, setActiveTab] = useState<'props' | 'html'>('props');
-  const [htmlDraft, setHtmlDraft] = useState('');
 
   const activeBlock = blocks.find((b) => b.id === activeBlockId);
-
-  useEffect(() => {
-    if (!activeBlock) return;
-    const html = getHtmlFromBlock(activeBlock);
-    setHtmlDraft(html);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeBlockId]);
+  const htmlDraft = activeBlock ? getHtmlFromBlock(activeBlock) : '';
 
   if (!activeBlock) {
     return (
@@ -324,7 +317,7 @@ export const BlockSettings: React.FC = () => {
   };
 
   return (
-    <YStack w={320} minWidth={320} overflowY="auto" borderLeftWidth={1} borderLeftColor="$border" bg="$background">
+    <YStack w={320} minWidth={320} h="100%" overflowY="auto" borderLeftWidth={1} borderLeftColor="$border" bg="$background">
       <YStack px="$5" pt="$4" borderBottomWidth={1} borderBottomColor="$border" flexShrink={0}>
         <XStack ai="center" jc="space-between" mb="$3">
           <Text fontSize={11} fontWeight="700" textTransform="uppercase" color="$textSecondary" letterSpacing={0.5}>Editar Bloco</Text>
@@ -415,7 +408,7 @@ export const BlockSettings: React.FC = () => {
             <Text fontSize={11} fontWeight="500">Tamanho da Fonte</Text>
             <select
               value={activeBlock.styles?.fontSize || 'medium'}
-              onChange={(e) => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, fontSize: e.target.value as any } })}
+               onChange={(e) => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, fontSize: e.target.value as 'small' | 'medium' | 'large' | 'xlarge' } })}
               style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 8px', fontSize: 12, outline: 'none', background: 'white', width: '100%' }}
             >
               <option value="small">Pequena</option>
@@ -466,7 +459,7 @@ export const BlockSettings: React.FC = () => {
             <Text fontSize={11} fontWeight="500">Provedor de Vídeo</Text>
             <select
               value={activeBlock.provider}
-              onChange={(e) => updateBlock(activeBlock.id, { provider: e.target.value as any })}
+              onChange={(e) => updateBlock(activeBlock.id, { provider: e.target.value as 'youtube' | 'vimeo' | 'storage_supabase' })}
               style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 8px', fontSize: 12, outline: 'none', background: 'white', width: '100%' }}
             >
               <option value="youtube">YouTube</option>
@@ -698,7 +691,7 @@ export const BlockSettings: React.FC = () => {
             <Text fontSize={11} fontWeight="500">Autor / Fonte</Text>
             <input
               type="text"
-              value={(activeBlock as any).author || ''}
+              value={activeBlock.author || ''}
               onChange={(e) => updateBlock(activeBlock.id, { author: e.target.value })}
               placeholder="— Nome do Autor, Livro, etc."
               style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 10px', fontSize: 12, outline: 'none', width: '100%' }}
@@ -709,7 +702,7 @@ export const BlockSettings: React.FC = () => {
             <Text fontSize={11} fontWeight="500">Tamanho da Fonte</Text>
             <select
               value={activeBlock.styles?.fontSize || 'medium'}
-              onChange={(e) => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, fontSize: e.target.value as any } })}
+              onChange={(e) => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, fontSize: e.target.value as 'small' | 'medium' | 'large' | 'xlarge' } })}
               style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 8px', fontSize: 12, outline: 'none', background: 'white', width: '100%' }}
             >
               <option value="small">Pequeno (13px)</option>

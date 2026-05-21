@@ -14,7 +14,6 @@ export function BrandMark({ small = false }: { small?: boolean }) {
           br="$3"
           ai="center"
           jc="center"
-          bg="#5B8DEF"
           style={{
             background: 'linear-gradient(135deg, #5B8DEF, #6E5AE8)',
           }}
@@ -23,7 +22,7 @@ export function BrandMark({ small = false }: { small?: boolean }) {
         </XStack>
         {!small && (
           <Text fontFamily="$display" fontSize={18} fontWeight="$7" letterSpacing={-0.5}>
-            Mosaico<span style={{ color: '#3B82F6' }}>.</span>
+            Mosaico<Text color="$cwPrimary">.</Text>
           </Text>
         )}
       </XStack>

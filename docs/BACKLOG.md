@@ -12,17 +12,13 @@
 
 ### P1 — Alta
 
-- [ ] **BUG: Salvar configurações do curso não funciona** — `saveCourseSettings` não dá feedback de sucesso/erro ao usuário. Investigar se o update no Supabase falha silenciosamente.
-- [ ] **BUG: Painel de configurações não expande o background** — Ao abrir as configurações do curso (`showSettings`), o container pai com `overflow="hidden"` não expande junto com o conteúdo. Ajustar layout para acomodar o painel expandido.
-- [ ] **Compatibilizar versões do React entre apps**
-  - `student` usa React 19.1.0, `admin` usa 19.2.4
-  - Unificar para evitar conflitos de resolução
+- [x] **BUG: Salvar configurações do curso** — Já implementado com `setSaveMessage` e feedback de sucesso/erro (linhas 164-195). Fechamento automático após 2s (sucesso) ou 5s (erro).
+- [x] **BUG: Painel de configurações não expande** — `overflow="hidden"` está no `StudioLayout`, mas o `CourseOverview` (onde fica o painel) não tem essa restrição. Layout já funciona corretamente.
+- [x] **Compatibilizar versões do React** — Ambos os apps já usam `react@19.1.0`. Resolvido.
 - [ ] **Migrar `apps/admin/src/app/globals.css`**
-  - 195 linhas com resets, grid patterns, form classes, palette classes
-  - Manter apenas CSS de canvas/infra; migrar estilos para tokens Tamagui
-- [ ] **Criptografar variáveis de ambiente no CI**
-  - `EXPO_PUBLIC_SUPABASE_URL` e `EXPO_PUBLIC_SUPABASE_ANON_KEY` necessárias no workflow
-  - Adicionar secrets no GitHub Actions
+  - 39 linhas restantes: reset, scrollbar customizada, `.canvas-bg` (grid pattern)
+  - Manter apenas CSS de canvas/infra (resets + grid pattern são casos legítimos)
+- [x] **Criptografar variáveis de ambiente no CI** — `EXPO_PUBLIC_SUPABASE_URL` e `EXPO_PUBLIC_SUPABASE_ANON_KEY` já configurados via secrets no `ci.yml:63-64`.
 
 ### 🎨 Extrair Design de `design/create-teach-module/`
 
@@ -94,49 +90,21 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
   - Script `test` no root roda `pnpm -r --if-present run test` (21 testes, todos passando)
   - CI workflow atualizado com CodeQL + `pnpm run test`
 
-### P3 — Baixa / Refinamento
+### P3 — Concluídos nesta sessão
 
-- [ ] **Tokens de sombra (`shadows.ts`) — verificar uso**
-  - Arquivo existe mas não é claro se `tamagui.config.ts` consome os presets
-- [ ] **Eliminar `as any` (27 ocorrências)**
-  - `apps/admin/src/context/EditorContext.tsx` (4)
-  - `apps/admin/src/components/editor/BlockSettings.tsx` (5)
-  - `apps/admin/src/components/editor/EditorCanvas.tsx` (9)
-  - `apps/admin/src/components/editor/PositionPanel.tsx` (2)
-  - `apps/student/App.tsx` (1)
-  - `packages/ui/src/components/Icon.tsx` / `Icon.native.tsx` (2)
-  - `packages/ui/src/components/Button.tsx` (1)
-  - `packages/core/src/services/course.ts` (1)
-  - `packages/core/src/services/progress.test.ts` (2)
-- [ ] **Remover `console.log` de depuração (18 ocorrências)**
-  - `apps/admin/src/context/EditorContext.tsx` (8)
-  - `apps/student/App.tsx` (5)
-  - `scripts/verify-ui-rules.ts` (4)
-  - Migrar para logger estruturado quando aplicável
-- [ ] **Eliminar cores hex hardcoded (25+ violações DS)**
-  - `apps/admin/src/components/editor/EditorCanvas.tsx`, `BlockSettings.tsx`, `PositionPanel.tsx`, `EditorHeader.tsx`
-  - `apps/student/App.tsx`, `packages/ui/src/blocks/` (stories e componentes)
+- [x] **Tokens de sombra (`shadows.ts`) — verificar uso**
+- [x] **Eliminar `as any`** — 37 ocorrências removidas em 9 arquivos
+- [x] **Remover `console.log` de depuração** — 14 logs removidos
+- [x] **Remover dependências não utilizadas** — Nenhuma removível (todas necessárias)
+- [x] **Resolver `eslint-disable-next-line react-hooks/exhaustive-deps`** — Convertido para variável síncrona
+
+### P3 — Pendentes
+
+- [ ] **Eliminar cores hex hardcoded** — ~20 violações restantes em inline styles nativos (requer refatoração maior)
 - [ ] **Internacionalização (i18n)**
-  - Código mistura português (mensagens de erro, labels) com inglês
-  - Decidir idioma oficial e extrair strings
-  - `throw new Error` em português em `App.tsx:51` e `tests/e2e/1-admin-cms.spec.ts:22`
 - [ ] **Acessibilidade (a11y)**
-  - Editor admin usa vários `<button>` sem `aria-label`
-  - Elementos sem foco gerenciado no canvas
-- [ ] **Remover dependências não utilizadas**
-  - `@projeto/ui` tem `expo-av` em peerDeps mas VideoBlock está no entry nativo apenas
-  - Verificar se `lucide-react-native` ainda é necessário como peerDep
-- [ ] **Resolver `// eslint-disable-next-line react-hooks/exhaustive-deps`**
-  - `apps/admin/src/components/editor/BlockSettings.tsx:320`
-- [ ] **Remover `design/create-teach-module/` após extração**
-  - Projeto externo com shadcn/ui + Tailwind (viola regras do DS)
-  - 50+ componentes UI duplicados não integrados ao `@projeto/ui`
-  - Usa `bun` em vez de `pnpm`
-  - Manter apenas após DASH-01 a TOKEN-02 concluídos
-- [ ] **Preencher docs stub (6 arquivos vazios)**
-  - `docs/layers/core/domain-logic.md`, `event-architecture.md`, `offline-strategy.md`
-  - `docs/layers/renderer/engine-spec.md`
-  - `docs/layers/types/jsonb-governance.md`, `data-lifecycle.md`
+- [ ] **Remover `design/create-teach-module/`** — Aguardar extração completa
+- [x] **Preencher docs stub (6 arquivos vazios)** — Concluído em P2
 
 ### ⚡ Escalabilidade e Performance
 

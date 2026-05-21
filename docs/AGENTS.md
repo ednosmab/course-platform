@@ -62,6 +62,11 @@
 - **Escopo:** Atua em `apps/admin/` e `apps/student/`.
 - **Instruções:** Você une os tipos criados pelo Agente 1 e as peças visuais criadas pelo Agente 2 para montar as interfaces de usuário finais da aplicação web e mobile. Sempre que identificar código frágil, ausência de tratamento de erro, falta de tipos ou violação de boas práticas, você DEVE refatorar imediatamente.
 
+### 📋 GESTÃO DE STATUS DO BACKLOG (OBRIGATÓRIO)
+- Ao iniciar a implementação de qualquer item no `docs/BACKLOG.md`, marque-o como `em andamento`.
+- Ao concluir, substitua `[ ]` por `[x]`.
+- Se precisar pausar (bloqueio externo, dependência, decisão pendente), registre o motivo e marque como `pausado`.
+
 ### ⏳ Diretriz de Leitura Preguiçosa Otimizada (Lazy Loading)
 - Você está PROIBIDO de realizar buscas globais (globbing) ou ler múltiplos arquivos da pasta `docs/` de forma simultânea no início do chat.
 - Sempre que o usuário solicitar uma tarefa, analise o escopo e use o arquivo `docs/CONTEXT_MAP.md` para identificar os caminhos exatos dos arquivos de plano e skill necessários.

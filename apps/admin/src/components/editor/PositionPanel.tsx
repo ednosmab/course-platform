@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { XStack, YStack, Text, Button, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
-import { AnyBlock } from '@projeto/types';
+import { AnyBlock, BlockLayouts } from '@projeto/types';
 
 interface PositionPanelProps {
   onClose: () => void;
@@ -12,7 +12,7 @@ interface PositionPanelProps {
 const PAGE_W = 1100;
 
 function getLayout(block: AnyBlock) {
-  const l = (block as any).layouts?.desktop;
+  const l = block.layouts?.desktop;
   return {
     x: typeof l?.x === 'number' ? l.x : 40,
     y: typeof l?.y === 'number' ? l.y : 40,
@@ -37,7 +37,7 @@ function getBlockTitle(block: AnyBlock): string {
     case 'image': return 'Imagem' + (block.alt ? ` – ${block.alt}` : '');
     case 'video': return `Vídeo (${block.provider})`;
     case 'quiz': return (block.question || '').substring(0, 24) || 'Quiz';
-    case 'quote': return 'Citação' + ((block as any).author ? ` – ${(block as any).author}` : '');
+    case 'quote': return 'Citação' + (block.author ? ` – ${block.author}` : '');
     case 'html': return 'Código HTML';
     default: return 'Bloco';
   }
@@ -58,9 +58,7 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
 
   const normalizeAndApply = useCallback((orderedBlockIds: string[]) => {
     const newBlocks = blocks.map(b => {
-      const idx = orderedBlockIds.indexOf(b.id);
-      const anyBlock = b as any;
-      const currentLayouts = anyBlock.layouts || {};
+      const currentLayouts = (b.layouts || {}) as NonNullable<BlockLayouts>;
       const desktopL = currentLayouts.desktop || {};
       return { ...b, layouts: {
         ...currentLayouts,
@@ -140,9 +138,8 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
       case 'right': newX = Math.max(0, PAGE_W - l.w); break;
     }
 
-    const anyBlock = activeBlock as any;
-    const currentLayouts = anyBlock.layouts || {};
-    updateBlock(activeBlock.id, { layouts: { ...currentLayouts, desktop: { ...l, x: newX, y: newY } } } as any);
+    const currentLayouts = (activeBlock.layouts || {}) as NonNullable<BlockLayouts>;
+    updateBlock(activeBlock.id, { layouts: { ...currentLayouts, desktop: { ...l, x: newX, y: newY } } } as Partial<AnyBlock>);
   };
 
   const displayLayers = [...blocks].sort((a, b) => getLayout(b).zIndex - getLayout(a).zIndex);

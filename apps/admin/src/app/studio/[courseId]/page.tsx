@@ -45,7 +45,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
       setCourse(courseData);
       setEditTitle(courseData?.title || '');
       setEditDescription(courseData?.description || '');
-      setCertificateEnabled((courseData as any)?.certificate_enabled ?? false);
+      setCertificateEnabled(courseData?.certificate_enabled ?? false);
       setEditThumbnailPreview(courseData?.thumbnail_url || null);
 
       const { data: mods } = await supabase.from('modules').select('*').eq('course_id', courseId).order('order_index');
@@ -183,9 +183,14 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
       setCourse((prev: any) => ({ ...prev, title: editTitle.trim(), description: editDescription.trim(), certificate_enabled: certificateEnabled, thumbnail_url }));
       setEditThumbnail(null);
       setSaveMessage({ type: 'success', text: 'Configurações salvas com sucesso!' });
-      setShowSettings(false);
+      setTimeout(() => {
+        setSaveMessage(null);
+        setShowSettings(false);
+      }, 2000);
     } catch (err) {
-      setSaveMessage({ type: 'error', text: err instanceof Error ? err.message : 'Erro ao salvar configurações.' });
+      const msg = err instanceof Error ? err.message : 'Erro ao salvar configurações.';
+      setSaveMessage({ type: 'error', text: msg });
+      setTimeout(() => setSaveMessage(null), 5000);
     }
   };
 
@@ -336,10 +341,10 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
                         <Text fontSize={14}>{lesson.title}</Text>
                         <XStack
                           px={6} py={1} borderRadius={4}
-                          bg={(lesson as any).is_published ? 'rgba(34, 197, 94, 0.15)' : 'rgba(247, 248, 252, 0.7)'}
+                          bg={lesson.is_published ? 'rgba(34, 197, 94, 0.15)' : 'rgba(247, 248, 252, 0.7)'}
                         >
-                          <Text fontSize={10} fontWeight="600" color={(lesson as any).is_published ? '$successForeground' : '$textMuted'}>
-                            {(lesson as any).is_published ? 'Publicada' : 'Rascunho'}
+                          <Text fontSize={10} fontWeight="600" color={lesson.is_published ? '$successForeground' : '$textMuted'}>
+                            {lesson.is_published ? 'Publicada' : 'Rascunho'}
                           </Text>
                         </XStack>
                       </XStack>

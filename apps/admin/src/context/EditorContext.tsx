@@ -56,11 +56,11 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 
       // Calcula a posição Y padrão: empilha abaixo do último bloco
       const lastBlock = state.blocks[state.blocks.length - 1];
-      const lastL = (lastBlock as any)?.layouts?.desktop;
+      const lastL = lastBlock?.layouts?.desktop;
       const defaultY = lastBlock ? (lastL?.y ?? 40) + (lastL?.h ?? 120) + 20 : 40;
 
       const maxZ = state.blocks.reduce((max, b) => {
-        const z = (b as any)?.layouts?.desktop?.zIndex ?? 0;
+        const z = b.layouts?.desktop?.zIndex ?? 0;
         return z > max ? z : max;
       }, -1);
       const nextZ = maxZ + 1;
@@ -212,7 +212,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     case 'SET_VIEWPORT_MODE': {
       const newMode = action.payload.mode;
       const newBlocks = state.blocks.map((block) => {
-        const layouts = (block as any).layouts || {};
+        const layouts = block.layouts || {};
         if (layouts[newMode]) return block;
         const dl = layouts.desktop;
         if (dl) {
@@ -286,7 +286,6 @@ const getDraftId = (lessonId: string) => {
   useEffect(() => {
     const initDatabase = async () => {
       try {
-        console.log('Verificando rascunhos no Supabase...');
         const draftId = getDraftId(activeLessonId);
         const { data: draftLesson, error: draftErr } = await supabase
           .from('lessons')
@@ -297,12 +296,10 @@ const getDraftId = (lessonId: string) => {
         if (draftErr) throw draftErr;
 
         if (draftLesson) {
-          console.log('Rascunho encontrado! Carregando blocos...', draftLesson.blocks);
           setBlocks(draftLesson.blocks || []);
           setLessonMeta({ module_id: draftLesson.module_id, title: draftLesson.title, order_index: draftLesson.order_index });
         } else {
           // Se não há rascunho, tentamos carregar a publicada e clonar
-          console.log('Rascunho não encontrado. Buscando versão publicada...');
           const { data: publishedLesson, error: pubErr } = await supabase
             .from('lessons')
             .select('*')
@@ -312,7 +309,6 @@ const getDraftId = (lessonId: string) => {
           if (pubErr) throw pubErr;
 
           if (publishedLesson) {
-            console.log('Versão publicada encontrada! Criando rascunho de trabalho...');
             await supabase.from('lessons').upsert({
               id: draftId,
               module_id: publishedLesson.module_id,
@@ -324,11 +320,9 @@ const getDraftId = (lessonId: string) => {
             setBlocks(publishedLesson.blocks || []);
             setLessonMeta({ module_id: publishedLesson.module_id, title: publishedLesson.title, order_index: publishedLesson.order_index });
           } else {
-            console.log('Aula não encontrada. Iniciando com blocos vazios...');
             setBlocks([]);
             // Auto-seed apenas para o lessonId padrão de desenvolvimento
             if (activeLessonId === '11111111-1111-1111-1111-111111111111') {
-              console.log('Auto-seed para lessonId padrão...');
               const pathId = '88888888-8888-8888-8888-888888888888';
               await supabase.from('paths').upsert({ id: pathId, title: 'Trilha Full Stack Developer', description: 'Aprenda do zero ao deploy com arquiteturas resilientes e modernas.', is_published: true });
               const courseId = '99999999-9999-9999-9999-999999999999';
@@ -345,7 +339,6 @@ const getDraftId = (lessonId: string) => {
               await supabase.from('lessons').upsert({ id: draftId, module_id: moduleId, title: '1. Introdução à Plataforma Híbrida', order_index: 1, is_published: false, blocks: defaultBlocks });
               setBlocks(defaultBlocks);
               setLessonMeta({ module_id: moduleId, title: '1. Introdução à Plataforma Híbrida', order_index: 1 });
-              console.log('Auto-seed realizado com sucesso!');
             } else {
               setLessonMeta({ module_id: '', title: 'Nova aula', order_index: 1 });
             }
@@ -383,7 +376,6 @@ const getDraftId = (lessonId: string) => {
 
     const timer = setTimeout(async () => {
       try {
-        console.log('Salvando rascunho no Supabase...', state.blocks);
         const draftId = getDraftId(activeLessonId);
         const meta = lessonMeta || { module_id: '00000000-0000-0000-0000-000000000000', title: 'Sem título', order_index: 1 };
         const { error: saveErr } = await supabase
@@ -414,7 +406,6 @@ const getDraftId = (lessonId: string) => {
   // 3. Função oficial de publicação (Copia o rascunho para a aula publicada de produção)
   const publishLesson = async () => {
     setSaveStatus('saving');
-    console.log('Publicando rascunho na versão ativa...', state.blocks);
     const meta = lessonMeta || { module_id: '00000000-0000-0000-0000-000000000000', title: 'Sem título', order_index: 1 };
 
     const { data: mod, error: modErr } = await supabase

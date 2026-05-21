@@ -96,7 +96,7 @@ interface MeasureGuide { pos: number; start: number; end: number; value: number;
 
 function getLayout(block: AnyBlock, viewport?: 'desktop' | 'tablet' | 'mobile'): Layout {
   const vp = viewport || 'desktop';
-  const layouts = (block as any).layouts;
+  const layouts = block.layouts;
   const l = layouts?.[vp];
   return {
     x: typeof l?.x === 'number' ? l.x : 40,
@@ -188,12 +188,12 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
   isInteracting?: boolean;
 }) {
   if (block.type === 'text') {
-    const styles = (block.styles || {}) as any;
-    const fs = styles.fontSize || 'medium';
+    const styles = block.styles as Record<string, unknown> || {};
+    const fs = styles.fontSize as string || 'medium';
     const fontSize = isMobile ? FONT_MOBILE[fs] : FONT_DESKTOP[fs];
 
     const style: React.CSSProperties = {
-      fontSize, fontFamily: styles.fontFamily || 'inherit',
+      fontSize, fontFamily: styles.fontFamily as string || 'inherit',
       color: styles.color || 'var(--text-primary)',
       backgroundColor: styles.backgroundColor || 'transparent',
       backgroundImage: styles.backgroundImage ? `url(${styles.backgroundImage})` : 'none',
@@ -243,7 +243,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     );
   }
   if (block.type === 'quote') {
-    const styles = (block.styles || {}) as any;
+    const styles = (block as unknown as { styles?: Record<string, unknown> }).styles || {};
     const fs = styles.fontSize || 'medium';
     const fontSize = isMobile ? FONT_MOBILE[fs] : FONT_DESKTOP[fs];
 
@@ -289,7 +289,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     );
   }
   if (block.type === 'quiz') {
-    const styles = (block.styles || {}) as any;
+    const styles = (block as unknown as { styles?: Record<string, unknown> }).styles || {};
     const fs = styles.fontSize || 'medium';
     const fontSize = isMobile ? FONT_MOBILE[fs] : FONT_DESKTOP[fs];
 
@@ -354,7 +354,7 @@ function useViewportInteraction(scale: number) {
       mode: 'move', blockId: block.id,
       startMouseX: e.clientX, startMouseY: e.clientY,
       startLayout: getLayout(block, viewportMode),
-      currentLayouts: (block as any).layouts || {},
+      currentLayouts: block.layouts || {},
     };
   }, [setActiveBlockId, viewportMode]);
 
@@ -366,7 +366,7 @@ function useViewportInteraction(scale: number) {
       mode: 'resize', blockId: block.id, handle,
       startMouseX: e.clientX, startMouseY: e.clientY,
       startLayout: getLayout(block, viewportMode),
-      currentLayouts: (block as any).layouts || {},
+      currentLayouts: block.layouts || {},
     };
   }, [viewportMode]);
 
@@ -392,14 +392,14 @@ function useViewportInteraction(scale: number) {
 
     const buildUpdate = (layout: Layout) => {
       const { currentLayouts } = interactionRef.current!;
-      return { layouts: { ...currentLayouts, [viewportMode]: layout } };
+      return { layouts: { ...currentLayouts, [viewportMode]: layout } } as Partial<AnyBlock>;
     };
 
     const onMouseMove = (e: MouseEvent) => {
       if (!interactionRef.current) return;
       const newLayout = applyLayout(e);
       if (newLayout) {
-        updateBlockSilent(interactionRef.current.blockId, buildUpdate(newLayout) as any);
+        updateBlockSilent(interactionRef.current.blockId, buildUpdate(newLayout));
         setGuides(computeBlockGuides(newLayout, interactionRef.current.blockId, blocks, viewportMode));
       }
     };
@@ -407,7 +407,7 @@ function useViewportInteraction(scale: number) {
     const onMouseUp = (e: MouseEvent) => {
       if (!interactionRef.current) return;
       const newLayout = applyLayout(e);
-      if (newLayout) updateBlock(interactionRef.current.blockId, buildUpdate(newLayout) as any);
+      if (newLayout) updateBlock(interactionRef.current.blockId, buildUpdate(newLayout));
       interactionRef.current = null;
       setIsInteracting(false);
       setGuides({ v: [], h: [], m: [] });
@@ -638,7 +638,7 @@ export const EditorCanvas: React.FC = () => {
   const handleImageDrop = useCallback((blockId: string, file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      if (e.target?.result) updateBlock(blockId, { url: e.target.result as string } as any);
+      if (e.target?.result) updateBlock(blockId, { url: e.target.result as string } as Partial<AnyBlock>);
     };
     reader.readAsDataURL(file);
   }, [updateBlock]);
@@ -653,7 +653,7 @@ export const EditorCanvas: React.FC = () => {
       mode: 'move', blockId: block.id,
       startMouseX: e.clientX, startMouseY: e.clientY,
       startLayout: getLayout(block, viewportMode),
-      currentLayouts: (block as any).layouts || {},
+      currentLayouts: block.layouts || {},
     };
   }, [setActiveBlockId, viewportMode]);
 
@@ -665,7 +665,7 @@ export const EditorCanvas: React.FC = () => {
       mode: 'resize', blockId: block.id, handle,
       startMouseX: e.clientX, startMouseY: e.clientY,
       startLayout: getLayout(block, viewportMode),
-      currentLayouts: (block as any).layouts || {},
+      currentLayouts: block.layouts || {},
     };
   }, [viewportMode]);
 
@@ -691,14 +691,14 @@ export const EditorCanvas: React.FC = () => {
 
     const buildUpdate = (layout: Layout) => {
       const { currentLayouts } = interactionRef.current!;
-      return { layouts: { ...currentLayouts, [viewportMode]: layout } };
+      return { layouts: { ...currentLayouts, [viewportMode]: layout } } as Partial<AnyBlock>;
     };
 
     const onMouseMove = (e: MouseEvent) => {
       if (!interactionRef.current) return;
       const layout = applyLayout(e);
       if (layout) {
-        updateBlockSilent(interactionRef.current.blockId, buildUpdate(layout) as any);
+        updateBlockSilent(interactionRef.current.blockId, buildUpdate(layout));
         setGuides(computeBlockGuides(layout, interactionRef.current.blockId, blocks, viewportMode));
       }
     };
@@ -706,7 +706,7 @@ export const EditorCanvas: React.FC = () => {
     const onMouseUp = (e: MouseEvent) => {
       if (!interactionRef.current) return;
       const layout = applyLayout(e);
-      if (layout) updateBlock(interactionRef.current.blockId, buildUpdate(layout) as any);
+      if (layout) updateBlock(interactionRef.current.blockId, buildUpdate(layout));
       interactionRef.current = null;
       setIsInteracting(false);
       setGuides({ v: [], h: [], m: [] });

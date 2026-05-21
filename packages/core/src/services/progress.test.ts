@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ProgressService } from './progress.js';
 import { supabase } from '../supabase.js';
+type FromReturn = ReturnType<typeof supabase.from>;
 
 // Mock do módulo supabase
 vi.mock('../supabase.js', () => {
@@ -32,7 +33,7 @@ describe('ProgressService', () => {
       const mockSingle = vi.fn().mockResolvedValue({ data: mockResult, error: null });
       const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
       const mockUpsert = vi.fn().mockReturnValue({ select: mockSelect });
-      vi.mocked(supabase.from).mockReturnValue({ upsert: mockUpsert } as any);
+      vi.mocked(supabase.from).mockReturnValue({ upsert: mockUpsert } as unknown as FromReturn);
 
       const result = await ProgressService.saveProgressImmediate(
         '22222222-2222-2222-2222-222222222222',
@@ -61,7 +62,7 @@ describe('ProgressService', () => {
       const mockSingle = vi.fn().mockResolvedValue({ data: mockResult, error: null });
       const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
       const mockUpsert = vi.fn().mockReturnValue({ select: mockSelect });
-      vi.mocked(supabase.from).mockReturnValue({ upsert: mockUpsert } as any);
+      vi.mocked(supabase.from).mockReturnValue({ upsert: mockUpsert } as unknown as FromReturn);
 
       const result = await ProgressService.saveProgressImmediate(
         '22222222-2222-2222-2222-222222222222',

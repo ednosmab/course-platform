@@ -23,7 +23,7 @@ interface Layout {
 }
 
 const getLayout = (block: AnyBlock): Layout => {
-  return (block as any).layouts?.desktop || { x: 0, y: 0, w: 700, h: 150, zIndex: 0 };
+  return block.layouts?.desktop || { x: 0, y: 0, w: 700, h: 150, zIndex: 0 };
 };
 
 function groupBlocksByRow(blocks: AnyBlock[]): AnyBlock[][] {

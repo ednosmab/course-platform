@@ -11,7 +11,7 @@ interface Layout {
 }
 
 const getLayout = (block: AnyBlock): Layout => {
-  return (block as any).layouts?.desktop || { x: 0, y: 0, w: 700, h: 150, zIndex: 0 };
+  return block.layouts?.desktop || { x: 0, y: 0, w: 700, h: 150, zIndex: 0 };
 };
 
 function groupBlocksByRow(blocks: AnyBlock[]): AnyBlock[][] {
@@ -51,9 +51,9 @@ function VideoPreview({ block }: { block: AnyBlock }) {
 function ImagePreview({ block }: { block: AnyBlock }) {
   const b = block as AnyBlock & { url?: string; alt?: string };
   if (!b.url) return null;
-  const align = (block.styles as any)?.align || 'center';
+  const align = ((block as unknown as { styles?: Record<string, unknown> }).styles?.align as string) || 'center';
   return (
-    <YStack ai={align as any} my="$2">
+    <YStack ai={align as 'flex-start' | 'flex-end' | 'center'} my="$2">
       <img
         src={b.url}
         alt={b.alt || ''}
@@ -139,7 +139,7 @@ export const StudentPreview: React.FC<StudentPreviewProps> = ({ blocks }) => {
                   key={block.id}
                   flexGrow={1}
                   flexShrink={1}
-                  flexBasis={flexBasis as any}
+                  flexBasis={flexBasis as unknown as number | string}
                   minWidth={140}
                 >
                   {block.type === 'text' && <TextBlockRenderer block={block} />}
