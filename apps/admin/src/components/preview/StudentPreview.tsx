@@ -139,10 +139,16 @@ export const StudentPreview: React.FC<StudentPreviewProps> = ({ blocks }) => {
                   key={block.id}
                   flexGrow={1}
                   flexShrink={1}
-                  flexBasis={flexBasis as unknown as number | string}
+                  flexBasis={flexBasis as any}
                   minWidth={140}
                 >
                   {block.type === 'text' && <TextBlockRenderer block={block} />}
+                  {block.type === 'heading' && (() => {
+                    const h = block as any;
+                    const tag = h.level === 1 ? 'h1' : h.level === 2 ? 'h2' : 'h3';
+                    return React.createElement(tag, { style: { margin: '12px 0', fontWeight: 700, lineHeight: 1.3 } }, h.content);
+                  })()}
+                  {block.type === 'divider' && <div style={{ width: '100%', height: 1, borderTop: `${(block as any).styles?.thickness || 1}px ${(block as any).styles?.style || 'solid'} ${(block as any).styles?.color || '#e2e8f0'}`, margin: '16px 0' }} />}
                   {block.type === 'video' && <VideoPreview block={block} />}
                   {block.type === 'quiz' && <QuizPreview block={block} />}
                   {block.type === 'quote' && <QuoteBlockRenderer block={block} />}

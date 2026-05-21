@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { XStack, YStack, Text, Button, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
-import { AnyBlock, BlockLayouts } from '@projeto/types';
+import { AnyBlock, BlockLayouts, ViewportLayout } from '@projeto/types';
 
 interface PositionPanelProps {
   onClose: () => void;
@@ -59,10 +59,11 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
   const normalizeAndApply = useCallback((orderedBlockIds: string[]) => {
     const newBlocks = blocks.map(b => {
       const currentLayouts = (b.layouts || {}) as NonNullable<BlockLayouts>;
-      const desktopL = currentLayouts.desktop || {};
+      const desktopL = currentLayouts.desktop || {} as ViewportLayout;
+      const pos = orderedBlockIds.indexOf(b.id);
       return { ...b, layouts: {
         ...currentLayouts,
-        desktop: { ...desktopL, zIndex: idx >= 0 ? idx : (desktopL.zIndex ?? 0) },
+        desktop: { ...desktopL, zIndex: pos >= 0 ? pos : (desktopL.zIndex ?? 0) },
       } };
     });
     reorderBlocks([...newBlocks] as AnyBlock[]);

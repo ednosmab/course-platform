@@ -14,7 +14,7 @@ interface EditorState {
 }
 
 type EditorAction =
-  | { type: 'ADD_BLOCK'; payload: { type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' } }
+  | { type: 'ADD_BLOCK'; payload: { type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' | 'heading' | 'divider' } }
   | { type: 'REMOVE_BLOCK'; payload: { id: string } }
   | { type: 'UPDATE_BLOCK'; payload: { id: string; updates: Partial<AnyBlock> } }
   | { type: 'UPDATE_BLOCK_SILENT'; payload: { id: string; updates: Partial<AnyBlock> } }
@@ -105,6 +105,22 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           type: 'html',
           htmlContent: '<div style="padding: 20px; background: #f0f0f0;">\n  <h2>Código Customizado</h2>\n</div>',
           layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 120, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 120, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 120, zIndex: nextZ } },
+        };
+      } else if (action.payload.type === 'heading') {
+        newBlock = {
+          id,
+          type: 'heading',
+          content: 'Título',
+          level: 2,
+          styles: { align: 'left' },
+          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 60, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 60, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 60, zIndex: nextZ } },
+        };
+      } else if (action.payload.type === 'divider') {
+        newBlock = {
+          id,
+          type: 'divider',
+          styles: { thickness: 1, style: 'solid' },
+          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 40, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 40, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 40, zIndex: nextZ } },
         };
       } else {
         newBlock = {
@@ -229,7 +245,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 }
 
 interface EditorContextType extends EditorState {
-  addBlock: (type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote') => void;
+  addBlock: (type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' | 'heading' | 'divider') => void;
   removeBlock: (id: string) => void;
   updateBlock: (id: string, updates: Partial<AnyBlock>) => void;
   updateBlockSilent: (id: string, updates: Partial<AnyBlock>) => void;
@@ -262,7 +278,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: st
   const [courseTitle, setCourseTitle] = useState('');
   const [moduleTitle, setModuleTitle] = useState('');
 
-  const addBlock = (type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote') => dispatch({ type: 'ADD_BLOCK', payload: { type } });
+  const addBlock = (type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' | 'heading' | 'divider') => dispatch({ type: 'ADD_BLOCK', payload: { type } });
   const removeBlock = (id: string) => dispatch({ type: 'REMOVE_BLOCK', payload: { id } });
   const updateBlock = (id: string, updates: Partial<AnyBlock>) => dispatch({ type: 'UPDATE_BLOCK', payload: { id, updates } });
   const moveBlock = (fromIndex: number, toIndex: number) => dispatch({ type: 'MOVE_BLOCK', payload: { fromIndex, toIndex } });
