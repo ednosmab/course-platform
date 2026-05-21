@@ -1,23 +1,7 @@
-import React, { useMemo } from 'react';
-import { YStack, Text, TextBlockRenderer, QuoteBlockRenderer } from '@projeto/ui';
-import { VideoBlockRenderer, QuizBlockRenderer, ImageBlockRenderer, HtmlBlockRenderer } from '@projeto/ui/native';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
+import { YStack } from '@projeto/ui';
 import { AnyBlock } from '@projeto/types';
-
-const PAGE_W = 860;
-
-interface Layout {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  zIndex: number;
-}
-
-const getLayout = (block: AnyBlock): Layout => {
-  return block.layouts?.desktop || { x: 40, y: 40, w: 700, h: 150, zIndex: 0 };
-};
-
-const PAGE_H_PADDING = 80;
+import { blockToHtml, getBlockLayout, calcPageHeight, PAGE_W } from '@projeto/core';
 
 interface BlockRendererProps {
   blocks: AnyBlock[];
@@ -25,73 +9,103 @@ interface BlockRendererProps {
   savedPosition?: number;
 }
 
+function HtmlBlockFrame({ html }: { html: string }) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [height, setHeight] = useState(200);
+
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) return;
+    doc.open();
+    doc.write(html);
+    doc.close();
+    const checkHeight = () => {
+      const body = doc.body;
+      if (body) {
+        const h = Math.max(body.scrollHeight, 200);
+        setHeight(h);
+      }
+    };
+    checkHeight();
+    const timer = setTimeout(checkHeight, 500);
+    return () => clearTimeout(timer);
+  }, [html]);
+
+  return (
+    <iframe
+      ref={iframeRef}
+      style={{
+        width: '100%',
+        height,
+        border: 'none',
+        borderRadius: 8,
+        overflow: 'auto',
+      }}
+      sandbox="allow-scripts allow-same-origin"
+      title="html-block"
+    />
+  );
+}
+
 export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks, onVideoProgress, savedPosition = 0 }) => {
-  const pageH = useMemo(() => {
-    if (!blocks.length) return 600;
-    const maxBottom = Math.max(...blocks.map(b => {
-      const l = getLayout(b);
-      return l.y + l.h;
-    }));
-    return maxBottom + PAGE_H_PADDING;
-  }, [blocks]);
+  const pageH = useMemo(() => calcPageHeight(blocks), [blocks]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   if (!blocks.length) return null;
 
   return (
     <YStack width="100%" ai="center" overflow="hidden">
-      <YStack
-        position="relative"
-        width={PAGE_W}
-        style={{ maxWidth: '100%' }}
-        height={pageH}
+      <div
+        ref={containerRef}
+        style={{
+          position: 'relative',
+          width: PAGE_W,
+          maxWidth: '100%',
+          height: pageH,
+          overflow: 'visible',
+          margin: '0 auto',
+        }}
       >
         {blocks.map(block => {
-          const l = getLayout(block);
+          const l = getBlockLayout(block);
+
+          if (block.type === 'html') {
+            return (
+              <div
+                key={block.id}
+                style={{
+                  position: 'absolute',
+                  left: l.x,
+                  top: l.y,
+                  width: l.w,
+                  height: l.h,
+                  zIndex: l.zIndex + 1,
+                }}
+              >
+                <HtmlBlockFrame html={(block as any).htmlContent || ''} />
+              </div>
+            );
+          }
+
           return (
-            <YStack
+            <div
               key={block.id}
-              position="absolute"
               style={{
+                position: 'absolute',
                 left: l.x,
                 top: l.y,
                 width: l.w,
                 height: l.h,
                 zIndex: l.zIndex + 1,
+                overflow: 'hidden',
               }}
-            >
-              {block.type === 'text' && <TextBlockRenderer block={block} />}
-              {block.type === 'video' && (
-                <VideoBlockRenderer
-                  block={block}
-                  onVideoProgress={onVideoProgress}
-                  savedPosition={savedPosition}
-                />
-              )}
-              {block.type === 'quiz' && <QuizBlockRenderer block={block} />}
-              {block.type === 'quote' && <QuoteBlockRenderer block={block} />}
-              {block.type === 'image' && <ImageBlockRenderer block={block} />}
-              {block.type === 'html' && <HtmlBlockRenderer block={block} />}
-              {block.type === 'heading' && (() => {
-                const h = block as any;
-                const size = h.level === 1 ? 28 : h.level === 2 ? 22 : 18;
-                return (
-                  <Text fontSize={size} fontWeight="700" lineHeight={size * 1.3} my="$3" color={h.styles?.color || '$text'} fontFamily={h.styles?.fontFamily || '$display'} textAlign={h.styles?.align || 'left'}>
-                    {h.content}
-                  </Text>
-                );
-              })()}
-              {block.type === 'divider' && (
-                <YStack
-                  my="$4"
-                  borderBottomWidth={(block as any).styles?.thickness || 1}
-                  borderColor={(block as any).styles?.color || '$border'}
-                  borderStyle={(block as any).styles?.style || 'solid'}
-                />
-              )}
-            </YStack>
+              dangerouslySetInnerHTML={{ __html: blockToHtml(block) }}
+            />
           );
         })}
-      </YStack>
+      </div>
     </YStack>
   );
 };
