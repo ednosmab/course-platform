@@ -265,14 +265,16 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
 
             {activeBlock && (
               <>
-                <YStack>
-                  <XStack flexWrap="wrap" gap="$2">
+                <YStack gap="$2">
+                  <XStack gap="$2">
                     <Button variant="ghost" onPress={handleBringForward} flex={1}>
                       <Icon name="MoveUp" size={14} /> Para frente
                     </Button>
                     <Button variant="ghost" onPress={handleSendBackward} flex={1}>
                       <Icon name="MoveDown" size={14} /> Para trás
                     </Button>
+                  </XStack>
+                  <XStack gap="$2">
                     <Button variant="ghost" onPress={handleBringToFront} flex={1}>
                       <Icon name="ArrowUpToLine" size={14} /> Para o topo
                     </Button>
