@@ -4,8 +4,8 @@ import ptBR from './locales/pt-BR.json';
 import en from './locales/en.json';
 
 export const resources = {
-  'pt-BR': { translation: ptBR },
-  en: { translation: en },
+  'pt-BR': ptBR,
+  en: en,
 } as const;
 
 i18n.use(initReactI18next).init({

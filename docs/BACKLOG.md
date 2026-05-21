@@ -35,8 +35,6 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
 - [ ] ~~**EDIT-01 — Layout 3 colunas do Estúdio**~~ Eliminado. A paleta à esquerda e o painel de propriedades à direita (contextual, só aparece com bloco selecionado) já funcionam como desejado. EDIT-01 forçaria painel direito fixo, o que gera poluição visual — decisão do usuário.
 - [ ] **EDIT-01 (ex-02) — Novos tipos de bloco**
   - `heading` (H1-H3 editável inline)
-  - `checklist` (lista numerada com checkbox visual)
-  - `code` (bloco monoespaçado com syntax highlight)
   - `divider` (linha horizontal separadora)
   - Adicionar schemas Zod em `packages/types/` e componentes em `packages/ui/src/blocks/`
 - [ ] **EDIT-02 (ex-03) — Inline editing via `contentEditable`**

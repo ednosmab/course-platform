@@ -188,10 +188,10 @@ console.log(JSON.stringify({
 ## 8. Plano de Execução (Tasks)
 
 ### Fase 1 — Fundação (Imediata)
-- [ ] **SCL-01:** Configurar índices PostgreSQL para consultas frequentes
-- [ ] **SCL-02:** Implementar rate limiting com Redis
-- [ ] **SCL-03:** Adicionar cache headers em todas as rotas GET públicas
-- [ ] **SCL-04:** Configurar ISR para páginas de catálogo
+- [x] **SCL-01:** Configurar índices PostgreSQL para consultas frequentes
+- [ ] **SCL-02:** Implementar rate limiting com Redis ⏭️ *Pendente — cache em memória para rate limiting e dados de acesso frequente (catálogo, sessões). Sem ele não temos escalabilidade, mas pro MVP (~35%) não é necessário.*
+- [ ] **SCL-03:** Adicionar cache headers em todas as rotas GET públicas ⏭️ *Adiado — sem SSR/API pública no momento*
+- [ ] **SCL-04:** Configurar ISR para páginas de catálogo ⏭️ *Adiado — student é Expo, admin é CSR*
 
 ### Fase 2 — Otimização de Conexões (3k usuários)
 - [ ] **SCL-05:** Implementar connection pooling (PgBouncer)

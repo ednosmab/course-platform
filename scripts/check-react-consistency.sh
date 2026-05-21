@@ -17,11 +17,6 @@ check_pinned() {
   dom_ver=$(node -e "const p=require('${file}');console.log(p.dependencies?.['react-dom']||p.devDependencies?.['react-dom']||'')" 2>/dev/null || true)
   local expected_r="$STUDENT_REACT"
   local expected_d="$STUDENT_DOM"
-  # Admin uses Next.js 16 which requires react 19.2.4
-  if [ "$pkg" = "admin" ]; then
-    expected_r="19.2.4"
-    expected_d="19.2.4"
-  fi
   if [ -n "$react_ver" ] && [ "$react_ver" != "$expected_r" ]; then
     echo "❌ ${pkg}: react@${react_ver} (esperado ${expected_r})"
     HAS_ERROR=1
@@ -42,9 +37,9 @@ check_pinned "ui" "${ROOT}/packages/ui/package.json"
 
 echo ""
 if [ "$HAS_ERROR" -eq 0 ]; then
-  echo "✅ Todas as dependências React estão consistentes (student: 19.1.0, admin: 19.2.4)"
+  echo "✅ Todas as dependências React estão consistentes (react@${STUDENT_REACT})"
 else
   echo "⚠️  Inconsistências encontradas."
-  echo "   Student/UI devem usar react@${STUDENT_REACT}, Admin deve usar react@19.2.4"
+  echo "   Todos os pacotes devem usar react@${STUDENT_REACT} e react-dom@${STUDENT_DOM}"
   exit 1
 fi

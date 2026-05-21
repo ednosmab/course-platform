@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import { YStack, XStack, Text, Button, Icon, Card, Spinner } from '@projeto/ui';
-import { supabase } from '@projeto/core';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { createSupabaseBrowserClient } from '../../lib/supabase-client';
 import { BrandMark } from '../../components/brand-mark';
 
 function LoginForm() {
@@ -16,6 +16,7 @@ function LoginForm() {
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +26,25 @@ function LoginForm() {
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
       if (signInError) {
         setError(signInError.message);
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setError('Usuário não encontrado.');
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      const role = profile?.role;
+      if (role === 'student') {
+        const studentUrl = process.env.NEXT_PUBLIC_STUDENT_APP_URL || 'http://localhost:8081';
+        window.location.href = studentUrl;
       } else {
         router.push(redirectTo);
       }

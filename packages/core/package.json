@@ -14,9 +14,12 @@
   "dependencies": {
     "@projeto/types": "workspace:*",
     "@supabase/supabase-js": "^2.43.4",
-    "i18next": "^26.2.0",
-    "react-i18next": "^17.0.8",
     "zod": "^3.23.8"
+  },
+  "peerDependencies": {
+    "i18next": "^26.2.0",
+    "react": "^19.0.0",
+    "react-i18next": "^17.0.8"
   },
   "devDependencies": {
     "@types/i18next": "^13.0.0",

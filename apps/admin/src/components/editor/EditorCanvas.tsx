@@ -188,7 +188,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
   isInteracting?: boolean;
 }) {
   if (block.type === 'text') {
-    const styles = block.styles as Record<string, unknown> || {};
+    const styles = (block.styles || {}) as Record<string, string>;
     const fs = styles.fontSize as string || 'medium';
     const fontSize = isMobile ? FONT_MOBILE[fs] : FONT_DESKTOP[fs];
 
@@ -242,24 +242,48 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
       </YStack>
     );
   }
+  if (block.type === 'heading') {
+    const level = ((block as any).level as 1 | 2 | 3) || 2;
+    const styles = (block as any).styles || {};
+    const tag = level === 1 ? 'h1' : level === 2 ? 'h2' : 'h3';
+    const fontSize = { 1: '32px', 2: '24px', 3: '20px' }[level];
+    return React.createElement(tag, {
+      style: {
+        fontSize, fontWeight: 700, lineHeight: 1.3, margin: 0, padding: 0,
+        textAlign: styles.align || 'left', color: styles.color || 'inherit',
+        fontFamily: styles.fontFamily || 'inherit', width: '100%', height: '100%',
+      },
+    }, block.content);
+  }
+  if (block.type === 'divider') {
+    const s = (block as any).styles || {};
+    const thickness = s.thickness ?? 1;
+    const borderStyle = s.style || 'solid';
+    const color = s.color || '#e2e8f0';
+    return (
+      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <hr style={{ width: '100%', border: 'none', borderTop: `${thickness}px ${borderStyle} ${color}`, margin: 0 }} />
+      </div>
+    );
+  }
   if (block.type === 'quote') {
-    const styles = (block as unknown as { styles?: Record<string, unknown> }).styles || {};
+    const styles = ((block as any).styles || {}) as Record<string, string>;
     const fs = styles.fontSize || 'medium';
     const fontSize = isMobile ? FONT_MOBILE[fs] : FONT_DESKTOP[fs];
 
-    const cardStyle: React.CSSProperties = {
+    const cardStyle = {
       backgroundColor: styles.backgroundColor || 'transparent',
       backgroundImage: styles.backgroundImage ? `url(${styles.backgroundImage})` : 'none',
-      backgroundSize: 'cover', backgroundPosition: 'center',
+      backgroundSize: 'cover' as const, backgroundPosition: 'center' as const,
       borderRadius: styles.backgroundColor || styles.backgroundImage ? '8px' : '0',
       padding: styles.backgroundColor || styles.backgroundImage ? '16px' : '0',
       borderLeft: styles.backgroundColor || styles.backgroundImage ? 'none' : '4px solid var(--accent-blue)',
       paddingLeft: styles.backgroundColor || styles.backgroundImage ? '16px' : '16px',
-      height: '100%', overflow: 'auto',
+      height: '100%', overflow: 'auto' as const,
       color: styles.color || 'var(--text-secondary)',
       fontFamily: styles.fontFamily || 'inherit',
-      textAlign: styles.align || 'left',
-    };
+      textAlign: (styles.align || 'left') as React.CSSProperties['textAlign'],
+    } satisfies React.CSSProperties;
 
     let textElement: React.ReactNode = <>{parseSimpleMarkdown(block.content)}</>;
     if (styles.bold) textElement = <strong>{textElement}</strong>;
@@ -289,7 +313,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     );
   }
   if (block.type === 'quiz') {
-    const styles = (block as unknown as { styles?: Record<string, unknown> }).styles || {};
+    const styles = ((block as any).styles || {}) as Record<string, string>;
     const fs = styles.fontSize || 'medium';
     const fontSize = isMobile ? FONT_MOBILE[fs] : FONT_DESKTOP[fs];
 
@@ -769,7 +793,7 @@ export const EditorCanvas: React.FC = () => {
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setActiveBlockId(block.id); } }}
               tabIndex={0}
               role="button"
-              aria-label={`Bloco ${block.type}${block.content ? `: ${block.content.substring(0, 40)}` : ''}${isActive ? ' (selecionado)' : ''}`}
+              aria-label={`Bloco ${block.type}${(block as any).content ? `: ${(block as any).content.substring(0, 40)}` : ''}${isActive ? ' (selecionado)' : ''}`}
               style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none', isolation: 'isolate', outline: isActive ? 'none' : undefined }}
             >
               <div style={{

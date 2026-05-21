@@ -61,10 +61,12 @@ export const BlockPalette: React.FC = () => {
         gap={collapsed ? '$2' : '$2'}
       >
         <BlockBtn icon="Type" label="Texto" collapsed={collapsed} onClick={() => addBlock('text')} />
+        <BlockBtn icon="Heading" label="Título" collapsed={collapsed} onClick={() => addBlock('heading')} />
         <BlockBtn icon="Image" label="Imagem" collapsed={collapsed} onClick={() => addBlock('image')} />
         <BlockBtn icon="Video" label="Vídeo" collapsed={collapsed} onClick={() => addBlock('video')} />
         <BlockBtn icon="HelpCircle" label="Quiz" collapsed={collapsed} onClick={() => addBlock('quiz')} />
         <BlockBtn icon="Quote" label="Citação" collapsed={collapsed} onClick={() => addBlock('quote')} />
+        <BlockBtn icon="Minus" label="Divisor" collapsed={collapsed} onClick={() => addBlock('divider')} />
         <BlockBtn icon="Code" label="HTML" collapsed={collapsed} onClick={() => addBlock('html')} />
       </YStack>
     </YStack>

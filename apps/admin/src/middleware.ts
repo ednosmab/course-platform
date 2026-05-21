@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const publicPaths = ['/login', '/api/health', '/api/ready'];
@@ -10,22 +11,42 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/favicon') ||
     pathname === '/';
 
-  // Check for Supabase auth session cookie
-  const hasSession = request.cookies.has('sb-limqrpxdzxejvuqjiwpn-auth-token');
+  let supabaseResponse = NextResponse.next({ request });
 
-  // Redirect to login if no session and not on a public path
-  if (!isPublic && !hasSession) {
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!isPublic && !user) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect to dashboard if has session and on login
-  if (pathname === '/login' && hasSession) {
+  if (pathname === '/login' && user) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  return NextResponse.next();
+  return supabaseResponse;
 }
 
 export const config = {

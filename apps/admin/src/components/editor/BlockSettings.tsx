@@ -682,6 +682,97 @@ export const BlockSettings: React.FC = () => {
         </YStack>
       )}
 
+      {activeBlock.type === 'heading' && (
+        <YStack gap="$2">
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Conteúdo do Título</Text>
+            <input
+              type="text"
+              value={activeBlock.content}
+              onChange={(e) => updateBlock(activeBlock.id, { content: e.target.value })}
+              placeholder="Digite o título..."
+              style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 10px', fontSize: 13, outline: 'none', width: '100%' }}
+            />
+          </YStack>
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Nível</Text>
+            <select
+              value={String((activeBlock as any).level || 2)}
+              onChange={(e) => updateBlock(activeBlock.id, { level: Number(e.target.value) as 1 | 2 | 3 })}
+              style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 8px', fontSize: 12, outline: 'none', background: 'white', width: '100%' }}
+            >
+              <option value="1">H1 — Principal</option>
+              <option value="2">H2 — Seção</option>
+              <option value="3">H3 — Subseção</option>
+            </select>
+          </YStack>
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Alinhamento</Text>
+            <XStack bg="$background" borderRadius="$3" p={1} borderWidth={1} borderColor="$border">
+              {(['left', 'center', 'right'] as const).map((align) => {
+                const isSelected = (activeBlock as any).styles?.align === align;
+                const iconName: Record<string, string> = { left: 'AlignLeft', center: 'AlignCenter', right: 'AlignRight' };
+                return (
+                  <Button
+                    key={align}
+                    variant="ghost"
+                    aria-label={`Alinhar ${align === 'left' ? 'à esquerda' : align === 'right' ? 'à direita' : 'ao centro'}`}
+                    borderWidth={isSelected ? 1 : 0}
+                    borderColor={isSelected ? '$border' : 'transparent'}
+                    onPress={() => updateBlock(activeBlock.id, { styles: { ...(activeBlock as any).styles, align } })}
+                    flex={1} py="$1"
+                  >
+                    <Icon name={iconName[align]} size={16} />
+                  </Button>
+                );
+              })}
+            </XStack>
+          </YStack>
+        </YStack>
+      )}
+
+      {activeBlock.type === 'divider' && (
+        <YStack gap="$2">
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Espessura</Text>
+            <select
+              value={String((activeBlock as any).styles?.thickness ?? 1)}
+              onChange={(e) => updateBlock(activeBlock.id, { styles: { ...(activeBlock as any).styles, thickness: Number(e.target.value) } })}
+              style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 8px', fontSize: 12, outline: 'none', background: 'white', width: '100%' }}
+            >
+              <option value="1">1px — Fino</option>
+              <option value="2">2px — Médio</option>
+              <option value="4">4px — Grosso</option>
+              <option value="8">8px — Extremo</option>
+            </select>
+          </YStack>
+          <YStack>
+            <Text fontSize={11} fontWeight="500">Estilo</Text>
+            <select
+              value={(activeBlock as any).styles?.style || 'solid'}
+              onChange={(e) => updateBlock(activeBlock.id, { styles: { ...(activeBlock as any).styles, style: e.target.value } })}
+              style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 8px', fontSize: 12, outline: 'none', background: 'white', width: '100%' }}
+            >
+              <option value="solid">Sólida</option>
+              <option value="dashed">Tracejada</option>
+              <option value="dotted">Pontilhada</option>
+            </select>
+          </YStack>
+          <YStack>
+            <XStack ai="center" jc="space-between">
+              <Text fontSize={11} fontWeight="500">Cor</Text>
+              <Text fontSize={9} color="$textMuted">{(activeBlock as any).styles?.color || 'Cinza padrão'}</Text>
+            </XStack>
+            <input
+              type="color"
+              value={(activeBlock as any).styles?.color || '#e2e8f0'}
+              onChange={(e) => updateBlock(activeBlock.id, { styles: { ...(activeBlock as any).styles, color: e.target.value } })}
+              style={{ width: '100%', height: 36, padding: 0, border: '1px solid var(--border-light)', borderRadius: '6px', cursor: 'pointer' }}
+            />
+          </YStack>
+        </YStack>
+      )}
+
       {activeBlock.type === 'quote' && (
         <YStack gap="$2">
           <YStack>

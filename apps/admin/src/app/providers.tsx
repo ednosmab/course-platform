@@ -2,14 +2,14 @@
 
 import React from 'react';
 import { TamaguiProvider, config } from '@projeto/ui';
-import { I18nProvider } from '@projeto/core';
+import { AdminI18nProvider } from '../providers/i18n-provider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <TamaguiProvider config={config} defaultTheme="light">
-      <I18nProvider>
+      <AdminI18nProvider>
         {children}
-      </I18nProvider>
+      </AdminI18nProvider>
     </TamaguiProvider>
   );
 }

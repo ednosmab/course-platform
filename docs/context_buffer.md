@@ -1,9 +1,12 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-SESSAO ATIVA — P3 a11y e i18n concluídos. Build admin com erro de tipo pré-existente em EditorCanvas.tsx:248.
+SESSAO ATIVA — Login com @supabase/ssr + role-based redirect concluído. i18n corrigido (dedup react-i18next). Build admin com erro de tipo pré-existente em EditorCanvas.tsx:248.
 
 ## 🎯 Últimas Conquistas
+- **Login fix:** Substituído `@supabase/supabase-js` por `@supabase/ssr` no admin. Login agora usa cookies (middleware enxerga sessão).
+- **Role-based redirect:** Após login, busca `role` na tabela `profiles`. Se `student` → redireciona para student app (`localhost:8081`). Se `admin/teacher` → dashboard admin.
+- **i18n dedup fix:** Havia 3 cópias do `react-i18next` (pnpm isolation). Movido `I18nProvider` para dentro do admin (`apps/admin/src/providers/i18n-provider.tsx`), removido do core. Agora `I18nextProvider` e `useTranslation` compartilham o mesmo React Context.
 - **P3 a11y:** `aria-label` em todos botões de ícone, `role="button"` + `tabIndex` + teclado em elementos interativos, foco no canvas
 - **P3 i18n:** `i18next + react-i18next` instalado, `packages/core/src/i18n/` com pt-BR/en, `I18nProvider` no admin, `EditorHeader.tsx` migrado
 - **P1 completo:** 5 bugs de infra resolvidos (settings feedback + overflow + React + globals.css + env vars CI)
@@ -55,6 +58,9 @@ SESSAO ATIVA — P3 a11y e i18n concluídos. Build admin com erro de tipo pré-e
 - **Living README:** Adiado para pós-MVP.
 - **SCL-02/03/04:** Adiados — sem Redis, sem SSR, sem API pública no momento.
 - **i18n lib:** `i18next + react-i18next` (compartilhado web + native), `packages/core/src/i18n/`, `I18nProvider` no admin
+- **i18n dedup:** `react-i18next` movido para peerDependency do core. `I18nProvider` movido para admin para evitar duplicatas do pnpm.
+- **Login SSR:** Admin usa `@supabase/ssr` com cookies (createBrowserClient). Middleware usa createServerClient com getAll/setAll.
+- **Role redirect:** Perfil com role `student` → student app. `admin/teacher` → dashboard admin.
 
 ## Relevant Files
 - `apps/admin/src/app/studio/[courseId]/page.tsx`: CourseOverview (module/lesson CRUD, reorder, rename, settings, certificate)
@@ -69,3 +75,7 @@ SESSAO ATIVA — P3 a11y e i18n concluídos. Build admin com erro de tipo pré-e
 - `docs/layers/testing/e2e_playwright_plan.md`: 4/10 fluxos testados
 - `docs/roadmaps/scalability-plan.md`: SCL-01 completo, demais adiados
 - `packages/core/src/i18n/`: Config i18next + locales pt-BR/en
+- `apps/admin/src/providers/i18n-provider.tsx`: AdminI18nProvider (usando react-i18next do admin)
+- `apps/admin/src/lib/supabase-client.ts`: createSupabaseBrowserClient (SSR cookies)
+- `apps/admin/src/lib/supabase-server.ts`: createSupabaseServerClient (para server actions)
+- `apps/admin/src/middleware.ts`: Auth middleware usando @supabase/ssr

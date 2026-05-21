@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { XStack, YStack, Text, Button, Icon } from '@projeto/ui';
 import Link from 'next/link';
 import { useEditor } from '../../context/EditorContext';
+import { useTranslation } from 'react-i18next';
 import { PositionPanel } from './PositionPanel';
 
 export const EditorHeader: React.FC = () => {
