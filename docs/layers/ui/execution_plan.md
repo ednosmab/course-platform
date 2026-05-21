@@ -28,7 +28,7 @@ Completar a reforma do Design System (DSv2): modularizar tokens, migrar apps par
 - [x] **TASK-16:** Substituir `<div>`/`<span>` por `<YStack>`/`<XStack>`/`<Text>` do Tamagui
 - [x] **TASK-17:** Migrar `globals.css` — remover tokens CSS duplicados
 - [x] **TASK-18:** Eliminar `page.module.css`
-  > ⚠️ **Nota:** Tasks 15-16 foram marcadas como concluídas, mas `apps/admin/src/components/editor/` (5 arquivos) ainda usam extensivamente `<div>`, `<button>`, CSS classes e cores hardcoded. Refatoração real ainda pendente — ver `docs/BACKLOG.md` P0.
+  > ✅ Editor migrado: 5 arquivos usam `YStack`, `XStack`, `Text`, `Button`, `Icon` de `@projeto/ui`. Raw HTML remanescente (`<input>`, `<select>` em formulários, `<div>` no canvas de posicionamento absoluto) são casos legítimos sem equivalente Tamagui.
 
 ## 📌 FASE 2 — Adoção em `student`
 - [x] **TASK-19:** Substituir `<View>` por `<YStack>`/`<XStack>` do Tamagui

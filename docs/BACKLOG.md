@@ -4,13 +4,11 @@
 
 ### P0 — Crítico (bloqueia progresso)
 
-- [ ] **Fase 1 real — Migrar Admin Editor para `@projeto/ui`**
-  - `apps/admin/src/components/editor/*.tsx` (5 arquivos) ainda usam `<div>`, `<button>`, `<h3>`, `<span>`, `<p>`, `<input>`, `<select>`, `<textarea>`, CSS classes e cores hardcoded
-  - Substituir por `YStack`, `XStack`, `Text`, `Button`, `Card`, `Icon` de `@projeto/ui`
-  - Referência: `docs/roadmaps/design-system-reforma.md` (Fase 1)
-- [ ] **Reconciliar `docs/layers/ui/execution_plan.md`**
-  - TASK-32 a TASK-38 marcadas como pendentes, mas já foram executadas
-  - Atualizar checkboxes para refletir realidade
+- [x] **Fase 1 real — Migrar Admin Editor para `@projeto/ui`**
+  - 5 arquivos do editor migrados: usam `YStack`, `XStack`, `Text`, `Button`, `Icon` de `@projeto/ui`
+  - Raw HTML remanescente: `<input>`/`<select>`/`<textarea>` em formulários (BlockSettings) e `<div>`/`<iframe>` no canvas de posicionamento absoluto (casos legítimos sem equivalente Tamagui)
+- [x] **Reconciliar `docs/layers/ui/execution_plan.md`**
+  - Checkboxes atualizadas refletindo estado real (TASK-32 a TASK-38 concluídas, nota TASK-15/16 corrigida)
 
 ### P1 — Alta
 
