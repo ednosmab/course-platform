@@ -1,13 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { YStack, XStack, Text, Button, Icon, Card } from '@projeto/ui';
 import { supabase } from '@projeto/core';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { BrandMark } from '../../components/brand-mark';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
@@ -24,7 +26,7 @@ export default function LoginPage() {
       if (signInError) {
         setError(signInError.message);
       } else {
-        router.push('/');
+        router.push(redirectTo);
       }
     } catch {
       setError('Erro inesperado. Tente novamente.');
@@ -229,5 +231,13 @@ export default function LoginPage() {
         </YStack>
       </YStack>
     </XStack>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }
