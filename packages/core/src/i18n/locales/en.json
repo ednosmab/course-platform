@@ -1,0 +1,41 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "confirm": "Confirm",
+    "search": "Search",
+    "noResults": "No results found",
+    "error": "Error",
+    "success": "Success"
+  },
+  "editor": {
+    "undo": "Undo",
+    "redo": "Redo",
+    "preview": "Preview as student",
+    "exitPreview": "Exit Preview",
+    "position": "Position",
+    "publish": "Publish",
+    "published": "Published!",
+    "noBlockSelected": "No block selected",
+    "clickBlockToEdit": "Click a block on the canvas to edit its properties.",
+    "editBlock": "Edit Block",
+    "deleteBlock": "Delete block",
+    "addBlock": "Add block",
+    "properties": "Properties",
+    "htmlSource": "HTML Source",
+    "clickToAddContent": "+ Click blocks on the left to add content",
+    "outsidePage": "Outside page"
+  },
+  "textBlock": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "content": "Text Content"
+  }
+}

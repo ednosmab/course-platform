@@ -105,6 +105,11 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
   - `VideoBlock.tsx`: iframe bg `#000000` → `transparent` (herda `$gray1` do parent)
   - **Restante aceito:** `page.tsx` inputs/textarea (nativos, sem equivalente Tamagui), canvas engine (guia/preview/blocos), stories (cores de demonstração), color picker (valores default do usuário)
 - [x] **Internacionalização (i18n)**
+  - Biblioteca `i18next + react-i18next` instalada
+  - Pacote compartilhado em `packages/core/src/i18n/`
+  - Locais `pt-BR` (padrão) e `en` com chaves para `common`, `editor`, `textBlock`
+  - `I18nProvider` integrado ao admin (`providers.tsx`)
+  - Pronto para extração gradual de strings
 - [x] **Acessibilidade (a11y)**
   - `aria-label` em todos botões com apenas ícone (undo/redo, fechar painel, excluir bloco, negrito/itálico, alinhamento, opções quiz, toggle paleta, itens paleta)
   - `role="button"`, `tabIndex`, teclado (Enter/Space) em elementos interativos não-`<button>`
