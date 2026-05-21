@@ -3,6 +3,7 @@ import { DimensionValue } from 'react-native';
 import {
   YStack,
   XStack,
+  Text,
   TextBlockRenderer,
   QuoteBlockRenderer,
 } from '@projeto/ui';
@@ -87,6 +88,23 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks, onVideoPro
                   {block.type === 'quote' && <QuoteBlockRenderer block={block} />}
                   {block.type === 'image' && <ImageBlockRenderer block={block} />}
                   {block.type === 'html' && <HtmlBlockRenderer block={block} />}
+                  {block.type === 'heading' && (() => {
+                    const h = block as any;
+                    const size = h.level === 1 ? 28 : h.level === 2 ? 22 : 18;
+                    return (
+                      <Text fontSize={size} fontWeight="700" lineHeight={size * 1.3} my="$3">
+                        {h.content}
+                      </Text>
+                    );
+                  })()}
+                  {block.type === 'divider' && (
+                    <YStack
+                      my="$4"
+                      borderBottomWidth={(block as any).styles?.thickness || 1}
+                      borderColor={(block as any).styles?.color || '$border'}
+                      borderStyle={(block as any).styles?.style || 'solid'}
+                    />
+                  )}
                 </YStack>
               );
             })}

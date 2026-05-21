@@ -181,11 +181,13 @@ const HANDLES: { id: HandleDir; cursor: string; style: React.CSSProperties }[] =
 const FONT_DESKTOP: Record<string, string> = { small: '13px', medium: '16px', large: '24px', xlarge: '32px' };
 const FONT_MOBILE:  Record<string, string> = { small: '12px', medium: '15px', large: '19px', xlarge: '24px' };
 
-function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = false }: {
+function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = false, isEditing = false, onEditComplete }: {
   block: AnyBlock;
   onImageDrop?: (blockId: string, file: File) => void;
   isMobile?: boolean;
   isInteracting?: boolean;
+  isEditing?: boolean;
+  onEditComplete?: (content: string) => void;
 }) {
   if (block.type === 'text') {
     const styles = (block.styles || {}) as Record<string, string>;
@@ -204,6 +206,32 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
       borderRadius: styles.backgroundColor || styles.backgroundImage ? '8px' : '0',
       overflow: isMobile ? 'visible' : 'hidden',
     };
+
+    if (isEditing) {
+      return (
+        <div
+          contentEditable
+          suppressContentEditableWarning
+          style={{
+            ...style,
+            cursor: 'text',
+            outline: 'none',
+            userSelect: 'text',
+            backgroundColor: 'white',
+            border: '1px solid #3b82f6',
+            borderRadius: '4px',
+            padding: '8px',
+          }}
+          onBlur={(e) => {
+            const text = e.currentTarget.textContent || '';
+            onEditComplete?.(text);
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          {block.content}
+        </div>
+      );
+    }
 
     let textElement: React.ReactNode = <>{parseSimpleMarkdown(block.content)}</>;
     if (styles.bold) textElement = <strong>{textElement}</strong>;
@@ -247,13 +275,29 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     const styles = (block as any).styles || {};
     const tag = level === 1 ? 'h1' : level === 2 ? 'h2' : 'h3';
     const fontSize = { 1: '32px', 2: '24px', 3: '20px' }[level];
-    return React.createElement(tag, {
-      style: {
-        fontSize, fontWeight: 700, lineHeight: 1.3, margin: 0, padding: 0,
-        textAlign: styles.align || 'left', color: styles.color || 'inherit',
-        fontFamily: styles.fontFamily || 'inherit', width: '100%', height: '100%',
-      },
-    }, block.content);
+    const headingStyle: React.CSSProperties = {
+      fontSize, fontWeight: 700, lineHeight: 1.3, margin: 0, padding: 0,
+      textAlign: styles.align || 'left', color: styles.color || 'inherit',
+      fontFamily: styles.fontFamily || 'inherit', width: '100%', height: '100%',
+    };
+    if (isEditing) {
+      return React.createElement(tag, {
+        style: {
+          ...headingStyle,
+          cursor: 'text',
+          outline: 'none',
+          backgroundColor: 'white',
+          border: '1px solid #3b82f6',
+          borderRadius: '4px',
+          padding: '8px',
+        },
+        contentEditable: true,
+        suppressContentEditableWarning: true,
+        onBlur: (e: React.FocusEvent<HTMLHeadingElement>) => onEditComplete?.(e.currentTarget.textContent || ''),
+        onMouseDown: (e: React.MouseEvent) => e.stopPropagation(),
+      }, block.content);
+    }
+    return React.createElement(tag, { style: headingStyle }, block.content);
   }
   if (block.type === 'divider') {
     const s = (block as any).styles || {};
@@ -653,6 +697,7 @@ export const EditorCanvas: React.FC = () => {
   const [mounted, setMounted] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
+  const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
 
   const interactionRef = useRef<{
     mode: 'move' | 'resize';
@@ -675,6 +720,7 @@ export const EditorCanvas: React.FC = () => {
   }, [updateBlock]);
 
   const onBlockMouseDown = useCallback((e: React.MouseEvent, block: AnyBlock) => {
+    if (block.id === inlineEditingId) return;
     if ((e.target as HTMLElement).dataset.handle) return;
     e.preventDefault();
     e.stopPropagation();
@@ -686,7 +732,7 @@ export const EditorCanvas: React.FC = () => {
       startLayout: getLayout(block, viewportMode),
       currentLayouts: block.layouts || {},
     };
-  }, [setActiveBlockId, viewportMode]);
+  }, [setActiveBlockId, viewportMode, inlineEditingId]);
 
   const onHandleMouseDown = useCallback((e: React.MouseEvent, block: AnyBlock, handle: HandleDir) => {
     e.preventDefault();
@@ -782,6 +828,7 @@ export const EditorCanvas: React.FC = () => {
 
         {sortedBlocks.map((block) => {
           const isActive = block.id === activeBlockId;
+          const isEditing = block.id === inlineEditingId;
           const layout = getLayout(block);
           const outOfBounds = isOutOfBounds(block, PAGE_W);
 
@@ -790,11 +837,26 @@ export const EditorCanvas: React.FC = () => {
               key={block.id}
               onMouseDown={(e) => onBlockMouseDown(e, block)}
               onClick={(e) => { e.stopPropagation(); setActiveBlockId(block.id); }}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setActiveBlockId(block.id); } }}
+              onDoubleClick={(e) => {
+                if (block.type === 'text' || block.type === 'heading') {
+                  e.stopPropagation();
+                  setInlineEditingId(block.id);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' && isEditing) {
+                  setInlineEditingId(null);
+                }
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setActiveBlockId(block.id);
+                }
+              }}
               tabIndex={0}
               role="button"
               aria-label={`Bloco ${block.type}${(block as any).content ? `: ${(block as any).content.substring(0, 40)}` : ''}${isActive ? ' (selecionado)' : ''}`}
-              style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none', isolation: 'isolate', outline: isActive ? 'none' : undefined }}
+              style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.zIndex + 1, cursor: isEditing ? 'text' : 'move', boxSizing: 'border-box', userSelect: isEditing ? 'text' : 'none', isolation: 'isolate', outline: isActive ? 'none' : undefined }}
             >
               <div style={{
                 position: 'absolute', inset: 0,
@@ -810,7 +872,16 @@ export const EditorCanvas: React.FC = () => {
               )}
 
               <div style={{ position: 'absolute', inset: 2, borderRadius: '4px', overflow: 'hidden', zIndex: 1 }}>
-                <BlockContent block={block} onImageDrop={handleImageDrop} isInteracting={isInteracting} />
+                <BlockContent
+                  block={block}
+                  onImageDrop={handleImageDrop}
+                  isInteracting={isInteracting}
+                  isEditing={isEditing}
+                  onEditComplete={(content) => {
+                    updateBlock(block.id, { content } as Partial<AnyBlock>);
+                    setInlineEditingId(null);
+                  }}
+                />
                 {(block.type === 'html' || block.type === 'video') && (
                   <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'move', backgroundColor: 'transparent' }} />
                 )}

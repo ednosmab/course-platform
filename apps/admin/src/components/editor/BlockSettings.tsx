@@ -230,7 +230,7 @@ const TypographyAndBackgroundControls: React.FC<{ block: any; updateBlock: any }
             style={{ width: 32, height: 32, padding: 0, border: '1px solid var(--border-light)', borderRadius: '4px', cursor: 'pointer' }}
           />
           <XStack flexWrap="wrap" gap={1} flex={1}>
-            {presetColors.slice(0, 8).map(c => (
+            {presetColors.map(c => (
               <XStack
                 key={c}
                 onPress={() => setStyle('color', c)}
@@ -365,7 +365,7 @@ export const BlockSettings: React.FC = () => {
             onChange={(e) => handleHtmlEdit(e.target.value)}
             rows={20}
             spellCheck={false}
-            style={{ fontFamily: 'monospace', fontSize: 11, lineHeight: 1.6, flex: 1, resize: 'vertical', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', outline: 'none', color: 'var(--text-primary)', backgroundColor: 'var(--bg-canvas)' }}
+            style={{ fontFamily: 'monospace', fontSize: 11, lineHeight: 1.6, flex: 1, resize: 'vertical', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', outline: 'none', color: 'var(--text-primary)', backgroundColor: 'white' }}
             placeholder={activeBlock.type === 'html'
               ? '<div style="color:red">HTML direto</div>\n<style>p{color:blue}</style>\n<script>console.log("JS")</script>'
               : 'Visualização do HTML gerado pelo bloco'}
@@ -396,7 +396,7 @@ export const BlockSettings: React.FC = () => {
               value={activeBlock.content}
               onChange={(e) => updateBlock(activeBlock.id, { content: e.target.value })}
               rows={4}
-              style={{ width: '100%', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', fontSize: 13, outline: 'none', resize: 'vertical', color: 'var(--text-primary)', backgroundColor: 'var(--bg-canvas)' }}
+              style={{ width: '100%', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', fontSize: 13, outline: 'none', resize: 'vertical', color: 'var(--text-primary)', backgroundColor: 'white' }}
             />
             <Button
               variant="ghost"
@@ -506,7 +506,7 @@ export const BlockSettings: React.FC = () => {
               onChange={(e) => updateBlock(activeBlock.id, { question: e.target.value })}
               rows={3}
               placeholder="Digite a pergunta do quiz aqui..."
-              style={{ width: '100%', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', fontSize: 13, outline: 'none', resize: 'vertical', color: 'var(--text-primary)', backgroundColor: 'var(--bg-canvas)' }}
+              style={{ width: '100%', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', fontSize: 13, outline: 'none', resize: 'vertical', color: 'var(--text-primary)', backgroundColor: 'white' }}
             />
             <Button
               variant="ghost"
@@ -666,7 +666,7 @@ export const BlockSettings: React.FC = () => {
               onChange={(e) => updateBlock(activeBlock.id, { htmlContent: e.target.value })}
               rows={12}
               spellCheck={false}
-              style={{ fontFamily: 'monospace', fontSize: 12, lineHeight: 1.5, width: '100%', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', outline: 'none', color: 'var(--text-primary)', backgroundColor: 'var(--bg-canvas)' }}
+              style={{ fontFamily: 'monospace', fontSize: 12, lineHeight: 1.5, width: '100%', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', outline: 'none', color: 'var(--text-primary)', backgroundColor: 'white' }}
               placeholder={'<div>\n  Seu HTML aqui...\n</div>'}
             />
           </YStack>
@@ -782,7 +782,7 @@ export const BlockSettings: React.FC = () => {
               onChange={(e) => updateBlock(activeBlock.id, { content: e.target.value })}
               rows={4}
               placeholder="Digite a citação aqui..."
-              style={{ width: '100%', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', fontSize: 13, outline: 'none', resize: 'vertical', color: 'var(--text-primary)', backgroundColor: 'var(--bg-canvas)' }}
+              style={{ width: '100%', borderRadius: '6px', border: '1px solid var(--border-light)', padding: '8px', fontSize: 13, outline: 'none', resize: 'vertical', color: 'var(--text-primary)', backgroundColor: 'white' }}
             />
           </YStack>
 

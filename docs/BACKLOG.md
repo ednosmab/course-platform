@@ -33,20 +33,22 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
   - Fontes Space Grotesk + DM Sans via `next/font/google`
   - Referência: `design/create-teach-module/src/routes/index.tsx`
 - [ ] ~~**EDIT-01 — Layout 3 colunas do Estúdio**~~ Eliminado. A paleta à esquerda e o painel de propriedades à direita (contextual, só aparece com bloco selecionado) já funcionam como desejado. EDIT-01 forçaria painel direito fixo, o que gera poluição visual — decisão do usuário.
-- [ ] **EDIT-01 (ex-02) — Novos tipos de bloco**
-  - `heading` (H1-H3 editável inline)
-  - `divider` (linha horizontal separadora)
-  - Adicionar schemas Zod em `packages/types/` e componentes em `packages/ui/src/blocks/`
-- [ ] **EDIT-02 (ex-03) — Inline editing via `contentEditable`**
-  - Clicar direto no texto do canvas para editar, sem abrir formulário
-  - `onBlur` salva no estado do bloco
-- [ ] **EDIT-03 (ex-04) — Drag-and-drop reordering**
-  - Arrastar blocos na paleta ou no canvas para reordenar
-  - Indicador visual de drop zone (referência: `studio.$courseId.tsx:93-98`)
-- [ ] **EDIT-04 (ex-05) — Device preview toggle**
+- [x] **EDIT-01 (ex-02) — Novos tipos de bloco**
+  - `heading` (H1-H3) — schemas Zod + admin (EditorCanvas + BlockSettings + StudentPreview) + student (BlockRenderer)
+  - `divider` (linha horizontal separadora) — schemas Zod + admin + student
+  - Schemas Zod em `packages/types/` concluídos; renderização inline em ambos os apps (sem componentes separados em `packages/ui/src/blocks/` — desnecessário)
+- [x] **EDIT-02 (ex-03) — Inline editing via `contentEditable`**
+  - Duplo clique em blocos text/heading no canvas para editar inline
+  - `onBlur` salva no estado do bloco via `updateBlock`, Escape cancela
+  - Disponível na visualização Desktop do editor
+- [x] **EDIT-03 (ex-04) — Drag-and-drop reordering**
+  - Arrastar blocos no PositionPanel (aba "Camadas") para reordenar z-index + array via HTML5 DnD
+  - Indicador visual de drop zone implementado
+  - `reorderBlocks` + `MOVE_BLOCK` no reducer conectados
+- [x] **EDIT-04 (ex-05) — Device preview toggle**
   - Botões Desktop / Tablet / Mobile no topo do canvas
   - Canvas se redimensiona (`max-w-[380px]` mobile, `max-w-[720px]` tablet, `max-w-[860px]` desktop)
-- [ ] **EDIT-05 (ex-06) — Propriedades por tipo de bloco**
+- [x] **EDIT-05 (ex-06) — Propriedades por tipo de bloco**
   - Painel direito mostra campos diferentes conforme o tipo (texto, heading level, URL do vídeo, upload de imagem, espaçamento, visibilidade)
   - Referência: `studio.$courseId.tsx:469-543`
 - [ ] **EDIT-06 (ex-07) — Hover toolbar em cada bloco**
