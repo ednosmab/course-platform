@@ -173,6 +173,64 @@ Tasks do plano `docs/roadmaps/scalability-plan.md`:
 - [ ] **SCL-15:** CDN multi-região para vídeos
 - [ ] **SCL-16:** Service Workers para cache offline avançado
 
+### 🔒 SEG — Segurança e Compliance
+
+Itens identificados na análise `docs/REQUISITOS_SEGURANCA_DISPONIBILIDADE.md`:
+
+**P1 — Alta:**
+- [ ] **SEG-01: MFA para administradores** — Autenticação multifator obrigatória no login do admin
+- [ ] **SEG-02: Política de senhas** — Força mínima, lockout após N tentativas, expiração
+- [ ] **SEG-07: Plano de adequação LGPD** — Detalhar implementação: consentimento, cookies, encriptação de PII, logs de auditoria
+
+**P2 — Média:**
+- [ ] **SEG-03: Plano de Resposta a Incidentes (IRP)** — Procedimento documentado para vazamento/invasão
+- [ ] **SEG-04: SAST no pipeline CI** — Integrar CodeQL ou Semgrep para análise estática
+- [ ] **SEG-05: Scanner de dependências** — Dependabot ou Snyk para CVE em bibliotecas
+- [ ] **SEG-06: GDPR compliance** — Requisitos para operação na Europa (direito ao esquecimento, portabilidade)
+- [ ] **SEG-09: Teste de intrusão (pentest)** — Agendar pentest periódico (ex: anual)
+- [ ] **SEG-10: Treinamento de segurança para equipe** — Engenharia social, boas práticas
+- [ ] **SEG-12: CORS hardening policy** — Política global de CORS documentada e testada
+
+**P3 — Baixa:**
+- [ ] **SEG-08: Plano PCI-DSS** — Roadmap para conformidade quando pagamentos forem implementados
+- [ ] **SEG-11: Responsible Disclosure / security.txt** — Canal para pesquisadores reportarem vulnerabilidades
+
+### DR — Disponibilidade e Recuperação de Desastres
+
+**P1 — Alta:**
+- [ ] **DR-01: Definir SLA** — Tempo de atividade alvo (99.9% = ~8.7h/ano, 99.95% = ~4.3h/ano)
+- [ ] **DR-02: Plano de Recuperação de Desastres (DRP)** — RTO/RPO, procedimento de restore
+- [ ] **DR-03: Estratégia de backups** — Schedule, retention, imutabilidade, restore testado mensalmente
+
+**P2 — Média:**
+- [ ] **DR-04: Manutenção zero-downtime** — Procedimento para deploys sem interrupção
+
+**P3 — Baixa:**
+- [ ] **DR-05: Status page pública** — Página de status operacional para transparência
+
+### PRO — Profissionalismo
+
+**P1 — Alta:**
+- [ ] **PRO-02: Política de Privacidade** — Documento público claro sobre tratamento de dados
+- [ ] **PRO-03: Termos de Serviço** — Termos de uso da plataforma
+
+**P2 — Média:**
+- [ ] **PRO-01: Canais de suporte** — Documentar canais (e-mail, chat, ticket) e SLA de resposta
+- [ ] **PRO-05: Documentação de infraestrutura** — Preencher 6 docs stubs vazios
+
+**P3 — Baixa:**
+- [ ] **PRO-04: SLA auditável** — Dashboard público de uptime + relatórios periódicos
+
+### OBS — Observabilidade e Monitoramento
+
+**P1 — Alta:**
+- [ ] **OBS-01: Implementar Sentry/APM** — Monitoramento de erros reais em produção
+
+**P2 — Média:**
+- [ ] **OBS-02: Alertas configurados** — Notificações para métricas críticas (5xx, pool DB, rate limit)
+- [ ] **OBS-03: Logs centralizados** — Coleta e busca de logs estruturados (ex: Grafana Loki, ELK)
+- [ ] **OBS-04: Health check endpoints** — Endpoints `/health`, `/ready`, `/metrics`
+
 ### 🧪 E2E Playwright
 
 Tasks do plano `docs/layers/testing/e2e_playwright_plan.md`:
@@ -235,3 +293,7 @@ Tasks do plano `docs/layers/testing/e2e_playwright_plan.md`:
 | P3 | Refinamento, débito técnico, docs |
 | SCL | Escalabilidade (4 fases: fundação → 3k → 10k → 50k+) |
 | E2E | Testes end-to-end com Playwright |
+| SEG | Segurança e Compliance |
+| DR | Disponibilidade e Recuperação de Desastres |
+| PRO | Profissionalismo (suporte, docs, SLA) |
+| OBS | Observabilidade e Monitoramento |
