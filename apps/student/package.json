@@ -8,7 +8,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "build:web": "expo export --platform web",
-    "build:verify": "expo export --platform web --clear"
+    "build:verify": "expo export --platform web --clear",
+    "test": "vitest run"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
@@ -30,7 +31,8 @@
     "@rnx-kit/metro-resolver-symlinks": "^0.3.0",
     "@tamagui/babel-plugin": "2.0.0-rc.42",
     "@types/react": "~19.1.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "vitest": "^1.6.0"
   },
   "private": true
 }

@@ -7,6 +7,26 @@ on:
     branches: [main]
 
 jobs:
+  codeql:
+    name: CodeQL SAST
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
   verify:
     runs-on: ubuntu-latest
 
@@ -36,6 +56,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      - name: Create env files
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > apps/admin/.env.local
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> apps/admin/.env.local
+          echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > apps/student/.env
+          echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> apps/student/.env
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -47,6 +74,9 @@ jobs:
 
       - name: Verify UI governance rules
         run: pnpm run verify:ui
+
+      - name: Run unit tests
+        run: pnpm run test
 
       - name: Build Ladle stories
         run: pnpm --filter @projeto/ui ladle:build
