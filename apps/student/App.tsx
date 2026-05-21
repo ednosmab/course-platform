@@ -6,6 +6,7 @@ import { LessonPlayer } from './src/screens/LessonPlayer';
 
 export default function App() {
   const [screen, setScreen] = useState<'dashboard' | 'player'>('dashboard');
+  const [courseId, setCourseId] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -16,12 +17,17 @@ export default function App() {
     }
   }, []);
 
+  const handlePlay = (id: string) => {
+    setCourseId(id);
+    setScreen('player');
+  };
+
   if (screen === 'player') {
     return (
       <SafeAreaProvider>
         <TamaguiProvider config={config} defaultTheme={null}>
           <SafeAreaView style={{ flex: 1 }}>
-            <LessonPlayer onBack={() => setScreen('dashboard')} />
+            <LessonPlayer courseId={courseId} onBack={() => setScreen('dashboard')} />
           </SafeAreaView>
         </TamaguiProvider>
       </SafeAreaProvider>
@@ -32,7 +38,7 @@ export default function App() {
     <SafeAreaProvider>
       <TamaguiProvider config={config} defaultTheme={null}>
         <SafeAreaView style={{ flex: 1 }}>
-          <StudentDashboard onPlay={() => setScreen('player')} />
+          <StudentDashboard onPlay={handlePlay} />
         </SafeAreaView>
       </TamaguiProvider>
     </SafeAreaProvider>

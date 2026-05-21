@@ -7,10 +7,11 @@ import { AnyBlock } from '@projeto/types';
 import { CourseService, supabase } from '@projeto/core';
 
 type LessonPlayerProps = {
+  courseId?: string | null;
   onBack: () => void;
 };
 
-export function LessonPlayer({ onBack }: LessonPlayerProps) {
+export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
   const { isOffline, setIsOffline, pendingCount, saveProgressMobile, syncPending } = useMobileProgress();
   const [course, setCourse] = useState<any>(null);
   const [lessons, setLessons] = useState<any[]>([]);
@@ -42,25 +43,36 @@ export function LessonPlayer({ onBack }: LessonPlayerProps) {
     try {
       setLoading(true);
       setError(null);
-      const { data: coursesCheck, error: checkErr } = await supabase
-        .from('courses')
-        .select('*');
 
-      if (checkErr) throw checkErr;
+      if (courseId) {
+        const struct = await CourseService.getCourseStructure(courseId);
+        setCourse(struct.course);
+        const allLessons = struct.modules.flatMap(mod => mod.lessons);
+        setLessons(allLessons);
+        if (allLessons.length > 0) {
+          setActiveLessonId(allLessons[0].id);
+        }
+      } else {
+        const { data: coursesCheck, error: checkErr } = await supabase
+          .from('courses')
+          .select('*');
 
-      if (!coursesCheck || coursesCheck.length === 0) {
-        throw new Error('Nenhum curso cadastrado no banco de dados. Crie e publique um curso no painel do CMS para começar!');
-      }
+        if (checkErr) throw checkErr;
 
-      const activeCourse = coursesCheck[0];
-      const struct = await CourseService.getCourseStructure(activeCourse.id);
-      setCourse(struct.course);
+        if (!coursesCheck || coursesCheck.length === 0) {
+          throw new Error('Nenhum curso cadastrado no banco de dados. Crie e publique um curso no painel do CMS para começar!');
+        }
 
-      const allLessons = struct.modules.flatMap(mod => mod.lessons);
-      setLessons(allLessons);
+        const activeCourse = coursesCheck[0];
+        const struct = await CourseService.getCourseStructure(activeCourse.id);
+        setCourse(struct.course);
 
-      if (allLessons.length > 0) {
-        setActiveLessonId(allLessons[0].id);
+        const allLessons = struct.modules.flatMap(mod => mod.lessons);
+        setLessons(allLessons);
+
+        if (allLessons.length > 0) {
+          setActiveLessonId(allLessons[0].id);
+        }
       }
     } catch (err) {
       console.error('Erro ao carregar dados do curso de forma dinâmica:', err);
