@@ -53,7 +53,13 @@
     "alignCenter": "Alinhar ao centro",
     "alignBottom": "Alinhar à base",
     "alignRight": "Alinhar à direita",
-    "alignJustify": "Justificado"
+    "alignJustify": "Justificado",
+    "saving": "Salvando...",
+    "saved": "Salvo",
+    "saveError": "Erro ao salvar",
+    "publishFailed": "Falha ao publicar aula",
+    "courseLabel": "Curso",
+    "moduleLabel": "Módulo"
   },
   "textBlock": {
     "bold": "Negrito",

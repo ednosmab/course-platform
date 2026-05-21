@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { XStack, YStack, Text, Button, Icon } from '@projeto/ui';
 import Link from 'next/link';
 import { useEditor } from '../../context/EditorContext';
 import { PositionPanel } from './PositionPanel';
 
 export const EditorHeader: React.FC = () => {
+  const { t } = useTranslation('editor');
   const { canUndo, canRedo, undo, redo, saveStatus, previewMode, setPreviewMode, viewportMode, setViewportMode, publishLesson, courseTitle, moduleTitle, lessonTitle } = useEditor();
   const [published, setPublished] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -19,7 +21,7 @@ export const EditorHeader: React.FC = () => {
       setPublished(true);
       setTimeout(() => setPublished(false), 3000);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Falha ao publicar aula';
+      const message = err instanceof Error ? err.message : t('publishFailed');
       setPublishError(message);
       setTimeout(() => setPublishError(null), 5000);
     }
@@ -44,7 +46,7 @@ export const EditorHeader: React.FC = () => {
               <Icon name="CloudLightning" size={14} color="$textMuted" />
             </XStack>
             <Text fontSize={14} fontWeight="500">
-              {courseTitle || 'Curso'} / {moduleTitle || 'Módulo'} / <Text fontWeight="600">{lessonTitle}</Text>
+              {courseTitle || t('courseLabel')} / {moduleTitle || t('moduleLabel')} / <Text fontWeight="600">{lessonTitle}</Text>
             </Text>
           </XStack>
 
@@ -52,19 +54,19 @@ export const EditorHeader: React.FC = () => {
             {saveStatus === 'saving' && (
               <>
                 <XStack w={6} h={6} borderRadius={3} bg="$warning" />
-                <Text fontSize={11}>Salvando...</Text>
+                <Text fontSize={11}>{t('saving')}</Text>
               </>
             )}
             {(saveStatus === 'saved' || saveStatus === 'idle') && (
               <>
                 <XStack w={6} h={6} borderRadius={3} bg="$success" />
-                <Text fontSize={11}>Salvo</Text>
+                <Text fontSize={11}>{t('saved')}</Text>
               </>
             )}
             {saveStatus === 'error' && (
               <>
                 <XStack w={6} h={6} borderRadius={3} bg="$danger" />
-                <Text fontSize={11} color="$danger">Erro ao salvar</Text>
+                <Text fontSize={11} color="$danger">{t('saveError')}</Text>
               </>
             )}
           </XStack>
@@ -106,14 +108,14 @@ export const EditorHeader: React.FC = () => {
           variant="ghost"
           onPress={() => setPreviewMode(!previewMode)}
         >
-          {previewMode ? <Icon name="EyeOff" size={15} /> : <Icon name="Eye" size={15} />}<Text>{previewMode ? 'Sair do Preview' : 'Visualizar como aluno'}</Text>
+          {previewMode ? <Icon name="EyeOff" size={15} /> : <Icon name="Eye" size={15} />}<Text>{previewMode ? t('exitPreview') : t('preview')}</Text>
         </Button>
 
         <Button
           variant="ghost"
           onPress={() => setIsPositionPanelOpen(!isPositionPanelOpen)}
         >
-          <Icon name="Layers" size={15} /><Text>Posição</Text>
+          <Icon name="Layers" size={15} /><Text>{t('position')}</Text>
         </Button>
 
         <XStack ai="center" gap="$2">
@@ -123,9 +125,9 @@ export const EditorHeader: React.FC = () => {
             onPress={handlePublish}
           >
             {published ? (
-              <><Icon name="CheckCircle2" size={15} /><Text>Publicado!</Text></>
+              <><Icon name="CheckCircle2" size={15} /><Text>{t('published')}</Text></>
             ) : (
-              'Publicar'
+              t('publish')
             )}
           </Button>
           {publishError && (

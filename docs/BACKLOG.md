@@ -110,6 +110,7 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
   - Locais `pt-BR` (padrão) e `en` com chaves para `common`, `editor`, `textBlock`
   - `I18nProvider` integrado ao admin (`providers.tsx`)
   - Pronto para extração gradual de strings
+  - `EditorHeader.tsx` migrado para `useTranslation` (padrão de extração)
 - [x] **Acessibilidade (a11y)**
   - `aria-label` em todos botões com apenas ícone (undo/redo, fechar painel, excluir bloco, negrito/itálico, alinhamento, opções quiz, toggle paleta, itens paleta)
   - `role="button"`, `tabIndex`, teclado (Enter/Space) em elementos interativos não-`<button>`
