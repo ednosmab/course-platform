@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, Suspense } from 'react';
-import { YStack, XStack, Text, Button, Icon, Card } from '@projeto/ui';
+import { YStack, XStack, Text, Button, Icon, Card, Spinner } from '@projeto/ui';
 import { supabase } from '@projeto/core';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BrandMark } from '../../components/brand-mark';
@@ -197,16 +197,28 @@ function LoginForm() {
                 </XStack>
               )}
 
-              <button
-                type="submit"
+              <Button
+                onPress={() => {
+                  const form = document.querySelector('form');
+                  if (form) form.requestSubmit();
+                }}
                 disabled={loading}
-                style={{ width: '100%', height: 44, border: 'none', borderRadius: 6, background: GRADIENT, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                h={44}
+                style={{ background: GRADIENT, border: 'none', width: '100%' }}
+                opacity={loading ? 0.7 : 1}
               >
-                <Text fontSize={14} fontWeight="600" color="white">
-                  {loading ? 'Entrando...' : 'Entrar'}
-                </Text>
-                <Icon name="ArrowRight" size={16} color="white" />
-              </button>
+                {loading ? (
+                  <XStack ai="center" gap="$2">
+                    <Spinner size="small" color="white" />
+                    <Text fontSize={14} fontWeight="600" color="white">Entrando...</Text>
+                  </XStack>
+                ) : (
+                  <XStack ai="center" gap="$2">
+                    <Text fontSize={14} fontWeight="600" color="white">Entrar</Text>
+                    <Icon name="ArrowRight" size={16} color="white" />
+                  </XStack>
+                )}
+              </Button>
             </YStack>
           </form>
 
