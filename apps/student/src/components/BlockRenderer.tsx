@@ -75,7 +75,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks, onVideoPro
                 const h = block as any;
                 const size = h.level === 1 ? 28 : h.level === 2 ? 22 : 18;
                 return (
-                  <Text fontSize={size} fontWeight="700" lineHeight={size * 1.3} my="$3">
+                  <Text fontSize={size} fontWeight="700" lineHeight={size * 1.3} my="$3" color={h.styles?.color || '$text'} fontFamily={h.styles?.fontFamily || '$display'} textAlign={h.styles?.align || 'left'}>
                     {h.content}
                   </Text>
                 );

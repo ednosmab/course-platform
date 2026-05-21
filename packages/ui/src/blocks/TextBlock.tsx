@@ -15,14 +15,26 @@ export const TextBlockRenderer: React.FC<Props> = ({ block }) => {
     : 14;
 
   const textAlign = block.styles?.align || 'left';
+  const color = (block.styles as any)?.color || '$gray9';
+  const backgroundColor = (block.styles as any)?.backgroundColor;
+  const fontFamily = (block.styles as any)?.fontFamily;
+  const bold = (block.styles as any)?.bold;
+  const italic = (block.styles as any)?.italic;
 
   return (
-    <YStack px="$2">
+    <YStack
+      px="$2"
+      backgroundColor={backgroundColor || 'transparent'}
+      borderRadius="$2"
+    >
       {renderSimpleMarkdown(block.content, {
-        color: '$gray9',
+        color,
         lineHeight: 22,
         fontSize,
         textAlign,
+        fontFamily: fontFamily || '$body',
+        fontWeight: bold ? 'bold' : '400',
+        fontStyle: italic ? 'italic' : 'normal',
       })}
     </YStack>
   );
