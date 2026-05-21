@@ -4,6 +4,28 @@ Este documento descreve as regras absolutas de arquitetura, layout, comportament
 
 ---
 
+## 🔐 Autenticação e Redirecionamento por Perfil
+
+### Credenciais de Acesso (Desenvolvimento)
+| Perfil | Email | Senha |
+|--------|-------|-------|
+| Admin | `admin@admin.com` | `123456` |
+| Aluno | `aluno@aluno.com` | `123456` |
+
+### Fluxo de Login
+1. O formulário de login (`/login`) autentica via `supabase.auth.signInWithPassword()`.
+2. Após autenticar, busca o campo `role` na tabela `profiles`.
+3. **Regra de redirecionamento:**
+   - `role = 'admin' | 'teacher'` → redireciona para o dashboard (`/`) do admin.
+   - `role = 'student'` → redireciona para o app do aluno (`http://localhost:8081`).
+
+### Middleware
+- O middleware (`middleware.ts`) usa `@supabase/ssr` com cookies.
+- Rotas públicas: `/login`, `/api/health`, `/api/ready`, `/` (raiz).
+- Usuário não autenticado em rota protegida é redirecionado para `/login?redirect=<path>`.
+
+---
+
 ## 🏛️ 1. A Lei Absoluta do Preview (ADR-005)
 
 > **TUDO O QUE FOR APRESENTADO NO PREVIEW SERÁ O RESULTADO FINAL DA TELA DO USUÁRIO.**
