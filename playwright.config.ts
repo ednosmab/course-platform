@@ -7,9 +7,11 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
+  snapshotDir: './tests/e2e/snapshots',
   use: {
     trace: 'on-first-retry',
-    baseURL: 'http://localhost:3000', // Padrão admin
+    screenshot: 'only-on-failure',
+    baseURL: 'http://localhost:3000',
   },
 
   projects: [

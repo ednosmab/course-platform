@@ -50,3 +50,30 @@ jobs:
 
       - name: Build Ladle stories
         run: pnpm --filter @projeto/ui ladle:build
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Run E2E + Visual Regression tests
+        run: pnpm run test:e2e
+
+      - name: Upload Playwright report (E2E)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-e2e
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Run Ladle VRT (component-level visual regression)
+        run: pnpm run test:vrt:ladle
+
+      - name: Upload Playwright report (Ladle VRT)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-ladle-vrt
+          path: |
+            tests/ladle-vrt/test-results/
+            test-results-ladle/
+          retention-days: 7

@@ -72,6 +72,9 @@ test.describe('Admin Dashboard - Listagem de Cursos', () => {
     // Verifica que não há spans genéricos de "cards fakes" (títulos de placeholder)
     await expect(page.locator('text=Curso Exemplo')).not.toBeVisible();
     await expect(page.locator('text=Card Mockado')).not.toBeVisible();
+
+    // Visual regression: dashboard com 2 cursos (publicado + rascunho)
+    await expect(page).toHaveScreenshot('dashboard-courses-loaded.png');
   });
 
   test('Deve mostrar estado vazio quando não há cursos no banco', async ({ page }) => {
@@ -93,6 +96,9 @@ test.describe('Admin Dashboard - Listagem de Cursos', () => {
 
     await expect(page.locator('text=Nenhum curso encontrado')).toBeVisible();
     await expect(page.locator('text=Clique em "Novo curso" para começar.')).toBeVisible();
+
+    // Visual regression: dashboard vazio
+    await expect(page).toHaveScreenshot('dashboard-empty.png');
   });
 
   test('Deve mostrar filtros e alternar entre Todos / Publicados / Rascunhos', async ({ page }) => {
@@ -126,6 +132,15 @@ test.describe('Admin Dashboard - Listagem de Cursos', () => {
     await page.locator('text=Todos').click();
     await expect(page.locator('text=Curso de Teste E2E')).toBeVisible();
     await expect(page.locator('text=Rascunho em Andamento')).toBeVisible();
+
+    // Visual regression: filtro "Publicados"
+    await page.locator('text=Publicados').click();
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveScreenshot('dashboard-filter-published.png');
+
+    // Volta para "Todos" para não afetar testes seguintes
+    await page.locator('text=Todos').click();
+    await page.waitForLoadState('networkidle');
   });
 
   test('Deve iniciar com loading state e depois transicionar para dados', async ({ page }) => {
@@ -152,6 +167,9 @@ test.describe('Admin Dashboard - Listagem de Cursos', () => {
 
     // Dados apareceram
     await expect(page.locator('text=Curso de Teste E2E')).toBeVisible();
+
+    // Visual regression: loading → dados (já transicionado)
+    await expect(page).toHaveScreenshot('dashboard-loading-to-data.png');
   });
 
   test('Deve exibir erro silenciosamente quando API falha (sem cards fakes)', async ({ page }) => {

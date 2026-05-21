@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { TamaguiProvider, config } from '@projeto/ui';
 import { StudentDashboard } from './src/screens/StudentDashboard';
@@ -6,6 +6,15 @@ import { LessonPlayer } from './src/screens/LessonPlayer';
 
 export default function App() {
   const [screen, setScreen] = useState<'dashboard' | 'player'>('dashboard');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'player') {
+        setScreen('player');
+      }
+    }
+  }, []);
 
   if (screen === 'player') {
     return (

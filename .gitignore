@@ -31,3 +31,9 @@ yarn-error.log*
 # Arquivo de configuração de zona do sistema operacional
 .DS_Store
 design/
+
+# Playwright test artifacts (generated at runtime)
+test-results/
+test-results-ladle/
+playwright-report/
+tests/ladle-vrt/test-results/
