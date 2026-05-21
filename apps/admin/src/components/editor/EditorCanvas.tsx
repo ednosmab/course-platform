@@ -194,11 +194,11 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
 
     const style: React.CSSProperties = {
       fontSize, fontFamily: styles.fontFamily as string || 'inherit',
-      color: styles.color || 'var(--text-primary)',
-      backgroundColor: styles.backgroundColor || 'transparent',
+      color: styles.color as string || 'var(--text-primary)',
+      backgroundColor: styles.backgroundColor as string || 'transparent',
       backgroundImage: styles.backgroundImage ? `url(${styles.backgroundImage})` : 'none',
       backgroundSize: 'cover', backgroundPosition: 'center',
-      textAlign: styles.align || 'left', lineHeight: 1.6,
+      textAlign: (styles.align as React.CSSProperties['textAlign']) || 'left', lineHeight: 1.6,
       width: '100%', height: '100%',
       padding: styles.backgroundColor || styles.backgroundImage ? '16px' : '0',
       borderRadius: styles.backgroundColor || styles.backgroundImage ? '8px' : '0',
@@ -462,7 +462,14 @@ function renderViewportBlocks(args: {
               )}
             </div>
             {isActive && (
-              <XStack onPress={(e: any) => { e.stopPropagation(); args.removeBlock(block.id); }} position="absolute" top={-34} right={0} zIndex={20} bg="white" borderWidth={1} borderColor="$danger" borderRadius={1} px="$2" py={1} cursor="pointer" ai="center" gap={1}>
+              <XStack
+                onPress={(e: any) => { e.stopPropagation(); args.removeBlock(block.id); }}
+                role="button"
+                aria-label="Excluir bloco"
+                tabIndex={0}
+                onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); args.removeBlock(block.id); } }}
+                position="absolute" top={-34} right={0} zIndex={20} bg="white" borderWidth={1} borderColor="$danger" borderRadius={1} px="$2" py={1} cursor="pointer" ai="center" gap={1}
+              >
                 <Icon name="Trash2" size={12} color="$danger" /><Text color="$danger" fontSize={11} fontWeight="500">Excluir</Text>
               </XStack>
             )}
@@ -759,7 +766,11 @@ export const EditorCanvas: React.FC = () => {
               key={block.id}
               onMouseDown={(e) => onBlockMouseDown(e, block)}
               onClick={(e) => { e.stopPropagation(); setActiveBlockId(block.id); }}
-              style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none', isolation: 'isolate' }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setActiveBlockId(block.id); } }}
+              tabIndex={0}
+              role="button"
+              aria-label={`Bloco ${block.type}${block.content ? `: ${block.content.substring(0, 40)}` : ''}${isActive ? ' (selecionado)' : ''}`}
+              style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none', isolation: 'isolate', outline: isActive ? 'none' : undefined }}
             >
               <div style={{
                 position: 'absolute', inset: 0,
@@ -782,7 +793,14 @@ export const EditorCanvas: React.FC = () => {
               </div>
 
               {isActive && (
-                <XStack onPress={(e: any) => { e.stopPropagation(); removeBlock(block.id); }} position="absolute" top={-34} right={0} zIndex={20} bg="white" borderWidth={1} borderColor="$danger" borderRadius={1} px="$2" py={1} cursor="pointer" ai="center" gap={1}>
+                <XStack
+                  onPress={(e: any) => { e.stopPropagation(); removeBlock(block.id); }}
+                  role="button"
+                  aria-label="Excluir bloco"
+                  tabIndex={0}
+                  onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); removeBlock(block.id); } }}
+                  position="absolute" top={-34} right={0} zIndex={20} bg="white" borderWidth={1} borderColor="$danger" borderRadius={1} px="$2" py={1} cursor="pointer" ai="center" gap={1}
+                >
                   <Icon name="Trash2" size={12} color="$danger" /><Text color="$danger" fontSize={11} fontWeight="500">Excluir</Text>
                 </XStack>
               )}

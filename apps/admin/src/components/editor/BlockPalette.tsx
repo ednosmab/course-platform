@@ -12,6 +12,7 @@ export const BlockPalette: React.FC = () => {
     <YStack
       w={collapsed ? 72 : 240}
       minWidth={collapsed ? 72 : 240}
+      h="100%"
       overflowY="auto"
       borderRightWidth={1}
       borderRightColor="$border"
@@ -30,7 +31,11 @@ export const BlockPalette: React.FC = () => {
           borderRadius="$3"
           bg="$background"
           cursor="pointer"
+          role="button"
+          tabIndex={0}
+          aria-label={collapsed ? 'Expandir paleta' : 'Recolher paleta'}
           onPress={() => setCollapsed(!collapsed)}
+          onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCollapsed(!collapsed); } }}
           hoverStyle={{ borderColor: '$primary' }}
         >
           <Icon name={collapsed ? 'ChevronRight' : 'ChevronLeft'} size={16} />
@@ -76,6 +81,10 @@ function BlockBtn({ icon, label, collapsed, onClick }: {
     <YStack
       onPress={onClick}
       cursor="pointer"
+      role="button"
+      tabIndex={0}
+      aria-label={`Adicionar bloco ${label}`}
+      onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
       p="$2"
       ai="center"
       jc="center"

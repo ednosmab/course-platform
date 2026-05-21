@@ -94,10 +94,10 @@ export const EditorHeader: React.FC = () => {
 
       <XStack ai="center" gap="$3">
         <XStack gap={1} mr="$2">
-          <Button variant="ghost" onPress={undo} disabled={!canUndo} opacity={canUndo ? 1 : 0.4} px="$1">
+          <Button variant="ghost" aria-label="Desfazer" onPress={undo} disabled={!canUndo} opacity={canUndo ? 1 : 0.4} px="$1">
             <Icon name="Undo2" size={16} />
           </Button>
-          <Button variant="ghost" onPress={redo} disabled={!canRedo} opacity={canRedo ? 1 : 0.4} px="$1">
+          <Button variant="ghost" aria-label="Refazer" onPress={redo} disabled={!canRedo} opacity={canRedo ? 1 : 0.4} px="$1">
             <Icon name="Redo2" size={16} />
           </Button>
         </XStack>

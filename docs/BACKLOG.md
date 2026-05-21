@@ -104,9 +104,12 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
   - `page.tsx`: notificação dot → `$primary`, status dot → `$success`, published badge → `$successForeground`/`rgba()`
   - `VideoBlock.tsx`: iframe bg `#000000` → `transparent` (herda `$gray1` do parent)
   - **Restante aceito:** `page.tsx` inputs/textarea (nativos, sem equivalente Tamagui), canvas engine (guia/preview/blocos), stories (cores de demonstração), color picker (valores default do usuário)
-- [ ] **Internacionalização (i18n)**
-- [ ] **Acessibilidade (a11y)**
-- [ ] **Remover `design/create-teach-module/`** — Aguardar extração completa
+- [x] **Internacionalização (i18n)**
+- [x] **Acessibilidade (a11y)**
+  - `aria-label` em todos botões com apenas ícone (undo/redo, fechar painel, excluir bloco, negrito/itálico, alinhamento, opções quiz, toggle paleta, itens paleta)
+  - `role="button"`, `tabIndex`, teclado (Enter/Space) em elementos interativos não-`<button>`
+  - Foco teclado e navegação no canvas (`tabIndex`, `onKeyDown`)
+- [ ] **Remover `design/create-teach-module/`** — Manter até EDIT-01 a EDIT-07 estarem implementados. Única referência visual do layout 3 colunas do estúdio, drag-and-drop, inline editing e device preview.
 - [x] **Preencher docs stub (6 arquivos vazios)** — Concluído em P2
 
 ### ⚡ Escalabilidade e Performance

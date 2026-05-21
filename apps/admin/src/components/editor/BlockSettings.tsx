@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Button, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
@@ -195,6 +195,7 @@ const TypographyAndBackgroundControls: React.FC<{ block: any; updateBlock: any }
           <XStack gap={1} height={34}>
             <Button
               variant="ghost"
+              aria-label="Negrito"
               onPress={() => setStyle('bold', !styles.bold)}
               w={34} h={34} p={0}
               borderWidth={styles.bold ? 1 : 0}
@@ -204,6 +205,7 @@ const TypographyAndBackgroundControls: React.FC<{ block: any; updateBlock: any }
             </Button>
             <Button
               variant="ghost"
+              aria-label="Itálico"
               onPress={() => setStyle('italic', !styles.italic)}
               w={34} h={34} p={0}
               borderWidth={styles.italic ? 1 : 0}
@@ -291,7 +293,11 @@ export const BlockSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'props' | 'html'>('props');
 
   const activeBlock = blocks.find((b) => b.id === activeBlockId);
-  const htmlDraft = activeBlock ? getHtmlFromBlock(activeBlock) : '';
+  const [htmlDraft, setHtmlDraft] = useState('');
+
+  useEffect(() => {
+    if (activeBlock) setHtmlDraft(getHtmlFromBlock(activeBlock));
+  }, [activeBlock]);
 
   if (!activeBlock) {
     return (
@@ -321,7 +327,7 @@ export const BlockSettings: React.FC = () => {
       <YStack px="$5" pt="$4" borderBottomWidth={1} borderBottomColor="$border" flexShrink={0}>
         <XStack ai="center" jc="space-between" mb="$3">
           <Text fontSize={11} fontWeight="700" textTransform="uppercase" color="$textSecondary" letterSpacing={0.5}>Editar Bloco</Text>
-          <Button variant="ghost" onPress={() => removeBlock(activeBlock.id)} px="$1">
+          <Button variant="ghost" aria-label="Excluir bloco" onPress={() => removeBlock(activeBlock.id)} px="$1">
             <Icon name="Trash2" size={14} color="$danger" />
           </Button>
         </XStack>
@@ -428,6 +434,7 @@ export const BlockSettings: React.FC = () => {
                   <Button
                     key={align}
                     variant="ghost"
+                    aria-label={`Alinhar ${align === 'left' ? 'à esquerda' : align === 'right' ? 'à direita' : align === 'center' ? 'ao centro' : 'justificado'}`}
                     borderWidth={isSelected ? 1 : 0}
                     borderColor={isSelected ? '$border' : 'transparent'}
                     onPress={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, align } })}
@@ -550,7 +557,7 @@ export const BlockSettings: React.FC = () => {
                     style={{ border: 'none', background: 'transparent', fontSize: 13, flex: 1, color: 'var(--text-primary)', outline: 'none', padding: '4px 0' }}
                   />
                   {activeBlock.options.length > 2 && (
-                    <Button variant="ghost" onPress={() => {
+                    <Button variant="ghost" aria-label="Excluir opção" onPress={() => {
                       const updatedOptions = activeBlock.options.filter((o) => o.id !== opt.id);
                       if (opt.isCorrect && updatedOptions.length > 0) updatedOptions[0].isCorrect = true;
                       updateBlock(activeBlock.id, { options: updatedOptions });
@@ -619,6 +626,7 @@ export const BlockSettings: React.FC = () => {
                   <Button
                     key={align}
                     variant="ghost"
+                    aria-label={`Alinhar ${align === 'left' ? 'à esquerda' : align === 'right' ? 'à direita' : 'ao centro'}`}
                     borderWidth={isSelected ? 1 : 0}
                     borderColor={isSelected ? '$border' : 'transparent'}
                     onPress={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, align } })}
@@ -722,6 +730,7 @@ export const BlockSettings: React.FC = () => {
                   <Button
                     key={align}
                     variant="ghost"
+                    aria-label={`Alinhar ${align === 'left' ? 'à esquerda' : align === 'right' ? 'à direita' : align === 'center' ? 'ao centro' : 'justificado'}`}
                     borderWidth={isSelected ? 1 : 0}
                     borderColor={isSelected ? '$border' : 'transparent'}
                     onPress={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, align } })}

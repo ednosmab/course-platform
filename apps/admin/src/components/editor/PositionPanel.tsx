@@ -229,7 +229,7 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
     >
       <XStack ai="center" jc="space-between" px="$4" py="$3" borderBottomWidth={1} borderBottomColor="$border" flexShrink={0}>
         <Text fontSize={14} fontWeight="600">Posição</Text>
-        <Button variant="ghost" onPress={onClose} px="$1">
+        <Button variant="ghost" aria-label="Fechar painel de posição" onPress={onClose} px="$1">
           <Icon name="X" size={16} />
         </Button>
       </XStack>
