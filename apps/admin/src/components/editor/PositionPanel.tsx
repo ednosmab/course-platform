@@ -268,18 +268,22 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
                 <YStack gap="$2">
                   <XStack gap="$2">
                     <Button variant="ghost" onPress={handleBringForward} flex={1}>
-                      <Icon name="MoveUp" size={14} /> Para frente
+                      <Icon name="MoveUp" size={14} />
+                      <Text fontSize={12} fontWeight="600">Para frente</Text>
                     </Button>
                     <Button variant="ghost" onPress={handleSendBackward} flex={1}>
-                      <Icon name="MoveDown" size={14} /> Para trás
+                      <Icon name="MoveDown" size={14} />
+                      <Text fontSize={12} fontWeight="600">Para trás</Text>
                     </Button>
                   </XStack>
                   <XStack gap="$2">
                     <Button variant="ghost" onPress={handleBringToFront} flex={1}>
-                      <Icon name="ArrowUpToLine" size={14} /> Para o topo
+                      <Icon name="ArrowUpToLine" size={14} />
+                      <Text fontSize={12} fontWeight="600">Para o topo</Text>
                     </Button>
                     <Button variant="ghost" onPress={handleSendToBack} flex={1}>
-                      <Icon name="ArrowDownToLine" size={14} /> Para o fundo
+                      <Icon name="ArrowDownToLine" size={14} />
+                      <Text fontSize={12} fontWeight="600">Para o fundo</Text>
                     </Button>
                   </XStack>
                 </YStack>
@@ -290,22 +294,28 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
                   </Text>
                   <XStack flexWrap="wrap" gap="$2">
                     <Button variant="ghost" onPress={() => handleAlign('top')} flex={1} minWidth="40%">
-                      <Icon name="AlignVerticalJustifyStart" size={14} /> Em cima
+                      <Icon name="AlignVerticalJustifyStart" size={14} />
+                      <Text fontSize={12} fontWeight="500">Em cima</Text>
                     </Button>
                     <Button variant="ghost" onPress={() => handleAlign('left')} flex={1} minWidth="40%">
-                      <Icon name="AlignHorizontalJustifyStart" size={14} /> À esquerda
+                      <Icon name="AlignHorizontalJustifyStart" size={14} />
+                      <Text fontSize={12} fontWeight="500">À esquerda</Text>
                     </Button>
                     <Button variant="ghost" onPress={() => handleAlign('middle')} flex={1} minWidth="40%">
-                      <Icon name="AlignVerticalJustifyCenter" size={14} /> No meio
+                      <Icon name="AlignVerticalJustifyCenter" size={14} />
+                      <Text fontSize={12} fontWeight="500">No meio</Text>
                     </Button>
                     <Button variant="ghost" onPress={() => handleAlign('center')} flex={1} minWidth="40%">
-                      <Icon name="AlignHorizontalJustifyCenter" size={14} /> Ao centro
+                      <Icon name="AlignHorizontalJustifyCenter" size={14} />
+                      <Text fontSize={12} fontWeight="500">Ao centro</Text>
                     </Button>
                     <Button variant="ghost" onPress={() => handleAlign('bottom')} flex={1} minWidth="40%">
-                      <Icon name="AlignVerticalJustifyEnd" size={14} /> Embaixo
+                      <Icon name="AlignVerticalJustifyEnd" size={14} />
+                      <Text fontSize={12} fontWeight="500">Embaixo</Text>
                     </Button>
                     <Button variant="ghost" onPress={() => handleAlign('right')} flex={1} minWidth="40%">
-                      <Icon name="AlignHorizontalJustifyEnd" size={14} /> À direita
+                      <Icon name="AlignHorizontalJustifyEnd" size={14} />
+                      <Text fontSize={12} fontWeight="500">À direita</Text>
                     </Button>
                   </XStack>
                 </YStack>
