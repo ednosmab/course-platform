@@ -49,6 +49,10 @@ SESSAO ATIVA — Login com @supabase/ssr + role-based redirect concluído. i18n 
 - [x] **29/29 testes verdes:** 13 E2E + 16 Ladle VRT
 - [x] **P3 a11y:** aria-label + role + tabIndex + teclado em todos elementos interativos do editor
 - [x] **P3 i18n:** i18next + react-i18next instalado, provider no admin, EditorHeader migrado
+- [x] **Auth E2E:** `admin-auth.spec.ts` com 2 testes (login admin → dashboard, login aluno → student app)
+- [x] **Workflow docs:** Seção de autenticação adicionada em `docs/workflows/workflow_adm.md`
+- [x] **E2E plan atualizado:** Login desbloqueado, cobertura 13→15 testes
+- [x] **Backlog atualizado:** E2E-01 e E2E-06 marcados como concluídos
 
 ## Key Decisions
 - **order_index append:** 1ª aula criada = topo, última = final. Reordenação manual via ↑↓.

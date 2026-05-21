@@ -207,14 +207,14 @@ Itens identificados na análise `docs/REQUISITOS_SEGURANCA_DISPONIBILIDADE.md`:
 Tasks do plano `docs/layers/testing/e2e_playwright_plan.md`:
 
 **Admin:**
-- [ ] **E2E-01:** Login do admin
-- [ ] **E2E-02:** CRUD de curso
+- [x] **E2E-01:** Login do admin
+- [x] **E2E-02:** CRUD de curso
 - [ ] **E2E-03:** Canvas de aula (adicionar/mover/remover blocos)
 - [ ] **E2E-04:** Gerenciamento de usuários
 - [ ] **E2E-05:** Relatórios
 
 **Aluno:**
-- [ ] **E2E-06:** Login do aluno
+- [x] **E2E-06:** Login do aluno
 - [ ] **E2E-07:** Catálogo de cursos
 - [ ] **E2E-08:** Player de aula
 - [ ] **E2E-09:** Quiz
