@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { YStack, XStack, TextBlockRenderer, QuoteBlockRenderer, Icon, Text } from '@projeto/ui';
 import { AnyBlock } from '@projeto/types';
+
+const PAGE_W = 860;
 
 interface Layout {
   x: number;
@@ -11,30 +13,8 @@ interface Layout {
 }
 
 const getLayout = (block: AnyBlock): Layout => {
-  return block.layouts?.desktop || { x: 0, y: 0, w: 700, h: 150, zIndex: 0 };
+  return block.layouts?.desktop || { x: 40, y: 40, w: 700, h: 150, zIndex: 0 };
 };
-
-function groupBlocksByRow(blocks: AnyBlock[]): AnyBlock[][] {
-  if (!blocks.length) return [];
-  const sorted = [...blocks].sort((a, b) => getLayout(a).y - getLayout(b).y);
-  const rows: AnyBlock[][] = [];
-  let row = [sorted[0]];
-  for (let i = 1; i < sorted.length; i++) {
-    const bl = getLayout(sorted[i]);
-    const overlaps = row.some(rb => {
-      const rl = getLayout(rb);
-      return bl.y < rl.y + rl.h && bl.y + bl.h > rl.y;
-    });
-    if (overlaps) {
-      row.push(sorted[i]);
-    } else {
-      rows.push([...row].sort((a, b) => getLayout(a).x - getLayout(b).x));
-      row = [sorted[i]];
-    }
-  }
-  rows.push([...row].sort((a, b) => getLayout(a).x - getLayout(b).x));
-  return rows;
-}
 
 function VideoPreview({ block }: { block: AnyBlock }) {
   const b = block as AnyBlock & { provider?: string };
@@ -117,49 +97,62 @@ function QuizPreview({ block }: { block: AnyBlock }) {
   );
 }
 
+const PAGE_H_PADDING = 80;
+
 interface StudentPreviewProps {
   blocks: AnyBlock[];
 }
 
 export const StudentPreview: React.FC<StudentPreviewProps> = ({ blocks }) => {
-  const rows = groupBlocksByRow(blocks);
+  const pageH = useMemo(() => {
+    if (!blocks.length) return 600;
+    const maxBottom = Math.max(...blocks.map(b => {
+      const l = getLayout(b);
+      return l.y + l.h;
+    }));
+    return maxBottom + PAGE_H_PADDING;
+  }, [blocks]);
+
+  if (!blocks.length) return null;
 
   return (
-    <YStack width="100%" gap="$4" p={24}>
-      {rows.map((row, ri) => {
-        const totalW = row.reduce((s, b) => s + getLayout(b).w, 0);
-        return (
-          <XStack key={`row-${ri}`} flexWrap="wrap" gap="$3" ai="flex-start" width="100%">
-            {row.map((block) => {
-              const l = getLayout(block);
-              const flexBasis = `${Math.max(40, Math.round((l.w / totalW) * 100))}%`;
-
-              return (
-                <YStack
-                  key={block.id}
-                  flexGrow={1}
-                  flexShrink={1}
-                  flexBasis={flexBasis as any}
-                  minWidth={140}
-                >
-                  {block.type === 'text' && <TextBlockRenderer block={block} />}
-                  {block.type === 'heading' && (() => {
-                    const h = block as any;
-                    const tag = h.level === 1 ? 'h1' : h.level === 2 ? 'h2' : 'h3';
-                    return React.createElement(tag, { style: { margin: '12px 0', fontWeight: 700, lineHeight: 1.3 } }, h.content);
-                  })()}
-                  {block.type === 'divider' && <div style={{ width: '100%', height: 1, borderTop: `${(block as any).styles?.thickness || 1}px ${(block as any).styles?.style || 'solid'} ${(block as any).styles?.color || '#e2e8f0'}`, margin: '16px 0' }} />}
-                  {block.type === 'video' && <VideoPreview block={block} />}
-                  {block.type === 'quiz' && <QuizPreview block={block} />}
-                  {block.type === 'quote' && <QuoteBlockRenderer block={block} />}
-                  {block.type === 'image' && <ImagePreview block={block} />}
-                  {block.type === 'html' && <HtmlPreview block={block} />}
-                </YStack>
-              );
-            })}
-          </XStack>
-        );
-      })}
+    <YStack width="100%" ai="center" overflow="hidden">
+      <YStack
+        position="relative"
+        width={PAGE_W}
+        style={{ maxWidth: '100%' }}
+        height={pageH}
+      >
+        {blocks.map(block => {
+          const l = getLayout(block);
+          return (
+            <YStack
+              key={block.id}
+              position="absolute"
+              style={{
+                left: l.x,
+                top: l.y,
+                width: l.w,
+                height: l.h,
+                zIndex: l.zIndex + 1,
+              }}
+            >
+              {block.type === 'text' && <TextBlockRenderer block={block} />}
+              {block.type === 'heading' && (() => {
+                const h = block as any;
+                const tag = h.level === 1 ? 'h1' : h.level === 2 ? 'h2' : 'h3';
+                return React.createElement(tag, { style: { margin: '12px 0', fontWeight: 700, lineHeight: 1.3 } }, h.content);
+              })()}
+              {block.type === 'divider' && <div style={{ width: '100%', height: 1, borderTop: `${(block as any).styles?.thickness || 1}px ${(block as any).styles?.style || 'solid'} ${(block as any).styles?.color || '#e2e8f0'}`, margin: '16px 0' }} />}
+              {block.type === 'video' && <VideoPreview block={block} />}
+              {block.type === 'quiz' && <QuizPreview block={block} />}
+              {block.type === 'quote' && <QuoteBlockRenderer block={block} />}
+              {block.type === 'image' && <ImagePreview block={block} />}
+              {block.type === 'html' && <HtmlPreview block={block} />}
+            </YStack>
+          );
+        })}
+      </YStack>
     </YStack>
   );
 };

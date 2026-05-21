@@ -1,19 +1,9 @@
-import React from 'react';
-import { DimensionValue } from 'react-native';
-import {
-  YStack,
-  XStack,
-  Text,
-  TextBlockRenderer,
-  QuoteBlockRenderer,
-} from '@projeto/ui';
-import {
-  VideoBlockRenderer,
-  QuizBlockRenderer,
-  ImageBlockRenderer,
-  HtmlBlockRenderer,
-} from '@projeto/ui/native';
+import React, { useMemo } from 'react';
+import { YStack, Text, TextBlockRenderer, QuoteBlockRenderer } from '@projeto/ui';
+import { VideoBlockRenderer, QuizBlockRenderer, ImageBlockRenderer, HtmlBlockRenderer } from '@projeto/ui/native';
 import { AnyBlock } from '@projeto/types';
+
+const PAGE_W = 860;
 
 interface Layout {
   x: number;
@@ -24,30 +14,10 @@ interface Layout {
 }
 
 const getLayout = (block: AnyBlock): Layout => {
-  return block.layouts?.desktop || { x: 0, y: 0, w: 700, h: 150, zIndex: 0 };
+  return block.layouts?.desktop || { x: 40, y: 40, w: 700, h: 150, zIndex: 0 };
 };
 
-function groupBlocksByRow(blocks: AnyBlock[]): AnyBlock[][] {
-  if (!blocks.length) return [];
-  const sorted = [...blocks].sort((a, b) => getLayout(a).y - getLayout(b).y);
-  const rows: AnyBlock[][] = [];
-  let row = [sorted[0]];
-  for (let i = 1; i < sorted.length; i++) {
-    const bl = getLayout(sorted[i]);
-    const overlaps = row.some(rb => {
-      const rl = getLayout(rb);
-      return bl.y < rl.y + rl.h && bl.y + bl.h > rl.y;
-    });
-    if (overlaps) {
-      row.push(sorted[i]);
-    } else {
-      rows.push([...row].sort((a, b) => getLayout(a).x - getLayout(b).x));
-      row = [sorted[i]];
-    }
-  }
-  rows.push([...row].sort((a, b) => getLayout(a).x - getLayout(b).x));
-  return rows;
-}
+const PAGE_H_PADDING = 80;
 
 interface BlockRendererProps {
   blocks: AnyBlock[];
@@ -56,61 +26,72 @@ interface BlockRendererProps {
 }
 
 export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks, onVideoProgress, savedPosition = 0 }) => {
-  const rows = groupBlocksByRow(blocks);
+  const pageH = useMemo(() => {
+    if (!blocks.length) return 600;
+    const maxBottom = Math.max(...blocks.map(b => {
+      const l = getLayout(b);
+      return l.y + l.h;
+    }));
+    return maxBottom + PAGE_H_PADDING;
+  }, [blocks]);
+
+  if (!blocks.length) return null;
 
   return (
-    <YStack width="100%" gap="$4">
-      {rows.map((row, ri) => {
-        const totalW = row.reduce((s, b) => s + getLayout(b).w, 0);
-        return (
-          <XStack key={`row-${ri}`} flexWrap="wrap" gap="$3" ai="flex-start" width="100%">
-            {row.map((block) => {
-              const l = getLayout(block);
-              const flexBasis = `${Math.max(40, Math.round((l.w / totalW) * 100))}%`;
-
-              return (
+    <YStack width="100%" ai="center" overflow="hidden">
+      <YStack
+        position="relative"
+        width={PAGE_W}
+        style={{ maxWidth: '100%' }}
+        height={pageH}
+      >
+        {blocks.map(block => {
+          const l = getLayout(block);
+          return (
+            <YStack
+              key={block.id}
+              position="absolute"
+              style={{
+                left: l.x,
+                top: l.y,
+                width: l.w,
+                height: l.h,
+                zIndex: l.zIndex + 1,
+              }}
+            >
+              {block.type === 'text' && <TextBlockRenderer block={block} />}
+              {block.type === 'video' && (
+                <VideoBlockRenderer
+                  block={block}
+                  onVideoProgress={onVideoProgress}
+                  savedPosition={savedPosition}
+                />
+              )}
+              {block.type === 'quiz' && <QuizBlockRenderer block={block} />}
+              {block.type === 'quote' && <QuoteBlockRenderer block={block} />}
+              {block.type === 'image' && <ImageBlockRenderer block={block} />}
+              {block.type === 'html' && <HtmlBlockRenderer block={block} />}
+              {block.type === 'heading' && (() => {
+                const h = block as any;
+                const size = h.level === 1 ? 28 : h.level === 2 ? 22 : 18;
+                return (
+                  <Text fontSize={size} fontWeight="700" lineHeight={size * 1.3} my="$3">
+                    {h.content}
+                  </Text>
+                );
+              })()}
+              {block.type === 'divider' && (
                 <YStack
-                  key={block.id}
-                  flexGrow={1}
-                  flexShrink={1}
-                  flexBasis={flexBasis as DimensionValue}
-                  minWidth={140}
-                >
-                  {block.type === 'text' && <TextBlockRenderer block={block} />}
-                  {block.type === 'video' && (
-                    <VideoBlockRenderer
-                      block={block}
-                      onVideoProgress={onVideoProgress}
-                      savedPosition={savedPosition}
-                    />
-                  )}
-                  {block.type === 'quiz' && <QuizBlockRenderer block={block} />}
-                  {block.type === 'quote' && <QuoteBlockRenderer block={block} />}
-                  {block.type === 'image' && <ImageBlockRenderer block={block} />}
-                  {block.type === 'html' && <HtmlBlockRenderer block={block} />}
-                  {block.type === 'heading' && (() => {
-                    const h = block as any;
-                    const size = h.level === 1 ? 28 : h.level === 2 ? 22 : 18;
-                    return (
-                      <Text fontSize={size} fontWeight="700" lineHeight={size * 1.3} my="$3">
-                        {h.content}
-                      </Text>
-                    );
-                  })()}
-                  {block.type === 'divider' && (
-                    <YStack
-                      my="$4"
-                      borderBottomWidth={(block as any).styles?.thickness || 1}
-                      borderColor={(block as any).styles?.color || '$border'}
-                      borderStyle={(block as any).styles?.style || 'solid'}
-                    />
-                  )}
-                </YStack>
-              );
-            })}
-          </XStack>
-        );
-      })}
+                  my="$4"
+                  borderBottomWidth={(block as any).styles?.thickness || 1}
+                  borderColor={(block as any).styles?.color || '$border'}
+                  borderStyle={(block as any).styles?.style || 'solid'}
+                />
+              )}
+            </YStack>
+          );
+        })}
+      </YStack>
     </YStack>
   );
 };
