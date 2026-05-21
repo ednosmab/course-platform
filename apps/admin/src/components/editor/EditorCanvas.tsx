@@ -223,8 +223,8 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
             padding: '8px',
           }}
           onBlur={(e) => {
-            const text = e.currentTarget.textContent || '';
-            onEditComplete?.(text);
+            const html = e.currentTarget.innerHTML.replace(/&nbsp;/g, ' ');
+            onEditComplete?.(html);
           }}
           onMouseDown={(e) => e.stopPropagation()}
         >
@@ -233,7 +233,12 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
       );
     }
 
-    let textElement: React.ReactNode = <>{parseSimpleMarkdown(block.content)}</>;
+    let textElement: React.ReactNode;
+    if (/<[a-z][\s>]/i.test(block.content)) {
+      textElement = <div dangerouslySetInnerHTML={{ __html: block.content }} />;
+    } else {
+      textElement = <>{parseSimpleMarkdown(block.content)}</>;
+    }
     if (styles.bold) textElement = <strong>{textElement}</strong>;
     if (styles.italic) textElement = <em>{textElement}</em>;
 
@@ -698,6 +703,52 @@ export const EditorCanvas: React.FC = () => {
   const [isInteracting, setIsInteracting] = useState(false);
   const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
   const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
+  const [floatToolbar, setFloatToolbar] = useState<{ x: number; y: number } | null>(null);
+  const floatToolbarRef = useRef<HTMLDivElement>(null);
+
+  const handleFloatFormat = (command: string, value?: string) => {
+    document.execCommand(command, false, value);
+    setFloatToolbar(null);
+  };
+
+  useEffect(() => {
+    const onMouseUp = (e: MouseEvent) => {
+      if (!inlineEditingId) {
+        setFloatToolbar(null);
+        return;
+      }
+      const target = e.target as HTMLElement;
+      if (floatToolbarRef.current?.contains(target)) return;
+      if (!target.closest('[contenteditable]')) {
+        setFloatToolbar(null);
+        return;
+      }
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || !sel.toString().trim()) {
+        setFloatToolbar(null);
+        return;
+      }
+      const range = sel.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) {
+        setFloatToolbar(null);
+        return;
+      }
+      setFloatToolbar({
+        x: rect.left + rect.width / 2,
+        y: rect.top - 8,
+      });
+    };
+    document.addEventListener('mouseup', onMouseUp);
+    return () => document.removeEventListener('mouseup', onMouseUp);
+  }, [inlineEditingId]);
+
+  useEffect(() => {
+    if (!floatToolbar) return;
+    const onScroll = () => setFloatToolbar(null);
+    document.addEventListener('scroll', onScroll, true);
+    return () => document.removeEventListener('scroll', onScroll, true);
+  }, [floatToolbar]);
 
   const interactionRef = useRef<{
     mode: 'move' | 'resize';
@@ -812,6 +863,7 @@ export const EditorCanvas: React.FC = () => {
       flex={1} p="$5" style={{ overflow: 'auto' }}
       bg="$background"
       onPress={() => setActiveBlockId(null)}
+      data-editor-root
     >
       <div
         style={{ position: 'relative', width: PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)' }}
@@ -939,6 +991,47 @@ export const EditorCanvas: React.FC = () => {
           );
         })}
       </div>
+
+      {floatToolbar && (
+        <div
+          ref={floatToolbarRef}
+          style={{
+            position: 'fixed',
+            left: floatToolbar.x,
+            top: floatToolbar.y,
+            transform: 'translate(-50%, -100%)',
+            zIndex: 10000,
+            background: 'white',
+            borderRadius: '8px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.08)',
+            padding: '4px 6px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            pointerEvents: 'auto',
+          }}
+        >
+          <button
+            onMouseDown={(e) => { e.preventDefault(); handleFloatFormat('bold'); }}
+            style={{ width: 30, height: 30, border: '1px solid #e2e8f0', borderRadius: 6, background: 'white', cursor: 'pointer', fontWeight: 'bold', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            title="Negrito"
+          >B</button>
+          <button
+            onMouseDown={(e) => { e.preventDefault(); handleFloatFormat('italic'); }}
+            style={{ width: 30, height: 30, border: '1px solid #e2e8f0', borderRadius: 6, background: 'white', cursor: 'pointer', fontStyle: 'italic', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            title="Itálico"
+          >I</button>
+          <div style={{ width: 1, height: 20, background: '#e2e8f0', margin: '0 2px' }} />
+          {['#ef4444', '#f97316', '#eab308', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#000000'].map(c => (
+            <button
+              key={c}
+              onMouseDown={(e) => { e.preventDefault(); handleFloatFormat('foreColor', c); }}
+              style={{ width: 20, height: 20, borderRadius: 10, border: c === '#ffffff' ? '1px solid #e2e8f0' : 'none', background: c, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title={`Cor ${c}`}
+            />
+          ))}
+        </div>
+      )}
     </YStack>
   );
 };
