@@ -26,6 +26,7 @@ function BlockIcon({ type }: { type: string }) {
   const iconMap: Record<string, string> = {
     text: 'Type', image: 'Image', video: 'Video',
     quiz: 'FileQuestion', quote: 'Quote', html: 'Code',
+    heading: 'Heading', divider: 'SeparatorHorizontal',
   };
   const name = iconMap[type] || 'Layers';
   return <Icon name={name} size={14} />;
@@ -34,11 +35,13 @@ function BlockIcon({ type }: { type: string }) {
 function getBlockTitle(block: AnyBlock): string {
   switch (block.type) {
     case 'text': return (block.content || '').substring(0, 24) || 'Texto vazio';
+    case 'heading': return (block.content || '').substring(0, 24) || 'Título vazio';
     case 'image': return 'Imagem' + (block.alt ? ` – ${block.alt}` : '');
     case 'video': return `Vídeo (${block.provider})`;
     case 'quiz': return (block.question || '').substring(0, 24) || 'Quiz';
     case 'quote': return 'Citação' + (block.author ? ` – ${block.author}` : '');
     case 'html': return 'Código HTML';
+    case 'divider': return 'Divisor';
     default: return 'Bloco';
   }
 }
