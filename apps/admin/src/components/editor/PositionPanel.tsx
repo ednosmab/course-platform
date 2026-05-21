@@ -267,23 +267,23 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
               <>
                 <YStack gap="$2">
                   <XStack gap="$2">
-                    <Button variant="ghost" onPress={handleBringForward} flex={1} borderWidth={1} borderColor="$border" gap="$1.5">
+                    <Button variant="ghost" onPress={handleBringForward} flex={1} borderWidth={1} borderColor="$border" gap="$1.5" px="$2.5">
                       <Icon name="MoveUp" size={16} />
-                      <Text fontSize={12} fontWeight="600">Para frente</Text>
+                      <Text fontSize={12} fontWeight="600" whiteSpace="nowrap">Para frente</Text>
                     </Button>
-                    <Button variant="ghost" onPress={handleSendBackward} flex={1} borderWidth={1} borderColor="$border" gap="$1.5">
+                    <Button variant="ghost" onPress={handleSendBackward} flex={1} borderWidth={1} borderColor="$border" gap="$1.5" px="$2.5">
                       <Icon name="MoveDown" size={16} />
-                      <Text fontSize={12} fontWeight="600">Para trás</Text>
+                      <Text fontSize={12} fontWeight="600" whiteSpace="nowrap">Para trás</Text>
                     </Button>
                   </XStack>
                   <XStack gap="$2">
-                    <Button variant="ghost" onPress={handleBringToFront} flex={1} borderWidth={1} borderColor="$border" gap="$1.5">
+                    <Button variant="ghost" onPress={handleBringToFront} flex={1} borderWidth={1} borderColor="$border" gap="$1.5" px="$2.5">
                       <Icon name="ArrowUpToLine" size={16} />
-                      <Text fontSize={12} fontWeight="600">Para o topo</Text>
+                      <Text fontSize={12} fontWeight="600" whiteSpace="nowrap">Para o topo</Text>
                     </Button>
-                    <Button variant="ghost" onPress={handleSendToBack} flex={1} borderWidth={1} borderColor="$border" gap="$1.5">
+                    <Button variant="ghost" onPress={handleSendToBack} flex={1} borderWidth={1} borderColor="$border" gap="$1.5" px="$2.5">
                       <Icon name="ArrowDownToLine" size={16} />
-                      <Text fontSize={12} fontWeight="600">Para o fundo</Text>
+                      <Text fontSize={12} fontWeight="600" whiteSpace="nowrap">Para o fundo</Text>
                     </Button>
                   </XStack>
                 </YStack>
@@ -293,29 +293,29 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
                     Alinhar à página
                   </Text>
                   <XStack flexWrap="wrap" gap="$2">
-                    <Button variant="ghost" onPress={() => handleAlign('top')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5">
+                    <Button variant="ghost" onPress={() => handleAlign('top')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5" px="$2.5">
                       <Icon name="AlignVerticalJustifyStart" size={16} />
-                      <Text fontSize={12} fontWeight="500">Em cima</Text>
+                      <Text fontSize={12} fontWeight="500" whiteSpace="nowrap">Em cima</Text>
                     </Button>
-                    <Button variant="ghost" onPress={() => handleAlign('left')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5">
+                    <Button variant="ghost" onPress={() => handleAlign('left')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5" px="$2.5">
                       <Icon name="AlignHorizontalJustifyStart" size={16} />
-                      <Text fontSize={12} fontWeight="500">À esquerda</Text>
+                      <Text fontSize={12} fontWeight="500" whiteSpace="nowrap">À esquerda</Text>
                     </Button>
-                    <Button variant="ghost" onPress={() => handleAlign('middle')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5">
+                    <Button variant="ghost" onPress={() => handleAlign('middle')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5" px="$2.5">
                       <Icon name="AlignVerticalJustifyCenter" size={16} />
-                      <Text fontSize={12} fontWeight="500">No meio</Text>
+                      <Text fontSize={12} fontWeight="500" whiteSpace="nowrap">No meio</Text>
                     </Button>
-                    <Button variant="ghost" onPress={() => handleAlign('center')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5">
+                    <Button variant="ghost" onPress={() => handleAlign('center')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5" px="$2.5">
                       <Icon name="AlignHorizontalJustifyCenter" size={16} />
-                      <Text fontSize={12} fontWeight="500">Ao centro</Text>
+                      <Text fontSize={12} fontWeight="500" whiteSpace="nowrap">Ao centro</Text>
                     </Button>
-                    <Button variant="ghost" onPress={() => handleAlign('bottom')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5">
+                    <Button variant="ghost" onPress={() => handleAlign('bottom')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5" px="$2.5">
                       <Icon name="AlignVerticalJustifyEnd" size={16} />
-                      <Text fontSize={12} fontWeight="500">Embaixo</Text>
+                      <Text fontSize={12} fontWeight="500" whiteSpace="nowrap">Embaixo</Text>
                     </Button>
-                    <Button variant="ghost" onPress={() => handleAlign('right')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5">
+                    <Button variant="ghost" onPress={() => handleAlign('right')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5" px="$2.5">
                       <Icon name="AlignHorizontalJustifyEnd" size={16} />
-                      <Text fontSize={12} fontWeight="500">À direita</Text>
+                      <Text fontSize={12} fontWeight="500" whiteSpace="nowrap">À direita</Text>
                     </Button>
                   </XStack>
                 </YStack>
