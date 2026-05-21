@@ -52,7 +52,7 @@ export const VideoBlockRenderer: React.FC<Props> = ({ block, onVideoProgress, sa
             height: 'auto',
             aspectRatio: '16/9',
             border: 'none',
-            backgroundColor: '#000000',
+            backgroundColor: 'transparent',
           }}
         />
         <XStack ai="center" gap="$1.5" p="$3" borderTopWidth={1} borderTopColor="$gray2">

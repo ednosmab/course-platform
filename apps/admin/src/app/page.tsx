@@ -118,7 +118,7 @@ export default function Dashboard() {
             </XStack>
             <XStack position="relative" p={8} borderRadius={6} cursor="pointer">
               <Icon name="Bell" size={16} color="$textMuted" />
-              <span style={{ position: 'absolute', right: 6, top: 6, width: 6, height: 6, borderRadius: '50%', backgroundColor: '#3B82F6' }} />
+              <XStack position="absolute" right={6} top={6} w={6} h={6} borderRadius={3} bg="$primary" />
             </XStack>
             <XStack ai="center" gap={8} px={8} py={4} borderRadius={6} borderWidth={1} borderColor="$border" backgroundColor="$card" cursor="pointer">
               <XStack width={24} height={24} borderRadius={4} ai="center" jc="center" backgroundColor="$accent">
@@ -137,7 +137,7 @@ export default function Dashboard() {
             <YStack position="relative" gap={24} $md={{ fd: 'row', ai: 'flex-end', jc: 'space-between' }}>
               <YStack maxWidth={576}>
                 <XStack ai="center" gap={6} px={10} py={4} borderRadius={9999} borderWidth={1} borderColor="$border" backgroundColor="$background" alignSelf="flex-start">
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#22C55E' }} />
+                  <XStack w={6} h={6} borderRadius={3} bg="$success" />
                   <Text fontSize={12} color="$textMuted">Tudo certo por aqui</Text>
                 </XStack>
                 <Text fontFamily="$display" fontSize={36} fontWeight="$6" letterSpacing={-1} mt={16} $md={{ fontSize: 40 }}>
@@ -195,9 +195,9 @@ export default function Dashboard() {
                         <YStack height={128} position="relative" style={{ background: c.thumbnail_url ? `url(${c.thumbnail_url}) center/cover no-repeat` : 'linear-gradient(135deg, #60A5FA, #6366F1)' }}>
                           <YStack position="absolute" inset={0} opacity={c.thumbnail_url ? 0 : 0.3} style={{ backgroundImage: c.thumbnail_url ? undefined : 'linear-gradient(to right, rgba(204, 208, 220, 0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(204, 208, 220, 0.35) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
                           <XStack position="absolute" left={16} top={16}>
-                            <span style={{ borderRadius: 9999, padding: '2px 8px', fontSize: 11, fontWeight: 500, backdropFilter: 'blur(8px)', backgroundColor: c.is_published ? 'rgba(34, 197, 94, 0.2)' : 'rgba(247, 248, 252, 0.7)', color: c.is_published ? '#222C28' : '#282836' }}>
-                              {c.is_published ? 'Publicado' : 'Rascunho'}
-                            </span>
+                            <XStack borderRadius={9999} px={8} py={2} style={{ backdropFilter: 'blur(8px)', backgroundColor: c.is_published ? 'rgba(34, 197, 94, 0.2)' : 'rgba(247, 248, 252, 0.7)' }}>
+                              <Text fontSize={11} fontWeight="500" color={c.is_published ? '$successForeground' : '$text'}>{c.is_published ? 'Publicado' : 'Rascunho'}</Text>
+                            </XStack>
                           </XStack>
                         </YStack>
                         <YStack p={20}>

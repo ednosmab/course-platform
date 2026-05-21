@@ -100,7 +100,10 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
 
 ### P3 — Pendentes
 
-- [ ] **Eliminar cores hex hardcoded** — ~20 violações restantes em inline styles nativos (requer refatoração maior)
+- [x] **Eliminar cores hex hardcoded — UI Chrome**
+  - `page.tsx`: notificação dot → `$primary`, status dot → `$success`, published badge → `$successForeground`/`rgba()`
+  - `VideoBlock.tsx`: iframe bg `#000000` → `transparent` (herda `$gray1` do parent)
+  - **Restante aceito:** `page.tsx` inputs/textarea (nativos, sem equivalente Tamagui), canvas engine (guia/preview/blocos), stories (cores de demonstração), color picker (valores default do usuário)
 - [ ] **Internacionalização (i18n)**
 - [ ] **Acessibilidade (a11y)**
 - [ ] **Remover `design/create-teach-module/`** — Aguardar extração completa
