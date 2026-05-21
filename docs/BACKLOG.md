@@ -15,7 +15,7 @@
 - [x] **BUG: Salvar configurações do curso** — Já implementado com `setSaveMessage` e feedback de sucesso/erro (linhas 164-195). Fechamento automático após 2s (sucesso) ou 5s (erro).
 - [x] **BUG: Painel de configurações não expande** — `overflow="hidden"` está no `StudioLayout`, mas o `CourseOverview` (onde fica o painel) não tem essa restrição. Layout já funciona corretamente.
 - [x] **Compatibilizar versões do React** — Ambos os apps já usam `react@19.1.0`. Resolvido.
-- [ ] **Migrar `apps/admin/src/app/globals.css`**
+- [x] **Migrar `apps/admin/src/app/globals.css`**
   - 39 linhas restantes: reset, scrollbar customizada, `.canvas-bg` (grid pattern)
   - Manter apenas CSS de canvas/infra (resets + grid pattern são casos legítimos)
 - [x] **Criptografar variáveis de ambiente no CI** — `EXPO_PUBLIC_SUPABASE_URL` e `EXPO_PUBLIC_SUPABASE_ANON_KEY` já configurados via secrets no `ci.yml:63-64`.
@@ -32,29 +32,26 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
   - Tema `cloudWhite` aplicado via `<Theme name="cloudWhite">`
   - Fontes Space Grotesk + DM Sans via `next/font/google`
   - Referência: `design/create-teach-module/src/routes/index.tsx`
-- [ ] **EDIT-01 — Layout 3 colunas do Estúdio**
-  - Esquerda: paleta de blocos (9 tipos) com drag-and-drop (referência: `studio.$courseId.tsx:27-37`)
-  - Centro: canvas com preview por dispositivo (desktop/tablet/mobile)
-  - Direita: painel de propriedades sensível ao tipo de bloco selecionado
-- [ ] **EDIT-02 — Novos tipos de bloco**
+- [ ] ~~**EDIT-01 — Layout 3 colunas do Estúdio**~~ Eliminado. A paleta à esquerda e o painel de propriedades à direita (contextual, só aparece com bloco selecionado) já funcionam como desejado. EDIT-01 forçaria painel direito fixo, o que gera poluição visual — decisão do usuário.
+- [ ] **EDIT-01 (ex-02) — Novos tipos de bloco**
   - `heading` (H1-H3 editável inline)
   - `checklist` (lista numerada com checkbox visual)
   - `code` (bloco monoespaçado com syntax highlight)
   - `divider` (linha horizontal separadora)
   - Adicionar schemas Zod em `packages/types/` e componentes em `packages/ui/src/blocks/`
-- [ ] **EDIT-03 — Inline editing via `contentEditable`**
+- [ ] **EDIT-02 (ex-03) — Inline editing via `contentEditable`**
   - Clicar direto no texto do canvas para editar, sem abrir formulário
   - `onBlur` salva no estado do bloco
-- [ ] **EDIT-04 — Drag-and-drop reordering**
+- [ ] **EDIT-03 (ex-04) — Drag-and-drop reordering**
   - Arrastar blocos na paleta ou no canvas para reordenar
   - Indicador visual de drop zone (referência: `studio.$courseId.tsx:93-98`)
-- [ ] **EDIT-05 — Device preview toggle**
+- [ ] **EDIT-04 (ex-05) — Device preview toggle**
   - Botões Desktop / Tablet / Mobile no topo do canvas
   - Canvas se redimensiona (`max-w-[380px]` mobile, `max-w-[720px]` tablet, `max-w-[860px]` desktop)
-- [ ] **EDIT-06 — Propriedades por tipo de bloco**
+- [ ] **EDIT-05 (ex-06) — Propriedades por tipo de bloco**
   - Painel direito mostra campos diferentes conforme o tipo (texto, heading level, URL do vídeo, upload de imagem, espaçamento, visibilidade)
   - Referência: `studio.$courseId.tsx:469-543`
-- [ ] **EDIT-07 — Hover toolbar em cada bloco**
+- [ ] **EDIT-06 (ex-07) — Hover toolbar em cada bloco**
   - Ícones: reordenar (grip), duplicar, mais opções, excluir
   - Aparece no hover ou quando o bloco está selecionado
   - Referência: `studio.$courseId.tsx:310-320`
@@ -115,7 +112,7 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
   - `aria-label` em todos botões com apenas ícone (undo/redo, fechar painel, excluir bloco, negrito/itálico, alinhamento, opções quiz, toggle paleta, itens paleta)
   - `role="button"`, `tabIndex`, teclado (Enter/Space) em elementos interativos não-`<button>`
   - Foco teclado e navegação no canvas (`tabIndex`, `onKeyDown`)
-- [ ] **Remover `design/create-teach-module/`** — Manter até EDIT-01 a EDIT-07 estarem implementados. Única referência visual do layout 3 colunas do estúdio, drag-and-drop, inline editing e device preview.
+- [ ] **Remover `design/create-teach-module/`** — Manter até EDIT-01 a EDIT-06 estarem implementados. Referência visual de drag-and-drop, inline editing e device preview.
 - [x] **Preencher docs stub (6 arquivos vazios)** — Concluído em P2
 
 ### ⚡ Escalabilidade e Performance
