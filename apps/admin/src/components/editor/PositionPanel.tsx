@@ -267,22 +267,22 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
               <>
                 <YStack gap="$2">
                   <XStack gap="$2">
-                    <Button variant="ghost" onPress={handleBringForward} flex={1}>
-                      <Icon name="MoveUp" size={14} />
+                    <Button variant="ghost" onPress={handleBringForward} flex={1} borderWidth={1} borderColor="$border" gap="$1.5">
+                      <Icon name="MoveUp" size={16} />
                       <Text fontSize={12} fontWeight="600">Para frente</Text>
                     </Button>
-                    <Button variant="ghost" onPress={handleSendBackward} flex={1}>
-                      <Icon name="MoveDown" size={14} />
+                    <Button variant="ghost" onPress={handleSendBackward} flex={1} borderWidth={1} borderColor="$border" gap="$1.5">
+                      <Icon name="MoveDown" size={16} />
                       <Text fontSize={12} fontWeight="600">Para trás</Text>
                     </Button>
                   </XStack>
                   <XStack gap="$2">
-                    <Button variant="ghost" onPress={handleBringToFront} flex={1}>
-                      <Icon name="ArrowUpToLine" size={14} />
+                    <Button variant="ghost" onPress={handleBringToFront} flex={1} borderWidth={1} borderColor="$border" gap="$1.5">
+                      <Icon name="ArrowUpToLine" size={16} />
                       <Text fontSize={12} fontWeight="600">Para o topo</Text>
                     </Button>
-                    <Button variant="ghost" onPress={handleSendToBack} flex={1}>
-                      <Icon name="ArrowDownToLine" size={14} />
+                    <Button variant="ghost" onPress={handleSendToBack} flex={1} borderWidth={1} borderColor="$border" gap="$1.5">
+                      <Icon name="ArrowDownToLine" size={16} />
                       <Text fontSize={12} fontWeight="600">Para o fundo</Text>
                     </Button>
                   </XStack>
@@ -293,28 +293,28 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
                     Alinhar à página
                   </Text>
                   <XStack flexWrap="wrap" gap="$2">
-                    <Button variant="ghost" onPress={() => handleAlign('top')} flex={1} minWidth="40%">
-                      <Icon name="AlignVerticalJustifyStart" size={14} />
+                    <Button variant="ghost" onPress={() => handleAlign('top')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5">
+                      <Icon name="AlignVerticalJustifyStart" size={16} />
                       <Text fontSize={12} fontWeight="500">Em cima</Text>
                     </Button>
-                    <Button variant="ghost" onPress={() => handleAlign('left')} flex={1} minWidth="40%">
-                      <Icon name="AlignHorizontalJustifyStart" size={14} />
+                    <Button variant="ghost" onPress={() => handleAlign('left')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5">
+                      <Icon name="AlignHorizontalJustifyStart" size={16} />
                       <Text fontSize={12} fontWeight="500">À esquerda</Text>
                     </Button>
-                    <Button variant="ghost" onPress={() => handleAlign('middle')} flex={1} minWidth="40%">
-                      <Icon name="AlignVerticalJustifyCenter" size={14} />
+                    <Button variant="ghost" onPress={() => handleAlign('middle')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5">
+                      <Icon name="AlignVerticalJustifyCenter" size={16} />
                       <Text fontSize={12} fontWeight="500">No meio</Text>
                     </Button>
-                    <Button variant="ghost" onPress={() => handleAlign('center')} flex={1} minWidth="40%">
-                      <Icon name="AlignHorizontalJustifyCenter" size={14} />
+                    <Button variant="ghost" onPress={() => handleAlign('center')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5">
+                      <Icon name="AlignHorizontalJustifyCenter" size={16} />
                       <Text fontSize={12} fontWeight="500">Ao centro</Text>
                     </Button>
-                    <Button variant="ghost" onPress={() => handleAlign('bottom')} flex={1} minWidth="40%">
-                      <Icon name="AlignVerticalJustifyEnd" size={14} />
+                    <Button variant="ghost" onPress={() => handleAlign('bottom')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5">
+                      <Icon name="AlignVerticalJustifyEnd" size={16} />
                       <Text fontSize={12} fontWeight="500">Embaixo</Text>
                     </Button>
-                    <Button variant="ghost" onPress={() => handleAlign('right')} flex={1} minWidth="40%">
-                      <Icon name="AlignHorizontalJustifyEnd" size={14} />
+                    <Button variant="ghost" onPress={() => handleAlign('right')} flex={1} minWidth="40%" borderWidth={1} borderColor="$border" gap="$1.5">
+                      <Icon name="AlignHorizontalJustifyEnd" size={16} />
                       <Text fontSize={12} fontWeight="500">À direita</Text>
                     </Button>
                   </XStack>
@@ -335,11 +335,12 @@ export const PositionPanel: React.FC<PositionPanelProps> = ({ onClose }) => {
                   flex={1}
                   py="$1"
                   borderRadius="$2"
-                  borderWidth={layersFilter === f ? 1 : 0}
-                  borderColor={layersFilter === f ? '$border' : 'transparent'}
+                  borderWidth={1}
+                  borderColor={layersFilter === f ? '$primary' : '$border'}
+                  gap="$1"
                 >
-                  <Text fontSize={11} fontWeight="600">
-                    {f === 'todas' ? 'Todas' : 'Em sobreposição'}
+                  <Text fontSize={11} fontWeight="600" color={layersFilter === f ? '$primary' : '$text'}>
+                    {f === 'todas' ? 'Todas' : 'Sobreposição'}
                   </Text>
                 </Button>
               ))}
