@@ -727,6 +727,7 @@ export const EditorCanvas: React.FC = () => {
   const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
   const [floatToolbar, setFloatToolbar] = useState<{ x: number; y: number } | null>(null);
   const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
+  const [clipboardBlockId, setClipboardBlockId] = useState<string | null>(null);
   const floatToolbarRef = useRef<HTMLDivElement>(null);
 
   const handleFloatFormat = (command: string, value?: string) => {
@@ -885,6 +886,41 @@ export const EditorCanvas: React.FC = () => {
       document.removeEventListener('mouseup', onMouseUp);
     };
   }, [updateBlock, updateBlockSilent, viewportMode]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (activeBlockId && !previewMode) {
+          e.preventDefault();
+          removeBlock(activeBlockId);
+          setActiveBlockId(null);
+        }
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
+        if (activeBlockId) {
+          e.preventDefault();
+          setClipboardBlockId(activeBlockId);
+        }
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
+        if (clipboardBlockId) {
+          e.preventDefault();
+          duplicateBlock(clipboardBlockId);
+        }
+        return;
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [activeBlockId, previewMode, removeBlock, duplicateBlock, clipboardBlockId]);
 
   if (!mounted) return <YStack flex={1} bg="$background" ai="center" jc="center" gap={12} opacity={0.7}><Spinner size="large" color="$primary" /><Text color="$textMuted" fontSize={14}>Carregando canvas…</Text></YStack>;
 
