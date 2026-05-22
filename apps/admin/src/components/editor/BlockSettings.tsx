@@ -291,6 +291,7 @@ const TypographyAndBackgroundControls: React.FC<{ block: any; updateBlock: any }
 export const BlockSettings: React.FC = () => {
   const { blocks, activeBlockId, updateBlock, removeBlock } = useEditor();
   const [activeTab, setActiveTab] = useState<'props' | 'html'>('props');
+  const [collapsed, setCollapsed] = useState(false);
 
   const activeBlock = blocks.find((b) => b.id === activeBlockId);
   const [htmlDraft, setHtmlDraft] = useState('');
@@ -300,14 +301,24 @@ export const BlockSettings: React.FC = () => {
   }, [activeBlock]);
 
   if (!activeBlock) {
+    return null;
+  }
+
+  if (collapsed) {
     return (
-      <YStack w={320} minWidth={320} jc="center" ai="center" p="$5">
-        <Icon name="AlertCircle" size={32} color="$textMuted" style={{ marginBottom: 16 }} />
-        <Text fontSize={14} fontWeight="500" color="$textSecondary">Nenhum bloco selecionado</Text>
-        <Text fontSize={12} color="$textMuted" mt="$2">
-          Clique num bloco no canvas para editar suas propriedades.
-        </Text>
-      </YStack>
+      <XStack w={36} minWidth={36} h="100%" bg="$background" borderLeftWidth={1} borderLeftColor="$border" ai="center" jc="center" overflow="hidden">
+        <XStack
+          w={28} h={28} ai="center" jc="center"
+          borderWidth={1} borderColor="$border" borderRadius="$3" bg="$background"
+          cursor="pointer" role="button" tabIndex={0}
+          aria-label="Expandir painel de propriedades"
+          onPress={() => setCollapsed(false)}
+          onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCollapsed(false); } }}
+          hoverStyle={{ borderColor: '$primary' }}
+        >
+          <Icon name="ChevronLeft" size={16} />
+        </XStack>
+      </XStack>
     );
   }
 
@@ -327,9 +338,22 @@ export const BlockSettings: React.FC = () => {
       <YStack px="$5" pt="$4" borderBottomWidth={1} borderBottomColor="$border" flexShrink={0}>
         <XStack ai="center" jc="space-between" mb="$3">
           <Text fontSize={11} fontWeight="700" textTransform="uppercase" color="$textSecondary" letterSpacing={0.5}>Editar Bloco</Text>
-          <Button variant="ghost" aria-label="Excluir bloco" onPress={() => removeBlock(activeBlock.id)} px="$1">
-            <Icon name="Trash2" size={14} color="$danger" />
-          </Button>
+          <XStack gap="$1">
+            <Button variant="ghost" aria-label="Excluir bloco" onPress={() => removeBlock(activeBlock.id)} px="$1">
+              <Icon name="Trash2" size={14} color="$danger" />
+            </Button>
+            <XStack
+              w={26} h={26} ai="center" jc="center"
+              borderWidth={1} borderColor="$border" borderRadius="$3" bg="$background"
+              cursor="pointer" role="button" tabIndex={0}
+              aria-label="Recolher painel"
+              onPress={() => setCollapsed(true)}
+              onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCollapsed(true); } }}
+              hoverStyle={{ borderColor: '$primary' }}
+            >
+              <Icon name="ChevronRight" size={14} />
+            </XStack>
+          </XStack>
         </XStack>
         <XStack bg="$background" borderRadius={7} p={3} gap={1}>
           {(['props', 'html'] as const).map((tab) => (
