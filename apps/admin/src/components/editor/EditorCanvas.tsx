@@ -707,7 +707,22 @@ export const EditorCanvas: React.FC = () => {
   const floatToolbarRef = useRef<HTMLDivElement>(null);
 
   const handleFloatFormat = (command: string, value?: string) => {
-    document.execCommand(command, false, value);
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (command === 'bold') {
+      const el = document.createElement('strong');
+      try { range.surroundContents(el); } catch { const f = range.extractContents(); el.appendChild(f); range.insertNode(el); }
+    } else if (command === 'italic') {
+      const el = document.createElement('em');
+      try { range.surroundContents(el); } catch { const f = range.extractContents(); el.appendChild(f); range.insertNode(el); }
+    } else if (command === 'foreColor' && value) {
+      const el = document.createElement('span');
+      el.style.color = value;
+      try { range.surroundContents(el); } catch { const f = range.extractContents(); el.appendChild(f); range.insertNode(el); }
+    }
+    sel.removeAllRanges();
+    sel.addRange(range);
     setFloatToolbar(null);
   };
 
@@ -1026,10 +1041,18 @@ export const EditorCanvas: React.FC = () => {
             <button
               key={c}
               onMouseDown={(e) => { e.preventDefault(); handleFloatFormat('foreColor', c); }}
-              style={{ width: 20, height: 20, borderRadius: 10, border: c === '#ffffff' ? '1px solid #e2e8f0' : 'none', background: c, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ width: 20, height: 20, borderRadius: 10, border: c === '#000000' ? '2px solid #e2e8f0' : 'none', background: c, cursor: 'pointer' }}
               title={`Cor ${c}`}
             />
           ))}
+          <input
+            type="color"
+            onMouseDown={(e) => e.preventDefault()}
+            onChange={(e) => { handleFloatFormat('foreColor', e.target.value); }}
+            value="#3b82f6"
+            style={{ width: 24, height: 24, padding: 0, border: 'none', borderRadius: 4, cursor: 'pointer', background: 'none' }}
+            title="Escolher cor..."
+          />
         </div>
       )}
     </YStack>
