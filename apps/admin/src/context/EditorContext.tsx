@@ -171,11 +171,15 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       const offset = 20;
       const cloneLayouts = (layouts: typeof source.layouts) => {
         if (!layouts) return undefined;
-        const clone: Record<string, { x: number; y: number; w: number; h: number; zIndex: number }> = {};
+        const clone: Record<string, any> = {};
         for (const [vp, l] of Object.entries(layouts)) {
-          clone[vp] = { ...l, x: l.x + offset, y: l.y + offset, zIndex: maxZ + 1 };
+          if (l && typeof l === 'object') {
+            clone[vp] = { ...l, x: l.x + offset, y: l.y + offset, zIndex: maxZ + 1 };
+          } else {
+            clone[vp] = l;
+          }
         }
-        return clone;
+        return clone as typeof source.layouts;
       };
       const newBlock: AnyBlock = { ...source, id: newId, layouts: cloneLayouts(source.layouts) };
       const idx = state.blocks.findIndex((b) => b.id === action.payload.id);

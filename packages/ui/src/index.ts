@@ -9,6 +9,7 @@ export {
   TamaguiProvider,
   ScrollView,
   Spinner,
+  Input,
 } from 'tamagui';
 
 export { default as config } from './tamagui.config';

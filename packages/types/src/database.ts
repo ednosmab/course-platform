@@ -107,6 +107,7 @@ export const StudentProgressSchema = z.object({
   completed: z.boolean().default(false),
   completed_at: z.string().or(z.date()).nullable().optional(),
   updated_at: z.string().or(z.date()),
+  tests_completed: z.record(z.string(), z.number()).optional().default({}),
 }).strict();
 
 export type StudentProgress = z.infer<typeof StudentProgressSchema>;

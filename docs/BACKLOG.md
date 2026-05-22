@@ -68,6 +68,15 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
   - Sparkles icon + gradient primary + "Mosaico." com ponto azul
   - Integrado no dashboard (`/`) e exportado para uso no editor
 
+### CERT — Certificado
+
+- [x] **CERT-00: Toggle no admin** — `certificate_enabled` boolean em `courses`, toggle no settings do curso
+- [ ] **CERT-01: Lógica de emissão** — Criar registro em `certificates` ao completar 100% do curso (hooks/core)
+- [ ] **CERT-02: Template do certificado** — Layout visual (HTML/CSS) do certificado em si
+- [ ] **CERT-03: Tela do aluno** — Rota no app student para visualizar e baixar o certificado
+- [ ] **CERT-04: Código BSGI** — Geração do `uuid_bsgi` único verificador
+- [ ] **CERT-05: Upload de template customizado** — Upload PDF/imagem + editor de tamanho (pós-MVP)
+
 ### P2 — Média
 
 - [x] **Mensagem amigável no Spinner por contexto** — Adicionado texto "Carregando cursos…" (dashboard admin) e "Carregando curso…" (studio admin). Student app já tinha "Carregando plataforma de alunos real...".
@@ -258,7 +267,10 @@ Tasks do plano `docs/layers/testing/e2e_playwright_plan.md`:
 - [ ] **Aulas ao vivo** — WebRTC, sinalização, chat em tempo real, gravação
 - [ ] **Fóruns de discussão** — Threads por aula, moderação, notificações
 - [ ] **Dashboard do aluno** — Página inicial do app mobile com overview de cursos, progresso, próximas aulas
-- [ ] **Certificado do curso** — Fornecido ao aluno após conclusão do curso (não por módulo). Upload do certificado em PDF e imagem, com editor de tamanho no mesmo esquema dos blocos (ao clicar, exibir pontos de arrasto para redimensionar). Impacta schema (`certificates`), storage (PDF/imagem), lógica de conclusão, UI do admin (upload + editor de tamanho) e UI do aluno (visualização/download).
+- [ ] **Pagamentos** — Pix, cartão, assinatura recorrente, checkout, webhooks de billing
+- [ ] **Aulas ao vivo** — WebRTC, sinalização, chat em tempo real, gravação
+- [ ] **Fóruns de discussão** — Threads por aula, moderação, notificações
+- [ ] **Dashboard do aluno** — Página inicial do app mobile com overview de cursos, progresso, próximas aulas
 
 ---
 

@@ -14,6 +14,7 @@ export const BlockLayoutsSchema = z.object({
   desktop: ViewportLayoutSchema.optional(),
   tablet: ViewportLayoutSchema.optional(),
   mobile: ViewportLayoutSchema.optional(),
+  isTest: z.boolean().optional(),
 }).optional();
 
 export type BlockLayouts = z.infer<typeof BlockLayoutsSchema>;

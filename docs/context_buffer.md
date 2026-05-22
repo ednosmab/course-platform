@@ -3,6 +3,18 @@
 ## Status Atual
 SESSAO ATIVA — Login com @supabase/ssr + role-based redirect concluído. i18n corrigido (dedup react-i18next). Build admin com erro de tipo pré-existente em EditorCanvas.tsx:248.
 
+## 🎯 Tarefa em Execução
+**Certificado — emissão automática + template + tela do aluno**
+
+Objetivo: Implementar o fluxo completo de certificados — desde a lógica de emissão (disparada ao completar o curso) até a exibição/download no app do aluno, incluindo um template visual.
+
+Camada Ativa: Core (lógica de emissão) + Supabase (queries) + Apps/Student (tela do aluno) + Apps/Admin (configuração de template)
+
+Documentos Carregados:
+- `docs/layers/core/domain-logic.md` (caso de uso `completeLesson`)
+- `docs/layers/supabase/database_schema_plan.md` (schema `certificates`)
+- `docs/layers/types/data-lifecycle.md` (feature flag `certificate_custom`)
+
 ## 🎯 Últimas Conquistas
 - **Login fix:** Substituído `@supabase/supabase-js` por `@supabase/ssr` no admin. Login agora usa cookies (middleware enxerga sessão).
 - **Role-based redirect:** Após login, busca `role` na tabela `profiles`. Se `student` → redireciona para student app (`localhost:8081`). Se `admin/teacher` → dashboard admin.
@@ -53,8 +65,21 @@ SESSAO ATIVA — Login com @supabase/ssr + role-based redirect concluído. i18n 
 - [x] **Workflow docs:** Seção de autenticação adicionada em `docs/workflows/workflow_adm.md`
 - [x] **E2E plan atualizado:** Login desbloqueado, cobertura 13→15 testes
 - [x] **Backlog atualizado:** E2E-01 e E2E-06 marcados como concluídos
+- [x] **BlockSettings colapsável:** BlockSettings agora colapsa (36px) / expande (320px) como BlockPalette — commit `a1c3565`
+- [x] **CERT-01: Lógica de emissão** — `CertificateService` em `packages/core/src/services/certificate.ts`. Integrado ao `ProgressService.saveProgressImmediate`: ao marcar aula como concluída (≥85%), dispara `checkAndIssue` que verifica se curso está 100% completo e `certificate_enabled=true`, então gera `uuid_bsgi` (`BSGI-{uuid}`) e insere na tabela `certificates`. **Nova regra de conclusão de aula:** vídeo ≥ 85% + todos blocos com `isTest: true` ≥ 70% em `tests_completed`. **Nova regra do certificado:** média do curso ≥ 70%. 27/27 testes verdes.
+
+- `packages/types/src/layout.ts`: `isTest: z.boolean().optional().default(false)` adicionado ao `BlockLayoutsSchema`
+- `packages/types/src/database.ts`: `tests_completed: z.record(z.string(), z.number()).optional().default({})` no `StudentProgressSchema`
+- `supabase/migrations/20260522000002_add_tests_completed.sql`: coluna `tests_completed jsonb` em `student_progress`
+- `packages/core/src/services/progress.ts`: `submitTestScore()` + `evaluateLessonCompletion()` (video + all tests ≥ 70%). `saveProgressImmediate` não define mais `completed` diretamente.
+- `packages/core/src/services/certificate.ts`: `getLessonScore()`, `getCourseAverage()` — certificado exige média ≥ 70%
+- [ ] **CERT-02: Template do certificado** — Layout visual (HTML/CSS) do certificado
+- [ ] **CERT-03: Tela do aluno** — Rota no student app para visualizar/baixar certificado
+- [ ] **CERT-04: Código BSGI** — Geração do `uuid_bsgi` único (incluído na CERT-01)
+- [ ] **CERT-05: Upload customizado** — Upload PDF/imagem + editor de tamanho (pós-MVP)
 
 ## Key Decisions
+- **Certificado por curso:** Decisão de escopo — certificado emitido por curso completo, não por módulo. Feature flag `certificate_custom` para template customizado (pós-MVP).
 - **order_index append:** 1ª aula criada = topo, última = final. Reordenação manual via ↑↓.
 - **Inline rename:** Input + botão "Salvar" (Enter/blur também salvam). Cor `$secondaryForeground`.
 - **Editor breadcrumb:** Dados vivos do Supabase via `lessonMeta.module_id` → module.title → course.title.
@@ -67,19 +92,16 @@ SESSAO ATIVA — Login com @supabase/ssr + role-based redirect concluído. i18n 
 - **Role redirect:** Perfil com role `student` → student app. `admin/teacher` → dashboard admin.
 
 ## Relevant Files
-- `apps/admin/src/app/studio/[courseId]/page.tsx`: CourseOverview (module/lesson CRUD, reorder, rename, settings, certificate)
-- `apps/admin/src/context/EditorContext.tsx`: courseTitle, moduleTitle, lessonTitle expostos; fetch de nomes via module_id
-- `apps/admin/src/components/editor/EditorHeader.tsx`: Breadcrumb dinâmico (Curso / Módulo / Aula)
-- `apps/admin/src/app/page.tsx`: Dashboard com spinner contextual "Carregando cursos…"
-- `docs/BACKLOG.md`: Bugs de settings, certificado por módulo vs curso, spinner concluído
-- `tests/e2e/admin-crud.spec.ts`: 5 novos testes E2E (CRUD curso + módulo/aula + settings + delete)
-- `supabase/migrations/20260521000001_add_performance_indexes.sql`: 6 índices compostos
-- `.github/workflows/cd.yml`: CD pipeline develop→main
-- `docs/layers/infra/execution_plan.md`: TASK 01-06 completos
-- `docs/layers/testing/e2e_playwright_plan.md`: 4/10 fluxos testados
-- `docs/roadmaps/scalability-plan.md`: SCL-01 completo, demais adiados
-- `packages/core/src/i18n/`: Config i18next + locales pt-BR/en
-- `apps/admin/src/providers/i18n-provider.tsx`: AdminI18nProvider (usando react-i18next do admin)
-- `apps/admin/src/lib/supabase-client.ts`: createSupabaseBrowserClient (SSR cookies)
-- `apps/admin/src/lib/supabase-server.ts`: createSupabaseServerClient (para server actions)
-- `apps/admin/src/middleware.ts`: Auth middleware usando @supabase/ssr
+- `packages/types/src/database.ts`: Schema Zod `Certificate` + tipo TypeScript + `StudentProgressSchema` com `tests_completed`
+- `packages/types/src/layout.ts`: `BlockLayoutsSchema` com `isTest`
+- `supabase/migrations/20260517000000_init_schema.sql`: Tabela `certificates` + RLS
+- `supabase/migrations/20260520000001_add_certificate_enabled.sql`: Coluna `certificate_enabled` em `courses`
+- `supabase/migrations/20260522000002_add_tests_completed.sql`: Coluna `tests_completed jsonb` em `student_progress`
+- `apps/admin/src/app/studio/[courseId]/page.tsx`: CourseOverview (CRUD, settings, certificate toggle)
+- `docs/layers/core/domain-logic.md`: Caso de uso `completeLesson` (disparar certificado)
+- `docs/layers/supabase/database_schema_plan.md`: Schema `certificates` documentado
+- `docs/layers/types/data-lifecycle.md`: Feature flag `certificate_custom`
+- `packages/core/src/services/certificate.ts`: CertificateService (checkAndIssue, isCourseCompleted, getCompletedLessonCount, getLessonScore, getCourseAverage)
+- `packages/core/src/services/progress.ts`: saveProgressImmediate + evaluateLessonCompletion + submitTestScore
+- `packages/core/src/services/certificate.test.ts`: 10 testes (getCourseIdFromLesson, counts, isCompleted, issue, duplicates, list)
+- `packages/core/src/services/progress.test.ts`: 9 testes (save, evaluateCompletion, test scores, clamp)

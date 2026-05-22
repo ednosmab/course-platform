@@ -1,7 +1,7 @@
 import { supabase } from '../supabase';
 import { StudentProgress, StudentProgressSchema } from '@projeto/types';
+import { CertificateService } from './certificate';
 
-// Cache em memória para agrupamento e gerenciamento de debounce por aluno/aula
 interface DebounceCache {
   [key: string]: {
     timer: ReturnType<typeof setTimeout> | null;
@@ -13,9 +13,6 @@ interface DebounceCache {
 const progressCache: DebounceCache = {};
 
 export const ProgressService = {
-  /**
-   * Obtém o registro de progresso ativo do aluno para uma aula específica (Auto-Resume).
-   */
   async getLessonProgress(userId: string, lessonId: string): Promise<StudentProgress | null> {
     const { data, error } = await supabase
       .from('student_progress')
@@ -35,28 +32,18 @@ export const ProgressService = {
     return parsed.data;
   },
 
-  /**
-   * Persiste o progresso de forma imediata (Core Writer).
-   * Aplica estritamente a REGRA DE 85% para marcação de conclusão automática da aula.
-   */
   async saveProgressImmediate(
     userId: string,
     lessonId: string,
     lastPlayedSeconds: number,
     percentageWatched: number
   ): Promise<StudentProgress> {
-    // Regra dos 85% de conclusão automática de vídeos
-    const isCompleted = percentageWatched >= 85;
-    const completedAt = isCompleted ? new Date().toISOString() : null;
-
     const payload = {
       user_id: userId,
       lesson_id: lessonId,
       last_played_seconds: lastPlayedSeconds,
       percentage_watched: percentageWatched,
-      completed: isCompleted,
-      ...(isCompleted ? { completed_at: completedAt } : {}),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
     const { data, error } = await supabase
@@ -67,14 +54,119 @@ export const ProgressService = {
 
     if (error) throw error;
 
-    return StudentProgressSchema.parse(data);
+    const progress = StudentProgressSchema.parse(data);
+
+    this.evaluateLessonCompletion(userId, lessonId).catch((err) => {
+      console.error('Error evaluating lesson completion:', err);
+    });
+
+    return progress;
   },
 
-  /**
-   * Persiste o progresso utilizando um DEBOUNCE inteligente de 5 segundos.
-   * Altamente recomendado para players de vídeo ativos, minimizando requests concorrentes
-   * sob cargas pesadas (até 10.000 usuários simultâneos no pico).
-   */
+  async submitTestScore(
+    userId: string,
+    lessonId: string,
+    blockId: string,
+    score: number,
+  ): Promise<StudentProgress> {
+    const clampedScore = Math.max(0, Math.min(100, score));
+
+    const { data: current } = await supabase
+      .from('student_progress')
+      .select('tests_completed')
+      .eq('user_id', userId)
+      .eq('lesson_id', lessonId)
+      .maybeSingle();
+
+    const testsCompleted: Record<string, number> = (current?.tests_completed as Record<string, number>) ?? {};
+
+    testsCompleted[blockId] = clampedScore;
+
+    const { data, error } = await supabase
+      .from('student_progress')
+      .upsert(
+        {
+          user_id: userId,
+          lesson_id: lessonId,
+          tests_completed: testsCompleted,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id,lesson_id' },
+      )
+      .select('*')
+      .single();
+
+    if (error) throw error;
+
+    const progress = StudentProgressSchema.parse(data);
+
+    const completionResult = await this.evaluateLessonCompletion(userId, lessonId);
+    return completionResult ?? progress;
+  },
+
+  async evaluateLessonCompletion(
+    userId: string,
+    lessonId: string,
+  ): Promise<StudentProgress | null> {
+    const { data: lessonData, error: lessonError } = await supabase
+      .from('lessons')
+      .select('blocks')
+      .eq('id', lessonId)
+      .single();
+
+    if (lessonError || !lessonData?.blocks) return null;
+
+    const blocks = lessonData.blocks as Array<Record<string, any>>;
+    const testBlocks = blocks.filter((b) => b.layouts?.isTest === true);
+
+    const { data: progressData, error: progressError } = await supabase
+      .from('student_progress')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('lesson_id', lessonId)
+      .maybeSingle();
+
+    if (progressError) return null;
+    if (!progressData) return null;
+
+    const progress = StudentProgressSchema.parse(progressData);
+    const testsCompleted = progress.tests_completed ?? {};
+
+    const videoPassed = progress.percentage_watched >= 85;
+
+    const allTestsPassed = testBlocks.every((block) => {
+      const testScore = testsCompleted[block.id];
+      return testScore !== undefined && testScore >= 70;
+    });
+
+    const isComplete = videoPassed && allTestsPassed;
+
+    if (isComplete && !progress.completed) {
+      const { data: updated, error: updateError } = await supabase
+        .from('student_progress')
+        .update({
+          completed: true,
+          completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId)
+        .eq('lesson_id', lessonId)
+        .select('*')
+        .single();
+
+      if (updateError) return null;
+      const result = StudentProgressSchema.parse(updated);
+
+      CertificateService.checkAndIssue(userId, lessonId).catch((err) => {
+        console.error('Error issuing certificate:', err);
+      });
+
+      return result;
+    }
+
+    return null;
+  },
+
   saveProgressDebounced(
     userId: string,
     lessonId: string,
@@ -91,7 +183,6 @@ export const ProgressService = {
         percentageWatched,
       };
     } else {
-      // Atualizar dados em cache com as marcas temporais mais recentes
       progressCache[cacheKey].lastPlayedSeconds = lastPlayedSeconds;
       progressCache[cacheKey].percentageWatched = Math.max(
         progressCache[cacheKey].percentageWatched,
@@ -99,16 +190,14 @@ export const ProgressService = {
       );
     }
 
-    // Cancelar agendamento pendente anterior
     if (progressCache[cacheKey].timer) {
       clearTimeout(progressCache[cacheKey].timer!);
     }
 
-    // Agendar nova requisição para rodar após 5 segundos de estabilidade
     progressCache[cacheKey].timer = setTimeout(async () => {
       try {
         const cached = progressCache[cacheKey];
-        delete progressCache[cacheKey]; // Limpar cache preventivamente para evitar condições de corrida
+        delete progressCache[cacheKey];
 
         const progress = await this.saveProgressImmediate(
           userId,
@@ -124,5 +213,5 @@ export const ProgressService = {
         console.error('Erro ao processar progresso debounced no Supabase:', err);
       }
     }, 5000);
-  }
+  },
 };

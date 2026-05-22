@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import { TamaguiProvider, config } from '@projeto/ui';
+import { TamaguiProvider, config, Theme } from '@projeto/ui';
 import { StudentDashboard } from './src/screens/StudentDashboard';
 import { LessonPlayer } from './src/screens/LessonPlayer';
 
@@ -26,9 +26,11 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <TamaguiProvider config={config} defaultTheme={null}>
-          <SafeAreaView style={{ flex: 1 }}>
-            <LessonPlayer courseId={courseId} onBack={() => setScreen('dashboard')} />
-          </SafeAreaView>
+          <Theme name="cloudWhite">
+            <SafeAreaView style={{ flex: 1 }}>
+              <LessonPlayer courseId={courseId} onBack={() => setScreen('dashboard')} />
+            </SafeAreaView>
+          </Theme>
         </TamaguiProvider>
       </SafeAreaProvider>
     );
@@ -37,9 +39,11 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <TamaguiProvider config={config} defaultTheme={null}>
-        <SafeAreaView style={{ flex: 1 }}>
-          <StudentDashboard onPlay={handlePlay} />
-        </SafeAreaView>
+        <Theme name="cloudWhite">
+          <SafeAreaView style={{ flex: 1 }}>
+            <StudentDashboard onPlay={handlePlay} />
+          </SafeAreaView>
+        </Theme>
       </TamaguiProvider>
     </SafeAreaProvider>
   );
