@@ -51,10 +51,10 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
 - [x] **EDIT-05 (ex-06) — Propriedades por tipo de bloco**
   - Painel direito mostra campos diferentes conforme o tipo (texto, heading level, URL do vídeo, upload de imagem, espaçamento, visibilidade)
   - Referência: `studio.$courseId.tsx:469-543`
-- [ ] **EDIT-06 (ex-07) — Hover toolbar em cada bloco**
-  - Ícones: reordenar (grip), duplicar, mais opções, excluir
+- [x] **EDIT-06 (ex-07) — Hover toolbar em cada bloco**
+  - Ícones: reordenar (grip), duplicar, excluir
   - Aparece no hover ou quando o bloco está selecionado
-  - Referência: `studio.$courseId.tsx:310-320`
+  - Grip à esquerda, duplicar + excluir à direita, ambos com `boxShadow` e hover state
 - [x] **TOKEN-01 — Migrar paleta "Cloud White" (OKLCH) para Tamagui**
   - Cores: 30 tokens `cw*` em `colors.ts` (convertidos OKLCH → hex)
   - Sombras: `cwSoft` e `cwPop` em `shadows.ts`
@@ -117,7 +117,7 @@ Protótipo funcional (TanStack Router + shadcn/ui + Tailwind) com o layout do Es
 
 ### ⚡ Escalabilidade e Performance
 
-Tasks do plano `docs/roadmaps/scalability-plan.md`:
+Tasks do plano `docs/roadmaps/scalability-plan.md` e `docs/roadmaps/concentrador-de-dados.md`:
 
 **Fase 1 — Fundação:**
 - [ ] **SCL-01:** Configurar índices PostgreSQL para consultas frequentes
@@ -125,6 +125,7 @@ Tasks do plano `docs/roadmaps/scalability-plan.md`:
 - [ ] **SCL-02:** Implementar rate limiting com Redis (sliding window)
 - [ ] **SCL-03:** Adicionar cache headers em todas as rotas GET públicas
 - [ ] **SCL-04:** Configurar ISR para páginas de catálogo (`revalidate: 60s`)
+- [ ] **SCL-17:** Aplicar migration `add_lesson_version` no Supabase
 
 **Fase 2 — Otimização de Conexões (3k usuários):**
 - [ ] **SCL-05:** Implementar connection pooling (PgBouncer, transaction mode)
@@ -143,6 +144,12 @@ Tasks do plano `docs/roadmaps/scalability-plan.md`:
 - [ ] **SCL-14:** Sharding de banco de dados por organização
 - [ ] **SCL-15:** CDN multi-região para vídeos
 - [ ] **SCL-16:** Service Workers para cache offline avançado
+
+**Concentrador de Dados (Write-Behind Cache):** 🔒 Bloqueado por ADR-017 — permitido apenas quando ≥500 alunos simultâneos ou métricas de banco atingirem gatilho.
+- [ ] **CDC-01:** Implementar API route `/api/progress` (recebe progresso, enfileira no Redis)
+- [ ] **CDC-02:** Implementar `/api/progress/process-queue` (bulk upsert no Supabase a cada 10s)
+- [ ] **CDC-03:** Configurar cron job (Upstash QStash ou Cron-Job.org) para acionar process-queue
+- [ ] **CDC-04:** Substituir `useMobileProgress` direct writes pelo concentrador
 
 ### 🔒 SEG — Segurança e Compliance
 
@@ -232,6 +239,7 @@ Tasks do plano `docs/layers/testing/e2e_playwright_plan.md`:
 - [ ] **ADR-014:** Auto-save com debounce 1.5s + state machine (`idle→saving→saved→error`)
 - [ ] **ADR-015:** Gap arquitetural — TanStack Query/Zustand prescritos mas não implementados
 - [ ] **ADR-016:** Tamagui compile-time optimization (babel plugin, zero runtime CSS-in-JS)
+- [x] **ADR-017:** Version-based sync — trava contra refatoração prematura do concentrador <!-- docs/adrs/ADR-017-version-sync-trava.md -->
 
 ### 🔍 Pós-MVP
 
@@ -263,6 +271,7 @@ Tasks do plano `docs/layers/testing/e2e_playwright_plan.md`:
 | P2 | Qualidade, testes, cobertura |
 | P3 | Refinamento, débito técnico, docs |
 | SCL | Escalabilidade (4 fases: fundação → 3k → 10k → 50k+) |
+| CDC | Concentrador de Dados (Write-Behind Cache — Next.js + Redis) |
 | E2E | Testes end-to-end com Playwright |
 | SEG | Segurança e Compliance |
 | DR | Disponibilidade e Recuperação de Desastres |

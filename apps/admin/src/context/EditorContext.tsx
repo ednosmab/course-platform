@@ -23,6 +23,7 @@ type EditorAction =
   | { type: 'UNDO' }
   | { type: 'REDO' }
   | { type: 'SET_BLOCKS'; payload: { blocks: AnyBlock[] } }
+  | { type: 'DUPLICATE_BLOCK'; payload: { id: string } }
   | { type: 'REORDER_BLOCKS'; payload: { blocks: AnyBlock[] } }
   | { type: 'SET_PREVIEW_MODE'; payload: { active: boolean } }
   | { type: 'SET_VIEWPORT_MODE'; payload: { mode: 'desktop' | 'tablet' | 'mobile' } };
@@ -145,6 +146,27 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       return updateHistory(newBlocks, nextActiveId);
     }
 
+    case 'DUPLICATE_BLOCK': {
+      const source = state.blocks.find((b) => b.id === action.payload.id);
+      if (!source) return state;
+      const newId = crypto.randomUUID();
+      const maxZ = state.blocks.reduce((max, b) => Math.max(max, b.layouts?.desktop?.zIndex ?? 0), -1);
+      const offset = 20;
+      const cloneLayouts = (layouts: typeof source.layouts) => {
+        if (!layouts) return undefined;
+        const clone: Record<string, { x: number; y: number; w: number; h: number; zIndex: number }> = {};
+        for (const [vp, l] of Object.entries(layouts)) {
+          clone[vp] = { ...l, x: l.x + offset, y: l.y + offset, zIndex: maxZ + 1 };
+        }
+        return clone;
+      };
+      const newBlock: AnyBlock = { ...source, id: newId, layouts: cloneLayouts(source.layouts) };
+      const idx = state.blocks.findIndex((b) => b.id === action.payload.id);
+      const newBlocks = [...state.blocks];
+      newBlocks.splice(idx + 1, 0, newBlock);
+      return updateHistory(newBlocks, newId);
+    }
+
     case 'UPDATE_BLOCK': {
       const newBlocks = state.blocks.map((b) => {
         if (b.id !== action.payload.id) return b;
@@ -250,6 +272,7 @@ interface EditorContextType extends EditorState {
   updateBlock: (id: string, updates: Partial<AnyBlock>) => void;
   updateBlockSilent: (id: string, updates: Partial<AnyBlock>) => void;
   moveBlock: (fromIndex: number, toIndex: number) => void;
+  duplicateBlock: (id: string) => void;
   setActiveBlockId: (id: string | null) => void;
   undo: () => void;
   redo: () => void;
@@ -280,6 +303,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: st
 
   const addBlock = (type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' | 'heading' | 'divider') => dispatch({ type: 'ADD_BLOCK', payload: { type } });
   const removeBlock = (id: string) => dispatch({ type: 'REMOVE_BLOCK', payload: { id } });
+  const duplicateBlock = (id: string) => dispatch({ type: 'DUPLICATE_BLOCK', payload: { id } });
   const updateBlock = (id: string, updates: Partial<AnyBlock>) => dispatch({ type: 'UPDATE_BLOCK', payload: { id, updates } });
   const moveBlock = (fromIndex: number, toIndex: number) => dispatch({ type: 'MOVE_BLOCK', payload: { fromIndex, toIndex } });
   const setActiveBlockId = (id: string | null) => dispatch({ type: 'SET_ACTIVE_BLOCK', payload: { id } });
@@ -449,6 +473,14 @@ const getDraftId = (lessonId: string) => {
       throw new Error('O curso precisa estar publicado antes de publicar aulas.');
     }
 
+    const { data: existingLesson } = await supabase
+      .from('lessons')
+      .select('version')
+      .eq('id', activeLessonId)
+      .single();
+
+    const nextVersion = (existingLesson?.version ?? 0) + 1;
+
     const { error: pubErr } = await supabase
       .from('lessons')
       .upsert({
@@ -457,7 +489,8 @@ const getDraftId = (lessonId: string) => {
         title: meta.title,
         order_index: meta.order_index,
         is_published: true,
-        blocks: state.blocks
+        blocks: state.blocks,
+        version: nextVersion,
       });
 
     if (pubErr) {
@@ -474,6 +507,7 @@ const getDraftId = (lessonId: string) => {
         ...state,
         addBlock,
         removeBlock,
+        duplicateBlock,
         updateBlock,
         updateBlockSilent,
         moveBlock,

@@ -505,6 +505,7 @@ function renderViewportBlocks(args: {
   activeBlockId: string | null;
   setActiveBlockId: (id: string | null) => void;
   removeBlock: (id: string) => void;
+  duplicateBlock: (id: string) => void;
   isInteracting: boolean;
   onBlockMouseDown: (e: React.MouseEvent, block: AnyBlock) => void;
   onHandleMouseDown: (e: React.MouseEvent, block: AnyBlock, handle: HandleDir) => void;
@@ -536,14 +537,31 @@ function renderViewportBlocks(args: {
             </div>
             {isActive && (
               <XStack
-                onPress={(e: any) => { e.stopPropagation(); args.removeBlock(block.id); }}
-                role="button"
-                aria-label="Excluir bloco"
-                tabIndex={0}
-                onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); args.removeBlock(block.id); } }}
-                position="absolute" top={-34} right={0} zIndex={20} bg="white" borderWidth={1} borderColor="$danger" borderRadius={1} px="$2" py={1} cursor="pointer" ai="center" gap={1}
+                position="absolute" top={-34} right={0} zIndex={20}
+                bg="white" borderWidth={1} borderColor="$border" borderRadius={1}
+                style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}
+                ai="center" gap={0}
               >
-                <Icon name="Trash2" size={12} color="$danger" /><Text color="$danger" fontSize={11} fontWeight="500">Excluir</Text>
+                <XStack
+                  onPress={(e: any) => { e.stopPropagation(); args.duplicateBlock(block.id); }}
+                  role="button"
+                  aria-label="Duplicar bloco"
+                  tabIndex={0}
+                  onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); args.duplicateBlock(block.id); } }}
+                  px={1} py={1} cursor="pointer"
+                >
+                  <Icon name="Copy" size={14} color="$textMuted" />
+                </XStack>
+                <XStack
+                  onPress={(e: any) => { e.stopPropagation(); args.removeBlock(block.id); }}
+                  role="button"
+                  aria-label="Excluir bloco"
+                  tabIndex={0}
+                  onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); args.removeBlock(block.id); } }}
+                  px={1} py={1} cursor="pointer"
+                >
+                  <Icon name="Trash2" size={14} color="$danger" />
+                </XStack>
               </XStack>
             )}
             {isActive && HANDLES.map(({ id, cursor, style }) => (
@@ -642,6 +660,7 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
 }
 
 function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDrop: (id: string, file: File) => void }) {
+  const { duplicateBlock: dupBlock } = useEditor();
   const viewInteraction = useViewportInteraction(MOBILE_W / CANVAS_W);
   return (
     <YStack flex={1} ai="center" p="$5" overflowY="auto">
@@ -655,6 +674,7 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
             activeBlockId: viewInteraction.activeBlockId,
             setActiveBlockId: viewInteraction.setActiveBlockId,
             removeBlock: viewInteraction.removeBlock,
+            duplicateBlock: dupBlock,
             isInteracting: viewInteraction.isInteracting,
             onBlockMouseDown: viewInteraction.onBlockMouseDown,
             onHandleMouseDown: viewInteraction.onHandleMouseDown,
@@ -670,6 +690,7 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
 }
 
 function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDrop: (id: string, file: File) => void }) {
+  const { duplicateBlock: dupBlock } = useEditor();
   const viewInteraction = useViewportInteraction(TABLET_W / CANVAS_W);
   return (
     <YStack flex={1} ai="center" p="$5" overflowY="auto">
@@ -683,6 +704,7 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
             activeBlockId: viewInteraction.activeBlockId,
             setActiveBlockId: viewInteraction.setActiveBlockId,
             removeBlock: viewInteraction.removeBlock,
+            duplicateBlock: dupBlock,
             isInteracting: viewInteraction.isInteracting,
             onBlockMouseDown: viewInteraction.onBlockMouseDown,
             onHandleMouseDown: viewInteraction.onHandleMouseDown,
@@ -698,12 +720,13 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
 }
 
 export const EditorCanvas: React.FC = () => {
-  const { blocks, activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent, previewMode, viewportMode } = useEditor();
+  const { blocks, activeBlockId, setActiveBlockId, removeBlock, duplicateBlock, updateBlock, updateBlockSilent, previewMode, viewportMode } = useEditor();
   const [mounted, setMounted] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
   const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
   const [floatToolbar, setFloatToolbar] = useState<{ x: number; y: number } | null>(null);
+  const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
   const floatToolbarRef = useRef<HTMLDivElement>(null);
 
   const handleFloatFormat = (command: string, value?: string) => {
@@ -896,6 +919,8 @@ export const EditorCanvas: React.FC = () => {
         {sortedBlocks.map((block) => {
           const isActive = block.id === activeBlockId;
           const isEditing = block.id === inlineEditingId;
+          const isHovered = hoveredBlockId === block.id;
+          const showToolbar = isActive || isHovered;
           const layout = getLayout(block);
           const outOfBounds = isOutOfBounds(block, PAGE_W);
 
@@ -910,6 +935,8 @@ export const EditorCanvas: React.FC = () => {
                   setInlineEditingId(block.id);
                 }
               }}
+              onMouseEnter={() => setHoveredBlockId(block.id)}
+              onMouseLeave={() => setHoveredBlockId(null)}
               onKeyDown={(e) => {
                 if (e.key === 'Escape' && isEditing) {
                   setInlineEditingId(null);
@@ -954,16 +981,46 @@ export const EditorCanvas: React.FC = () => {
                 )}
               </div>
 
-              {isActive && (
+              {showToolbar && (
                 <XStack
-                  onPress={(e: any) => { e.stopPropagation(); removeBlock(block.id); }}
-                  role="button"
-                  aria-label="Excluir bloco"
-                  tabIndex={0}
-                  onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); removeBlock(block.id); } }}
-                  position="absolute" top={-34} right={0} zIndex={20} bg="white" borderWidth={1} borderColor="$danger" borderRadius={1} px="$2" py={1} cursor="pointer" ai="center" gap={1}
+                  position="absolute" top={-34} right={0} zIndex={20}
+                  bg="white" borderWidth={1} borderColor="$border" borderRadius={1}
+                  style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}
+                  ai="center" gap={0}
                 >
-                  <Icon name="Trash2" size={12} color="$danger" /><Text color="$danger" fontSize={11} fontWeight="500">Excluir</Text>
+                  <XStack
+                    onPress={(e: any) => { e.stopPropagation(); duplicateBlock(block.id); }}
+                    role="button"
+                    aria-label="Duplicar bloco"
+                    tabIndex={0}
+                    onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); duplicateBlock(block.id); } }}
+                    px={1} py={1} cursor="pointer" hoverStyle={{ bg: '$secondary' }}
+                  >
+                    <Icon name="Copy" size={14} color="$textMuted" />
+                  </XStack>
+                  <XStack
+                    onPress={(e: any) => { e.stopPropagation(); removeBlock(block.id); }}
+                    role="button"
+                    aria-label="Excluir bloco"
+                    tabIndex={0}
+                    onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); removeBlock(block.id); } }}
+                    px={1} py={1} cursor="pointer" hoverStyle={{ bg: '$secondary' }}
+                  >
+                    <Icon name="Trash2" size={14} color="$danger" />
+                  </XStack>
+                </XStack>
+              )}
+
+              {showToolbar && (
+                <XStack
+                  position="absolute" top={-34} left={0} zIndex={20}
+                  bg="white" borderWidth={1} borderColor="$border" borderRadius={1}
+                  style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.12)', cursor: 'grab' }}
+                  ai="center" gap={0}
+                >
+                  <XStack px={1} py={1} aria-label="Reordenar bloco">
+                    <Icon name="GripVertical" size={14} color="$textMuted" />
+                  </XStack>
                 </XStack>
               )}
 
