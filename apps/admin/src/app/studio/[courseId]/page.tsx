@@ -215,7 +215,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
         style={{ backdropFilter: 'blur(12px)' }}
         px={24} height={56} ai="center" gap={16}
       >
-        <Button variant="ghost" onPress={() => router.back()} aria-label="Voltar" px="$1">
+        <Button variant="ghost" onPress={() => router.push('/')} aria-label="Voltar" px="$1">
           <Icon name="ArrowLeft" size={20} color="$textMuted" />
         </Button>
         <Text fontSize={16} fontWeight="600">{course?.title || 'Carregando...'}</Text>
@@ -473,12 +473,12 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
   );
 }
 
-function StudioLayout({ lessonId }: { lessonId: string }) {
+function StudioLayout({ lessonId, courseId }: { lessonId: string; courseId: string }) {
   const { previewMode, activeBlockId } = useEditor();
 
   return (
     <YStack f={1} h="100vh" w="100vw" overflow="hidden">
-      <EditorHeader />
+      <EditorHeader courseId={courseId} />
       <XStack f={1} overflow="hidden" w="100%">
         {!previewMode && <BlockPalette />}
         <EditorCanvas />
@@ -503,7 +503,7 @@ export default function StudioPage({ params }: { params: Promise<{ courseId: str
   return (
     <Theme name="cloudWhite">
       <EditorProvider lessonId={selectedLessonId}>
-        <StudioLayout lessonId={selectedLessonId} />
+        <StudioLayout lessonId={selectedLessonId} courseId={courseId} />
       </EditorProvider>
     </Theme>
   );

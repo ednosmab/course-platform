@@ -264,7 +264,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     return (
       <YStack w="100%" h="100%" onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
         {block.url ? (
-          <img src={block.url} alt={block.alt || ''} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px', display: 'block' }} />
+          <img src={block.url} alt={block.alt || ''} style={{ width: '100%', height: '100%', objectFit: 'fill', borderRadius: '6px', display: 'block' }} />
         ) : (
           <YStack w="100%" h="100%" borderWidth={2} borderColor="#93c5fd" borderRadius="$3" borderStyle="dashed" ai="center" jc="center" gap="$2" bg="#eff6ff">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -720,14 +720,12 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
 }
 
 export const EditorCanvas: React.FC = () => {
-  const { blocks, activeBlockId, setActiveBlockId, removeBlock, duplicateBlock, updateBlock, updateBlockSilent, previewMode, viewportMode } = useEditor();
+  const { blocks, activeBlockId, selectedBlockIds, setActiveBlockId, removeBlock, removeBlocks, duplicateBlock, toggleSelectBlock, clearSelection, updateBlock, updateBlockSilent, previewMode, viewportMode } = useEditor();
   const [mounted, setMounted] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
   const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
   const [floatToolbar, setFloatToolbar] = useState<{ x: number; y: number } | null>(null);
-  const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
-  const [clipboardBlockId, setClipboardBlockId] = useState<string | null>(null);
   const floatToolbarRef = useRef<HTMLDivElement>(null);
 
   const handleFloatFormat = (command: string, value?: string) => {
@@ -750,44 +748,10 @@ export const EditorCanvas: React.FC = () => {
     setFloatToolbar(null);
   };
 
-  useEffect(() => {
-    const onMouseUp = (e: MouseEvent) => {
-      if (!inlineEditingId) {
-        setFloatToolbar(null);
-        return;
-      }
-      const target = e.target as HTMLElement;
-      if (floatToolbarRef.current?.contains(target)) return;
-      if (!target.closest('[contenteditable]')) {
-        setFloatToolbar(null);
-        return;
-      }
-      const sel = window.getSelection();
-      if (!sel || sel.isCollapsed || !sel.toString().trim()) {
-        setFloatToolbar(null);
-        return;
-      }
-      const range = sel.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
-      if (rect.width === 0 && rect.height === 0) {
-        setFloatToolbar(null);
-        return;
-      }
-      setFloatToolbar({
-        x: rect.left + rect.width / 2,
-        y: rect.top - 8,
-      });
-    };
-    document.addEventListener('mouseup', onMouseUp);
-    return () => document.removeEventListener('mouseup', onMouseUp);
-  }, [inlineEditingId]);
-
-  useEffect(() => {
-    if (!floatToolbar) return;
-    const onScroll = () => setFloatToolbar(null);
-    document.addEventListener('scroll', onScroll, true);
-    return () => document.removeEventListener('scroll', onScroll, true);
-  }, [floatToolbar]);
+  const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
+  const [clipboardBlockId, setClipboardBlockId] = useState<string | null>(null);
+  const [marqueeRect, setMarqueeRect] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
+  const isMarqueeSelecting = useRef(false);
 
   const interactionRef = useRef<{
     mode: 'move' | 'resize';
@@ -797,6 +761,7 @@ export const EditorCanvas: React.FC = () => {
     startMouseY: number;
     startLayout: Layout;
     currentLayouts: Record<string, any>;
+    multiLayouts?: { id: string; entry: { layout: Layout; layouts: Record<string, any> } }[];
   } | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
@@ -816,25 +781,47 @@ export const EditorCanvas: React.FC = () => {
     e.stopPropagation();
     setActiveBlockId(block.id);
     setIsInteracting(true);
+
+    const moveIds = selectedBlockIds.includes(block.id) && selectedBlockIds.length > 1
+      ? selectedBlockIds.filter((id) => id !== block.id)
+      : [];
+
+    const multiLayouts = moveIds.map((id) => {
+      const b = blocks.find((b2) => b2.id === id);
+      return b ? { id, entry: { layout: getLayout(b, viewportMode), layouts: b.layouts || {} } } : null;
+    }).filter(Boolean) as { id: string; entry: { layout: Layout; layouts: Record<string, any> } }[];
+
     interactionRef.current = {
       mode: 'move', blockId: block.id,
       startMouseX: e.clientX, startMouseY: e.clientY,
       startLayout: getLayout(block, viewportMode),
       currentLayouts: block.layouts || {},
+      multiLayouts: multiLayouts.length > 0 ? multiLayouts : undefined,
     };
-  }, [setActiveBlockId, viewportMode, inlineEditingId]);
+  }, [setActiveBlockId, viewportMode, inlineEditingId, selectedBlockIds, blocks]);
 
   const onHandleMouseDown = useCallback((e: React.MouseEvent, block: AnyBlock, handle: HandleDir) => {
     e.preventDefault();
     e.stopPropagation();
     setIsInteracting(true);
+
+    const resizeIds = selectedBlockIds.includes(block.id) && selectedBlockIds.length > 1
+      ? selectedBlockIds.filter((id) => id !== block.id)
+      : [];
+
+    const multiLayouts = resizeIds.map((id) => {
+      const b = blocks.find((b2) => b2.id === id);
+      return b ? { id, entry: { layout: getLayout(b, viewportMode), layouts: b.layouts || {} } } : null;
+    }).filter(Boolean) as { id: string; entry: { layout: Layout; layouts: Record<string, any> } }[];
+
     interactionRef.current = {
       mode: 'resize', blockId: block.id, handle,
       startMouseX: e.clientX, startMouseY: e.clientY,
       startLayout: getLayout(block, viewportMode),
       currentLayouts: block.layouts || {},
+      multiLayouts: multiLayouts.length > 0 ? multiLayouts : undefined,
     };
-  }, [viewportMode]);
+  }, [viewportMode, selectedBlockIds, blocks]);
 
   useEffect(() => {
     const applyLayout = (e: MouseEvent): Layout | null => {
@@ -861,19 +848,57 @@ export const EditorCanvas: React.FC = () => {
       return { layouts: { ...currentLayouts, [viewportMode]: layout } } as Partial<AnyBlock>;
     };
 
+    const applyResizeToEntry = (entry: { layout: Layout }, dx: number, dy: number, handle: string): Layout => {
+      const sl = entry.layout;
+      let { x, y, w, h } = sl;
+      if (handle.includes('e')) w = Math.max(MIN_W, sl.w + dx);
+      if (handle.includes('s')) h = Math.max(MIN_H, sl.h + dy);
+      if (handle.includes('w')) { w = Math.max(MIN_W, sl.w - dx); x = sl.x + sl.w - w; }
+      if (handle.includes('n')) { h = Math.max(MIN_H, sl.h - dy); y = sl.y + sl.h - h; }
+      return { x, y, w, h, zIndex: sl.zIndex };
+    };
+
     const onMouseMove = (e: MouseEvent) => {
       if (!interactionRef.current) return;
+      const { mode, handle, multiLayouts, blockId: mainBlockId } = interactionRef.current;
       const layout = applyLayout(e);
       if (layout) {
-        updateBlockSilent(interactionRef.current.blockId, buildUpdate(layout));
-        setGuides(computeBlockGuides(layout, interactionRef.current.blockId, blocks, viewportMode));
+        updateBlockSilent(mainBlockId, buildUpdate(layout));
+        if (multiLayouts?.length) {
+          const dx = e.clientX - interactionRef.current.startMouseX;
+          const dy = e.clientY - interactionRef.current.startMouseY;
+          for (const { id, entry } of multiLayouts) {
+            const newL = mode === 'move'
+              ? { ...entry.layout, x: Math.max(0, entry.layout.x + dx), y: Math.max(0, entry.layout.y + dy) }
+              : applyResizeToEntry(entry, dx, dy, handle!);
+            updateBlockSilent(id, {
+              layouts: { ...entry.layouts, [viewportMode]: newL },
+            } as Partial<AnyBlock>);
+          }
+        }
+        setGuides(computeBlockGuides(layout, mainBlockId, blocks, viewportMode));
       }
     };
 
     const onMouseUp = (e: MouseEvent) => {
       if (!interactionRef.current) return;
+      const { mode, handle, multiLayouts, blockId: mainBlockId } = interactionRef.current;
       const layout = applyLayout(e);
-      if (layout) updateBlock(interactionRef.current.blockId, buildUpdate(layout));
+      if (layout) {
+        updateBlock(mainBlockId, buildUpdate(layout));
+        if (multiLayouts?.length) {
+          const dx = e.clientX - interactionRef.current.startMouseX;
+          const dy = e.clientY - interactionRef.current.startMouseY;
+          for (const { id, entry } of multiLayouts) {
+            const newL = mode === 'move'
+              ? { ...entry.layout, x: Math.max(0, entry.layout.x + dx), y: Math.max(0, entry.layout.y + dy) }
+              : applyResizeToEntry(entry, dx, dy, handle!);
+            updateBlock(id, {
+              layouts: { ...entry.layouts, [viewportMode]: newL },
+            } as Partial<AnyBlock>);
+          }
+        }
+      }
       interactionRef.current = null;
       setIsInteracting(false);
       setGuides({ v: [], h: [], m: [] });
@@ -892,19 +917,26 @@ export const EditorCanvas: React.FC = () => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
 
+      const ids = selectedBlockIds.length > 0 ? selectedBlockIds : (activeBlockId ? [activeBlockId] : []);
+
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (activeBlockId && !previewMode) {
+        if (ids.length > 0 && !previewMode) {
           e.preventDefault();
-          removeBlock(activeBlockId);
+          if (ids.length > 1) {
+            removeBlocks(ids);
+          } else {
+            removeBlock(ids[0]);
+          }
+          clearSelection();
           setActiveBlockId(null);
         }
         return;
       }
 
       if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
-        if (activeBlockId) {
+        if (ids.length > 0) {
           e.preventDefault();
-          setClipboardBlockId(activeBlockId);
+          setClipboardBlockId(ids[0]);
         }
         return;
       }
@@ -920,7 +952,51 @@ export const EditorCanvas: React.FC = () => {
 
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [activeBlockId, previewMode, removeBlock, duplicateBlock, clipboardBlockId]);
+  }, [activeBlockId, selectedBlockIds, previewMode, removeBlock, removeBlocks, duplicateBlock, clearSelection, setActiveBlockId, clipboardBlockId]);
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isMarqueeSelecting.current || !marqueeRect) return;
+      const pageDiv = document.querySelector('[data-page-root]');
+      if (!pageDiv) return;
+      const rect = pageDiv.getBoundingClientRect();
+      setMarqueeRect((prev) => prev ? { ...prev, currentX: e.clientX - rect.left, currentY: e.clientY - rect.top } : null);
+    };
+
+    const onMouseUp = (e: MouseEvent) => {
+      if (!isMarqueeSelecting.current || !marqueeRect) return;
+      isMarqueeSelecting.current = false;
+      const rx = Math.min(marqueeRect.startX, marqueeRect.currentX);
+      const ry = Math.min(marqueeRect.startY, marqueeRect.currentY);
+      const rw = Math.abs(marqueeRect.currentX - marqueeRect.startX);
+      const rh = Math.abs(marqueeRect.currentY - marqueeRect.startY);
+
+      if (rw > 5 || rh > 5) {
+        const selected = blocks.filter((block) => {
+          const l = getLayout(block);
+          const overlapX = l.x < rx + rw && l.x + l.w > rx;
+          const overlapY = l.y < ry + rh && l.y + l.h > ry;
+          return overlapX && overlapY;
+        }).map((b) => b.id);
+        if (selected.length > 0) {
+          clearSelection();
+          selected.forEach((id, i) => {
+            if (i === 0) setActiveBlockId(id);
+            else toggleSelectBlock(id);
+          });
+        }
+      }
+
+      setMarqueeRect(null);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [marqueeRect, blocks, clearSelection, setActiveBlockId, toggleSelectBlock]);
 
   if (!mounted) return <YStack flex={1} bg="$background" ai="center" jc="center" gap={12} opacity={0.7}><Spinner size="large" color="$primary" /><Text color="$textMuted" fontSize={14}>Carregando canvas…</Text></YStack>;
 
@@ -940,7 +1016,17 @@ export const EditorCanvas: React.FC = () => {
       data-editor-root
     >
       <div
+        data-page-root
         style={{ position: 'relative', width: PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)' }}
+        onMouseDown={(e) => {
+          if ((e.target as HTMLElement).closest('[role="button"]')) return;
+          if (inlineEditingId) return;
+          isMarqueeSelecting.current = true;
+          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          setMarqueeRect({ startX: x, startY: y, currentX: x, currentY: y });
+        }}
       >
         <Text position="absolute" top={-22} left={0} fontSize={10} color="$textMuted" userSelect="none" style={{ fontFamily: 'monospace', pointerEvents: 'none' }}>
           {PAGE_W}px — Desktop
@@ -954,6 +1040,7 @@ export const EditorCanvas: React.FC = () => {
 
         {sortedBlocks.map((block) => {
           const isActive = block.id === activeBlockId;
+          const isSelected = selectedBlockIds.includes(block.id);
           const isEditing = block.id === inlineEditingId;
           const isHovered = hoveredBlockId === block.id;
           const showToolbar = isActive || isHovered;
@@ -964,7 +1051,15 @@ export const EditorCanvas: React.FC = () => {
             <div
               key={block.id}
               onMouseDown={(e) => onBlockMouseDown(e, block)}
-              onClick={(e) => { e.stopPropagation(); setActiveBlockId(block.id); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (e.shiftKey || e.metaKey || e.ctrlKey) {
+                  toggleSelectBlock(block.id);
+                } else {
+                  setActiveBlockId(block.id);
+                  if (selectedBlockIds.length > 0) clearSelection();
+                }
+              }}
               onDoubleClick={(e) => {
                 if (block.type === 'text' || block.type === 'heading') {
                   e.stopPropagation();
@@ -990,9 +1085,9 @@ export const EditorCanvas: React.FC = () => {
             >
               <div style={{
                 position: 'absolute', inset: 0,
-                border: isActive ? '2px solid #3b82f6' : outOfBounds ? '2px solid #f97316' : '2px solid transparent',
+                border: isActive ? '2px solid #3b82f6' : isSelected ? '2px solid #60a5fa' : outOfBounds ? '2px solid #f97316' : '2px solid transparent',
                 borderRadius: '6px', pointerEvents: 'none', zIndex: 2,
-                boxShadow: isActive ? '0 0 0 1px rgba(59,130,246,0.25)' : outOfBounds ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
+                boxShadow: isActive ? '0 0 0 1px rgba(59,130,246,0.25)' : isSelected ? '0 0 0 1px rgba(96,165,250,0.2)' : outOfBounds ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
               }} />
 
               {outOfBounds && !isActive && (
@@ -1060,12 +1155,12 @@ export const EditorCanvas: React.FC = () => {
                 </XStack>
               )}
 
-              {isActive && HANDLES.map(({ id, cursor, style }) => (
+              {(isActive || isSelected) && HANDLES.map(({ id, cursor, style }) => (
                 <div
                   key={id}
                   data-handle={id}
                   onMouseDown={(e) => onHandleMouseDown(e, block, id)}
-                  style={{ position: 'absolute', width: 10, height: 10, backgroundColor: 'white', border: '2px solid #3b82f6', borderRadius: '2px', cursor, zIndex: 30, ...style }}
+                  style={{ position: 'absolute', width: 10, height: 10, backgroundColor: 'white', border: isActive ? '2px solid #3b82f6' : '2px solid #60a5fa', borderRadius: '2px', cursor, zIndex: 30, ...style }}
                 />
               ))}
             </div>
@@ -1098,6 +1193,21 @@ export const EditorCanvas: React.FC = () => {
             </React.Fragment>
           );
         })}
+
+        {marqueeRect && (
+          <div style={{
+            position: 'absolute',
+            left: Math.min(marqueeRect.startX, marqueeRect.currentX),
+            top: Math.min(marqueeRect.startY, marqueeRect.currentY),
+            width: Math.abs(marqueeRect.currentX - marqueeRect.startX),
+            height: Math.abs(marqueeRect.currentY - marqueeRect.startY),
+            border: '1.5px solid #3b82f6',
+            backgroundColor: 'rgba(59,130,246,0.08)',
+            pointerEvents: 'none',
+            zIndex: 1000,
+            borderRadius: '4px',
+          }} />
+        )}
       </div>
 
       {floatToolbar && (

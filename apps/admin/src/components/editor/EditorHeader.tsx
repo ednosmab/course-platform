@@ -2,12 +2,15 @@
 
 import React, { useState } from 'react';
 import { XStack, YStack, Text, Button, Icon } from '@projeto/ui';
-import Link from 'next/link';
 import { useEditor } from '../../context/EditorContext';
 import { useTranslation } from 'react-i18next';
 import { PositionPanel } from './PositionPanel';
 
-export const EditorHeader: React.FC = () => {
+interface EditorHeaderProps {
+  courseId?: string;
+}
+
+export const EditorHeader: React.FC<EditorHeaderProps> = ({ courseId }) => {
   const { t } = useTranslation('editor');
   const { canUndo, canRedo, undo, redo, saveStatus, previewMode, setPreviewMode, viewportMode, setViewportMode, publishLesson, courseTitle, moduleTitle, lessonTitle } = useEditor();
   const [published, setPublished] = useState(false);
@@ -27,6 +30,8 @@ export const EditorHeader: React.FC = () => {
     }
   };
 
+  const courseUrl = courseId ? `/studio/${courseId}` : '#';
+
   return (
     <XStack
       ai="center" jc="space-between"
@@ -36,18 +41,24 @@ export const EditorHeader: React.FC = () => {
       gap="$4"
     >
       <XStack ai="center" gap="$4">
-        <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+        <a href={courseUrl} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
           <Icon name="ArrowLeft" size={20} color="$textMuted" />
-        </Link>
+        </a>
 
         <XStack ai="center" gap="$3">
           <XStack ai="center" gap="$2">
             <XStack w={24} h={24} borderRadius="$2" borderWidth={1} borderColor="$border" ai="center" jc="center">
               <Icon name="CloudLightning" size={14} color="$textMuted" />
             </XStack>
-            <Text fontSize={14} fontWeight="500">
-              {courseTitle || t('courseLabel')} / {moduleTitle || t('moduleLabel')} / <Text fontWeight="600">{lessonTitle}</Text>
-            </Text>
+            <XStack ai="center" gap={2}>
+              <a href={courseUrl} style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+                <Text fontSize={14} fontWeight="500">{courseTitle || t('courseLabel')}</Text>
+              </a>
+              <Text fontSize={14} color="$textMuted">/</Text>
+              <Text fontSize={14} fontWeight="500">{moduleTitle || t('moduleLabel')}</Text>
+              <Text fontSize={14} color="$textMuted">/</Text>
+              <Text fontSize={14} fontWeight="600">{lessonTitle}</Text>
+            </XStack>
           </XStack>
 
           <XStack ai="center" gap={6} ml="$3">
