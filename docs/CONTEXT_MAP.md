@@ -4,6 +4,7 @@
 
 * P0 → docs/AGENTS.md
 * P0.1 → docs/FORBIDDEN_OPERATIONS.md (Regras vinculantes para IA — leitura obrigatória)
+* P0.15 → docs/DESDO.md (Diretrizes de engenharia, SOLID, TDD, segurança, documentação)
 * P0.2 → docs/INDEX.md
 * P0.3 → docs/Requisitos_plataforma.md (Bíblia de Requisitos da Plataforma)
 * P0.4 → cognition/context/CONTEXT_HIERARCHY.md
