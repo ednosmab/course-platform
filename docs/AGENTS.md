@@ -26,6 +26,12 @@
 
 ---
 
+## 📖 CÓDIGO DECLARATIVO E LEGÍVEL (REGRA ABSOLUTA)
+
+Escreva códigos extremamente declarativos, simples e fáceis de ler. Evite otimizações prematuras ou sintaxes excessivamente complexas. Prefira legibilidade à concisão. Código deve ser autoexplicativo para um desenvolvedor pleno — se precisar de um comentário para explicar o fluxo, o código provavelmente está complexo demais.
+
+---
+
 ## 🛑 REGRAS CRUCIAIS DE WORKFLOW E GIT (LEI ABSOLUTA)
 
 1. **NUNCA FAÇA COMMIT SEM PERMISSÃO:** É ESTREITAMENTE PROIBIDO executar comandos de `git commit` ou `git push` de forma automatizada. Você deve SEMPRE solicitar que o usuário teste as alterações localmente primeiro. Apenas após a confirmação visual e autorização explícita do usuário você poderá avançar ou sugerir o commit.
