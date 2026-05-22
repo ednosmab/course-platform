@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, use } from 'react';
 import { YStack, XStack, Text, Button, Icon, Spinner, Theme } from '@projeto/ui';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { BrandMark } from '../../../components/brand-mark';
 import { EditorProvider, useEditor } from '../../../context/EditorContext';
 import { EditorHeader } from '../../../components/editor/EditorHeader';
@@ -13,6 +13,7 @@ import { supabase } from '@projeto/core';
 import type { Module, Lesson } from '@projeto/types';
 
 function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSelectLesson: (lessonId: string) => void }) {
+  const router = useRouter();
   const [course, setCourse] = useState<any>(null);
   const [modules, setModules] = useState<(Module & { lessons: Lesson[] })[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,8 +51,12 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
 
       const { data: mods } = await supabase.from('modules').select('*').eq('course_id', courseId).order('order_index');
       const modsWithLessons = await Promise.all((mods || []).map(async (m) => {
-        const { data: less } = await supabase.from('lessons').select('*').eq('module_id', m.id).order('order_index');
-        return { ...m, lessons: less || [] };
+        const { data: less } = await supabase
+          .from('lessons')
+          .select('*')
+          .eq('module_id', m.id)
+          .order('order_index');
+        return { ...m, lessons: (less || []).filter(l => !l.id.endsWith('dddddddddddd')) };
       }));
       setModules(modsWithLessons);
       setExpandedModules(new Set(modsWithLessons.map(m => m.id)));
@@ -210,9 +215,9 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
         style={{ backdropFilter: 'blur(12px)' }}
         px={24} height={56} ai="center" gap={16}
       >
-        <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+        <Button variant="ghost" onPress={() => router.back()} aria-label="Voltar" px="$1">
           <Icon name="ArrowLeft" size={20} color="$textMuted" />
-        </Link>
+        </Button>
         <Text fontSize={16} fontWeight="600">{course?.title || 'Carregando...'}</Text>
       </XStack>
 

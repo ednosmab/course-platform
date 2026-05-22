@@ -157,6 +157,65 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
     };
   }, [activeLessonId]);
 
+  // Polling: checa version (1 int) a cada 30s — só busca blocks se mudou
+  useEffect(() => {
+    if (!activeLessonId) return;
+    let knownVersion: number | null = null;
+    const interval = setInterval(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('lessons')
+          .select('version')
+          .eq('id', activeLessonId)
+          .single();
+        if (error) return;
+        if (data && knownVersion !== null && data.version === knownVersion) return;
+        knownVersion = data?.version ?? null;
+        if (!data) return;
+        // version mudou ou é a primeira checagem — busca blocks
+        const { data: full } = await supabase
+          .from('lessons')
+          .select('blocks, title')
+          .eq('id', activeLessonId)
+          .single();
+        if (full?.blocks) {
+          setLessons((prev) =>
+            prev.map((les) =>
+              les.id === activeLessonId
+                ? { ...les, blocks: full.blocks, title: full.title || les.title }
+                : les
+            )
+          );
+        }
+      } catch {
+        // silencioso
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [activeLessonId]);
+
+  // Refresh ao focar a aba (usuário voltou do CMS)
+  useEffect(() => {
+    if (!activeLessonId) return;
+    const onFocus = async () => {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('blocks, title')
+        .eq('id', activeLessonId)
+        .single();
+      if (error || !data?.blocks) return;
+      setLessons((prev) =>
+        prev.map((les) =>
+          les.id === activeLessonId
+            ? { ...les, blocks: data.blocks, title: data.title || les.title }
+            : les
+        )
+      );
+    };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [activeLessonId]);
+
   const activeLesson = lessons.find((l) => l.id === activeLessonId) || lessons[0];
 
   const handleVideoProgress = async (progressSec: number, durationSec: number) => {

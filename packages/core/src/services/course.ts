@@ -72,8 +72,13 @@ export const CourseService = {
 
         if (lessonsError) throw lessonsError;
 
+        // Filtra IDs de rascunho (sufixo dddddddddddd — 12 chars)
+        const filteredLessons = (lessonsData || []).filter(
+          (l: any) => !l.id.endsWith('dddddddddddd')
+        );
+
         // Parse individual de cada aula com safeParse para resiliência de CMS blocks
-        const lessons = (lessonsData || []).map((les: any) => {
+        const lessons = filteredLessons.map((les: any) => {
           const parsed = LessonSchema.safeParse(les);
           if (!parsed.success) {
             console.error(`Erro de contrato na aula ${les.id}:`, parsed.error);

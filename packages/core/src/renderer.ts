@@ -83,7 +83,7 @@ export function blockToHtml(block: AnyBlock): string {
       if (!b.url) return '';
       const align = styles.align as string || 'center';
       const halign = align === 'left' ? 'flex-start' : align === 'right' ? 'flex-end' : 'center';
-      return `<div style="display:flex;align-items:${halign};width:100%;height:100%"><img src="${b.url}" alt="${b.alt || ''}" style="max-width:100%;max-height:100%;border-radius:8px;object-fit:contain" /></div>`;
+      return `<div style="display:flex;align-items:${halign};width:100%;height:100%"><img src="${b.url}" alt="${b.alt || ''}" style="width:100%;height:100%;border-radius:8px;object-fit:cover" /></div>`;
     }
 
     case 'html':

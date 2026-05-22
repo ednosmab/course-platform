@@ -210,3 +210,7 @@ console.log(JSON.stringify({
 - [ ] **SCL-14:** Sharding de banco de dados por organização
 - [ ] **SCL-15:** CDN multi-região para vídeos
 - [ ] **SCL-16:** Service Workers para cache offline avançado
+
+---
+
+> 📎 **Documento relacionado:** [`docs/roadmaps/concentrador-de-dados.md`](./concentrador-de-dados.md) — Arquitetura de Buffer de Gravação (Write-Behind Cache) para progresso de aulas usando Next.js + Redis + Supabase. Complementa SCL-08.

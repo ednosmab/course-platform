@@ -7,6 +7,7 @@ import { supabase } from '@projeto/core';
 interface EditorState {
   blocks: AnyBlock[];
   activeBlockId: string | null;
+  selectedBlockIds: string[];
   history: AnyBlock[][];
   historyIndex: number;
   previewMode: boolean;
@@ -16,6 +17,7 @@ interface EditorState {
 type EditorAction =
   | { type: 'ADD_BLOCK'; payload: { type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' | 'heading' | 'divider' } }
   | { type: 'REMOVE_BLOCK'; payload: { id: string } }
+  | { type: 'REMOVE_BLOCKS'; payload: { ids: string[] } }
   | { type: 'UPDATE_BLOCK'; payload: { id: string; updates: Partial<AnyBlock> } }
   | { type: 'UPDATE_BLOCK_SILENT'; payload: { id: string; updates: Partial<AnyBlock> } }
   | { type: 'MOVE_BLOCK'; payload: { fromIndex: number; toIndex: number } }
@@ -25,12 +27,16 @@ type EditorAction =
   | { type: 'SET_BLOCKS'; payload: { blocks: AnyBlock[] } }
   | { type: 'DUPLICATE_BLOCK'; payload: { id: string } }
   | { type: 'REORDER_BLOCKS'; payload: { blocks: AnyBlock[] } }
+  | { type: 'SET_SELECTED_BLOCKS'; payload: { ids: string[] } }
+  | { type: 'TOGGLE_SELECT_BLOCK'; payload: { id: string } }
+  | { type: 'CLEAR_SELECTION' }
   | { type: 'SET_PREVIEW_MODE'; payload: { active: boolean } }
   | { type: 'SET_VIEWPORT_MODE'; payload: { mode: 'desktop' | 'tablet' | 'mobile' } };
 
 const initialState: EditorState = {
   blocks: [],
   activeBlockId: null,
+  selectedBlockIds: [],
   history: [[]],
   historyIndex: 0,
   previewMode: false,
@@ -38,13 +44,14 @@ const initialState: EditorState = {
 };
 
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
-  const updateHistory = (newBlocks: AnyBlock[], nextActiveId: string | null = state.activeBlockId): EditorState => {
+  const updateHistory = (newBlocks: AnyBlock[], nextActiveId: string | null = state.activeBlockId, nextSelected: string[] = state.selectedBlockIds): EditorState => {
     const nextHistory = state.history.slice(0, state.historyIndex + 1);
     nextHistory.push(newBlocks);
     return {
       ...state,
       blocks: newBlocks,
       activeBlockId: nextActiveId,
+      selectedBlockIds: nextSelected,
       history: nextHistory,
       historyIndex: nextHistory.length - 1,
     };
@@ -143,7 +150,17 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     case 'REMOVE_BLOCK': {
       const newBlocks = state.blocks.filter((b) => b.id !== action.payload.id);
       const nextActiveId = state.activeBlockId === action.payload.id ? null : state.activeBlockId;
-      return updateHistory(newBlocks, nextActiveId);
+      const nextSelected = state.selectedBlockIds.filter((s) => s !== action.payload.id);
+      return updateHistory(newBlocks, nextActiveId, nextSelected);
+    }
+
+    case 'REMOVE_BLOCKS': {
+      const ids = action.payload.ids;
+      const idSet = new Set(ids);
+      const newBlocks = state.blocks.filter((b) => !idSet.has(b.id));
+      const nextActiveId = state.activeBlockId && idSet.has(state.activeBlockId) ? null : state.activeBlockId;
+      const nextSelected = state.selectedBlockIds.filter((s) => !idSet.has(s));
+      return updateHistory(newBlocks, nextActiveId, nextSelected);
     }
 
     case 'DUPLICATE_BLOCK': {
@@ -193,6 +210,21 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       const [removed] = newBlocks.splice(fromIndex, 1);
       newBlocks.splice(toIndex, 0, removed);
       return updateHistory(newBlocks);
+    }
+
+    case 'SET_SELECTED_BLOCKS': {
+      return { ...state, selectedBlockIds: action.payload.ids };
+    }
+
+    case 'TOGGLE_SELECT_BLOCK': {
+      const id = action.payload.id;
+      const exists = state.selectedBlockIds.includes(id);
+      const next = exists ? state.selectedBlockIds.filter((s) => s !== id) : [...state.selectedBlockIds, id];
+      return { ...state, selectedBlockIds: next, activeBlockId: id };
+    }
+
+    case 'CLEAR_SELECTION': {
+      return { ...state, selectedBlockIds: [] };
     }
 
     case 'SET_ACTIVE_BLOCK': {
@@ -269,11 +301,15 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 interface EditorContextType extends EditorState {
   addBlock: (type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' | 'heading' | 'divider') => void;
   removeBlock: (id: string) => void;
+  removeBlocks: (ids: string[]) => void;
   updateBlock: (id: string, updates: Partial<AnyBlock>) => void;
   updateBlockSilent: (id: string, updates: Partial<AnyBlock>) => void;
   moveBlock: (fromIndex: number, toIndex: number) => void;
   duplicateBlock: (id: string) => void;
   setActiveBlockId: (id: string | null) => void;
+  setSelectedBlocks: (ids: string[]) => void;
+  toggleSelectBlock: (id: string) => void;
+  clearSelection: () => void;
   undo: () => void;
   redo: () => void;
   setBlocks: (blocks: AnyBlock[]) => void;
@@ -285,6 +321,7 @@ interface EditorContextType extends EditorState {
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
   activeLessonId: string;
   publishLesson: () => Promise<void>;
+  courseId: string;
   courseTitle: string;
   moduleTitle: string;
   lessonTitle: string;
@@ -298,12 +335,17 @@ export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: st
   const [activeLessonId] = useState(lessonId || '11111111-1111-1111-1111-111111111111');
   const [isLoaded, setIsLoaded] = useState(false);
   const [lessonMeta, setLessonMeta] = useState<{ module_id: string; title: string; order_index: number } | null>(null);
+  const [courseId, setCourseId] = useState('');
   const [courseTitle, setCourseTitle] = useState('');
   const [moduleTitle, setModuleTitle] = useState('');
 
   const addBlock = (type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' | 'heading' | 'divider') => dispatch({ type: 'ADD_BLOCK', payload: { type } });
   const removeBlock = (id: string) => dispatch({ type: 'REMOVE_BLOCK', payload: { id } });
+  const removeBlocks = (ids: string[]) => dispatch({ type: 'REMOVE_BLOCKS', payload: { ids } });
   const duplicateBlock = (id: string) => dispatch({ type: 'DUPLICATE_BLOCK', payload: { id } });
+  const setSelectedBlocks = (ids: string[]) => dispatch({ type: 'SET_SELECTED_BLOCKS', payload: { ids } });
+  const toggleSelectBlock = (id: string) => dispatch({ type: 'TOGGLE_SELECT_BLOCK', payload: { id } });
+  const clearSelection = () => dispatch({ type: 'CLEAR_SELECTION' });
   const updateBlock = (id: string, updates: Partial<AnyBlock>) => dispatch({ type: 'UPDATE_BLOCK', payload: { id, updates } });
   const moveBlock = (fromIndex: number, toIndex: number) => dispatch({ type: 'MOVE_BLOCK', payload: { fromIndex, toIndex } });
   const setActiveBlockId = (id: string | null) => dispatch({ type: 'SET_ACTIVE_BLOCK', payload: { id } });
@@ -402,6 +444,7 @@ const getDraftId = (lessonId: string) => {
       const { data: mod } = await supabase.from('modules').select('title, course_id').eq('id', lessonMeta.module_id).single();
       if (mod) {
         setModuleTitle(mod.title);
+        setCourseId(mod.course_id);
         const { data: course } = await supabase.from('courses').select('title').eq('id', mod.course_id).single();
         if (course) setCourseTitle(course.title);
       }
@@ -507,11 +550,15 @@ const getDraftId = (lessonId: string) => {
         ...state,
         addBlock,
         removeBlock,
+        removeBlocks,
         duplicateBlock,
         updateBlock,
         updateBlockSilent,
         moveBlock,
         setActiveBlockId,
+        setSelectedBlocks,
+        toggleSelectBlock,
+        clearSelection,
         undo,
         redo,
         setBlocks,
@@ -523,6 +570,7 @@ const getDraftId = (lessonId: string) => {
         saveStatus,
         activeLessonId,
         publishLesson,
+        courseId,
         courseTitle,
         moduleTitle,
         lessonTitle: lessonMeta?.title || 'Nova aula',
