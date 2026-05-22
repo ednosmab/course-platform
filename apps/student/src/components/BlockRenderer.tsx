@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { YStack } from '@projeto/ui';
 import { AnyBlock } from '@projeto/types';
-import { blockToHtml, getBlockLayout, calcPageHeight, PAGE_W } from '@projeto/core';
+import { blockToHtml, getBlockLayout, calcPageHeight, getDesignWidth } from '@projeto/core';
 
 interface BlockRendererProps {
   blocks: AnyBlock[];
@@ -50,26 +50,47 @@ function HtmlBlockFrame({ html }: { html: string }) {
 }
 
 export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks, onVideoProgress, savedPosition = 0 }) => {
-  const pageH = useMemo(() => calcPageHeight(blocks), [blocks]);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(860);
+
+  const designWidth = useMemo(() => getDesignWidth(containerWidth), [containerWidth]);
+  const pageH = useMemo(() => calcPageHeight(blocks, containerWidth), [blocks, containerWidth]);
+
+  const scale = useMemo(() => {
+    return Math.min(1, containerWidth / designWidth);
+  }, [containerWidth, designWidth]);
+
+  const onLayout = (e: any) => {
+    const w = e.nativeEvent?.layout?.width;
+    if (w) {
+      setContainerWidth(w);
+    }
+  };
 
   if (!blocks.length) return null;
 
   return (
-    <YStack width="100%" ai="center" overflow="hidden">
+    <YStack
+      width="100%"
+      onLayout={onLayout}
+      ai="center"
+      overflow="hidden"
+      height={pageH * scale}
+      position="relative"
+    >
       <div
-        ref={containerRef}
         style={{
-          position: 'relative',
-          width: PAGE_W,
-          maxWidth: '100%',
+          position: 'absolute',
+          top: 0,
+          left: '50%',
+          width: designWidth,
           height: pageH,
+          transform: `translate(-50%, 0) scale(${scale})`,
+          transformOrigin: 'top center',
           overflow: 'visible',
-          margin: '0 auto',
         }}
       >
         {blocks.map(block => {
-          const l = getBlockLayout(block);
+          const l = getBlockLayout(block, containerWidth);
 
           if (block.type === 'html') {
             return (

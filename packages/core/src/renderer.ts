@@ -1,5 +1,8 @@
 import { AnyBlock } from '@projeto/types';
 
+export const MOBILE_W = 380;
+export const TABLET_W = 720;
+export const DESKTOP_W = 860;
 export const PAGE_W = 860;
 
 function parseMarkdownToHtml(text: string): string {
@@ -143,14 +146,31 @@ export function blockToHtml(block: AnyBlock): string {
   }
 }
 
-export function getBlockLayout(block: AnyBlock) {
-  return block.layouts?.desktop || { x: 40, y: 40, w: 700, h: 150, zIndex: 0 };
+export function getBlockLayout(block: AnyBlock, containerWidth?: number) {
+  const layouts = block.layouts || {};
+  if (!containerWidth) {
+    return layouts.desktop || { x: 40, y: 40, w: 700, h: 150, zIndex: 0 };
+  }
+  
+  if (containerWidth <= 480) {
+    return layouts.mobile || layouts.tablet || layouts.desktop || { x: 20, y: 20, w: 340, h: 120, zIndex: 0 };
+  }
+  if (containerWidth <= 768) {
+    return layouts.tablet || layouts.desktop || { x: 30, y: 30, w: 660, h: 140, zIndex: 0 };
+  }
+  return layouts.desktop || { x: 40, y: 40, w: 700, h: 150, zIndex: 0 };
 }
 
-export function calcPageHeight(blocks: AnyBlock[], padding = 80): number {
+export function getDesignWidth(containerWidth: number): number {
+  if (containerWidth <= 480) return MOBILE_W;
+  if (containerWidth <= 768) return TABLET_W;
+  return DESKTOP_W;
+}
+
+export function calcPageHeight(blocks: AnyBlock[], containerWidth?: number, padding = 80): number {
   if (!blocks.length) return 600;
   const maxBottom = Math.max(...blocks.map(b => {
-    const l = getBlockLayout(b);
+    const l = getBlockLayout(b, containerWidth);
     return l.y + l.h;
   }));
   return maxBottom + padding;
