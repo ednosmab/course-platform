@@ -27,3 +27,4 @@ export * from './utils/markdown';
 export * from './blocks/TextBlock';
 export * from './blocks/QuoteBlock';
 export * from './components/Certificate';
+export * from './components/Login';
