@@ -4,8 +4,10 @@ import React, { useState } from 'react';
 import { YStack, XStack, Text, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 
+const CERTIFICATE_BLOCK_TYPES = new Set(['text', 'heading', 'image', 'divider']);
+
 export const BlockPalette: React.FC = () => {
-  const { addBlock } = useEditor();
+  const { addBlock, mode } = useEditor();
   const [collapsed, setCollapsed] = useState(true);
 
   return (
@@ -60,14 +62,20 @@ export const BlockPalette: React.FC = () => {
         p={collapsed ? '$2' : '$3'}
         gap={collapsed ? '$2' : '$2'}
       >
-        <BlockBtn icon="Type" label="Texto" collapsed={collapsed} onClick={() => addBlock('text')} />
-        <BlockBtn icon="Heading" label="Título" collapsed={collapsed} onClick={() => addBlock('heading')} />
-        <BlockBtn icon="Image" label="Imagem" collapsed={collapsed} onClick={() => addBlock('image')} />
-        <BlockBtn icon="Video" label="Vídeo" collapsed={collapsed} onClick={() => addBlock('video')} />
-        <BlockBtn icon="HelpCircle" label="Quiz" collapsed={collapsed} onClick={() => addBlock('quiz')} />
-        <BlockBtn icon="Quote" label="Citação" collapsed={collapsed} onClick={() => addBlock('quote')} />
-        <BlockBtn icon="Minus" label="Divisor" collapsed={collapsed} onClick={() => addBlock('divider')} />
-        <BlockBtn icon="Code" label="HTML" collapsed={collapsed} onClick={() => addBlock('html')} />
+        {([
+          ['Type', 'Texto', 'text' as const],
+          ['Heading', 'Título', 'heading' as const],
+          ['Image', 'Imagem', 'image' as const],
+          ['Video', 'Vídeo', 'video' as const],
+          ['HelpCircle', 'Quiz', 'quiz' as const],
+          ['Quote', 'Citação', 'quote' as const],
+          ['Minus', 'Divisor', 'divider' as const],
+          ['Code', 'HTML', 'html' as const],
+        ] as const)
+          .filter(([, , type]) => mode !== 'certificate' || CERTIFICATE_BLOCK_TYPES.has(type))
+          .map(([icon, label, type]) => (
+            <BlockBtn key={type} icon={icon} label={label} collapsed={collapsed} onClick={() => addBlock(type)} />
+          ))}
       </YStack>
     </YStack>
   );
