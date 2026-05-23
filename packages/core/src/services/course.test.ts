@@ -24,6 +24,7 @@ function makeRepo() {
     reorderLessons: vi.fn(),
     getModuleTitle: vi.fn(),
     getCourseTitle: vi.fn(),
+    getCourseCertificateEnabled: vi.fn(),
     seedDemoData: vi.fn(),
   };
 }

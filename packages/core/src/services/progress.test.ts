@@ -8,6 +8,9 @@ function makeProgressRepo() {
     getTestCompleted: vi.fn(),
     markCompleted: vi.fn(),
     getLessonBlocks: vi.fn(),
+    getCompletedLessonCount: vi.fn(),
+    getLessonTestScores: vi.fn(),
+    getProgressByLessons: vi.fn(),
   };
 }
 
