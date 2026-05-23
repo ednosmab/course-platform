@@ -442,7 +442,7 @@ function TopBar({ userProfile }: TopBarProps) {
       // proceed even if signOut fails
     }
     const adminUrl = process.env.EXPO_PUBLIC_ADMIN_APP_URL || 'http://localhost:3000';
-    window.location.href = `${adminUrl}/login`;
+    window.location.href = `${adminUrl}/logout`;
   };
 
   return (
