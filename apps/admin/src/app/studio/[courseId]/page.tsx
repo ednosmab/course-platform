@@ -219,7 +219,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
               onChange={e => setNewTitle(e.target.value)}
               placeholder="Título do módulo"
               autoFocus
-              style={{ flex: 1, height: 36, borderRadius: 6, border: '1px solid $cwBorder', padding: '0 12px', fontSize: 14, outline: 'none' }}
+              style={{ flex: 1, height: 36, borderRadius: 6, border: '1px solid #DEE1EB', padding: '0 12px', fontSize: 14, outline: 'none' }}
               onKeyDown={e => { if (e.key === 'Enter') createModule(); if (e.key === 'Escape') setShowModuleInput(false); }}
             />
             <Button onPress={createModule} disabled={!newTitle.trim()} variant="ghost" borderWidth={1} borderColor="$border">Adicionar</Button>
@@ -247,7 +247,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
                     value={editModuleTitle}
                     onChange={e => setEditModuleTitle(e.target.value)}
                     autoFocus
-                    style={{ flex: 1, height: 32, borderRadius: 6, border: '1px solid $info', padding: '0 10px', fontSize: 14, outline: 'none' }}
+                    style={{ flex: 1, height: 32, borderRadius: 6, border: '1px solid #3B82F6', padding: '0 10px', fontSize: 14, outline: 'none' }}
                     onKeyDown={e => { if (e.key === 'Enter') renameModule(mod.id); if (e.key === 'Escape') setEditingModuleId(null); }}
                   />
                   <Button onPress={() => renameModule(mod.id)} px="$3" py="$1" variant="ghost" borderWidth={1} borderColor="$border">
@@ -283,7 +283,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
                       onChange={e => setNewTitle(e.target.value)}
                       placeholder="Título da aula"
                       autoFocus
-                      style={{ flex: 1, height: 32, borderRadius: 6, border: '1px solid $cwBorder', padding: '0 12px', fontSize: 13, outline: 'none' }}
+                      style={{ flex: 1, height: 32, borderRadius: 6, border: '1px solid #DEE1EB', padding: '0 12px', fontSize: 13, outline: 'none' }}
                       onKeyDown={e => { if (e.key === 'Enter') createLesson(mod.id); if (e.key === 'Escape') setShowLessonInput(null); }}
                     />
                     <Button onPress={() => createLesson(mod.id)} disabled={!newTitle.trim()} px="$3" py="$1" variant="ghost" borderWidth={1} borderColor="$border">
@@ -316,7 +316,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
                           value={editLessonTitle}
                           onChange={e => setEditLessonTitle(e.target.value)}
                           autoFocus
-                          style={{ flex: 1, height: 28, borderRadius: 6, border: '1px solid $info', padding: '0 8px', fontSize: 13, outline: 'none' }}
+                          style={{ flex: 1, height: 28, borderRadius: 6, border: '1px solid #3B82F6', padding: '0 8px', fontSize: 13, outline: 'none' }}
                           onKeyDown={e => { if (e.key === 'Enter') renameLesson(lesson.id); if (e.key === 'Escape') setEditingLessonId(null); }}
                         />
                         <Button onPress={() => renameLesson(lesson.id)} px="$3" py="$1" variant="ghost" borderWidth={1} borderColor="$border">
@@ -366,11 +366,11 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
             <YStack p={16} gap={16}>
               <YStack gap={6}>
                 <Text fontSize={13} fontWeight="500">Título do curso</Text>
-                <input value={editTitle} onChange={e => setEditTitle(e.target.value)} style={{ height: 36, borderRadius: 6, border: '1px solid $cwBorder', padding: '0 12px', fontSize: 14, outline: 'none' }} />
+                <input value={editTitle} onChange={e => setEditTitle(e.target.value)} style={{ height: 36, borderRadius: 6, border: '1px solid #DEE1EB', padding: '0 12px', fontSize: 14, outline: 'none' }} />
               </YStack>
               <YStack gap={6}>
                 <Text fontSize={13} fontWeight="500">Descrição</Text>
-                <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} rows={2} style={{ borderRadius: 6, border: '1px solid $cwBorder', padding: 12, fontSize: 14, outline: 'none', resize: 'vertical' }} />
+                <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} rows={2} style={{ borderRadius: 6, border: '1px solid #DEE1EB', padding: 12, fontSize: 14, outline: 'none', resize: 'vertical' }} />
               </YStack>
               <YStack gap={6}>
                 <Text fontSize={13} fontWeight="500">Thumbnail (1280×720px, máx 2MB)</Text>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, Suspense } from 'react';
-import { YStack, XStack, Text, Button, Icon, Card, Spinner } from '@projeto/ui';
+import { YStack, XStack, Text, Button, Icon, Card, Spinner, Theme } from '@projeto/ui';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createSupabaseBrowserClient } from '../../lib/supabase-client';
 import { AuthService } from '@projeto/core';
@@ -41,7 +41,7 @@ function LoginForm() {
     }
   };
 
-  const GRADIENT = 'linear-gradient(135deg, $cwGradientFrom, $cwGradientTo)';
+  const GRADIENT = 'linear-gradient(135deg, #5B8DEF, #6E5AE8)';
 
   return (
     <XStack f={1} minHeight="100vh" bg="$background">
@@ -159,7 +159,7 @@ function LoginForm() {
                     placeholder="voce@exemplo.com"
                     autoComplete="email"
                     required
-                    style={{ border: 'none', outline: 'none', flex: 1, marginLeft: 8, fontSize: 14, background: 'transparent', color: '$cwForeground' }}
+                    style={{ border: 'none', outline: 'none', flex: 1, marginLeft: 8, fontSize: 14, background: 'transparent', color: '#282836' }}
                   />
                 </XStack>
               </YStack>
@@ -178,7 +178,7 @@ function LoginForm() {
                     placeholder="••••••••"
                     autoComplete="current-password"
                     required
-                    style={{ border: 'none', outline: 'none', flex: 1, marginLeft: 8, fontSize: 14, background: 'transparent', color: '$cwForeground' }}
+                    style={{ border: 'none', outline: 'none', flex: 1, marginLeft: 8, fontSize: 14, background: 'transparent', color: '#282836' }}
                   />
                   <XStack cursor="pointer" onPress={() => setShowPwd(!showPwd)} p="$1" br="$2" hoverStyle={{ bg: '$secondary' }} aria-label={showPwd ? 'Ocultar senha' : 'Mostrar senha'}>
                     <Icon name={showPwd ? 'EyeOff' : 'Eye'} size={16} color="$textMuted" />
@@ -186,12 +186,12 @@ function LoginForm() {
                 </XStack>
               </YStack>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, color: '$cwMutedForeground' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, color: '#808498' }}>
                 <input
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
-                  style={{ width: 16, height: 16, accentColor: '$info', cursor: 'pointer' }}
+                  style={{ width: 16, height: 16, accentColor: '#3B82F6', cursor: 'pointer' }}
                 />
                 Lembrar de mim por 30 dias
               </label>
@@ -255,7 +255,9 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={null}>
-      <LoginForm />
+      <Theme name="cloudWhite">
+        <LoginForm />
+      </Theme>
     </Suspense>
   );
 }

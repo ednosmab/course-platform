@@ -1,74 +1,50 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-SESSAO CONCLUIDA — Full audit compliance: 10/10 violações corrigidas, 56/56 testes verdes, builds admin/student compilando.
+SESSAO CONCLUIDA — SSR 500 corrigido, token governance documentada, 62/62 testes verdes, commit `b5cb191`.
 
 ## 🎯 Tarefa Executada
-**Auditoria completa de conformidade com as documentações do projeto (P0-P3)**
+**Correção SSR 500 + Governança de Tokens em Inline Styles + Rename schema_version → version**
 
-Objetivo: Ler todos os documentos obrigatórios e corrigir todas as violações encontradas no código-fonte.
+Objetivo: Corrigir crash SSR no GET `/studio/[courseId]`, eliminar ZodError do `.strict()`, restaurar tokens visuais no EditorCanvas, e documentar diretriz de resolução de tokens.
 
 ## 🕹️ Documentos Carregados via MCP
-- `docs/AGENTS.md` — Regras do time, algoritmo 4 passos, lazy loading, commits em inglês
-- `docs/FORBIDDEN_OPERATIONS.md` — F-01 a S-03 (camada, código, git, banco, performance, segurança)
-- `docs/DESDO.md` — Fluxo de trabalho, SOLID, JSDoc obrigatório, segurança, testes de exceção
-- `docs/Requisitos_plataforma.md` — Negócio EAD, perfis, escala 10k, streaming, certificados BSGI
-- `cognition/context/CONTEXT_HIERARCHY.md` — Hierarquia P0→P1→P2→P3→P4
-- `docs/CONTEXT_MAP.md` — Roteador de camadas
-- `docs/context_buffer.md` — Este arquivo
-- `docs/adrs/ADR-005-preview-fidelity-law.md` — Preview fidelity law
-- `docs/layers/renderer/engine-spec.md` — Render engine spec
+- `docs/FORBIDDEN_OPERATIONS.md` — Regras vinculantes (D-03: inline CSS)
+- `docs/DESDO.md` — Seção 8 (Tamagui governance)
+- `docs/skills/tamagui_ui.md` — Skill de estilização Tamagui
+- `docs/layers/ui/token-governance.md` — Governança de tokens
+- `docs/layers/ui/execution_plan.md` — Plano DSv2
+- `docs/context_buffer.md` — Este arquivo (sessão anterior)
 
-## 📋 Checklist de Progresso (Sessão)
-- [x] **Passo 1:** Português não-UI → Inglês (18 console.error, 2 throw, 3 test descriptions)
-- [x] **Passo 2:** JSDoc adicionado em 23 arquivos (7 ports, 6 adapters, 6 services, 4 core)
-- [x] **Passo 3:** `export * from './supabase'` removido do index.ts (raw client não vaza)
-- [x] **Passo 4:** N+1 queries em `reorderModules`/`reorderLessons` convertidas para batch upsert
-- [x] **Passo 5:** ~69 cores hex hardcoded substituídas por tokens `$color` Tamagui
-- [x] **Passo 6:** `<div>` cru em `HtmlBlock.tsx` substituído por `YStack`
-- [x] **Passo 7:** `import type SupabaseClient` removido de `IAuthGateway.ts` + `auth.ts`
-- [x] **Passo 8:** Testes criados para `lesson.ts` (14) e `storage.ts` (2)
-- [x] **Passo 9:** `packages/renderer/` criado com registry + plugin system scaffold (3 tests)
-- [x] **Passo 10:** ADRs 007-016 criados (10 documentos em `docs/adrs/`)
-- [x] **Extra:** `document-loader` skill + subagent criados para automação de leitura
-- [x] **Extra:** `opencode.json` atualizado com todos os P0 em `instructions`
-- [x] **Extra:** `AGENTS.md` atualizado com regra de leitura obrigatória antes de código
-- [x] **Commit:** `9d2f395` — inglês, Conventional Commits
-- [x] **Pós-commit:** `pnpm ls zod` ✅, `pnpm ls @supabase/supabase-js` ✅, `pnpm run test` 56/56 ✅
+## 📋 Checklist de Progresso (Sessão Atual)
+- [x] **Passo 1:** Supabase client lazy via Proxy — SSR 500 fixo
+- [x] **Passo 2:** `schema_version` → `version` no LessonSchema — ZodError eliminado
+- [x] **Passo 3:** Tamagui tokens restaurados em EditorCanvas (`$info`, `$secondary`)
+- [x] **Passo 4:** `C` constant removida (dead code) + `colors.ts` deletado
+- [x] **Passo 5:** Diretriz documentada em `tamagui_ui.md` (#6) e `token-governance.md` (exceção)
+- [x] **Commit:** `b5cb191` — `fix: lazy supabase client to prevent SSR 500 + token governance docs update`
+- [x] **Pós-commit:** `pnpm ls zod` ✅, `pnpm ls @supabase/supabase-js` ✅, `pnpm run test` 62/62 ✅
 
 ## ⚠️ Violações Corrigidas nesta Sessão
 
 | # | Violação | Correção |
 |---|----------|----------|
-| 1 | Commit `a2d1bf0` em português | Compromisso: próximos commits em inglês (já aplicado no `9d2f395`) |
-| 2 | Pós-commit pulado | Agora executado após cada commit |
-| 3 | Algoritmo 4 passos não seguido | AGENTS.md atualizado com regra absoluta |
-| 4 | FORBIDDEN_OPERATIONS.md não lido | Adicionado ao `opencode.json` `instructions` |
-| 5 | DESDO.md não lido | Adicionado ao `opencode.json` `instructions` |
-| 6 | Requisitos_plataforma.md não lido | Adicionado ao `opencode.json` `instructions` |
-| 7 | CONTEXT_HIERARCHY.md não lido | Adicionado ao `opencode.json` `instructions` |
-| 8 | JSDoc ausente (23 arquivos) | +108 blocos JSDoc adicionados |
-| 9 | Português em console.error/throw | 20 strings traduzidas para inglês |
-| 10 | Cores hex hardcoded | 69 substituídas por tokens `$color` |
-| 11 | N+1 queries | 2 loops convertidos para batch upsert |
-| 12 | Raw `<div>` em packages/ui | Substituído por `YStack` |
-| 13 | SupabaseClient type import em service/port | Removido, usa `any` |
-| 14 | Testes faltando | +14 lesson + 2 storage + 3 renderer = 19 novos testes |
-| 15 | Renderer package inexistente | Scaffold criado com registry |
-| 16 | ADRs 007-016 não documentados | 10 ADRs criados |
-| 17 | Document loader mecanismo ausente | Skill + subagent + opencode.json config |
+| 1 | `createClient('', '')` executado em SSR | Lazy init via `getSupabaseClient()` + Proxy |
+| 2 | `schema_version` no schema vs `version` no banco | Renomeado para `version` |
+| 3 | `$info` usado em `<div style={{}}>` (não resolve) | Restaurado hex nas inline styles; token mantido em props Tamagui |
+| 4 | `C` constante definida mas nunca usada | Removida |
+| 5 | `apps/admin/src/constants/colors.ts` órfão | Deletado |
 
 ## Key Decisions
-- **Document loading automation:** Skill `document-loader` auto-trigger por keywords + subagent para leitura em lote + `opencode.json` com todos P0 em `instructions` — leitura forçada antes de qualquer código.
-- **Idioma:** Português mantido em UI display strings (tela do usuário) e comentários de código. Inglês obrigatório em console.error, throw, nomes de variáveis/funções, commits.
-- **Cores:** Todas as cores hardcoded mapeadas para tokens Tamagui existentes. Cores sem token exato usam o token mais próximo.
-- **JSDoc:** Formato padronizado (@description + @param + @returns) seguindo DESDO.md regra 6.
+- **Lazy Supabase:** Proxy pattern evita `createClient('', '')` em SSR sem alterar imports dos adapters. `supabase` export continua funcionando como antes (interface idêntica).
+- **Token governance:** `$token` resolve em props Tamagui (YStack, XStack, Text, hoverStyle, pressStyle). Em `<div style={{}}>` nativo, usar hex ou constantes. Documentado em `tamagui_ui.md` regra #6 e `token-governance.md` exceção.
+- **hoverStyle aceita tokens:** Diferente de `style={{}}`, `hoverStyle` é processado pelo engine do Tamagui e resolve `$token` normalmente.
+- **dead code:** `colors.ts` removido por violar DESDO.md (código morto proibido na main).
 
 ## Relevant Files (Sessão Atual)
-- `.opencode/skills/document-loader/SKILL.md`: Skill de carregamento automático
-- `.opencode/agents/document-loader.md`: Subagent para leitura de documentos
-- `opencode.json`: Config com todos P0 + skills.paths + agent
-- `docs/adrs/ADR-007.md` a `ADR-016.md`: 10 novos ADRs
-- `packages/renderer/`: Novo package com registry + plugin system
-- `packages/core/src/services/lesson.test.ts`: 14 testes
-- `packages/core/src/services/storage.test.ts`: 2 testes
+- `docs/history/session_07_ssr_fix_token_governance.md`: Registro histórico desta sessão
+- `packages/core/src/supabase.ts`: Lazy Supabase client via Proxy
+- `packages/types/src/database.ts`: `schema_version` → `version`
+- `apps/admin/src/components/editor/EditorCanvas.tsx`: Tokens restaurados, dead code removido
+- `docs/skills/tamagui_ui.md`: Regra #6 — resolução de tokens
+- `docs/layers/ui/token-governance.md`: Exceção para inline styles nativos

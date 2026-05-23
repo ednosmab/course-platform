@@ -39,7 +39,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const fetchData = async () => {
     try {
       setLoading(true);
-      const structure = await CourseService.getWithModulesAndLessons(courseId);
+      const structure = await CourseService.getCourseWithModulesAndLessons(courseId);
       const courseData = structure.course;
       setCourse(courseData);
       setEditTitle(courseData?.title || '');

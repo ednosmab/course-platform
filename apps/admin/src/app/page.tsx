@@ -93,7 +93,7 @@ export default function Dashboard() {
           <XStack ai="center" gap={12}>
             <XStack position="relative" style={{ display: 'none' }} $sm={{ display: 'flex' }}>
               <Icon name="Search" size={16} color="$textMuted" style={{ position: 'absolute', left: 12, top: 10 }} />
-              <input placeholder="Buscar cursos, aulas, alunos…" style={{ height: 36, width: 288, borderRadius: 8, border: '1px solid $cwBorder', backgroundColor: '$cwSurface', paddingLeft: 40, paddingRight: 12, fontSize: 14, outline: 'none', color: '$cwForeground' }} />
+              <input placeholder="Buscar cursos, aulas, alunos…" style={{ height: 36, width: 288, borderRadius: 8, border: '1px solid #DEE1EB', backgroundColor: '#F1F2F8', paddingLeft: 40, paddingRight: 12, fontSize: 14, outline: 'none', color: '#282836' }} />
             </XStack>
             <XStack position="relative" p={8} borderRadius={6} cursor="pointer">
               <Icon name="Bell" size={16} color="$textMuted" />
@@ -112,11 +112,11 @@ export default function Dashboard() {
         <main style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 24px', width: '100%' }}>
           {/* Hero */}
           <YStack position="relative" overflow="hidden" borderRadius={16} borderWidth={1} borderColor="$border" backgroundColor="$card" p={32}>
-            <div style={{ position: 'absolute', right: -64, top: -64, width: 256, height: 256, borderRadius: '50%', opacity: 0.6, filter: 'blur(64px)', background: 'linear-gradient(135deg, $cwGradientFrom, $cwGradientTo)' }} />
+            <div style={{ position: 'absolute', right: -64, top: -64, width: 256, height: 256, borderRadius: '50%', opacity: 0.6, filter: 'blur(64px)', background: 'linear-gradient(135deg, #E0F2FE, #EDE9FE)' }} />
             <YStack position="relative" gap={24} $md={{ fd: 'row', ai: 'flex-end', jc: 'space-between' }}>
               <YStack maxWidth={576}>
                 <XStack ai="center" gap={6} px={10} py={4} borderRadius={9999} borderWidth={1} borderColor="$border" backgroundColor="$background" alignSelf="flex-start">
-                  <XStack w={6} h={6} borderRadius={3} bg="$success" />
+                  <XStack w={6} h={6} borderRadius={3} bg="#22C55E" />
                   <Text fontSize={12} color="$textMuted">Tudo certo por aqui</Text>
                 </XStack>
                 <Text fontFamily="$display" fontSize={36} fontWeight="$6" letterSpacing={-1} mt={16} $md={{ fontSize: 40 }}>
@@ -130,7 +130,7 @@ export default function Dashboard() {
                 <XStack px={16} py={10} borderRadius={8} borderWidth={1} borderColor="$border" backgroundColor="$card" cursor="pointer">
                   <Text fontSize={14}>Importar conteúdo</Text>
                 </XStack>
-                <XStack onPress={() => setShowCreateModal(true)} px={16} py={10} borderRadius={8} ai="center" gap={6} cursor="pointer" style={{ background: 'linear-gradient(135deg, $cwGradientFrom, $cwGradientTo)' }}>
+                <XStack onPress={() => setShowCreateModal(true)} px={16} py={10} borderRadius={8} ai="center" gap={6} cursor="pointer" style={{ background: 'linear-gradient(135deg, #5B8DEF, #6E5AE8)' }}>
                   <Icon name="Plus" size={16} color="$white" />
                   <Text fontSize={14} color="$white" fontWeight="500">Novo curso</Text>
                 </XStack>
@@ -171,7 +171,7 @@ export default function Dashboard() {
                   <YStack key={c.id} flex={1} minWidth={320} maxWidth="calc(33.33% - 12px)">
                     <Link href={`/configuracoes/${c.id}`} style={{ textDecoration: 'none' }}>
                       <YStack overflow="hidden" borderRadius={16} borderWidth={1} borderColor="$border" backgroundColor="$card" cursor="pointer" hoverStyle={{ y: -2 }}>
-                        <YStack height={128} position="relative" style={{ background: c.thumbnail_url ? `url(${c.thumbnail_url}) center/cover no-repeat` : 'linear-gradient(135deg, $info, $primary)' }}>
+                        <YStack height={128} position="relative" style={{ background: c.thumbnail_url ? `url(${c.thumbnail_url}) center/cover no-repeat` : 'linear-gradient(135deg, #3B82F6, #7C3AED)' }}>
                           <YStack position="absolute" inset={0} opacity={c.thumbnail_url ? 0 : 0.3} style={{ backgroundImage: c.thumbnail_url ? undefined : 'linear-gradient(to right, rgba(204, 208, 220, 0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(204, 208, 220, 0.35) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
                           <XStack position="absolute" left={16} top={16}>
                             <XStack borderRadius={9999} px={8} py={2} style={{ backdropFilter: 'blur(8px)', backgroundColor: c.is_published ? 'rgba(34, 197, 94, 0.2)' : 'rgba(247, 248, 252, 0.7)' }}>
@@ -213,7 +213,7 @@ export default function Dashboard() {
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
                   placeholder="Ex: Desenvolvimento Web Full Stack"
-                  style={{ height: 40, borderRadius: 8, border: '1px solid $cwBorder', padding: '0 12px', fontSize: 14, outline: 'none', color: '$cwForeground' }}
+                  style={{ height: 40, borderRadius: 8, border: '1px solid #DEE1EB', padding: '0 12px', fontSize: 14, outline: 'none', color: '#282836' }}
                   autoFocus
                 />
               </YStack>
@@ -224,7 +224,7 @@ export default function Dashboard() {
                   onChange={(e) => setFormDescription(e.target.value)}
                   placeholder="Descreva o curso em poucas palavras..."
                   rows={3}
-                  style={{ borderRadius: 8, border: '1px solid $cwBorder', padding: 12, fontSize: 14, outline: 'none', color: '$cwForeground', resize: 'vertical' }}
+                  style={{ borderRadius: 8, border: '1px solid #DEE1EB', padding: 12, fontSize: 14, outline: 'none', color: '#282836', resize: 'vertical' }}
                 />
               </YStack>
               <YStack gap={8}>
