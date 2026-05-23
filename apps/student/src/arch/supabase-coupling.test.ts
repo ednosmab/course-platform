@@ -72,12 +72,12 @@ describe('Arch: Proibido acoplamento direto ao Supabase no Student App', () => {
     }
   }
 
-  it('nenhum arquivo do Student App deve importar ou chamar supabase diretamente', () => {
+  it('no Student App file should import or call supabase directly', () => {
     if (violations.length > 0) {
       const details = violations.map((v) => `  ❌ ${v.file}:${v.line}  →  ${v.content}`).join('\n');
       expect.fail(
-        `Foram encontradas ${violations.length} violação(ões) de acoplamento ao Supabase.\n` +
-          `Use os Services (CourseService, LessonService, AuthService, StorageService) em vez de acessar o cliente diretamente.\n\n${details}`,
+        `Found ${violations.length} Supabase coupling violation(s).\n` +
+          `Use Services (CourseService, LessonService, AuthService, StorageService) instead of accessing the client directly.\n\n${details}`,
       );
     }
   });

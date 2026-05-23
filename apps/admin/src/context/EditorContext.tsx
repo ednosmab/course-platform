@@ -402,7 +402,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: st
           }
         }
       } catch (err) {
-        console.error('Erro na inicialização:', err);
+        console.error('Initialization error:', err);
         setSaveStatus('error');
       } finally {
         setIsLoaded(true);
@@ -445,7 +445,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: st
         const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
         return () => clearTimeout(resetTimer);
       } catch (err) {
-        console.error('Erro ao salvar rascunho:', err);
+        console.error('Failed to save draft:', err);
         setSaveStatus('error');
       }
     }, 10000);

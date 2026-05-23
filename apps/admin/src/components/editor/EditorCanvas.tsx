@@ -218,7 +218,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
             outline: 'none',
             userSelect: 'text',
             backgroundColor: 'white',
-            border: '1px solid #3b82f6',
+            border: '1px solid $info',
             borderRadius: '4px',
             padding: '8px',
           }}
@@ -246,7 +246,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
   }
   if (block.type === 'video') {
     return (
-      <YStack w="100%" h="100%" bg="#1e293b" borderRadius="$3" ai="center" jc="center" position="relative" overflow="hidden">
+      <YStack w="100%" h="100%" bg="$surface" borderRadius="$3" ai="center" jc="center" position="relative" overflow="hidden">
         <XStack w={44} h={44} borderRadius={22} bg="white" ai="center" jc="center">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="#1e293b" style={{ marginLeft: 3 }}><path d="M5 3l14 9-14 9V3z"/></svg>
         </XStack>
@@ -266,9 +266,9 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
         {block.url ? (
           <img src={block.url} alt={block.alt || ''} style={{ width: '100%', height: '100%', objectFit: 'fill', borderRadius: '6px', display: 'block' }} />
         ) : (
-          <YStack w="100%" h="100%" borderWidth={2} borderColor="#93c5fd" borderRadius="$3" borderStyle="dashed" ai="center" jc="center" gap="$2" bg="#eff6ff">
+          <YStack w="100%" h="100%" borderWidth={2} borderColor="$info" borderRadius="$3" borderStyle="dashed" ai="center" jc="center" gap="$2" bg="#eff6ff">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-            <Text fontSize={12} color="#60a5fa" fontWeight="500">Arraste uma imagem aqui</Text>
+            <Text fontSize={12} color="$info" fontWeight="500">Arraste uma imagem aqui</Text>
             <Text fontSize={11}>ou cole a URL no painel →</Text>
           </YStack>
         )}
@@ -292,7 +292,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
           cursor: 'text',
           outline: 'none',
           backgroundColor: 'white',
-          border: '1px solid #3b82f6',
+          border: '1px solid $info',
           borderRadius: '4px',
           padding: '8px',
         },
@@ -528,7 +528,7 @@ function renderViewportBlocks(args: {
             onClick={(e) => { e.stopPropagation(); args.setActiveBlockId(block.id); }}
             style={{ position: 'absolute', left: layout.x * scale, top: layout.y * scale, width: layout.w * scale, height: layout.h * scale, zIndex: layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none', isolation: 'isolate' }}
           >
-            <div style={{ position: 'absolute', inset: 0, border: isActive ? '2px solid #3b82f6' : '2px solid transparent', borderRadius: '6px', pointerEvents: 'none', zIndex: 2 }} />
+            <div style={{ position: 'absolute', inset: 0, border: isActive ? '2px solid $info' : '2px solid transparent', borderRadius: '6px', pointerEvents: 'none', zIndex: 2 }} />
             <div style={{ position: 'absolute', inset: 2, borderRadius: '4px', overflow: 'hidden', zIndex: 1 }}>
               <BlockContent block={block} onImageDrop={args.onImageDrop} isMobile isInteracting={args.isInteracting} />
               {(block.type === 'html' || block.type === 'video') && (
@@ -569,36 +569,36 @@ function renderViewportBlocks(args: {
                 key={id}
                 data-handle={id}
                 onMouseDown={(e) => args.onHandleMouseDown(e, block, id)}
-                style={{ position: 'absolute', width: 10, height: 10, backgroundColor: 'white', border: '2px solid #3b82f6', borderRadius: '2px', cursor, zIndex: 30, ...style }}
+                style={{ position: 'absolute', width: 10, height: 10, backgroundColor: 'white', border: '2px solid $info', borderRadius: '2px', cursor, zIndex: 30, ...style }}
               />
             ))}
           </div>
         );
       })}
       {args.guides?.v.map((x, i) => (
-        <div key={`gv-${i}`} style={{ position: 'absolute', left: x * scale, top: 0, width: 0, height: pageH * scale, borderLeft: '1.5px dashed #3b82f6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+        <div key={`gv-${i}`} style={{ position: 'absolute', left: x * scale, top: 0, width: 0, height: pageH * scale, borderLeft: '1.5px dashed $info', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
       ))}
       {args.guides?.h.map((y, i) => (
-        <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y * scale, width: args.viewportW, height: 0, borderTop: '1.5px dashed #3b82f6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+        <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y * scale, width: args.viewportW, height: 0, borderTop: '1.5px dashed $info', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
       ))}
       {args.guides?.m.map((m, i) => {
         const s = scale;
         if (m.orientation === 'h') {
           return (
             <React.Fragment key={`gm-${i}`}>
-              <div style={{ position: 'absolute', left: m.start * s, top: m.pos * s, width: (m.end - m.start) * s, height: 0, borderTop: '1px dashed #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.start * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.end * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: (m.start + m.end) / 2 * s, top: m.pos * s, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#a78bfa', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #a78bfa', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+              <div style={{ position: 'absolute', left: m.start * s, top: m.pos * s, width: (m.end - m.start) * s, height: 0, borderTop: '1px dashed $secondary', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.start * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.end * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: (m.start + m.end) / 2 * s, top: m.pos * s, transform: 'translate(-50%, -50%)', fontSize: 10, color: '$secondary', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid $secondary', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
             </React.Fragment>
           );
         }
         return (
           <React.Fragment key={`gm-${i}`}>
-            <div style={{ position: 'absolute', left: m.pos * s, top: m.start * s, width: 0, height: (m.end - m.start) * s, borderLeft: '1px dashed #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
-            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.start * s, width: 6, height: 0, borderTop: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
-            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.end * s, width: 6, height: 0, borderTop: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
-            <div style={{ position: 'absolute', left: m.pos * s, top: (m.start + m.end) / 2 * s, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#a78bfa', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #a78bfa', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+            <div style={{ position: 'absolute', left: m.pos * s, top: m.start * s, width: 0, height: (m.end - m.start) * s, borderLeft: '1px dashed $secondary', pointerEvents: 'none', zIndex: 998 }} />
+            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.start * s, width: 6, height: 0, borderTop: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
+            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.end * s, width: 6, height: 0, borderTop: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
+            <div style={{ position: 'absolute', left: m.pos * s, top: (m.start + m.end) / 2 * s, transform: 'translate(-50%, -50%)', fontSize: 10, color: '$secondary', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid $secondary', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
           </React.Fragment>
         );
       })}
@@ -626,15 +626,15 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
           })}
         </div>
       ) : (
-        <YStack w={isMobile ? MOBILE_W : TABLET_W} maxWidth={isMobile ? MOBILE_W : TABLET_W} bg="white" borderRadius={isMobile ? 36 : 12} style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} overflow="hidden" borderWidth={6} borderColor="#1e293b" maxHeight="80vh">
+        <YStack w={isMobile ? MOBILE_W : TABLET_W} maxWidth={isMobile ? MOBILE_W : TABLET_W} bg="white" borderRadius={isMobile ? 36 : 12} style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} overflow="hidden" borderWidth={6} borderColor="$surface" maxHeight="80vh">
           {isMobile ? (
-            <XStack bg="#1e293b" height={28} ai="center" jc="center" flexShrink={0}>
-              <XStack w={60} height={6} borderRadius={3} bg="#475569" />
+            <XStack bg="$surface" height={28} ai="center" jc="center" flexShrink={0}>
+              <XStack w={60} height={6} borderRadius={3} bg="$gray6" />
             </XStack>
           ) : (
-            <XStack bg="#1e293b" px="$4" py={1} ai="center" jc="center" flexShrink={0}>
-              <XStack w={8} h={8} borderRadius={4} bg="#0f172a" borderWidth={1} borderColor="#334155" />
-              <Text ml="auto" fontSize={10} color="#94a3b8">Preview Tablet</Text>
+            <XStack bg="$surface" px="$4" py={1} ai="center" jc="center" flexShrink={0}>
+              <XStack w={8} h={8} borderRadius={4} bg="$background" borderWidth={1} borderColor="$gray7" />
+              <Text ml="auto" fontSize={10} color="$gray4">Preview Tablet</Text>
             </XStack>
           )}
           <YStack overflowY="auto" overflowX="hidden" flex={1}>
@@ -651,7 +651,7 @@ function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportM
             </div>
           </YStack>
           <XStack bg="white" height={isMobile ? 20 : 16} ai="center" jc="center" flexShrink={0}>
-            <XStack w={40} height={4} borderRadius={2} bg="#e2e8f0" />
+            <XStack w={40} height={4} borderRadius={2} bg="$gray2" />
           </XStack>
         </YStack>
       )}
@@ -664,11 +664,11 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
   const viewInteraction = useViewportInteraction(MOBILE_W / CANVAS_W);
   return (
     <YStack flex={1} ai="center" p="$5" overflowY="auto">
-      <YStack borderWidth={6} borderColor="#1e293b" borderRadius={36} overflow="hidden" style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.25)' }} bg="white" w={MOBILE_W} flexShrink={0}>
-        <XStack bg="#1e293b" height={28} ai="center" jc="center" flexShrink={0}>
-          <XStack w={60} height={6} borderRadius={3} bg="#475569" />
+      <YStack borderWidth={6} borderColor="$surface" borderRadius={36} overflow="hidden" style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.25)' }} bg="white" w={MOBILE_W} flexShrink={0}>
+        <XStack bg="$surface" height={28} ai="center" jc="center" flexShrink={0}>
+          <XStack w={60} height={6} borderRadius={3} bg="$gray6" />
         </XStack>
-        <YStack overflowY="auto" overflowX="hidden" bg="#f8fafc" style={{ backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
+        <YStack overflowY="auto" overflowX="hidden" bg="$text" style={{ backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
           {renderViewportBlocks({
             blocks, viewportW: MOBILE_W, viewportMode: 'mobile', onImageDrop,
             activeBlockId: viewInteraction.activeBlockId,
@@ -682,7 +682,7 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
           })}
         </YStack>
         <XStack bg="white" height={20} ai="center" jc="center" flexShrink={0}>
-          <XStack w={40} height={4} borderRadius={2} bg="#e2e8f0" />
+          <XStack w={40} height={4} borderRadius={2} bg="$gray2" />
         </XStack>
       </YStack>
     </YStack>
@@ -694,11 +694,11 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
   const viewInteraction = useViewportInteraction(TABLET_W / CANVAS_W);
   return (
     <YStack flex={1} ai="center" p="$5" overflowY="auto">
-      <YStack borderWidth={6} borderColor="#1e293b" borderRadius={12} overflow="hidden" style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} bg="white" w={TABLET_W} flexShrink={0}>
-        <XStack bg="#1e293b" height={8} ai="center" jc="center" flexShrink={0}>
-          <XStack w={8} h={8} borderRadius={4} bg="#0f172a" borderWidth={1} borderColor="#334155" />
+      <YStack borderWidth={6} borderColor="$surface" borderRadius={12} overflow="hidden" style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} bg="white" w={TABLET_W} flexShrink={0}>
+        <XStack bg="$surface" height={8} ai="center" jc="center" flexShrink={0}>
+          <XStack w={8} h={8} borderRadius={4} bg="$background" borderWidth={1} borderColor="$gray7" />
         </XStack>
-        <YStack overflowY="auto" overflowX="hidden" bg="#f8fafc" style={{ backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
+        <YStack overflowY="auto" overflowX="hidden" bg="$text" style={{ backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
           {renderViewportBlocks({
             blocks, viewportW: TABLET_W, viewportMode: 'tablet', onImageDrop,
             activeBlockId: viewInteraction.activeBlockId,
@@ -712,7 +712,7 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
           })}
         </YStack>
         <XStack bg="white" height={16} ai="center" jc="center" flexShrink={0}>
-          <XStack w={40} height={4} borderRadius={2} bg="#e2e8f0" />
+          <XStack w={40} height={4} borderRadius={2} bg="$gray2" />
         </XStack>
       </YStack>
     </YStack>
@@ -1085,7 +1085,7 @@ export const EditorCanvas: React.FC = () => {
             >
               <div style={{
                 position: 'absolute', inset: 0,
-                border: isActive ? '2px solid #3b82f6' : isSelected ? '2px solid #60a5fa' : outOfBounds ? '2px solid #f97316' : '2px solid transparent',
+                border: isActive ? '2px solid $info' : isSelected ? '2px solid $info' : outOfBounds ? '2px solid $warning' : '2px solid transparent',
                 borderRadius: '6px', pointerEvents: 'none', zIndex: 2,
                 boxShadow: isActive ? '0 0 0 1px rgba(59,130,246,0.25)' : isSelected ? '0 0 0 1px rgba(96,165,250,0.2)' : outOfBounds ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
               }} />
@@ -1160,7 +1160,7 @@ export const EditorCanvas: React.FC = () => {
                   key={id}
                   data-handle={id}
                   onMouseDown={(e) => onHandleMouseDown(e, block, id)}
-                  style={{ position: 'absolute', width: 10, height: 10, backgroundColor: 'white', border: isActive ? '2px solid #3b82f6' : '2px solid #60a5fa', borderRadius: '2px', cursor, zIndex: 30, ...style }}
+                  style={{ position: 'absolute', width: 10, height: 10, backgroundColor: 'white', border: isActive ? '2px solid $info' : '2px solid $info', borderRadius: '2px', cursor, zIndex: 30, ...style }}
                 />
               ))}
             </div>
@@ -1168,28 +1168,28 @@ export const EditorCanvas: React.FC = () => {
         })}
 
         {guides.v.map((x, i) => (
-          <div key={`gv-${i}`} style={{ position: 'absolute', left: x, top: 0, width: 0, height: pageH, borderLeft: '1.5px dashed #3b82f6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+          <div key={`gv-${i}`} style={{ position: 'absolute', left: x, top: 0, width: 0, height: pageH, borderLeft: '1.5px dashed $info', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
         ))}
         {guides.h.map((y, i) => (
-          <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y, width: PAGE_W, height: 0, borderTop: '1.5px dashed #3b82f6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+          <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y, width: PAGE_W, height: 0, borderTop: '1.5px dashed $info', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
         ))}
         {guides.m.map((m, i) => {
           if (m.orientation === 'h') {
             return (
               <React.Fragment key={`gm-${i}`}>
-                <div style={{ position: 'absolute', left: m.start, top: m.pos, width: m.end - m.start, height: 0, borderTop: '1px dashed #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
-                <div style={{ position: 'absolute', left: m.start, top: m.pos - 3, width: 0, height: 6, borderLeft: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
-                <div style={{ position: 'absolute', left: m.end, top: m.pos - 3, width: 0, height: 6, borderLeft: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
-                <div style={{ position: 'absolute', left: (m.start + m.end) / 2, top: m.pos, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#a78bfa', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #a78bfa', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+                <div style={{ position: 'absolute', left: m.start, top: m.pos, width: m.end - m.start, height: 0, borderTop: '1px dashed $secondary', pointerEvents: 'none', zIndex: 998 }} />
+                <div style={{ position: 'absolute', left: m.start, top: m.pos - 3, width: 0, height: 6, borderLeft: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
+                <div style={{ position: 'absolute', left: m.end, top: m.pos - 3, width: 0, height: 6, borderLeft: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
+                <div style={{ position: 'absolute', left: (m.start + m.end) / 2, top: m.pos, transform: 'translate(-50%, -50%)', fontSize: 10, color: '$secondary', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid $secondary', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
               </React.Fragment>
             );
           }
           return (
             <React.Fragment key={`gm-${i}`}>
-              <div style={{ position: 'absolute', left: m.pos, top: m.start, width: 0, height: m.end - m.start, borderLeft: '1px dashed #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.pos - 3, top: m.start, width: 6, height: 0, borderTop: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.pos - 3, top: m.end, width: 6, height: 0, borderTop: '1px solid #a78bfa', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.pos, top: (m.start + m.end) / 2, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#a78bfa', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #a78bfa', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+              <div style={{ position: 'absolute', left: m.pos, top: m.start, width: 0, height: m.end - m.start, borderLeft: '1px dashed $secondary', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.pos - 3, top: m.start, width: 6, height: 0, borderTop: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.pos - 3, top: m.end, width: 6, height: 0, borderTop: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.pos, top: (m.start + m.end) / 2, transform: 'translate(-50%, -50%)', fontSize: 10, color: '$secondary', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid $secondary', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
             </React.Fragment>
           );
         })}
@@ -1201,7 +1201,7 @@ export const EditorCanvas: React.FC = () => {
             top: Math.min(marqueeRect.startY, marqueeRect.currentY),
             width: Math.abs(marqueeRect.currentX - marqueeRect.startX),
             height: Math.abs(marqueeRect.currentY - marqueeRect.startY),
-            border: '1.5px solid #3b82f6',
+            border: '1.5px solid $info',
             backgroundColor: 'rgba(59,130,246,0.08)',
             pointerEvents: 'none',
             zIndex: 1000,
@@ -1231,15 +1231,15 @@ export const EditorCanvas: React.FC = () => {
         >
           <button
             onMouseDown={(e) => { e.preventDefault(); handleFloatFormat('bold'); }}
-            style={{ width: 30, height: 30, border: '1px solid #e2e8f0', borderRadius: 6, background: 'white', cursor: 'pointer', fontWeight: 'bold', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            style={{ width: 30, height: 30, border: '1px solid $gray2', borderRadius: 6, background: 'white', cursor: 'pointer', fontWeight: 'bold', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             title="Negrito"
           >B</button>
           <button
             onMouseDown={(e) => { e.preventDefault(); handleFloatFormat('italic'); }}
-            style={{ width: 30, height: 30, border: '1px solid #e2e8f0', borderRadius: 6, background: 'white', cursor: 'pointer', fontStyle: 'italic', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            style={{ width: 30, height: 30, border: '1px solid $gray2', borderRadius: 6, background: 'white', cursor: 'pointer', fontStyle: 'italic', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             title="Itálico"
           >I</button>
-          <div style={{ width: 1, height: 20, background: '#e2e8f0', margin: '0 2px' }} />
+          <div style={{ width: 1, height: 20, background: '$gray2', margin: '0 2px' }} />
           {['#ef4444', '#f97316', '#eab308', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#000000'].map(c => (
             <button
               key={c}

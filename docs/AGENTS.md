@@ -82,17 +82,21 @@ Escreva códigos extremamente declarativos, simples e fáceis de ler. Evite otim
 
 ## 🤖 ALGORITMO OBRIGATÓRIO DE GESTÃO DE CONTEXTO (WORKFLOW ATIVO)
 
-Sempre que o usuário enviar uma nova mensagem ou comando, você DEVE executar rigorosamente os 4 passos abaixo na ordem exata, usando suas ferramentas MCP:
+> ⚠️ **REGRRA ABSOLUTA:** Toda task de implementação, refatoração ou correção DEVE começar pelo carregamento dos documentos. Nenhuma linha de código pode ser escrita antes da leitura completa dos P0 + P2 da camada.
+
+Sempre que o usuário enviar uma nova mensagem ou comando, você DEVE executar rigorosamente os 4 passos abaixo na ordem exata, usando suas ferramentas MCP. O skill `document-loader` (ativado automaticamente) contém o checklist completo, e o subagent `document-loader` pode ser usado via `task` para leitura em lote.
 
 ### 🔄 PASSO 1: DIAGNÓSTICO E LEITURA PREGUIÇOSA (LAZY LOADING)
 - Use o MCP para ler `docs/CONTEXT_MAP.md` e localize a pasta da camada da tarefa.
 - Use o MCP para ler `docs/context_buffer.md` para extrair o estado da última execução.
-- Use o MCP para ler a Skill e o Plano de Execução específicos da camada afetada.
+- **Leia TODOS os P0 obrigatórios** (já injetados como system prompt pelo `opencode.json`): AGENTS.md, FORBIDDEN_OPERATIONS.md, DESDO.md, Requisitos_plataforma.md, CONTEXT_HIERARCHY.md
+- Use o MCP para ler a Skill e o Plano de Execução específicos da camada afetada (P2).
+- **Registre no buffer quais documentos foram lidos** na seção `## 🕹️ Documentos Carregados via MCP`.
 
 ### 📝 PASSO 2: ATUALIZAÇÃO DA MEMÓRIA RAM (BEFORE-CODE)
 - Antes de modificar qualquer código fonte, reescreva o `docs/context_buffer.md`.
 - Atualize o campo `## 🎯 Tarefa em Execução` com o objetivo imediato do turno.
-- Atualize `## 🕹️ Camada Ativa e Documentos Carregados via MCP` com os arquivos que usará.
+- Atualize `## 🕹️ Documentos Carregados via MCP` com os arquivos que usará.
 
 ### 💻 PASSO 3: EXECUÇÃO CIRÚRGICA
 - Escreva ou altere o código estritamente dentro da pasta permitida ao seu Agente.
@@ -103,6 +107,7 @@ Sempre que o usuário enviar uma nova mensagem ou comando, você DEVE executar r
 ### 🧹 PASSO 4: CONSOLIDAÇÃO E PURGA (AFTER-CODE)
 - Assim que o código compilar com sucesso, marque `[x]` na tarefa correspondente do plano.
 - Limpe a seção de `⚠️ Impedimentos` do buffer inserindo: "*Nenhum erro ativo.*"
+- Execute o checklist de conformidade (ver `document-loader` skill): JSDoc, idioma inglês, tokens de cor, testes, build.
 - Termine sua resposta exibindo o estado atual resumido do buffer e o consumo estimado da sessão.
 
 ### 📜 Protocolo de Registro Histórico de Longo Prazo

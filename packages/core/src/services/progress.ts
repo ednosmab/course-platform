@@ -11,6 +11,16 @@ interface DebounceCache {
 
 const progressCache: DebounceCache = {};
 
+/**
+ * @description Creates a progress service that tracks student lesson progress including
+ * video watch percentage, test scores, lesson completion evaluation, and debounced saving.
+ * Business rule: A lesson is considered completed when the student has watched >= 85% of the
+ * video AND passed all test blocks with a score >= 70%. Upon completion, the service
+ * automatically triggers certificate check-and-issuance.
+ * @param progressRepo - An implementation of IProgressRepository for progress persistence
+ * @param certificateService - An object with a checkAndIssue method for certificate auto-issuance
+ * @returns An object with progress query, save, and test-submission methods
+ */
 export function createProgressService(
   progressRepo: IProgressRepository,
   certificateService: {
@@ -52,10 +62,27 @@ export function createProgressService(
   };
 
   return {
+    /**
+     * @description Retrieves the current progress record for a specific user and lesson.
+     * @param userId - The UUID of the student
+     * @param lessonId - The UUID of the lesson
+     * @returns The StudentProgress object, or null if no progress record exists
+     */
     async getLessonProgress(userId: string, lessonId: string): Promise<StudentProgress | null> {
       return progressRepo.getProgress(userId, lessonId);
     },
 
+    /**
+     * @description Immediately saves the current video progress (position and watch percentage)
+     * and evaluates lesson completion. Used for critical progress checkpoints.
+     * Business rule: Save is performed immediately without debouncing. Completion evaluation
+     * runs after the save — errors in completion evaluation are logged but do not block the save.
+     * @param userId - The UUID of the student
+     * @param lessonId - The UUID of the lesson
+     * @param lastPlayedSeconds - The last playback position in seconds
+     * @param percentageWatched - The percentage of the video watched (0–100)
+     * @returns The updated StudentProgress object
+     */
     async saveProgressImmediate(
       userId: string,
       lessonId: string,
@@ -75,6 +102,17 @@ export function createProgressService(
       return progress;
     },
 
+    /**
+     * @description Submits a score for a specific test block within a lesson.
+     * Business rule: The score is clamped to the 0–100 range. After updating the test score,
+     * the service re-evaluates lesson completion — if all conditions are now met,
+     * the lesson is marked complete and certificate issuance is triggered.
+     * @param userId - The UUID of the student
+     * @param lessonId - The UUID of the lesson
+     * @param blockId - The UUID of the test block
+     * @param score - The test score (will be clamped to 0–100)
+     * @returns The updated StudentProgress object
+     */
     async submitTestScore(
       userId: string,
       lessonId: string,
@@ -97,6 +135,17 @@ export function createProgressService(
       return progress!;
     },
 
+    /**
+     * @description Saves video progress with a 5-second debounce to reduce write frequency
+     * during continuous playback. Tracks the highest percentage watched per user-lesson pair.
+     * Business rule: Only the maximum watched percentage is persisted — if a later call reports
+     * a lower percentage than a previous one, the higher value is retained.
+     * @param userId - The UUID of the student
+     * @param lessonId - The UUID of the lesson
+     * @param lastPlayedSeconds - The current playback position in seconds
+     * @param percentageWatched - The current watch percentage (0–100)
+     * @param onSuccess - Optional callback invoked with the saved StudentProgress on success
+     */
     saveProgressDebounced(
       userId: string,
       lessonId: string,
@@ -130,7 +179,7 @@ export function createProgressService(
           );
           if (onSuccess) onSuccess(progress);
         } catch (err) {
-          console.error('Erro ao processar progresso debounced:', err);
+          console.error('Debounced progress processing failed:', err);
         }
       }, 5000);
     },

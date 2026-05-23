@@ -15,10 +15,10 @@ export function BrandMark({ small = false }: { small?: boolean }) {
           ai="center"
           jc="center"
           style={{
-            background: 'linear-gradient(135deg, #5B8DEF, #6E5AE8)',
+            background: 'linear-gradient(135deg, $cwGradientFrom, $cwGradientTo)',
           }}
         >
-          <Icon name="Sparkles" size={16} color="white" />
+          <Icon name="Sparkles" size={16} color="$white" />
         </XStack>
         {!small && (
           <Text fontFamily="$display" fontSize={18} fontWeight="$7" letterSpacing={-0.5}>

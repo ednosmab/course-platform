@@ -41,7 +41,7 @@ function LoginForm() {
     }
   };
 
-  const GRADIENT = 'linear-gradient(135deg, #5B8DEF, #6E5AE8)';
+  const GRADIENT = 'linear-gradient(135deg, $cwGradientFrom, $cwGradientTo)';
 
   return (
     <XStack f={1} minHeight="100vh" bg="$background">
@@ -59,21 +59,21 @@ function LoginForm() {
 
         <XStack ai="center" gap="$2" style={{ position: 'relative', zIndex: 10 }}>
           <XStack w={36} h={36} br="$3" ai="center" jc="center" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}>
-            <Icon name="Sparkles" size={16} color="white" />
+            <Icon name="Sparkles" size={16} color="$white" />
           </XStack>
-          <Text fontFamily="$display" fontSize={20} fontWeight="600" letterSpacing={-0.5} color="white">
+          <Text fontFamily="$display" fontSize={20} fontWeight="600" letterSpacing={-0.5} color="$white">
             Mosaico<span style={{ opacity: 0.7 }}>.</span>
           </Text>
         </XStack>
 
         <YStack style={{ position: 'relative', zIndex: 10 }} maxWidth={400} gap="$6">
           <XStack ai="center" gap="$2" alignSelf="flex-start" style={{ borderRadius: 9999, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '4px 12px' }}>
-            <XStack w={6} h={6} br={3} bg="white" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
+            <XStack w={6} h={6} br={3} bg="$white" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
             <Text fontSize={12} fontWeight="500" color="rgba(255,255,255,0.9)">Estúdio + Portal do Aluno</Text>
           </XStack>
 
           <YStack gap="$4">
-            <Text fontFamily="$display" fontSize={36} $lg={{ fontSize: 48 }} fontWeight="600" lineHeight={1.05} letterSpacing={-0.5} color="white">
+            <Text fontFamily="$display" fontSize={36} $lg={{ fontSize: 48 }} fontWeight="600" lineHeight={1.05} letterSpacing={-0.5} color="$white">
               Crie aulas visualmente ricas.
               <br />
               <span style={{ opacity: 0.8 }}>Sem código. Sem fricção.</span>
@@ -128,7 +128,7 @@ function LoginForm() {
           <XStack gap="$2">
             <Button variant="ghost" flex={1} h={40} borderWidth={1} borderColor="$border" onPress={() => {}}>
               <XStack ai="center" gap="$2">
-                <svg viewBox="0 0 24 24" width={16} height={16} aria-hidden><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.42-1.7 4.16-5.5 4.16-3.31 0-6-2.74-6-6.12s2.69-6.12 6-6.12c1.88 0 3.14.8 3.86 1.49l2.63-2.54C16.83 3.4 14.66 2.4 12 2.4 6.92 2.4 2.8 6.52 2.8 11.6S6.92 20.8 12 20.8c6.93 0 9.2-4.86 9.2-7.34 0-.49-.05-.86-.12-1.26H12z"/></svg>
+                <svg viewBox="0 0 24 24" width={16} height={16} aria-hidden><path fill="$danger" d="M12 10.2v3.9h5.5c-.24 1.42-1.7 4.16-5.5 4.16-3.31 0-6-2.74-6-6.12s2.69-6.12 6-6.12c1.88 0 3.14.8 3.86 1.49l2.63-2.54C16.83 3.4 14.66 2.4 12 2.4 6.92 2.4 2.8 6.52 2.8 11.6S6.92 20.8 12 20.8c6.93 0 9.2-4.86 9.2-7.34 0-.49-.05-.86-.12-1.26H12z"/></svg>
                 <Text fontSize={14}>Google</Text>
               </XStack>
             </Button>
@@ -150,7 +150,7 @@ function LoginForm() {
             <YStack gap="$4">
               <YStack gap="$2">
                 <Text fontSize={14} fontWeight="500" color="$foreground">E-mail</Text>
-                <XStack ai="center" borderWidth={1} borderColor="$border" br="$3" px="$3" h={44} bg="white">
+                <XStack ai="center" borderWidth={1} borderColor="$border" br="$3" px="$3" h={44} bg="$white">
                   <Icon name="Mail" size={16} color="$textMuted" />
                   <input
                     type="email"
@@ -159,7 +159,7 @@ function LoginForm() {
                     placeholder="voce@exemplo.com"
                     autoComplete="email"
                     required
-                    style={{ border: 'none', outline: 'none', flex: 1, marginLeft: 8, fontSize: 14, background: 'transparent', color: '#282836' }}
+                    style={{ border: 'none', outline: 'none', flex: 1, marginLeft: 8, fontSize: 14, background: 'transparent', color: '$cwForeground' }}
                   />
                 </XStack>
               </YStack>
@@ -169,7 +169,7 @@ function LoginForm() {
                   <Text fontSize={14} fontWeight="500" color="$foreground">Senha</Text>
                   <Text fontSize={12} fontWeight="500" color="$primary" cursor="pointer" hoverStyle={{ textDecorationLine: 'underline' }}>Esqueci a senha</Text>
                 </XStack>
-                <XStack ai="center" borderWidth={1} borderColor="$border" br="$3" px="$3" h={44} bg="white">
+                <XStack ai="center" borderWidth={1} borderColor="$border" br="$3" px="$3" h={44} bg="$white">
                   <Icon name="Lock" size={16} color="$textMuted" />
                   <input
                     type={showPwd ? 'text' : 'password'}
@@ -178,7 +178,7 @@ function LoginForm() {
                     placeholder="••••••••"
                     autoComplete="current-password"
                     required
-                    style={{ border: 'none', outline: 'none', flex: 1, marginLeft: 8, fontSize: 14, background: 'transparent', color: '#282836' }}
+                    style={{ border: 'none', outline: 'none', flex: 1, marginLeft: 8, fontSize: 14, background: 'transparent', color: '$cwForeground' }}
                   />
                   <XStack cursor="pointer" onPress={() => setShowPwd(!showPwd)} p="$1" br="$2" hoverStyle={{ bg: '$secondary' }} aria-label={showPwd ? 'Ocultar senha' : 'Mostrar senha'}>
                     <Icon name={showPwd ? 'EyeOff' : 'Eye'} size={16} color="$textMuted" />
@@ -186,20 +186,20 @@ function LoginForm() {
                 </XStack>
               </YStack>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, color: '#808498' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, color: '$cwMutedForeground' }}>
                 <input
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
-                  style={{ width: 16, height: 16, accentColor: '#3B82F6', cursor: 'pointer' }}
+                  style={{ width: 16, height: 16, accentColor: '$info', cursor: 'pointer' }}
                 />
                 Lembrar de mim por 30 dias
               </label>
 
               {error && (
                 <XStack ai="center" gap="$2" bg="$danger" p="$3" br="$3">
-                  <Icon name="AlertCircle" size={14} color="white" />
-                  <Text fontSize={13} color="white">{error}</Text>
+                  <Icon name="AlertCircle" size={14} color="$white" />
+                  <Text fontSize={13} color="$white">{error}</Text>
                 </XStack>
               )}
 
@@ -215,13 +215,13 @@ function LoginForm() {
               >
                 {loading ? (
                   <XStack ai="center" gap="$2">
-                    <Spinner size="small" color="white" />
-                    <Text fontSize={14} fontWeight="600" color="white">Entrando...</Text>
+                    <Spinner size="small" color="$white" />
+                    <Text fontSize={14} fontWeight="600" color="$white">Entrando...</Text>
                   </XStack>
                 ) : (
                   <XStack ai="center" gap="$2">
-                    <Text fontSize={14} fontWeight="600" color="white">Entrar</Text>
-                    <Icon name="ArrowRight" size={16} color="white" />
+                    <Text fontSize={14} fontWeight="600" color="$white">Entrar</Text>
+                    <Icon name="ArrowRight" size={16} color="$white" />
                   </XStack>
                 )}
               </Button>

@@ -50,7 +50,7 @@ export function useMobileProgress() {
         await AsyncStorage.setItem('outbox_progress', JSON.stringify(filtered));
         await updatePendingCount();
       } catch (err) {
-        console.error('Erro ao gravar progresso offline:', err);
+        console.error('Failed to store offline progress:', err);
       }
     } else {
       try {
@@ -62,7 +62,7 @@ export function useMobileProgress() {
           percentageWatched
         );
       } catch (err) {
-        console.warn('Falha ao sincronizar online, caindo em fallback offline...', err);
+        console.warn('Online sync failed, falling back to offline...', err);
         setIsOffline(true);
         await saveProgressMobile(lessonId, progressSec, durationSec);
       }
@@ -92,7 +92,7 @@ export function useMobileProgress() {
       setIsOffline(false);
       await updatePendingCount();
     } catch (err) {
-      console.error('Falha na sincronização em background:', err);
+      console.error('Background sync failed:', err);
     }
   };
 

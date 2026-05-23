@@ -99,7 +99,7 @@ describe('Arch: Proibido acoplamento direto ao Supabase no frontend', () => {
     }
   }
 
-  it('nenhum arquivo do frontend deve importar ou chamar supabase diretamente', () => {
+  it('no frontend file should import or call supabase directly', () => {
     const violationCount = violations.length;
 
     if (violationCount > 0) {

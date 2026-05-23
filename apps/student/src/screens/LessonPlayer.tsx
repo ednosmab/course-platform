@@ -50,7 +50,7 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
         const coursesData = await CourseService.getPublishedCourses();
 
         if (!coursesData || coursesData.length === 0) {
-          throw new Error('Nenhum curso cadastrado no banco de dados. Crie e publique um curso no painel do CMS para começar!');
+          throw new Error('No courses found. Create and publish a course in the CMS panel first.');
         }
 
         targetCourseId = coursesData[0].id;
@@ -64,7 +64,7 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
         setActiveLessonId(allLessons[0].id);
       }
     } catch (err) {
-      console.error('Erro ao carregar dados do curso de forma dinâmica:', err);
+      console.error('Failed to load course data:', err);
       setError(getErrorMessage(err));
     } finally {
       setLoading(false);
@@ -95,7 +95,7 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
         }));
       }
     } catch (err) {
-      console.error('Erro ao recarregar blocos da aula ativa:', err);
+      console.error('Failed to reload active lesson blocks:', err);
       setError(getErrorMessage(err));
     } finally {
       setRefreshing(false);
@@ -219,7 +219,7 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
     return (
       <YStack flex={1} jc="center" ai="center" p="$6" bg="$gray1">
         <StatusBar barStyle="light-content" />
-        <Icon name="AlertCircle" size={48} color="#f43f5e" />
+        <Icon name="AlertCircle" size={48} color="$danger" />
         <Text color="$danger" fontSize={16} fontWeight="700" mt="$4" textAlign="center">
           Erro ao Conectar ao Supabase
         </Text>
@@ -267,12 +267,12 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
           </Button>
           {isOffline ? (
             <>
-              <Icon name="WifiOff" size={14} color="#f43f5e" />
+              <Icon name="WifiOff" size={14} color="$danger" />
               <Text color="$gray3" fontSize={11} fontWeight="600">Modo Offline</Text>
             </>
           ) : (
             <>
-              <Icon name="Wifi" size={14} color="#10b981" />
+              <Icon name="Wifi" size={14} color="$success" />
               <Text color="$gray3" fontSize={11} fontWeight="600">Modo Online Conectado</Text>
             </>
           )}

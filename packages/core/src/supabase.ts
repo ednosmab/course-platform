@@ -14,7 +14,9 @@ const supabaseAnonKey =
     process.env.SUPABASE_ANON_KEY
   ) : '') || '';
 
-// Inicialização segura do cliente Supabase para Web e Mobile
+/**
+ * @description Singleton Supabase client initialised with the project URL and anonymous (public) key. Reads credentials from environment variables in order of priority: NEXT_PUBLIC_SUPABASE_*, EXPO_PUBLIC_SUPABASE_*, or SUPABASE_* for Node environments. The client is safe for both Web (Next.js) and Mobile (Expo) runtimes, with session persistence and auto-refresh enabled. In browser environments it additionally detects the session from the URL (for OAuth / magic-link callbacks).
+ */
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,

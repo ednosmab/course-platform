@@ -1,8 +1,23 @@
 import { AnyBlock } from '@projeto/types';
 
+/**
+ * @description Reference width (in pixels) for the mobile breakpoint. Used by layout calculations and responsive design utilities to determine positioning and sizing at viewport widths ≤ 480px.
+ */
 export const MOBILE_W = 380;
+
+/**
+ * @description Reference width (in pixels) for the tablet breakpoint. Used by layout calculations and responsive design utilities for viewport widths between 481px and 768px.
+ */
 export const TABLET_W = 720;
+
+/**
+ * @description Reference width (in pixels) for the desktop breakpoint. Used by layout calculations and responsive design utilities for viewport widths > 768px.
+ */
 export const DESKTOP_W = 860;
+
+/**
+ * @description Default page content width (in pixels) for the desktop layout. Represents the width of the main content area on the canvas when rendered in a desktop-sized container.
+ */
 export const PAGE_W = 860;
 
 function parseMarkdownToHtml(text: string): string {
@@ -35,6 +50,13 @@ function getStyles(block: AnyBlock): Record<string, unknown> {
   return (block as unknown as { styles?: Record<string, unknown> }).styles || {};
 }
 
+/**
+ * @description Converts a single content block (text, heading, divider, video, image, HTML, quote, quiz) into an HTML string with inline styles. Supports rich text formatting via simple Markdown-like syntax (bold, italic, bold+italic) applied to text and quote blocks. Each block type maps to a specific HTML structure that can be safely rendered inside an iframe or preview container.
+ *
+ * @param block - The content block to render, typed as AnyBlock. Must have a `type` property and type-specific fields (e.g. `content` for text, `url` for video/image, `question`/`options` for quiz).
+ *
+ * @returns A fully styled HTML string suitable for preview rendering. Returns an empty string for unsupported block types or image blocks without a URL.
+ */
 export function blockToHtml(block: AnyBlock): string {
   const styles = getStyles(block);
 
@@ -146,6 +168,14 @@ export function blockToHtml(block: AnyBlock): string {
   }
 }
 
+/**
+ * @description Resolves the layout (`x`, `y`, `w`, `h`, `zIndex`) for a given block based on the container width. Applies responsive breakpoints: mobile (≤ 480px), tablet (≤ 768px), and desktop (> 768px). Falls back through layout tiers (mobile → tablet → desktop) if a specific breakpoint layout is not defined.
+ *
+ * @param block - The content block containing a `layouts` property with optional `mobile`, `tablet`, and `desktop` layout definitions.
+ * @param containerWidth - Optional current viewport / container width in pixels. If omitted, defaults to the desktop layout.
+ *
+ * @returns A layout object with `x`, `y`, `w`, `h` coordinates and a `zIndex` stacking value. Returns sensible defaults (x: 40, y: 40, w: 700, h: 150) when no layout data exists.
+ */
 export function getBlockLayout(block: AnyBlock, containerWidth?: number) {
   const layouts = block.layouts || {};
   if (!containerWidth) {
@@ -161,12 +191,28 @@ export function getBlockLayout(block: AnyBlock, containerWidth?: number) {
   return layouts.desktop || { x: 40, y: 40, w: 700, h: 150, zIndex: 0 };
 }
 
+/**
+ * @description Returns the reference design width for the given container width. Used by the canvas to determine which breakpoint's layout values to use for rendering calculations.
+ *
+ * @param containerWidth - The current container or viewport width in pixels.
+ *
+ * @returns The reference width constant: MOBILE_W (380) for widths ≤ 480px, TABLET_W (720) for widths ≤ 768px, or DESKTOP_W (860) for larger widths.
+ */
 export function getDesignWidth(containerWidth: number): number {
   if (containerWidth <= 480) return MOBILE_W;
   if (containerWidth <= 768) return TABLET_W;
   return DESKTOP_W;
 }
 
+/**
+ * @description Calculates the total height of a page canvas based on the bottom-most block's position. Iterates through all blocks, resolves their responsive layouts, and computes the maximum vertical extent (y + h) before adding bottom padding.
+ *
+ * @param blocks - Array of content blocks on the page, each containing layout information.
+ * @param containerWidth - Optional container width for responsive layout resolution. If omitted, uses default (desktop) layout values.
+ * @param padding - Optional bottom padding in pixels added to the tallest block's bottom edge. Defaults to 80.
+ *
+ * @returns The calculated page height in pixels, or 600 if the blocks array is empty.
+ */
 export function calcPageHeight(blocks: AnyBlock[], containerWidth?: number, padding = 80): number {
   if (!blocks.length) return 600;
   const maxBottom = Math.max(...blocks.map(b => {

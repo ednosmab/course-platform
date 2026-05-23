@@ -61,8 +61,8 @@ export function StudentDashboard({ onPlay }: StudentDashboardProps) {
           });
         }
       } catch (err: any) {
-        console.error('Erro ao carregar dados do dashboard:', err);
-        setError(err.message || 'Erro ao carregar dados');
+        console.error('Failed to load dashboard data:', err);
+        setError(err.message || 'Failed to load data');
       } finally {
         setLoading(false);
       }

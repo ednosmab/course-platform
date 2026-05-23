@@ -12,10 +12,10 @@ export const HtmlBlockRenderer: React.FC<Props> = ({ block }) => {
 
   if (Platform.OS === 'web') {
     return (
-      <YStack my="$3" width="100%">
-        <div
+      <YStack my="$3" width="100%" color="$gray3">
+        <YStack
           dangerouslySetInnerHTML={{ __html: htmlContent }}
-          style={{ width: '100%', color: '#cbd5e1' }}
+          width="100%"
         />
       </YStack>
     );
