@@ -326,17 +326,23 @@ interface EditorContextType extends EditorState {
   courseTitle: string;
   moduleTitle: string;
   lessonTitle: string;
+  mode: 'lesson' | 'certificate';
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
 
-export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: string }> = ({ children, lessonId }) => {
+export const EditorProvider: React.FC<{
+  children: React.ReactNode;
+  lessonId?: string;
+  courseId?: string;
+  mode?: 'lesson' | 'certificate';
+}> = ({ children, lessonId, courseId: initialCourseId, mode = 'lesson' }) => {
   const [state, dispatch] = useReducer(editorReducer, initialState);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [activeLessonId] = useState(lessonId || '11111111-1111-1111-1111-111111111111');
   const [isLoaded, setIsLoaded] = useState(false);
   const [lessonMeta, setLessonMeta] = useState<{ module_id: string; title: string; order_index: number } | null>(null);
-  const [courseId, setCourseId] = useState('');
+  const [courseId, setCourseId] = useState(initialCourseId || '');
   const [courseTitle, setCourseTitle] = useState('');
   const [moduleTitle, setModuleTitle] = useState('');
 
@@ -365,39 +371,51 @@ export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: st
   useEffect(() => {
     const initDatabase = async () => {
       try {
-        const draftLesson = await LessonService.getDraftLesson(activeLessonId);
-
-        if (draftLesson) {
-          setBlocks(draftLesson.blocks || []);
-          setLessonMeta({ module_id: draftLesson.module_id, title: draftLesson.title, order_index: draftLesson.order_index });
+        if (mode === 'certificate') {
+          const targetCourseId = initialCourseId || courseId;
+          if (targetCourseId) {
+            const cData = await CourseService.getCourse(targetCourseId);
+            if (cData) {
+              setBlocks((cData as any).certificate_blocks || []);
+              setCourseTitle(cData.title || '');
+              setCourseId(targetCourseId);
+            }
+          }
         } else {
-          const publishedLesson = await LessonService.getLesson(activeLessonId);
+          const draftLesson = await LessonService.getDraftLesson(activeLessonId);
 
-          if (publishedLesson) {
-            await LessonService.createDraftFromPublished(activeLessonId);
-            setBlocks(publishedLesson.blocks || []);
-            setLessonMeta({ module_id: publishedLesson.module_id, title: publishedLesson.title, order_index: publishedLesson.order_index });
+          if (draftLesson) {
+            setBlocks(draftLesson.blocks || []);
+            setLessonMeta({ module_id: draftLesson.module_id, title: draftLesson.title, order_index: draftLesson.order_index });
           } else {
-            setBlocks([]);
-            if (activeLessonId === '11111111-1111-1111-1111-111111111111') {
-              const defaultBlocks = [
-                { id: crypto.randomUUID(), type: 'text', content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.', styles: { align: 'left', fontSize: 'medium' }, layouts: { desktop: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, tablet: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, mobile: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 } } },
-                { id: crypto.randomUUID(), type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', provider: 'youtube', layouts: { desktop: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, tablet: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, mobile: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 } } },
-                { id: crypto.randomUUID(), type: 'quiz', question: 'Qual banco de dados relacional é utilizado no Supabase?', options: [{ id: crypto.randomUUID(), text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' }, { id: crypto.randomUUID(), text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }], layouts: { desktop: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, tablet: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, mobile: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 } } },
-              ] as AnyBlock[];
+            const publishedLesson = await LessonService.getLesson(activeLessonId);
 
-              await CourseService.seedDemoData({
-                pathId: '88888888-8888-8888-8888-888888888888',
-                courseId: '99999999-9999-9999-9999-999999999999',
-                moduleId: '00000000-0000-0000-0000-000000000000',
-                activeLessonId,
-                blocks: defaultBlocks,
-              });
-
-              setBlocks(defaultBlocks);
-              setLessonMeta({ module_id: '00000000-0000-0000-0000-000000000000', title: '1. Introdução à Plataforma Híbrida', order_index: 1 });
+            if (publishedLesson) {
+              await LessonService.createDraftFromPublished(activeLessonId);
+              setBlocks(publishedLesson.blocks || []);
+              setLessonMeta({ module_id: publishedLesson.module_id, title: publishedLesson.title, order_index: publishedLesson.order_index });
             } else {
-              setLessonMeta({ module_id: '', title: 'Nova aula', order_index: 1 });
+              setBlocks([]);
+              if (activeLessonId === '11111111-1111-1111-1111-111111111111') {
+                const defaultBlocks = [
+                  { id: crypto.randomUUID(), type: 'text', content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.', styles: { align: 'left', fontSize: 'medium' }, layouts: { desktop: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, tablet: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, mobile: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 } } },
+                  { id: crypto.randomUUID(), type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', provider: 'youtube', layouts: { desktop: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, tablet: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, mobile: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 } } },
+                  { id: crypto.randomUUID(), type: 'quiz', question: 'Qual banco de dados relacional é utilizado no Supabase?', options: [{ id: crypto.randomUUID(), text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' }, { id: crypto.randomUUID(), text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }], layouts: { desktop: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, tablet: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, mobile: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 } } },
+                ] as AnyBlock[];
+
+                await CourseService.seedDemoData({
+                  pathId: '88888888-8888-8888-8888-888888888888',
+                  courseId: '99999999-9999-9999-9999-999999999999',
+                  moduleId: '00000000-0000-0000-0000-000000000000',
+                  activeLessonId,
+                  blocks: defaultBlocks,
+                });
+
+                setBlocks(defaultBlocks);
+                setLessonMeta({ module_id: '00000000-0000-0000-0000-000000000000', title: '1. Introdução à Plataforma Híbrida', order_index: 1 });
+              } else {
+                setLessonMeta({ module_id: '', title: 'Nova aula', order_index: 1 });
+              }
             }
           }
         }
@@ -410,11 +428,11 @@ export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: st
     };
 
     initDatabase();
-  }, [activeLessonId]);
+  }, [activeLessonId, mode, initialCourseId]);
 
   // 1b. Breadcrumb meta
   useEffect(() => {
-    if (!lessonMeta?.module_id) return;
+    if (mode === 'certificate' || !lessonMeta?.module_id) return;
     (async () => {
       const meta = await LessonService.getBreadcrumbMeta(lessonMeta.module_id);
       if (meta) {
@@ -423,7 +441,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: st
         setCourseTitle(meta.courseTitle);
       }
     })();
-  }, [lessonMeta?.module_id]);
+  }, [lessonMeta?.module_id, mode]);
 
   // 2. Debounced Save
   useEffect(() => {
@@ -433,13 +451,20 @@ export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: st
 
     const timer = setTimeout(async () => {
       try {
-        const meta = lessonMeta || { module_id: '00000000-0000-0000-0000-000000000000', title: 'Sem título', order_index: 1 };
-        await LessonService.saveDraft(activeLessonId, {
-          module_id: meta.module_id,
-          title: meta.title,
-          order_index: meta.order_index,
-          blocks: state.blocks,
-        });
+        if (mode === 'certificate') {
+          const targetCourseId = courseId || initialCourseId;
+          if (targetCourseId) {
+            await CourseService.updateCourse(targetCourseId, { certificate_blocks: state.blocks as any });
+          }
+        } else {
+          const meta = lessonMeta || { module_id: '00000000-0000-0000-0000-000000000000', title: 'Sem título', order_index: 1 };
+          await LessonService.saveDraft(activeLessonId, {
+            module_id: meta.module_id,
+            title: meta.title,
+            order_index: meta.order_index,
+            blocks: state.blocks,
+          });
+        }
 
         setSaveStatus('saved');
         const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
@@ -451,11 +476,27 @@ export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: st
     }, 10000);
 
     return () => clearTimeout(timer);
-  }, [state.blocks, activeLessonId, isLoaded, lessonMeta]);
+  }, [state.blocks, activeLessonId, isLoaded, lessonMeta, mode, courseId, initialCourseId]);
 
   // 3. Publish
   const publishLesson = async () => {
     setSaveStatus('saving');
+    
+    if (mode === 'certificate') {
+      try {
+        const targetCourseId = courseId || initialCourseId;
+        if (targetCourseId) {
+          await CourseService.updateCourse(targetCourseId, { certificate_blocks: state.blocks as any });
+        }
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch (err) {
+        setSaveStatus('error');
+        throw err;
+      }
+      return;
+    }
+
     const meta = lessonMeta || { module_id: '00000000-0000-0000-0000-000000000000', title: 'Sem título', order_index: 1 };
 
     try {
@@ -502,7 +543,8 @@ export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: st
         courseId,
         courseTitle,
         moduleTitle,
-        lessonTitle: lessonMeta?.title || 'Nova aula',
+        lessonTitle: mode === 'certificate' ? 'Design de Certificado' : (lessonMeta?.title || 'Nova aula'),
+        mode,
       }}
     >
       {children}

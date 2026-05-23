@@ -169,7 +169,7 @@ export default function Dashboard() {
               <XStack flexWrap="wrap" gap={16}>
                 {filteredCourses.map((c: any) => (
                   <YStack key={c.id} flex={1} minWidth={320} maxWidth="calc(33.33% - 12px)">
-                    <Link href={`/studio/${c.id}`} style={{ textDecoration: 'none' }}>
+                    <Link href={`/configuracoes/${c.id}`} style={{ textDecoration: 'none' }}>
                       <YStack overflow="hidden" borderRadius={16} borderWidth={1} borderColor="$border" backgroundColor="$card" cursor="pointer" hoverStyle={{ y: -2 }}>
                         <YStack height={128} position="relative" style={{ background: c.thumbnail_url ? `url(${c.thumbnail_url}) center/cover no-repeat` : 'linear-gradient(135deg, $info, $primary)' }}>
                           <YStack position="absolute" inset={0} opacity={c.thumbnail_url ? 0 : 0.3} style={{ backgroundImage: c.thumbnail_url ? undefined : 'linear-gradient(to right, rgba(204, 208, 220, 0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(204, 208, 220, 0.35) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />

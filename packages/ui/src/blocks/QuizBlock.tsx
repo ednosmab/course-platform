@@ -31,7 +31,7 @@ export const QuizBlockRenderer: React.FC<Props> = ({ block }) => {
   return (
     <YStack width="100%" bg="$gray1" borderRadius="$6" borderWidth={1} borderColor="$gray2" p="$4" gap="$3.5">
       <XStack ai="center" gap="$2">
-        <Icon name="HelpCircle" size={18} color="#ec4899" style={{ marginTop: 2 }} />
+        <Icon name="HelpCircle" size={18} color="$secondary" style={{ marginTop: 2 }} />
         <YStack flex={1} ml="$2">
           {renderSimpleMarkdown(block.question, {
             color: '$gray9',
@@ -73,7 +73,7 @@ export const QuizBlockRenderer: React.FC<Props> = ({ block }) => {
               </Text>
 
               {showCorrectStyle && <Icon name="CheckCircle" size={16} color="$primary" />}
-              {showIncorrectStyle && <Icon name="AlertTriangle" size={16} color="#ec4899" />}
+              {showIncorrectStyle && <Icon name="AlertTriangle" size={16} color="$danger" />}
             </XStack>
           );
         })}
@@ -120,7 +120,7 @@ export const QuizBlockRenderer: React.FC<Props> = ({ block }) => {
             mt="$2"
             alignSelf="flex-start"
           >
-            <Text color="#a78bfa" fontSize={11} fontWeight="600">Try Again</Text>
+            <Text color="$secondary" fontSize={11} fontWeight="600">Try Again</Text>
           </YStack>
         </YStack>
       )}

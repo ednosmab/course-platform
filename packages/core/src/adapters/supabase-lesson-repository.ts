@@ -25,7 +25,7 @@ export const supabaseLessonRepository: ILessonRepository = {
     if (error) throw error;
     if (!data) return null;
     const parsed = LessonSchema.safeParse(data);
-    if (!parsed.success) { console.error(`Erro de contrato na aula ${lessonId}:`, parsed.error); return data as unknown as Lesson; }
+    if (!parsed.success) { console.error(`Contract validation error in lesson ${lessonId}:`, parsed.error); return data as unknown as Lesson; }
     return parsed.data;
   },
 

@@ -5,6 +5,7 @@ import { QuizBlockSchema } from './quiz';
 import { ImageBlockSchema } from './image';
 import { HtmlBlockSchema } from './html';
 import { QuoteBlockSchema } from './quote';
+import { CertificateBlockSchema } from './certificate-block';
 
 // 1. Profile Schema & Type
 export const ProfileSchema = z.object({
@@ -36,6 +37,8 @@ export const CourseSchema = z.object({
   description: z.string().nullable().optional(),
   thumbnail_url: z.string().nullable().optional(),
   is_published: z.boolean(),
+  certificate_blocks: z.array(CertificateBlockSchema).nullable().optional(),
+  certificate_enabled: z.boolean().optional().default(false),
   created_at: z.string().or(z.date()),
   updated_at: z.string().or(z.date()),
 }).strict();

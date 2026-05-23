@@ -161,7 +161,7 @@ export const supabaseCourseRepository: ICourseRepository = {
         const filtered = (lessonsData || []).filter((l: any) => !l.id.endsWith('dddddddddddd'));
         const lessons = filtered.map((les: any) => {
           const parsed = LessonSchema.safeParse(les);
-          if (!parsed.success) { console.error(`Erro de contrato na aula ${les.id}:`, parsed.error); return les as unknown as Lesson; }
+          if (!parsed.success) { console.error(`Contract validation error in lesson ${les.id}:`, parsed.error); return les as unknown as Lesson; }
           return parsed.data;
         });
         return { ...mod, lessons };

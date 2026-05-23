@@ -39,4 +39,5 @@ export const CourseLessonContentSchema = z.object({
 
 export type CourseLessonContent = z.infer<typeof CourseLessonContentSchema>;
 
+export * from './certificate-block';
 export * from './database';

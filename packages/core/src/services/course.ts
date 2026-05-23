@@ -71,7 +71,7 @@ export function createCourseService(repo: ICourseRepository) {
      */
     async updateCourse(
       courseId: string,
-      updates: Partial<Pick<Course, 'title' | 'description' | 'thumbnail_url' | 'is_published'>>,
+      updates: Partial<Pick<Course, 'title' | 'description' | 'thumbnail_url' | 'is_published' | 'certificate_blocks'>>,
     ): Promise<void> {
       return repo.updateCourse(courseId, updates);
     },
