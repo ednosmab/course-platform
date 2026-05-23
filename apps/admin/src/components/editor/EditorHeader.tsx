@@ -53,9 +53,14 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({ courseId }) => {
               <Icon name="CloudLightning" size={14} color="$textMuted" />
             </XStack>
             <XStack ai="center" gap={2}>
-              <a href={courseUrl} style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-                <Text fontSize={14} fontWeight="500">{courseTitle || t('courseLabel')}</Text>
-              </a>
+              <Text
+                fontSize={14} fontWeight="500"
+                cursor="pointer"
+                onPress={() => router.push(`/configuracoes/${courseId}`)}
+                hoverStyle={{ opacity: 0.7 }}
+              >
+                {courseTitle || t('courseLabel')}
+              </Text>
               <Text fontSize={14} color="$textMuted">/</Text>
               <Text fontSize={14} fontWeight="500">{moduleTitle || t('moduleLabel')}</Text>
               <Text fontSize={14} color="$textMuted">/</Text>
