@@ -519,16 +519,16 @@ function TopBar({ userProfile }: TopBarProps) {
             />
           </Button>
 
-          <XStack ref={menuRef}>
+          <XStack position="relative" ref={menuRef}>
             <Button
               variant="ghost"
-              px="$2"
-              py="$1"
+              p="$2"
               br="$3"
               borderWidth={1}
               borderColor="$border"
               bg="$surface"
               onPress={() => setShowUserMenu(!showUserMenu)}
+              pressStyle={{ opacity: 0.7 }}
             >
               <XStack w={24} h={24} br={12} bg="$secondary" ai="center" jc="center">
                 <Text fontSize={10} fontWeight="bold" color="$text">{initials}</Text>
@@ -541,31 +541,20 @@ function TopBar({ userProfile }: TopBarProps) {
 
             {showUserMenu && (
               <XStack
-                position="fixed" top={0} left={0} right={0} bottom={0}
-                zIndex={1000}
+                position="absolute" top="100%" right={0} mt={2}
+                bg="$surface" borderWidth={1} borderColor="$border" borderRadius={8}
+                p={4} minWidth={180}
+                elevation={12}
+                zIndex={999}
               >
                 <XStack
-                  position="absolute" top={0} left={0} right={0} bottom={0}
-                  bg="rgba(0,0,0,0.3)"
-                  onPress={() => setShowUserMenu(false)}
-                />
-                <XStack
-                  position="absolute"
-                  top={64} right={24}
-                  bg="$surface" borderWidth={1} borderColor="$border" borderRadius={8}
-                  p={4} minWidth={180}
-                  elevation={12}
-                  zIndex={1001}
+                  onPress={handleLogout}
+                  px={12} py={10} borderRadius={4} cursor="pointer"
+                  hoverStyle={{ bg: '$background' }}
+                  ai="center" gap={8}
                 >
-                  <XStack
-                    onPress={handleLogout}
-                    px={12} py={10} borderRadius={4} cursor="pointer"
-                    hoverStyle={{ bg: '$background' }}
-                    ai="center" gap={8}
-                  >
-                    <Icon name="LogOut" size={16} color="$textMuted" />
-                    <Text fontSize={14} color="$danger">Sair</Text>
-                  </XStack>
+                  <Icon name="LogOut" size={16} color="$textMuted" />
+                  <Text fontSize={14} color="$danger">Sair</Text>
                 </XStack>
               </XStack>
             )}
