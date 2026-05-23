@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { XStack, YStack, Text, Button, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
 import { PositionPanel } from './PositionPanel';
 
 interface EditorHeaderProps {
@@ -12,6 +13,7 @@ interface EditorHeaderProps {
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({ courseId }) => {
   const { t } = useTranslation('editor');
+  const router = useRouter();
   const { canUndo, canRedo, undo, redo, saveStatus, previewMode, setPreviewMode, viewportMode, setViewportMode, publishLesson, courseTitle, moduleTitle, lessonTitle, mode } = useEditor();
   const [published, setPublished] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({ courseId }) => {
     }
   };
 
-  const courseUrl = courseId ? `/studio/${courseId}` : '#';
+  const courseUrl = `/studio/${courseId}`;
 
   return (
     <XStack
@@ -41,9 +43,9 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({ courseId }) => {
       gap="$4"
     >
       <XStack ai="center" gap="$4">
-        <a href={courseUrl} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+        <XStack cursor="pointer" onPress={() => { if (window.history.length > 1) router.back(); else router.push('/'); }} hoverStyle={{ opacity: 0.7 }}>
           <Icon name="ArrowLeft" size={20} color="$textMuted" />
-        </a>
+        </XStack>
 
         <XStack ai="center" gap="$3">
           <XStack ai="center" gap="$2">
@@ -145,7 +147,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({ courseId }) => {
               published ? (
                 <><Icon name="CheckCircle2" size={15} /><Text>{t('published')}</Text></>
               ) : (
-                t('publish')
+                <Text>{t('publish')}</Text>
               )
             )}
           </Button>
