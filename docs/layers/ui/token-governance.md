@@ -14,6 +14,7 @@
 
 - **É PROIBIDO** usar valores hardcoded (hex, px, em) em **props de componentes Tamagui** — use sempre `$token`.
 - **EXCEÇÃO:** Em `<div style={{}}>` nativo (posicionamento absoluto, guides de alinhamento, `boxShadow`), tokens Tamagui não resolvem. Use hex explícito ou constantes nomeadas. Para demais casos, prefira `YStack`/`XStack` do Tamagui.
+- **EXCEÇÃO — Print CSS (Certificados):** `@page { size: A4 landscape; }` e `@media print` não têm API em React/Tamagui. Um arquivo CSS minimalista (`CertificatePrint.css`) é permitido exclusivamente para certificados A4, contendo apenas `@page`, `@media print` e `print-color-adjust`. É a única exceção à proibição de CSS (D-03).
 - **É PROIBIDO** criar tokens duplicados — sempre reutilizar os existentes.
 - **É PROIBIDO** importar tokens fora de `packages/ui/src/tokens/`.
 - **É PROIBIDO** modificar tokens sem atualizar `tamagui.config.ts`.

@@ -49,7 +49,11 @@ export const supabaseLessonRepository: ILessonRepository = {
       is_published: false,
       blocks: data.blocks,
     });
-    if (error) throw error;
+    if (error) {
+      const reason = `upsertDraft error [lessonId=${lessonId}, draftId=${draftId}]: ${error.message || JSON.stringify(error)}`;
+      console.error(reason);
+      throw new Error(reason);
+    }
   },
 
   /**

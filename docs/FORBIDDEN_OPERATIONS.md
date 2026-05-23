@@ -23,7 +23,7 @@
 |---|---|---|
 | D-01 | **PROIBIDO** instalar dependências sem justificativa documentada no buffer | Evita inchaço e conflitos de versão |
 | D-02 | **PROIBIDO** modificar `package.json` fora de uma sessão dedicada | Toda mudança de dependência deve ser isolada e testada |
-| D-03 | **PROIBIDO** usar Tailwind, Sass, CSS inline ou `StyleSheet.create()` | Estilização exclusiva via **Tamagui** em `packages/ui` |
+| D-03 | **PROIBIDO** usar Tailwind, Sass, CSS inline ou `StyleSheet.create()` | Estilização exclusiva via **Tamagui** em `packages/ui`. **Exceção única:** `CertificatePrint.css` para `@page`/`@media print` (ver `token-governance.md`). |
 | D-04 | **PROIBIDO** sobrescrever documentação sem merge semântico | Documentação deve ser atualizada com diff explícito |
 
 ## 3. Violações de Workflow e Git

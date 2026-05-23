@@ -476,7 +476,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                   <Icon name="Award" size={20} color="$primary" />
                   <Text fontSize={14} fontWeight="600">Configurações do Certificado</Text>
                 </XStack>
-                <Text fontSize={12} color="$textMuted" lineHeight={1.5}>
+                <Text fontSize={12} color="$textMuted" lineHeight={18}>
                   Quando ativo, os alunos que concluírem todas as aulas com aproveitamento mínimo de 70% receberão um certificado oficial da plataforma com validação de código único (BSGI).
                 </Text>
                 

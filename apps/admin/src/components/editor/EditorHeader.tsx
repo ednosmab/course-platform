@@ -12,7 +12,7 @@ interface EditorHeaderProps {
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({ courseId }) => {
   const { t } = useTranslation('editor');
-  const { canUndo, canRedo, undo, redo, saveStatus, previewMode, setPreviewMode, viewportMode, setViewportMode, publishLesson, courseTitle, moduleTitle, lessonTitle } = useEditor();
+  const { canUndo, canRedo, undo, redo, saveStatus, previewMode, setPreviewMode, viewportMode, setViewportMode, publishLesson, courseTitle, moduleTitle, lessonTitle, mode } = useEditor();
   const [published, setPublished] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [isPositionPanelOpen, setIsPositionPanelOpen] = useState(false);
@@ -135,14 +135,22 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({ courseId }) => {
             borderWidth={1} borderColor="$border"
             onPress={handlePublish}
           >
-            {published ? (
-              <><Icon name="CheckCircle2" size={15} /><Text>{t('published')}</Text></>
+            {mode === 'certificate' ? (
+              published ? (
+                <><Icon name="CheckCircle2" size={15} /><Text>{t('common:saved')}</Text></>
+              ) : (
+                <Text>{t('common:save')}</Text>
+              )
             ) : (
-              t('publish')
+              published ? (
+                <><Icon name="CheckCircle2" size={15} /><Text>{t('published')}</Text></>
+              ) : (
+                t('publish')
+              )
             )}
           </Button>
           {publishError && (
-            <Text fontSize={12} color="$danger" maxWidth={220} lineHeight={1.3}>
+            <Text fontSize={12} color="$danger" maxWidth={220} lineHeight="1.3">
               {publishError}
             </Text>
           )}

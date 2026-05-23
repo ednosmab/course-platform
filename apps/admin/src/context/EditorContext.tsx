@@ -420,7 +420,8 @@ export const EditorProvider: React.FC<{
           }
         }
       } catch (err) {
-        console.error('Initialization error:', err);
+        const msg = err instanceof Error ? err.message : typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err);
+        console.error(`EditorProvider init error [mode=${mode}, lessonId=${activeLessonId}]: ${msg}`);
         setSaveStatus('error');
       } finally {
         setIsLoaded(true);
@@ -447,6 +448,10 @@ export const EditorProvider: React.FC<{
   useEffect(() => {
     if (!isLoaded) return;
 
+    if (mode !== 'certificate' && !lessonMeta?.module_id) {
+      return;
+    }
+
     setSaveStatus('saving');
 
     const timer = setTimeout(async () => {
@@ -470,7 +475,8 @@ export const EditorProvider: React.FC<{
         const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
         return () => clearTimeout(resetTimer);
       } catch (err) {
-        console.error('Failed to save draft:', err);
+        const msg = err instanceof Error ? err.message : typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err);
+        console.error(`Failed to save draft: ${msg}`);
         setSaveStatus('error');
       }
     }, 10000);

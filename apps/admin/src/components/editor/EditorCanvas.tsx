@@ -387,7 +387,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
           <XStack borderWidth={1} borderColor="$primary" px={2} py={0} borderRadius={1} bg="white">
             <Text fontSize={9} fontWeight="700" color="$primary">QUIZ</Text>
           </XStack>
-          <Text style={{ fontSize }} lineHeight={1.4}>{questionElement}</Text>
+          <Text style={{ fontSize }} lineHeight="1.4">{questionElement}</Text>
         </XStack>
         <YStack gap={1}>
           {block.options.map((opt, i) => (

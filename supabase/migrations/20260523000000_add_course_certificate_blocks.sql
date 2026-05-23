@@ -1,3 +1,3 @@
--- Adiciona a coluna certificate_blocks na tabela courses para suporte ao editor visual do CMS Studio
+-- Adds certificate_blocks JSONB column to courses table for the CMS Studio visual certificate editor
 alter table public.courses
-add column certificate_blocks jsonb not null default '[]'::jsonb;
+add column if not exists certificate_blocks jsonb not null default '[]'::jsonb;
