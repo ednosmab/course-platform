@@ -4,6 +4,7 @@ import React, { useState, useMemo, Suspense } from 'react';
 import { YStack, XStack, Text, Button, Icon, Card, Spinner } from '@projeto/ui';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createSupabaseBrowserClient } from '../../lib/supabase-client';
+import { AuthService } from '@projeto/core';
 import { BrandMark } from '../../components/brand-mark';
 
 function LoginForm() {
@@ -23,33 +24,18 @@ function LoginForm() {
     setError(null);
     setLoading(true);
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      if (signInError) {
-        setError(signInError.message);
-        return;
-      }
+      await AuthService.signIn(email, password, supabase);
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setError('Usuário não encontrado.');
-        return;
-      }
+      const role = await AuthService.getUserRole(supabase);
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      const role = profile?.role;
       if (role === 'student') {
         const studentUrl = process.env.NEXT_PUBLIC_STUDENT_APP_URL || 'http://localhost:8081';
         window.location.href = studentUrl;
       } else {
         router.push(redirectTo);
       }
-    } catch {
-      setError('Erro inesperado. Tente novamente.');
+    } catch (err: any) {
+      setError(err.message || 'Erro inesperado. Tente novamente.');
     } finally {
       setLoading(false);
     }

@@ -9,7 +9,7 @@ import { EditorHeader } from '../../../components/editor/EditorHeader';
 import { BlockPalette } from '../../../components/editor/BlockPalette';
 import { EditorCanvas } from '../../../components/editor/EditorCanvas';
 import { BlockSettings } from '../../../components/editor/BlockSettings';
-import { supabase } from '@projeto/core';
+import { CourseService, StorageService } from '@projeto/core';
 import type { Module, Lesson } from '@projeto/types';
 
 function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSelectLesson: (lessonId: string) => void }) {
@@ -42,24 +42,14 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
   const fetchData = async () => {
     try {
       setLoading(true);
-      const { data: courseData } = await supabase.from('courses').select('*').eq('id', courseId).single();
-      setCourse(courseData);
-      setEditTitle(courseData?.title || '');
-      setEditDescription(courseData?.description || '');
-      setCertificateEnabled(courseData?.certificate_enabled ?? false);
-      setEditThumbnailPreview(courseData?.thumbnail_url || null);
-
-      const { data: mods } = await supabase.from('modules').select('*').eq('course_id', courseId).order('order_index');
-      const modsWithLessons = await Promise.all((mods || []).map(async (m) => {
-        const { data: less } = await supabase
-          .from('lessons')
-          .select('*')
-          .eq('module_id', m.id)
-          .order('order_index');
-        return { ...m, lessons: (less || []).filter(l => !l.id.endsWith('dddddddddddd')) };
-      }));
-      setModules(modsWithLessons);
-      setExpandedModules(new Set(modsWithLessons.map(m => m.id)));
+      const result = await CourseService.getCourseWithModulesAndLessons(courseId);
+      setCourse(result.course);
+      setEditTitle(result.course.title || '');
+      setEditDescription(result.course.description || '');
+      setCertificateEnabled((result.course as any).certificate_enabled ?? false);
+      setEditThumbnailPreview(result.course.thumbnail_url || null);
+      setModules(result.modules);
+      setExpandedModules(new Set(result.modules.map(m => m.id)));
     } catch (err) {
       console.error('Erro ao carregar curso:', err);
     } finally {
@@ -72,16 +62,14 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
   const createModule = async () => {
     if (!newTitle.trim()) return;
     const nextIndex = modules.length + 1;
-    const { data, error } = await supabase.from('modules').insert({
-      course_id: courseId,
-      title: newTitle.trim(),
-      order_index: nextIndex,
-    }).select().single();
-    if (!error && data) {
+    try {
+      const data = await CourseService.createModule(courseId, newTitle.trim(), nextIndex);
       setNewTitle('');
       setShowModuleInput(false);
       fetchData();
       flashHighlight(data.id);
+    } catch (err) {
+      console.error('Erro ao criar módulo:', err);
     }
   };
 
@@ -89,44 +77,40 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
     if (!newTitle.trim()) return;
     const mod = modules.find(m => m.id === moduleId);
     const nextIndex = (mod?.lessons?.length || 0) + 1;
-    const { data, error } = await supabase.from('lessons').insert({
-      module_id: moduleId,
-      title: newTitle.trim(),
-      order_index: nextIndex,
-      is_published: false,
-      blocks: [],
-    }).select().single();
-    if (!error && data) {
+    try {
+      const data = await CourseService.createLesson(moduleId, newTitle.trim(), nextIndex);
       setNewTitle('');
       setShowLessonInput(null);
       fetchData();
       flashHighlight(data.id);
+    } catch (err) {
+      console.error('Erro ao criar aula:', err);
     }
   };
 
   const renameModule = async (id: string) => {
     if (!editModuleTitle.trim()) { setEditingModuleId(null); return; }
-    await supabase.from('modules').update({ title: editModuleTitle.trim() }).eq('id', id);
+    await CourseService.updateModule(id, { title: editModuleTitle.trim() });
     setEditingModuleId(null);
     fetchData();
   };
 
   const renameLesson = async (id: string) => {
     if (!editLessonTitle.trim()) { setEditingLessonId(null); return; }
-    await supabase.from('lessons').update({ title: editLessonTitle.trim() }).eq('id', id);
+    await CourseService.updateLesson(id, { title: editLessonTitle.trim() });
     setEditingLessonId(null);
     fetchData();
   };
 
   const deleteModule = async (id: string) => {
     if (!confirm('Excluir módulo e todas as suas aulas?')) return;
-    await supabase.from('modules').delete().eq('id', id);
+    await CourseService.deleteModule(id);
     fetchData();
   };
 
   const deleteLesson = async (id: string) => {
     if (!confirm('Excluir esta aula?')) return;
-    await supabase.from('lessons').delete().eq('id', id);
+    await CourseService.deleteLesson(id);
     fetchData();
   };
 
@@ -138,8 +122,10 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
     const a = sorted[idx];
     const b = sorted[swapIdx];
-    await supabase.from('modules').update({ order_index: b.order_index }).eq('id', a.id);
-    await supabase.from('modules').update({ order_index: a.order_index }).eq('id', b.id);
+    await Promise.all([
+      CourseService.reorderModules([{ id: a.id, order_index: b.order_index }]),
+      CourseService.reorderModules([{ id: b.id, order_index: a.order_index }]),
+    ]);
     fetchData();
   };
 
@@ -153,8 +139,10 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
     const a = sorted[idx];
     const b = sorted[swapIdx];
-    await supabase.from('lessons').update({ order_index: b.order_index }).eq('id', a.id);
-    await supabase.from('lessons').update({ order_index: a.order_index }).eq('id', b.id);
+    await Promise.all([
+      CourseService.reorderLessons([{ id: a.id, order_index: b.order_index }]),
+      CourseService.reorderLessons([{ id: b.id, order_index: a.order_index }]),
+    ]);
     fetchData();
   };
 
@@ -171,20 +159,15 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
     try {
       let thumbnail_url = course?.thumbnail_url || null;
       if (editThumbnail) {
-        const ext = editThumbnail.name.split('.').pop();
-        const path = `${courseId}/thumbnail.${ext}`;
-        const { error: uploadError } = await supabase.storage.from('course-thumbnails').upload(path, editThumbnail, { upsert: true });
-        if (uploadError) throw uploadError;
-        const { data: { publicUrl } } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
-        thumbnail_url = publicUrl;
+        const url = await StorageService.uploadThumbnail(editThumbnail, courseId);
+        if (url) thumbnail_url = url;
       }
-      const { error } = await supabase.from('courses').update({
+      await CourseService.updateCourseSettings(courseId, {
         title: editTitle.trim(),
         description: editDescription.trim(),
         certificate_enabled: certificateEnabled,
         thumbnail_url,
-      }).eq('id', courseId);
-      if (error) throw error;
+      });
       setCourse((prev: any) => ({ ...prev, title: editTitle.trim(), description: editDescription.trim(), certificate_enabled: certificateEnabled, thumbnail_url }));
       setEditThumbnail(null);
       setSaveMessage({ type: 'success', text: 'Configurações salvas com sucesso!' });
@@ -201,7 +184,7 @@ function CourseOverview({ courseId, onSelectLesson }: { courseId: string; onSele
 
   const togglePublish = async () => {
     const next = !course?.is_published;
-    await supabase.from('courses').update({ is_published: next }).eq('id', courseId);
+    await CourseService.togglePublish(courseId, next);
     setCourse((prev: any) => ({ ...prev, is_published: next }));
   };
 

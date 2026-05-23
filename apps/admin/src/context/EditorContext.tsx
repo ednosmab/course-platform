@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useState, useEffect } from 'react';
 import { AnyBlock } from '@projeto/types';
-import { supabase } from '@projeto/core';
+import { LessonService, CourseService } from '@projeto/core';
 
 interface EditorState {
   blocks: AnyBlock[];
@@ -62,7 +62,6 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       const id = crypto.randomUUID();
       let newBlock: AnyBlock;
 
-      // Calcula a posição Y padrão: empilha abaixo do último bloco
       const lastBlock = state.blocks[state.blocks.length - 1];
       const lastL = lastBlock?.layouts?.desktop;
       const defaultY = lastBlock ? (lastL?.y ?? 40) + (lastL?.h ?? 120) + 20 : 40;
@@ -197,7 +196,6 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     }
 
     case 'UPDATE_BLOCK_SILENT': {
-      // Atualiza sem criar entrada no histórico (usado durante drag)
       const newBlocks = state.blocks.map((b) => {
         if (b.id !== action.payload.id) return b;
         return { ...b, ...action.payload.updates } as AnyBlock;
@@ -271,7 +269,6 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     }
 
     case 'REORDER_BLOCKS': {
-      // Atualiza blocos mantendo o activeBlockId e criando entrada no histórico
       return updateHistory(action.payload.blocks);
     }
 
@@ -364,74 +361,48 @@ export const EditorProvider: React.FC<{ children: React.ReactNode; lessonId?: st
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history.length - 1;
 
-const getDraftId = (lessonId: string) => {
-  return lessonId.substring(0, 24) + 'dddddddddddd';
-};
-
-// 1. Carregamento inicial (e auto-seed se o banco estiver vazio)
+  // 1. Carregamento inicial
   useEffect(() => {
     const initDatabase = async () => {
       try {
-        const draftId = getDraftId(activeLessonId);
-        const { data: draftLesson, error: draftErr } = await supabase
-          .from('lessons')
-          .select('*')
-          .eq('id', draftId)
-          .maybeSingle();
-
-        if (draftErr) throw draftErr;
+        const draftLesson = await LessonService.getDraftLesson(activeLessonId);
 
         if (draftLesson) {
           setBlocks(draftLesson.blocks || []);
           setLessonMeta({ module_id: draftLesson.module_id, title: draftLesson.title, order_index: draftLesson.order_index });
         } else {
-          // Se não há rascunho, tentamos carregar a publicada e clonar
-          const { data: publishedLesson, error: pubErr } = await supabase
-            .from('lessons')
-            .select('*')
-            .eq('id', activeLessonId)
-            .maybeSingle();
-
-          if (pubErr) throw pubErr;
+          const publishedLesson = await LessonService.getLesson(activeLessonId);
 
           if (publishedLesson) {
-            await supabase.from('lessons').upsert({
-              id: draftId,
-              module_id: publishedLesson.module_id,
-              title: publishedLesson.title,
-              order_index: publishedLesson.order_index,
-              is_published: false,
-              blocks: publishedLesson.blocks || []
-            });
+            await LessonService.createDraftFromPublished(activeLessonId);
             setBlocks(publishedLesson.blocks || []);
             setLessonMeta({ module_id: publishedLesson.module_id, title: publishedLesson.title, order_index: publishedLesson.order_index });
           } else {
             setBlocks([]);
-            // Auto-seed apenas para o lessonId padrão de desenvolvimento
             if (activeLessonId === '11111111-1111-1111-1111-111111111111') {
-              const pathId = '88888888-8888-8888-8888-888888888888';
-              await supabase.from('paths').upsert({ id: pathId, title: 'Trilha Full Stack Developer', description: 'Aprenda do zero ao deploy com arquiteturas resilientes e modernas.', is_published: true });
-              const courseId = '99999999-9999-9999-9999-999999999999';
-              await supabase.from('courses').upsert({ id: courseId, title: 'Desenvolvimento Web Full Stack', description: 'Torne-se um desenvolvedor completo, do frontend ao backend e DevOps.', is_published: true });
-              await supabase.from('path_courses').upsert({ path_id: pathId, course_id: courseId, order_index: 1 });
-              const moduleId = '00000000-0000-0000-0000-000000000000';
-              await supabase.from('modules').upsert({ id: moduleId, course_id: courseId, title: 'Módulo 1: Introdução Básica', order_index: 1 });
               const defaultBlocks = [
                 { id: crypto.randomUUID(), type: 'text', content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.', styles: { align: 'left', fontSize: 'medium' }, layouts: { desktop: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, tablet: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, mobile: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 } } },
                 { id: crypto.randomUUID(), type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', provider: 'youtube', layouts: { desktop: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, tablet: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, mobile: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 } } },
-                { id: crypto.randomUUID(), type: 'quiz', question: 'Qual banco de dados relacional é utilizado no Supabase?', options: [{ id: crypto.randomUUID(), text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' }, { id: crypto.randomUUID(), text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }], layouts: { desktop: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, tablet: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, mobile: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 } } }
+                { id: crypto.randomUUID(), type: 'quiz', question: 'Qual banco de dados relacional é utilizado no Supabase?', options: [{ id: crypto.randomUUID(), text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' }, { id: crypto.randomUUID(), text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }], layouts: { desktop: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, tablet: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, mobile: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 } } },
               ] as AnyBlock[];
-              await supabase.from('lessons').upsert({ id: activeLessonId, module_id: moduleId, title: '1. Introdução à Plataforma Híbrida', order_index: 1, is_published: true, blocks: defaultBlocks });
-              await supabase.from('lessons').upsert({ id: draftId, module_id: moduleId, title: '1. Introdução à Plataforma Híbrida', order_index: 1, is_published: false, blocks: defaultBlocks });
+
+              await CourseService.seedDemoData({
+                pathId: '88888888-8888-8888-8888-888888888888',
+                courseId: '99999999-9999-9999-9999-999999999999',
+                moduleId: '00000000-0000-0000-0000-000000000000',
+                activeLessonId,
+                blocks: defaultBlocks,
+              });
+
               setBlocks(defaultBlocks);
-              setLessonMeta({ module_id: moduleId, title: '1. Introdução à Plataforma Híbrida', order_index: 1 });
+              setLessonMeta({ module_id: '00000000-0000-0000-0000-000000000000', title: '1. Introdução à Plataforma Híbrida', order_index: 1 });
             } else {
               setLessonMeta({ module_id: '', title: 'Nova aula', order_index: 1 });
             }
           }
         }
       } catch (err) {
-        console.error('Erro na inicialização do Supabase:', err);
+        console.error('Erro na inicialização:', err);
         setSaveStatus('error');
       } finally {
         setIsLoaded(true);
@@ -441,111 +412,65 @@ const getDraftId = (lessonId: string) => {
     initDatabase();
   }, [activeLessonId]);
 
-  // 1b. Fetch course and module titles when lessonMeta changes
+  // 1b. Breadcrumb meta
   useEffect(() => {
     if (!lessonMeta?.module_id) return;
     (async () => {
-      const { data: mod } = await supabase.from('modules').select('title, course_id').eq('id', lessonMeta.module_id).single();
-      if (mod) {
-        setModuleTitle(mod.title);
-        setCourseId(mod.course_id);
-        const { data: course } = await supabase.from('courses').select('title').eq('id', mod.course_id).single();
-        if (course) setCourseTitle(course.title);
+      const meta = await LessonService.getBreadcrumbMeta(lessonMeta.module_id);
+      if (meta) {
+        setModuleTitle(meta.moduleTitle);
+        setCourseId(meta.courseId);
+        setCourseTitle(meta.courseTitle);
       }
     })();
   }, [lessonMeta?.module_id]);
 
-  // 2. Debounced Save para salvar no Supabase ao alterar blocos (Apenas na versão Rascunho!)
+  // 2. Debounced Save
   useEffect(() => {
-    if (!isLoaded) return; 
+    if (!isLoaded) return;
 
     setSaveStatus('saving');
 
     const timer = setTimeout(async () => {
       try {
-        const draftId = getDraftId(activeLessonId);
         const meta = lessonMeta || { module_id: '00000000-0000-0000-0000-000000000000', title: 'Sem título', order_index: 1 };
-        const { error: saveErr } = await supabase
-          .from('lessons')
-          .upsert({
-            id: draftId,
-            module_id: meta.module_id,
-            title: meta.title,
-            order_index: meta.order_index,
-            is_published: false,
-            blocks: state.blocks
-          });
-
-        if (saveErr) throw saveErr;
+        await LessonService.saveDraft(activeLessonId, {
+          module_id: meta.module_id,
+          title: meta.title,
+          order_index: meta.order_index,
+          blocks: state.blocks,
+        });
 
         setSaveStatus('saved');
         const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
         return () => clearTimeout(resetTimer);
       } catch (err) {
-        console.error('Erro ao salvar rascunho no Supabase:', err);
+        console.error('Erro ao salvar rascunho:', err);
         setSaveStatus('error');
       }
-    }, 10000); // 10s de debounce
+    }, 10000);
 
     return () => clearTimeout(timer);
   }, [state.blocks, activeLessonId, isLoaded, lessonMeta]);
 
-  // 3. Função oficial de publicação (Copia o rascunho para a aula publicada de produção)
+  // 3. Publish
   const publishLesson = async () => {
     setSaveStatus('saving');
     const meta = lessonMeta || { module_id: '00000000-0000-0000-0000-000000000000', title: 'Sem título', order_index: 1 };
 
-    const { data: mod, error: modErr } = await supabase
-      .from('modules')
-      .select('course_id')
-      .eq('id', meta.module_id)
-      .single();
-    if (modErr || !mod) {
-      setSaveStatus('error');
-      throw new Error('Módulo não encontrado.');
-    }
-
-    const { data: course, error: courseErr } = await supabase
-      .from('courses')
-      .select('is_published')
-      .eq('id', mod.course_id)
-      .single();
-    if (courseErr || !course) {
-      setSaveStatus('error');
-      throw new Error('Curso não encontrado.');
-    }
-
-    if (!course.is_published) {
-      setSaveStatus('error');
-      throw new Error('O curso precisa estar publicado antes de publicar aulas.');
-    }
-
-    const { data: existingLesson } = await supabase
-      .from('lessons')
-      .select('version')
-      .eq('id', activeLessonId)
-      .single();
-
-    const nextVersion = (existingLesson?.version ?? 0) + 1;
-
-    const { error: pubErr } = await supabase
-      .from('lessons')
-      .upsert({
-        id: activeLessonId,
+    try {
+      await LessonService.publishLesson(activeLessonId, {
         module_id: meta.module_id,
         title: meta.title,
         order_index: meta.order_index,
-        is_published: true,
         blocks: state.blocks,
-        version: nextVersion,
       });
-
-    if (pubErr) {
+      setSaveStatus('saved');
+      const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (err) {
       setSaveStatus('error');
-      throw new Error('Erro ao publicar aula.');
+      throw err;
     }
-    setSaveStatus('saved');
-    const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
   };
 
   return (

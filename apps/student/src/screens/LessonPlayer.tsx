@@ -4,7 +4,7 @@ import { YStack, XStack, Text, Button, ScrollView, Spinner, Icon } from '@projet
 import { useMobileProgress } from '../hooks/useMobileProgress';
 import { BlockRenderer } from '../components/BlockRenderer';
 import { AnyBlock } from '@projeto/types';
-import { CourseService, supabase } from '@projeto/core';
+import { CourseService, LessonService } from '@projeto/core';
 
 type LessonPlayerProps = {
   courseId?: string | null;
@@ -44,35 +44,24 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
       setLoading(true);
       setError(null);
 
-      if (courseId) {
-        const struct = await CourseService.getCourseStructure(courseId);
-        setCourse(struct.course);
-        const allLessons = struct.modules.flatMap(mod => mod.lessons);
-        setLessons(allLessons);
-        if (allLessons.length > 0) {
-          setActiveLessonId(allLessons[0].id);
-        }
-      } else {
-        const { data: coursesCheck, error: checkErr } = await supabase
-          .from('courses')
-          .select('*');
+      let targetCourseId = courseId;
 
-        if (checkErr) throw checkErr;
+      if (!targetCourseId) {
+        const coursesData = await CourseService.getPublishedCourses();
 
-        if (!coursesCheck || coursesCheck.length === 0) {
+        if (!coursesData || coursesData.length === 0) {
           throw new Error('Nenhum curso cadastrado no banco de dados. Crie e publique um curso no painel do CMS para começar!');
         }
 
-        const activeCourse = coursesCheck[0];
-        const struct = await CourseService.getCourseStructure(activeCourse.id);
-        setCourse(struct.course);
+        targetCourseId = coursesData[0].id;
+      }
 
-        const allLessons = struct.modules.flatMap(mod => mod.lessons);
-        setLessons(allLessons);
-
-        if (allLessons.length > 0) {
-          setActiveLessonId(allLessons[0].id);
-        }
+      const struct = await CourseService.getCourseStructure(targetCourseId);
+      setCourse(struct.course);
+      const allLessons = struct.modules.flatMap(mod => mod.lessons);
+      setLessons(allLessons);
+      if (allLessons.length > 0) {
+        setActiveLessonId(allLessons[0].id);
       }
     } catch (err) {
       console.error('Erro ao carregar dados do curso de forma dinâmica:', err);
@@ -91,23 +80,20 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
     try {
       setRefreshing(true);
       setError(null);
-      const { data: lessonData, error } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('id', activeLessonId)
-        .single();
 
-      if (error) throw error;
+      const lesson = await LessonService.getLesson(activeLessonId);
 
-      setLessons(prev => prev.map(les => {
-        if (les.id === activeLessonId) {
-          return {
-            ...les,
-            blocks: lessonData.blocks || []
-          };
-        }
-        return les;
-      }));
+      if (lesson) {
+        setLessons(prev => prev.map(les => {
+          if (les.id === activeLessonId) {
+            return {
+              ...les,
+              blocks: lesson.blocks || [],
+            };
+          }
+          return les;
+        }));
+      }
     } catch (err) {
       console.error('Erro ao recarregar blocos da aula ativa:', err);
       setError(getErrorMessage(err));
@@ -120,71 +106,50 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
     refreshActiveLesson();
   }, [activeLessonId]);
 
+  // Realtime subscription via LessonService
   useEffect(() => {
     if (!activeLessonId) return;
 
-    const channel = supabase
-      .channel(`lesson-realtime-${activeLessonId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'lessons',
-          filter: `id=eq.${activeLessonId}`,
-        },
-        (payload: any) => {
-          if (payload.new && payload.new.blocks) {
-            setLessons((prev) =>
-              prev.map((les) => {
-                if (les.id === activeLessonId) {
-                  return {
-                    ...les,
-                    blocks: payload.new.blocks,
-                    title: payload.new.title || les.title,
-                  };
-                }
-                return les;
-              })
-            );
-          }
-        }
-      )
-      .subscribe();
+    const unsubscribe = LessonService.subscribeToLesson(
+      activeLessonId,
+      (blocks, title) => {
+        setLessons((prev) =>
+          prev.map((les) => {
+            if (les.id === activeLessonId) {
+              return {
+                ...les,
+                blocks,
+                title: title || les.title,
+              };
+            }
+            return les;
+          }),
+        );
+      },
+    );
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return unsubscribe;
   }, [activeLessonId]);
 
-  // Polling: checa version (1 int) a cada 30s — só busca blocks se mudou
+  // Polling: checa version (1 int) a cada 30s
   useEffect(() => {
     if (!activeLessonId) return;
     let knownVersion: number | null = null;
     const interval = setInterval(async () => {
       try {
-        const { data, error } = await supabase
-          .from('lessons')
-          .select('version')
-          .eq('id', activeLessonId)
-          .single();
-        if (error) return;
-        if (data && knownVersion !== null && data.version === knownVersion) return;
-        knownVersion = data?.version ?? null;
-        if (!data) return;
-        // version mudou ou é a primeira checagem — busca blocks
-        const { data: full } = await supabase
-          .from('lessons')
-          .select('blocks, title')
-          .eq('id', activeLessonId)
-          .single();
-        if (full?.blocks) {
+        const version = await LessonService.getLessonVersion(activeLessonId);
+        if (version === null) return;
+        if (knownVersion !== null && version === knownVersion) return;
+        knownVersion = version;
+
+        const blocks = await LessonService.getLessonBlocks(activeLessonId);
+        if (blocks.length > 0) {
           setLessons((prev) =>
             prev.map((les) =>
               les.id === activeLessonId
-                ? { ...les, blocks: full.blocks, title: full.title || les.title }
-                : les
-            )
+                ? { ...les, blocks }
+                : les,
+            ),
           );
         }
       } catch {
@@ -194,22 +159,18 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
     return () => clearInterval(interval);
   }, [activeLessonId]);
 
-  // Refresh ao focar a aba (usuário voltou do CMS)
+  // Refresh ao focar a aba
   useEffect(() => {
     if (!activeLessonId) return;
     const onFocus = async () => {
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('blocks, title')
-        .eq('id', activeLessonId)
-        .single();
-      if (error || !data?.blocks) return;
+      const lesson = await LessonService.getLesson(activeLessonId);
+      if (!lesson?.blocks) return;
       setLessons((prev) =>
         prev.map((les) =>
           les.id === activeLessonId
-            ? { ...les, blocks: data.blocks, title: data.title || les.title }
-            : les
-        )
+            ? { ...les, blocks: lesson.blocks, title: lesson.title || les.title }
+            : les,
+        ),
       );
     };
     window.addEventListener('focus', onFocus);

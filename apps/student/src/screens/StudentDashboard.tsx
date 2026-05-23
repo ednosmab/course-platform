@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, XStack, YStack, Text, Button, Card, Icon, BrandMark, Avatar, Spinner, ProgressBar, GridBackground, Input, Theme, useMedia } from '@projeto/ui';
-import { supabase } from '@projeto/core';
+import { AuthService, CourseService } from '@projeto/core';
 import { Course } from '@projeto/types';
 
 const navTabs = [
@@ -43,59 +43,14 @@ export function StudentDashboard({ onPlay }: StudentDashboardProps) {
         setLoading(true);
         setError(null);
 
-        // Get active session and profile details
-        const { data: { user } } = await supabase.auth.getUser();
-        let profileData = null;
-        let progressList: any[] = [];
+        const profile = await AuthService.getCurrentProfile();
+        setUserProfile(profile);
 
-        if (user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-          
-          if (profile) {
-            profileData = profile;
-          }
-
-          const { data: progress } = await supabase
-            .from('student_progress')
-            .select('*, lesson:lessons(*, module:modules(*, course:courses(*)))')
-            .eq('user_id', user.id)
-            .order('updated_at', { ascending: false });
-
-          progressList = progress || [];
-        }
-
-        setUserProfile(profileData);
-
-        // Fetch courses list
-        const { data: coursesData, error: coursesErr } = await supabase
-          .from('courses')
-          .select('*')
-          .eq('is_published', true)
-          .order('created_at', { ascending: false });
-
-        if (coursesErr) throw coursesErr;
-
+        const coursesData = await CourseService.getStudentPublishedCourses();
         const loadedCourses = coursesData || [];
         setCourses(loadedCourses);
 
-        // Match active progress to build continue watching banner
-        const activeProg = progressList.find(p => !p.completed && p.lesson?.module?.course?.is_published);
-
-        if (activeProg) {
-          setActiveProgress({
-            courseTitle: activeProg.lesson.module.course.title,
-            courseId: activeProg.lesson.module.course.id,
-            lessonTitle: activeProg.lesson.title,
-            moduleTitle: activeProg.lesson.module.title,
-            progress: activeProg.percentage_watched,
-            remaining: '8 min restantes',
-          });
-        } else if (loadedCourses.length > 0) {
-          // Default to the first course if no progress rows are active
+        if (loadedCourses.length > 0) {
           setActiveProgress({
             courseTitle: loadedCourses[0].title,
             courseId: loadedCourses[0].id,
@@ -503,7 +458,6 @@ function TopBar({ userProfile }: TopBarProps) {
         </XStack>
 
         <XStack ai="center" gap="$3">
-          {/* Search bar inside header (hidden on small viewports) */}
           <XStack
             ai="center"
             bg="$surface"
@@ -530,7 +484,6 @@ function TopBar({ userProfile }: TopBarProps) {
             />
           </XStack>
 
-          {/* Bell notifications button */}
           <Button variant="ghost" px="$2.5" py="$2.5" borderRadius="$3">
             <Icon name="Bell" size={16} color="$textMuted" />
             <XStack
@@ -544,7 +497,6 @@ function TopBar({ userProfile }: TopBarProps) {
             />
           </Button>
 
-          {/* User profile dropdown button */}
           <XStack
             ai="center"
             gap="$2"
@@ -568,7 +520,6 @@ function TopBar({ userProfile }: TopBarProps) {
         </XStack>
       </XStack>
 
-      {/* Horizontal categories list visible strictly on small mobile headers */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} mt="$3" display={media.sm ? 'flex' : 'none'}>
         <XStack gap="$1">
           {navTabs.map((tab) => (

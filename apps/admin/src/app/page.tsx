@@ -4,25 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Icon, Theme, Button, Spinner } from '@projeto/ui';
 import Link from 'next/link';
 import { BrandMark } from '../components/brand-mark';
-import { supabase } from '@projeto/core';
+import { CourseService, StorageService } from '@projeto/core';
 import type { Course } from '@projeto/types';
-
-const BUCKET = 'course-thumbnails';
-
-async function uploadThumbnail(file: File, courseId: string): Promise<string | null> {
-  const ext = file.name.split('.').pop();
-  const path = `${courseId}/thumbnail.${ext}`;
-  const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true });
-  if (error) {
-    if (error.message.includes('bucket')) {
-      await supabase.storage.createBucket(BUCKET, { public: true, fileSizeLimit: 2 * 1024 * 1024 });
-      const { error: retryErr } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true });
-      if (retryErr) { console.error(retryErr); return null; }
-    } else { console.error(error); return null; }
-  }
-  const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(path);
-  return publicUrl;
-}
 
 export default function Dashboard() {
   const [filter, setFilter] = useState(0);
@@ -37,9 +20,8 @@ export default function Dashboard() {
   const fetchCourses = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.from('courses').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
-      setCourses(data || []);
+      const data = await CourseService.getAllCourses();
+      setCourses(data);
     } catch (err) {
       console.error('Erro ao buscar cursos:', err);
     } finally {
@@ -54,16 +36,14 @@ export default function Dashboard() {
   const handleCreate = async () => {
     if (!formTitle.trim()) return;
     try {
-      const { data, error } = await supabase.from('courses').insert({
-        title: formTitle.trim(),
-        description: formDescription.trim(),
-        is_published: false,
-      }).select().single();
-      if (error) throw error;
-      if (formThumbnail && data) {
-        const url = await uploadThumbnail(formThumbnail, data.id);
+      const course = await CourseService.createCourse(
+        formTitle.trim(),
+        formDescription.trim(),
+      );
+      if (formThumbnail) {
+        const url = await StorageService.uploadThumbnail(formThumbnail, course.id);
         if (url) {
-          await supabase.from('courses').update({ thumbnail_url: url }).eq('id', data.id);
+          await CourseService.updateCourse(course.id, { thumbnail_url: url });
         }
       }
       setFormTitle('');
@@ -80,8 +60,7 @@ export default function Dashboard() {
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este curso?')) return;
     try {
-      const { error } = await supabase.from('courses').delete().eq('id', id);
-      if (error) throw error;
+      await CourseService.deleteCourse(id);
       await fetchCourses();
     } catch (err) {
       console.error('Erro ao excluir curso:', err);

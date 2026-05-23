@@ -3,5 +3,7 @@ export * from './services/auth';
 export * from './services/course';
 export * from './services/progress';
 export * from './services/certificate';
+export * from './services/lesson';
+export * from './services/storage';
 export * from './i18n';
 export * from './renderer';
