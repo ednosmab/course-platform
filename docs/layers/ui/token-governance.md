@@ -12,7 +12,8 @@
 
 ## Proibições
 
-- **É PROIBIDO** usar valores hardcoded (hex, px, em) em componentes.
+- **É PROIBIDO** usar valores hardcoded (hex, px, em) em **props de componentes Tamagui** — use sempre `$token`.
+- **EXCEÇÃO:** Em `<div style={{}}>` nativo (posicionamento absoluto, guides de alinhamento, `boxShadow`), tokens Tamagui não resolvem. Use hex explícito ou constantes nomeadas. Para demais casos, prefira `YStack`/`XStack` do Tamagui.
 - **É PROIBIDO** criar tokens duplicados — sempre reutilizar os existentes.
 - **É PROIBIDO** importar tokens fora de `packages/ui/src/tokens/`.
 - **É PROIBIDO** modificar tokens sem atualizar `tamagui.config.ts`.

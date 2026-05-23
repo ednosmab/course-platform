@@ -92,7 +92,7 @@ export const LessonSchema = z.object({
     HtmlBlockSchema,
     QuoteBlockSchema,
   ])),
-  schema_version: z.number().int().positive().default(1),
+  version: z.number().int().positive().default(1),
   is_published: z.boolean(),
   created_at: z.string().or(z.date()),
   updated_at: z.string().or(z.date()),

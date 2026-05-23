@@ -10,6 +10,7 @@ Criar uma base visual consistente, performática e cross-platform (Web & Mobile)
    - Use o helper `styled` do Tamagui para criar variantes reutilizáveis.
 4. **Responsividade:** Utilize a sintaxe de array/objeto do Tamagui para breakpoints (ex: `width={{ lg: 500, sm: '100%' }}`).
 5. **Acessibilidade:** Garanta que todos os componentes interativos possuam estados de `hover`, `press` e `focus` bem definidos visualmente.
+6. **Resolução de Tokens `$token`:** Tokens `$color`, `$size`, `$space` etc. resolvem **apenas** em props de componentes Tamagui (`YStack`, `XStack`, `Text`, `Button`, etc.) e em `hoverStyle`/`pressStyle`. Em `<div style={{}}>` nativo, `boxShadow` inline ou strings CSS concatenadas, usar valores hex explícitos ou constantes — o Token Resolver do Tamagui não processa objetos `style` de elementos HTML nativos.
 
 ## 🧱 Estrutura de Componentes
 - **Atômicos:** Botões, Inputs, Cards (Puros Tamagui).

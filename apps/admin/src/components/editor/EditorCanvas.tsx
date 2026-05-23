@@ -218,7 +218,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
             outline: 'none',
             userSelect: 'text',
             backgroundColor: 'white',
-            border: '1px solid $info',
+            border: '1px solid #3B82F6',
             borderRadius: '4px',
             padding: '8px',
           }}
@@ -292,7 +292,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
           cursor: 'text',
           outline: 'none',
           backgroundColor: 'white',
-          border: '1px solid $info',
+          border: '1px solid #3B82F6',
           borderRadius: '4px',
           padding: '8px',
         },
@@ -528,7 +528,7 @@ function renderViewportBlocks(args: {
             onClick={(e) => { e.stopPropagation(); args.setActiveBlockId(block.id); }}
             style={{ position: 'absolute', left: layout.x * scale, top: layout.y * scale, width: layout.w * scale, height: layout.h * scale, zIndex: layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none', isolation: 'isolate' }}
           >
-            <div style={{ position: 'absolute', inset: 0, border: isActive ? '2px solid $info' : '2px solid transparent', borderRadius: '6px', pointerEvents: 'none', zIndex: 2 }} />
+            <div style={{ position: 'absolute', inset: 0, border: isActive ? '2px solid #3B82F6' : '2px solid transparent', borderRadius: '6px', pointerEvents: 'none', zIndex: 2 }} />
             <div style={{ position: 'absolute', inset: 2, borderRadius: '4px', overflow: 'hidden', zIndex: 1 }}>
               <BlockContent block={block} onImageDrop={args.onImageDrop} isMobile isInteracting={args.isInteracting} />
               {(block.type === 'html' || block.type === 'video') && (
@@ -569,36 +569,36 @@ function renderViewportBlocks(args: {
                 key={id}
                 data-handle={id}
                 onMouseDown={(e) => args.onHandleMouseDown(e, block, id)}
-                style={{ position: 'absolute', width: 10, height: 10, backgroundColor: 'white', border: '2px solid $info', borderRadius: '2px', cursor, zIndex: 30, ...style }}
+                style={{ position: 'absolute', width: 10, height: 10, backgroundColor: 'white', border: '2px solid #3B82F6', borderRadius: '2px', cursor, zIndex: 30, ...style }}
               />
             ))}
           </div>
         );
       })}
       {args.guides?.v.map((x, i) => (
-        <div key={`gv-${i}`} style={{ position: 'absolute', left: x * scale, top: 0, width: 0, height: pageH * scale, borderLeft: '1.5px dashed $info', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+        <div key={`gv-${i}`} style={{ position: 'absolute', left: x * scale, top: 0, width: 0, height: pageH * scale, borderLeft: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
       ))}
       {args.guides?.h.map((y, i) => (
-        <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y * scale, width: args.viewportW, height: 0, borderTop: '1.5px dashed $info', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+        <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y * scale, width: args.viewportW, height: 0, borderTop: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
       ))}
       {args.guides?.m.map((m, i) => {
         const s = scale;
         if (m.orientation === 'h') {
           return (
             <React.Fragment key={`gm-${i}`}>
-              <div style={{ position: 'absolute', left: m.start * s, top: m.pos * s, width: (m.end - m.start) * s, height: 0, borderTop: '1px dashed $secondary', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.start * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.end * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: (m.start + m.end) / 2 * s, top: m.pos * s, transform: 'translate(-50%, -50%)', fontSize: 10, color: '$secondary', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid $secondary', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+              <div style={{ position: 'absolute', left: m.start * s, top: m.pos * s, width: (m.end - m.start) * s, height: 0, borderTop: '1px dashed #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.start * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.end * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: (m.start + m.end) / 2 * s, top: m.pos * s, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#7C3AED', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #7C3AED', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
             </React.Fragment>
           );
         }
         return (
           <React.Fragment key={`gm-${i}`}>
-            <div style={{ position: 'absolute', left: m.pos * s, top: m.start * s, width: 0, height: (m.end - m.start) * s, borderLeft: '1px dashed $secondary', pointerEvents: 'none', zIndex: 998 }} />
-            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.start * s, width: 6, height: 0, borderTop: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
-            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.end * s, width: 6, height: 0, borderTop: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
-            <div style={{ position: 'absolute', left: m.pos * s, top: (m.start + m.end) / 2 * s, transform: 'translate(-50%, -50%)', fontSize: 10, color: '$secondary', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid $secondary', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+            <div style={{ position: 'absolute', left: m.pos * s, top: m.start * s, width: 0, height: (m.end - m.start) * s, borderLeft: '1px dashed #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
+            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.start * s, width: 6, height: 0, borderTop: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
+            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.end * s, width: 6, height: 0, borderTop: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
+            <div style={{ position: 'absolute', left: m.pos * s, top: (m.start + m.end) / 2 * s, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#7C3AED', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #7C3AED', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
           </React.Fragment>
         );
       })}
@@ -1085,7 +1085,7 @@ export const EditorCanvas: React.FC = () => {
             >
               <div style={{
                 position: 'absolute', inset: 0,
-                border: isActive ? '2px solid $info' : isSelected ? '2px solid $info' : outOfBounds ? '2px solid $warning' : '2px solid transparent',
+                border: isActive ? '2px solid #3B82F6' : isSelected ? '2px solid #3B82F6' : outOfBounds ? '2px solid #F59E0B' : '2px solid transparent',
                 borderRadius: '6px', pointerEvents: 'none', zIndex: 2,
                 boxShadow: isActive ? '0 0 0 1px rgba(59,130,246,0.25)' : isSelected ? '0 0 0 1px rgba(96,165,250,0.2)' : outOfBounds ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
               }} />
@@ -1125,17 +1125,17 @@ export const EditorCanvas: React.FC = () => {
                     aria-label="Duplicar bloco"
                     tabIndex={0}
                     onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); duplicateBlock(block.id); } }}
-                    px={1} py={1} cursor="pointer" hoverStyle={{ bg: '$secondary' }}
-                  >
-                    <Icon name="Copy" size={14} color="$textMuted" />
-                  </XStack>
-                  <XStack
-                    onPress={(e: any) => { e.stopPropagation(); removeBlock(block.id); }}
-                    role="button"
-                    aria-label="Excluir bloco"
-                    tabIndex={0}
-                    onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); removeBlock(block.id); } }}
-                    px={1} py={1} cursor="pointer" hoverStyle={{ bg: '$secondary' }}
+                     px={1} py={1} cursor="pointer" hoverStyle={{ bg: '$secondary' }}
+                   >
+                     <Icon name="Copy" size={14} color="$textMuted" />
+                   </XStack>
+                   <XStack
+                     onPress={(e: any) => { e.stopPropagation(); removeBlock(block.id); }}
+                     role="button"
+                     aria-label="Excluir bloco"
+                     tabIndex={0}
+                     onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); removeBlock(block.id); } }}
+                     px={1} py={1} cursor="pointer" hoverStyle={{ bg: '$secondary' }}
                   >
                     <Icon name="Trash2" size={14} color="$danger" />
                   </XStack>
@@ -1160,7 +1160,7 @@ export const EditorCanvas: React.FC = () => {
                   key={id}
                   data-handle={id}
                   onMouseDown={(e) => onHandleMouseDown(e, block, id)}
-                  style={{ position: 'absolute', width: 10, height: 10, backgroundColor: 'white', border: isActive ? '2px solid $info' : '2px solid $info', borderRadius: '2px', cursor, zIndex: 30, ...style }}
+                  style={{ position: 'absolute', width: 10, height: 10, backgroundColor: 'white', border: isActive ? '2px solid #3B82F6' : '2px solid #3B82F6', borderRadius: '2px', cursor, zIndex: 30, ...style }}
                 />
               ))}
             </div>
@@ -1168,28 +1168,28 @@ export const EditorCanvas: React.FC = () => {
         })}
 
         {guides.v.map((x, i) => (
-          <div key={`gv-${i}`} style={{ position: 'absolute', left: x, top: 0, width: 0, height: pageH, borderLeft: '1.5px dashed $info', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+          <div key={`gv-${i}`} style={{ position: 'absolute', left: x, top: 0, width: 0, height: pageH, borderLeft: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
         ))}
         {guides.h.map((y, i) => (
-          <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y, width: PAGE_W, height: 0, borderTop: '1.5px dashed $info', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+          <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y, width: PAGE_W, height: 0, borderTop: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
         ))}
         {guides.m.map((m, i) => {
           if (m.orientation === 'h') {
             return (
               <React.Fragment key={`gm-${i}`}>
-                <div style={{ position: 'absolute', left: m.start, top: m.pos, width: m.end - m.start, height: 0, borderTop: '1px dashed $secondary', pointerEvents: 'none', zIndex: 998 }} />
-                <div style={{ position: 'absolute', left: m.start, top: m.pos - 3, width: 0, height: 6, borderLeft: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
-                <div style={{ position: 'absolute', left: m.end, top: m.pos - 3, width: 0, height: 6, borderLeft: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
-                <div style={{ position: 'absolute', left: (m.start + m.end) / 2, top: m.pos, transform: 'translate(-50%, -50%)', fontSize: 10, color: '$secondary', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid $secondary', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+                <div style={{ position: 'absolute', left: m.start, top: m.pos, width: m.end - m.start, height: 0, borderTop: '1px dashed #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
+                <div style={{ position: 'absolute', left: m.start, top: m.pos - 3, width: 0, height: 6, borderLeft: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
+                <div style={{ position: 'absolute', left: m.end, top: m.pos - 3, width: 0, height: 6, borderLeft: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
+                <div style={{ position: 'absolute', left: (m.start + m.end) / 2, top: m.pos, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#7C3AED', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #7C3AED', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
               </React.Fragment>
             );
           }
           return (
             <React.Fragment key={`gm-${i}`}>
-              <div style={{ position: 'absolute', left: m.pos, top: m.start, width: 0, height: m.end - m.start, borderLeft: '1px dashed $secondary', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.pos - 3, top: m.start, width: 6, height: 0, borderTop: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.pos - 3, top: m.end, width: 6, height: 0, borderTop: '1px solid $secondary', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.pos, top: (m.start + m.end) / 2, transform: 'translate(-50%, -50%)', fontSize: 10, color: '$secondary', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid $secondary', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+              <div style={{ position: 'absolute', left: m.pos, top: m.start, width: 0, height: m.end - m.start, borderLeft: '1px dashed #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.pos - 3, top: m.start, width: 6, height: 0, borderTop: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.pos - 3, top: m.end, width: 6, height: 0, borderTop: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.pos, top: (m.start + m.end) / 2, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#7C3AED', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #7C3AED', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
             </React.Fragment>
           );
         })}
@@ -1201,7 +1201,7 @@ export const EditorCanvas: React.FC = () => {
             top: Math.min(marqueeRect.startY, marqueeRect.currentY),
             width: Math.abs(marqueeRect.currentX - marqueeRect.startX),
             height: Math.abs(marqueeRect.currentY - marqueeRect.startY),
-            border: '1.5px solid $info',
+            border: '1.5px solid #3B82F6',
             backgroundColor: 'rgba(59,130,246,0.08)',
             pointerEvents: 'none',
             zIndex: 1000,
