@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, XStack, YStack, Text, Button, Card, Icon, BrandMark, Avatar, Spinner, ProgressBar, GridBackground, Input, Theme, useMedia } from '@projeto/ui';
 import { AuthService, CourseService } from '@projeto/core';
 import { Course } from '@projeto/types';
@@ -418,10 +418,32 @@ interface TopBarProps {
 function TopBar({ userProfile }: TopBarProps) {
   const media = useMedia();
   const [searchVal, setSearchVal] = useState('');
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const initials = userProfile?.full_name
     ? userProfile.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
     : 'LV';
   const firstName = userProfile?.full_name ? userProfile.full_name.split(' ')[0] : 'Lucas';
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await AuthService.logout();
+    } catch {
+      // proceed even if signOut fails
+    }
+    const adminUrl = process.env.EXPO_PUBLIC_ADMIN_APP_URL || 'http://localhost:3000';
+    window.location.href = `${adminUrl}/login`;
+  };
 
   return (
     <YStack
@@ -497,25 +519,46 @@ function TopBar({ userProfile }: TopBarProps) {
             />
           </Button>
 
-          <XStack
-            ai="center"
-            gap="$2"
-            px="$2"
-            py="$1"
-            br="$3"
-            borderWidth={1}
-            borderColor="$border"
-            bg="$surface"
-            pressStyle={{ opacity: 0.8 }}
-            cursor="pointer"
-          >
-            <XStack w={24} h={24} br={12} bg="$secondary" ai="center" jc="center">
-              <Text fontSize={10} fontWeight="bold" color="$text">{initials}</Text>
+          <XStack position="relative" ref={menuRef}>
+            <XStack
+              ai="center"
+              gap="$2"
+              px="$2"
+              py="$1"
+              br="$3"
+              borderWidth={1}
+              borderColor="$border"
+              bg="$surface"
+              pressStyle={{ opacity: 0.8 }}
+              cursor="pointer"
+              onPress={() => setShowUserMenu(!showUserMenu)}
+            >
+              <XStack w={24} h={24} br={12} bg="$secondary" ai="center" jc="center">
+                <Text fontSize={10} fontWeight="bold" color="$text">{initials}</Text>
+              </XStack>
+              <Text fontSize={12} fontWeight="600" color="$text" $sm={{ display: 'none' }}>
+                {firstName}
+              </Text>
+              <Icon name="ChevronDown" size={13} color="$textMuted" />
             </XStack>
-            <Text fontSize={12} fontWeight="600" color="$text" $sm={{ display: 'none' }}>
-              {firstName}
-            </Text>
-            <Icon name="ChevronDown" size={13} color="$textMuted" />
+            {showUserMenu && (
+              <XStack
+                position="absolute" top="100%" right={0} mt={4}
+                bg="$surface" borderWidth={1} borderColor="$border" borderRadius={8}
+                p={4} minWidth={160}
+                elevation={8}
+              >
+                <XStack
+                  onPress={handleLogout}
+                  px={12} py={8} borderRadius={4} cursor="pointer"
+                  hoverStyle={{ bg: '$background' }}
+                  ai="center" gap={8}
+                >
+                  <Icon name="LogOut" size={16} color="$textMuted" />
+                  <Text fontSize={14} color="$danger">Sair</Text>
+                </XStack>
+              </XStack>
+            )}
           </XStack>
         </XStack>
       </XStack>

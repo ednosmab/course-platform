@@ -5,7 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const publicPaths = ['/login', '/api/health', '/api/ready'];
+  const publicPaths = ['/login', '/logout', '/api/health', '/api/ready'];
   const isPublic = publicPaths.some(p => pathname.startsWith(p)) ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||

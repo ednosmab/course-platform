@@ -1,17 +1,31 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { YStack, XStack, Text, Icon, Theme, Button, Spinner } from '@projeto/ui';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { BrandMark } from '../components/brand-mark';
 import { CourseService, StorageService } from '@projeto/core';
 import type { Course } from '@projeto/types';
 
 export default function Dashboard() {
+  const router = useRouter();
   const [filter, setFilter] = useState(0);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formThumbnail, setFormThumbnail] = useState<File | null>(null);
@@ -99,12 +113,31 @@ export default function Dashboard() {
               <Icon name="Bell" size={16} color="$textMuted" />
               <XStack position="absolute" right={6} top={6} w={6} h={6} borderRadius={3} bg="$primary" />
             </XStack>
-            <XStack ai="center" gap={8} px={8} py={4} borderRadius={6} borderWidth={1} borderColor="$border" backgroundColor="$card" cursor="pointer">
-              <XStack width={24} height={24} borderRadius={4} ai="center" jc="center" backgroundColor="$accent">
-                <Text fontSize={11} fontWeight="$6" color="$accentForeground">MR</Text>
+            <XStack position="relative" ref={userMenuRef}>
+              <XStack ai="center" gap={8} px={8} py={4} borderRadius={6} borderWidth={1} borderColor="$border" backgroundColor="$card" cursor="pointer" onPress={() => setShowUserMenu(!showUserMenu)}>
+                <XStack width={24} height={24} borderRadius={4} ai="center" jc="center" backgroundColor="$accent">
+                  <Text fontSize={11} fontWeight="$6" color="$accentForeground">MR</Text>
+                </XStack>
+                <Text fontSize={14}>Maria</Text>
+                <Icon name="ChevronDown" size={14} color="$textMuted" />
               </XStack>
-              <Text fontSize={14}>Maria</Text>
-              <Icon name="ChevronDown" size={14} color="$textMuted" />
+              {showUserMenu && (
+                <XStack
+                  position="absolute" top="100%" right={0} mt={4}
+                  bg="$card" borderWidth={1} borderColor="$border" borderRadius={8}
+                  p={4} minWidth={160} elevation={8}
+                >
+                  <XStack
+                    onPress={() => { setShowUserMenu(false); router.push('/logout'); }}
+                    px={12} py={8} borderRadius={4} cursor="pointer"
+                    hoverStyle={{ bg: '$secondary' }}
+                    ai="center" gap={8}
+                  >
+                    <Icon name="LogOut" size={16} color="$textMuted" />
+                    <Text fontSize={14} color="$danger">Sair</Text>
+                  </XStack>
+                </XStack>
+              )}
             </XStack>
           </XStack>
         </XStack>
