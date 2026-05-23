@@ -180,6 +180,25 @@ importers:
         specifier: ^1.6.0
         version: 1.6.1(@types/node@20.19.41)(jsdom@29.1.1)(lightningcss@1.32.0)(terser@5.47.1)
 
+  packages/renderer:
+    dependencies:
+      '@projeto/types':
+        specifier: workspace:*
+        version: link:../types
+      '@projeto/ui':
+        specifier: workspace:*
+        version: link:../ui
+      react:
+        specifier: ^19.0.0
+        version: 19.1.0
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.1.0(react@19.1.0)
+    devDependencies:
+      vitest:
+        specifier: ^1.6.1
+        version: 1.6.1(@types/node@20.19.41)(jsdom@29.1.1)(lightningcss@1.32.0)(terser@5.47.1)
+
   packages/types:
     dependencies:
       zod:
