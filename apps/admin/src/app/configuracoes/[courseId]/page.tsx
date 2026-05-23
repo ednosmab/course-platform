@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, use } from 'react';
-import { YStack, XStack, Text, Button, Icon, Spinner, Theme, CertificateMiniature, CertificatePage } from '@projeto/ui';
+import { YStack, XStack, Text, Button, Icon, Spinner, Theme } from '@projeto/ui';
 import { useRouter } from 'next/navigation';
 import { BrandMark } from '../../../components/brand-mark';
 import { CourseService, StorageService } from '@projeto/core';
@@ -30,8 +30,6 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [editLessonTitle, setEditLessonTitle] = useState('');
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
 
   const flashHighlight = (id: string) => {
     setHighlightedId(id);
@@ -60,14 +58,6 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
 
   useEffect(() => {
     fetchData();
-  }, [courseId]);
-
-  useEffect(() => {
-    const onShow = (e: PageTransitionEvent) => {
-      if (e.persisted) fetchData();
-    };
-    window.addEventListener('pageshow', onShow);
-    return () => window.removeEventListener('pageshow', onShow);
   }, [courseId]);
 
   const createModule = async () => {
@@ -191,7 +181,6 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
 
   const saveCourseSettings = async () => {
     setSaveMessage(null);
-    setSaving(true);
     try {
       let thumbnail_url = course?.thumbnail_url || null;
       if (editThumbnail) {
@@ -209,14 +198,11 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
       setSaveMessage({ type: 'success', text: 'Configurações salvas com sucesso!' });
       setTimeout(() => {
         setSaveMessage(null);
-      }, 4000);
-    } catch (err: any) {
-      console.error('Save error:', err);
-      const msg = err?.message || err?.error_description || err?.details || (err?.code ? `Erro ${err.code}` : null) || 'Erro ao salvar configurações.';
+      }, 2000);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao salvar configurações.';
       setSaveMessage({ type: 'error', text: msg });
-      setTimeout(() => setSaveMessage(null), 8000);
-    } finally {
-      setSaving(false);
+      setTimeout(() => setSaveMessage(null), 5000);
     }
   };
 
@@ -472,18 +458,28 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                   </XStack>
                 </XStack>
 
+                {saveMessage && (
+                  <XStack p={8} borderRadius={6} borderWidth={1} borderColor={saveMessage.type === 'success' ? '$success' : '$danger'} bg="white" ai="center" gap={8}>
+                    <Icon name={saveMessage.type === 'success' ? 'CheckCircle' : 'AlertCircle'} size={14} color={saveMessage.type === 'success' ? '$success' : '$danger'} />
+                    <Text fontSize={12} color={saveMessage.type === 'success' ? '$successForeground' : '$text'}>{saveMessage.text}</Text>
+                  </XStack>
+                )}
 
-                {/* Separador */}
-                <YStack h={1} bg="$border" my={8} />
+                <Button onPress={saveCourseSettings} size="$3" variant="ghost" borderWidth={1} borderColor="$border">
+                  <Text fontSize={13} fontWeight="600">Salvar Alterações</Text>
+                </Button>
+              </YStack>
 
+              {/* Box de Certificado */}
+              <YStack borderWidth={1} borderColor="$border" borderRadius={12} bg="$card" p={16} gap={12}>
                 <XStack ai="center" gap={8}>
                   <Icon name="Award" size={20} color="$primary" />
-                  <Text fontSize={14} fontWeight="600">Certificado</Text>
+                  <Text fontSize={14} fontWeight="600">Configurações do Certificado</Text>
                 </XStack>
                 <Text fontSize={12} color="$textMuted" lineHeight={18}>
-                  Quando ativo, os alunos que concluírem todas as aulas com aproveitamento mínimo de 70% receberão um certificado oficial com validação de código único (BSGI).
+                  Quando ativo, os alunos que concluírem todas as aulas com aproveitamento mínimo de 70% receberão um certificado oficial da plataforma com validação de código único (BSGI).
                 </Text>
-
+                
                 <XStack ai="center" jc="space-between" bg="$background" p={8} borderRadius={6}>
                   <Text fontSize={12} fontWeight="600">Emitir certificado para este curso</Text>
                   <XStack
@@ -497,66 +493,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                   </XStack>
                 </XStack>
 
-                {certificateEnabled && course?.certificate_blocks?.length > 0 && (
-                  <YStack gap={8}>
-                    <Text fontSize={11} fontWeight="600" color="$textMuted" textTransform="uppercase" letterSpacing={1}>
-                      Preview do Certificado
-                    </Text>
-                    <XStack cursor="pointer" onPress={() => setPreviewOpen(true)} hoverStyle={{ opacity: 0.85 }}>
-                      <CertificateMiniature
-                        studentName="NOME DO ALUNO"
-                        courseName={course?.title}
-                        blocks={course.certificate_blocks}
-                        serialNumber="BSGI-XXXXX-XXXX"
-                      />
-                    </XStack>
-                    <Text fontSize={10} color="$textMuted" textAlign="center">Clique no preview para ampliar</Text>
-                  </YStack>
-                )}
-                {previewOpen && (
-                  <YStack
-                    position="fixed"
-                    inset={0}
-                    zIndex={99999}
-                    bg="rgba(0,0,0,0.7)"
-                    ai="center" jc="center"
-                    onPress={() => setPreviewOpen(false)}
-                  >
-                    <YStack
-                      bg="white"
-                      borderRadius={12}
-                      overflow="hidden"
-                      width="90vw"
-                      height="85vh"
-                      maxWidth={1000}
-                      maxHeight={700}
-                      style={{ boxShadow: '0 10px 40px rgba(0,0,0,0.25)' }}
-                      onPress={(e: any) => e.stopPropagation()}
-                    >
-                      <XStack ai="center" jc="space-between" p={12} borderBottomWidth={1} borderBottomColor="$border">
-                        <Text fontSize={14} fontWeight="600">Preview do Certificado</Text>
-                        <Button variant="ghost" onPress={() => setPreviewOpen(false)} px="$2">
-                          <Icon name="X" size={18} color="$textMuted" />
-                        </Button>
-                      </XStack>
-                      <YStack f={1} position="relative" overflow="hidden">
-                        <CertificatePage
-                          studentName="NOME DO ALUNO"
-                          courseName={course?.title || ''}
-                          workloadHours={40}
-                          completionDate="Concluído"
-                          serialNumber="BSGI-XXXXX-XXXX"
-                          signatures={[
-                            { name: 'Diretor Acadêmico', title: 'Diretor' },
-                            { name: 'Coordenador Pedagógico', title: 'Coordenador' },
-                          ]}
-                          blocks={course?.certificate_blocks || []}
-                        />
-                      </YStack>
-                    </YStack>
-                  </YStack>
-                )}
-
+                {/* BOTÃO DE AÇÃO CRUCIAL: Personalizar no Studio */}
                 <Button
                   onPress={() => router.push(`/studio/${courseId}?mode=certificate`)}
                   backgroundColor="$primary"
@@ -567,17 +504,6 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                     <Icon name="Settings" size={14} color="white" />
                     <Text color="white" fontSize={12} fontWeight="600">Personalizar Certificado no Studio</Text>
                   </XStack>
-                </Button>
-
-                {saveMessage && (
-                  <XStack p={8} borderRadius={6} borderWidth={1} borderColor={saveMessage.type === 'success' ? '$success' : '$danger'} bg="white" ai="center" gap={8}>
-                    <Icon name={saveMessage.type === 'success' ? 'CheckCircle' : 'AlertCircle'} size={14} color={saveMessage.type === 'success' ? '$success' : '$danger'} />
-                    <Text fontSize={12} color={saveMessage.type === 'success' ? '$successForeground' : '$text'}>{saveMessage.text}</Text>
-                  </XStack>
-                )}
-
-                <Button onPress={saveCourseSettings} disabled={saving} size="$3" variant="ghost" borderWidth={1} borderColor="$border" opacity={saving ? 0.6 : 1}>
-                  <Text fontSize={13} fontWeight="600">{saving ? 'Salvando...' : 'Salvar Alterações'}</Text>
                 </Button>
               </YStack>
 

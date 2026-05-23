@@ -367,10 +367,6 @@ export const EditorProvider: React.FC<{
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history.length - 1;
 
-  const certificateCompatibleTypes = new Set(['text', 'heading', 'image', 'divider']);
-  const sanitizeCertificateBlocks = (blocks: AnyBlock[]): AnyBlock[] =>
-    blocks.filter((b) => certificateCompatibleTypes.has(b.type));
-
   // 1. Carregamento inicial
   useEffect(() => {
     const initDatabase = async () => {
@@ -463,7 +459,7 @@ export const EditorProvider: React.FC<{
         if (mode === 'certificate') {
           const targetCourseId = courseId || initialCourseId;
           if (targetCourseId) {
-            await CourseService.updateCourse(targetCourseId, { certificate_blocks: sanitizeCertificateBlocks(state.blocks) as any });
+            await CourseService.updateCourse(targetCourseId, { certificate_blocks: state.blocks as any });
           }
         } else {
           const meta = lessonMeta || { module_id: '00000000-0000-0000-0000-000000000000', title: 'Sem título', order_index: 1 };
@@ -496,7 +492,7 @@ export const EditorProvider: React.FC<{
       try {
         const targetCourseId = courseId || initialCourseId;
         if (targetCourseId) {
-          await CourseService.updateCourse(targetCourseId, { certificate_blocks: sanitizeCertificateBlocks(state.blocks) as any });
+          await CourseService.updateCourse(targetCourseId, { certificate_blocks: state.blocks as any });
         }
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);

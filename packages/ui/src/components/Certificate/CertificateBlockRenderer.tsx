@@ -64,7 +64,8 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale }) => {
             source={{ uri: block.url }}
             width={block.styles?.width || '80%'}
             height={block.styles?.height || undefined}
-            style={{ aspectRatio: 16 / 9, borderRadius: 4 * scale, objectFit: 'contain' }}
+            style={{ aspectRatio: 16 / 9, borderRadius: 4 * scale }}
+            resizeMode="contain"
           />
         </XStack>
       );
