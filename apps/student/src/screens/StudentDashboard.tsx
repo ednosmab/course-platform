@@ -519,52 +519,59 @@ function TopBar({ userProfile }: TopBarProps) {
             />
           </Button>
 
-          <XStack position="relative" ref={menuRef}>
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '6px 10px', borderRadius: 8,
-                border: '1px solid #DEE1EB', background: '#F1F2F8',
-                cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit',
-                color: 'inherit',
-              }}
-            >
-              <XStack w={24} h={24} br={12} bg="$secondary" ai="center" jc="center">
-                <Text fontSize={10} fontWeight="bold" color="$text">{initials}</Text>
-              </XStack>
-              <Text fontSize={12} fontWeight="600" color="$text" $sm={{ display: 'none' }}>
-                {firstName}
-              </Text>
-              <Icon name="ChevronDown" size={13} color="$textMuted" />
-            </button>
-
-            {showUserMenu && (
-              <ul
+          <ul ref={menuRef} style={{ listStyle: 'none', margin: 0, padding: 0, position: 'relative' }}>
+            <li>
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); setShowUserMenu(!showUserMenu); }}
                 style={{
-                  position: 'absolute', top: '100%', right: 0, marginTop: 4,
-                  listStyle: 'none', margin: 0, padding: 8, minWidth: 180,
-                  borderRadius: 8, zIndex: 999,
-                  background: '#F1F2F8', border: '1px solid #DEE1EB',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '6px 10px', borderRadius: 8,
+                  border: '1px solid #DEE1EB', background: '#F1F2F8',
+                  cursor: 'pointer', textDecoration: 'none', color: 'inherit',
+                  fontFamily: 'inherit', fontSize: 'inherit',
                 }}
               >
-                <li
-                  onClick={handleLogout}
+                <XStack w={24} h={24} br={12} bg="$secondary" ai="center" jc="center">
+                  <Text fontSize={10} fontWeight="bold" color="$text">{initials}</Text>
+                </XStack>
+                <Text fontSize={12} fontWeight="600" color="$text" $sm={{ display: 'none' }}>
+                  {firstName}
+                </Text>
+                <Icon name="ChevronDown" size={13} color="$textMuted" />
+              </a>
+
+              {showUserMenu && (
+                <ul
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
-                    listStyle: 'none',
+                    position: 'absolute', top: '100%', right: 0, marginTop: 4,
+                    listStyle: 'none', margin: 0, padding: 8, minWidth: 180,
+                    borderRadius: 8, zIndex: 999,
+                    background: '#F1F2F8', border: '1px solid #DEE1EB',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
                   }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F7F8FC'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                 >
-                  <Icon name="LogOut" size={16} color="$textMuted" />
-                  <Text fontSize={14} color="$danger">Sair</Text>
-                </li>
-              </ul>
-            )}
-          </XStack>
+                  <li>
+                    <a
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); handleLogout(); }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
+                        textDecoration: 'none', color: 'inherit',
+                        fontFamily: 'inherit', fontSize: 'inherit',
+                      }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F7F8FC'; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                    >
+                      <Icon name="LogOut" size={16} color="$textMuted" />
+                      <Text fontSize={14} color="$danger">Sair</Text>
+                    </a>
+                  </li>
+                </ul>
+              )}
+            </li>
+          </ul>
         </XStack>
       </XStack>
 
