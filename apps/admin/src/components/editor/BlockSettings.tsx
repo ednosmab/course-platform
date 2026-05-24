@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { YStack, XStack, Text, Button, Icon } from '@projeto/ui';
+import { YStack, XStack, Text, Button, Icon, Spinner } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
 import { StorageService } from '@projeto/core';
@@ -319,10 +319,130 @@ const ImageUploadBlock: React.FC<{ blockId: string; courseId?: string; onUpload:
   );
 };
 
+function toGray(data: Uint8ClampedArray, w: number, h: number): Uint8Array {
+  const gray = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    gray[i] = (data[i * 4] * 77 + data[i * 4 + 1] * 150 + data[i * 4 + 2] * 29) >> 8;
+  }
+  return gray;
+}
+
+function sobelEdgeMap(gray: Uint8Array, w: number, h: number, threshold: number): Uint8Array {
+  const sobelX = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
+  const sobelY = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
+  const mag = new Float32Array(w * h);
+  let maxMag = 0;
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      let gx = 0, gy = 0;
+      for (let ky = 0; ky < 3; ky++)
+        for (let kx = 0; kx < 3; kx++) {
+          const p = gray[(y + ky - 1) * w + (x + kx - 1)];
+          gx += p * sobelX[ky * 3 + kx];
+          gy += p * sobelY[ky * 3 + kx];
+        }
+      const m = Math.sqrt(gx * gx + gy * gy);
+      mag[y * w + x] = m;
+      if (m > maxMag) maxMag = m;
+    }
+  }
+  const edgeMap = new Uint8Array(w * h);
+  const t = maxMag * threshold;
+  for (let i = 0; i < w * h; i++) if (mag[i] > t) edgeMap[i] = 1;
+  return edgeMap;
+}
+
+function sampleBorderColors(data: Uint8ClampedArray, w: number, h: number): number[] {
+  const step = Math.max(1, (w + h) >> 7);
+  let r = 0, g = 0, b = 0, n = 0;
+  for (let x = 0; x < w; x += step) {
+    const t = x * 4, bt = ((h - 1) * w + x) * 4;
+    r += data[t]; g += data[t + 1]; b += data[t + 2]; n++;
+    r += data[bt]; g += data[bt + 1]; b += data[bt + 2]; n++;
+  }
+  for (let y = 0; y < h; y += step) {
+    const l = y * w * 4, r2 = (y * w + w - 1) * 4;
+    if (l !== 0 && l !== (h - 1) * w * 4) { r += data[l]; g += data[l + 1]; b += data[l + 2]; n++; }
+    if (r2 !== (w - 1) * 4 && r2 !== ((h - 1) * w + w - 1) * 4) { r += data[r2]; g += data[r2 + 1]; b += data[r2 + 2]; n++; }
+  }
+  return [Math.round(r / n), Math.round(g / n), Math.round(b / n)];
+}
+
+function boundaryFill(data: Uint8ClampedArray, w: number, h: number, edgeMap: Uint8Array, bg: number[], tolerance: number): Uint8Array {
+  const mask = new Uint8Array(w * h);
+  const visited = new Uint8Array(w * h);
+  const stack: number[] = [];
+  const push = (x: number, y: number) => { if (x >= 0 && x < w && y >= 0 && y < h) stack.push(y * w + x); };
+  for (let x = 0; x < w; x++) { push(x, 0); push(x, h - 1); }
+  for (let y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
+  const [br, bgc, bb] = bg;
+  while (stack.length) {
+    const idx = stack.pop()!;
+    if (visited[idx] || edgeMap[idx]) continue;
+    visited[idx] = 1;
+    const pos = idx * 4;
+    if (Math.abs(data[pos] - br) > tolerance || Math.abs(data[pos + 1] - bgc) > tolerance || Math.abs(data[pos + 2] - bb) > tolerance) continue;
+    mask[idx] = 1;
+    const x = idx % w, y = (idx / w) | 0;
+    push(x - 1, y); push(x + 1, y); push(x, y - 1); push(x, y + 1);
+  }
+  return mask;
+}
+
+function distanceTransform(mask: Uint8Array, w: number, h: number): Float32Array {
+  const INF = 1e9;
+  const dist = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) dist[i] = mask[i] ? 0 : INF;
+  for (let y = 0; y < h; y++) {
+    for (let x = 1; x < w; x++) dist[y * w + x] = Math.min(dist[y * w + x], dist[y * w + x - 1] + 1);
+    for (let x = w - 2; x >= 0; x--) dist[y * w + x] = Math.min(dist[y * w + x], dist[y * w + x + 1] + 1);
+  }
+  for (let x = 0; x < w; x++) {
+    for (let y = 1; y < h; y++) dist[y * w + x] = Math.min(dist[y * w + x], dist[(y - 1) * w + x] + 1);
+    for (let y = h - 2; y >= 0; y--) dist[y * w + x] = Math.min(dist[y * w + x], dist[(y + 1) * w + x] + 1);
+  }
+  return dist;
+}
+
+function removeBackgroundFromImage(img: HTMLImageElement, tolerance: number, edgeThreshold: number, featherRadius: number): string {
+  const c = document.createElement('canvas');
+  c.width = img.naturalWidth || img.width;
+  c.height = img.naturalHeight || img.height;
+  const ctx = c.getContext('2d')!;
+  ctx.drawImage(img, 0, 0);
+  const src = ctx.getImageData(0, 0, c.width, c.height);
+  const gray = toGray(src.data, c.width, c.height);
+  const edgeMap = sobelEdgeMap(gray, c.width, c.height, edgeThreshold);
+  const bg = sampleBorderColors(src.data, c.width, c.height);
+  const mask = boundaryFill(src.data, c.width, c.height, edgeMap, bg, tolerance);
+  const out = new Uint8ClampedArray(src.data);
+  if (featherRadius > 0) {
+    const dist = distanceTransform(mask, c.width, c.height);
+    for (let i = 0; i < c.width * c.height; i++) {
+      if (mask[i]) { out[i * 4 + 3] = 0; continue; }
+      const d = dist[i];
+      out[i * 4 + 3] = d < featherRadius ? Math.round((d / featherRadius) * 255) : 255;
+    }
+  } else {
+    for (let i = 0; i < c.width * c.height; i++) if (mask[i]) out[i * 4 + 3] = 0;
+  }
+  const imgData = ctx.createImageData(c.width, c.height);
+  imgData.data.set(out);
+  ctx.putImageData(imgData, 0, 0);
+  return c.toDataURL('image/png');
+}
+
 export const BlockSettings: React.FC = () => {
   const { blocks, activeBlockId, updateBlock, removeBlock, courseId } = useEditor();
   const [activeTab, setActiveTab] = useState<'props' | 'html'>('props');
   const [collapsed, setCollapsed] = useState(false);
+  const [bgProcessing, setBgProcessing] = useState(false);
+  const [bgError, setBgError] = useState<string | null>(null);
+  const [showBgEditor, setShowBgEditor] = useState(false);
+  const [bgTolerance, setBgTolerance] = useState(30);
+  const [bgEdgeThreshold, setBgEdgeThreshold] = useState(0.3);
+  const [bgFeatherRadius, setBgFeatherRadius] = useState(2);
+  const [bgPreviewUrl, setBgPreviewUrl] = useState<string | null>(null);
 
   const activeBlock = blocks.find((b) => b.id === activeBlockId);
   const [htmlDraft, setHtmlDraft] = useState('');
@@ -702,6 +822,72 @@ export const BlockSettings: React.FC = () => {
           ) : null}
 
           <ImageUploadBlock blockId={activeBlock.id} courseId={courseId} onUpload={(url) => updateBlock(activeBlock.id, { url })} />
+
+          <YStack onPress={() => setShowBgEditor(!showBgEditor)} role="button" tabIndex={0} borderRadius="$3" borderWidth={1} borderColor={showBgEditor ? '$primary' : '$border'} paddingVertical="$2" paddingHorizontal="$3" backgroundColor={showBgEditor ? '$primary' : '$background'} hoverStyle={{ backgroundColor: showBgEditor ? '$primary' : '$backgroundHover' }} cursor="pointer">
+            <Text fontSize={12} fontWeight="600" color={showBgEditor ? 'white' : '$text'}>{showBgEditor ? 'Fechar' : '✦ Remover Fundo'}</Text>
+          </YStack>
+
+          {showBgEditor && (
+            <YStack gap="$2" p="$2" bg="$background" borderRadius="$3" borderWidth={1} borderColor="$border">
+              <Text fontSize={11} fontWeight="500">Remoção de Fundo</Text>
+              <XStack gap="$2" flexWrap="wrap">
+                <YStack flex={1} minWidth={100}>
+                  <Text fontSize={10} color="$textMuted">Tolerância</Text>
+                  <input type="range" min={0} max={100} value={bgTolerance} onChange={(e) => setBgTolerance(Number(e.target.value))} style={{ width: '100%' }} />
+                  <Text fontSize={10} color="$textMuted">{bgTolerance}</Text>
+                </YStack>
+                <YStack flex={1} minWidth={100}>
+                  <Text fontSize={10} color="$textMuted">Sensib. Borda</Text>
+                  <input type="range" min={0} max={1} step={0.01} value={bgEdgeThreshold} onChange={(e) => setBgEdgeThreshold(Number(e.target.value))} style={{ width: '100%' }} />
+                  <Text fontSize={10} color="$textMuted">{bgEdgeThreshold}</Text>
+                </YStack>
+                <YStack flex={1} minWidth={100}>
+                  <Text fontSize={10} color="$textMuted">Suavização</Text>
+                  <input type="range" min={0} max={10} value={bgFeatherRadius} onChange={(e) => setBgFeatherRadius(Number(e.target.value))} style={{ width: '100%' }} />
+                  <Text fontSize={10} color="$textMuted">{bgFeatherRadius}</Text>
+                </YStack>
+              </XStack>
+              <Button onPress={async () => {
+                setBgProcessing(true); setBgError(null);
+                try {
+                  const img = new Image(); img.crossOrigin = 'anonymous';
+                  await new Promise<void>((resolve, reject) => { img.onload = () => resolve(); img.onerror = () => reject(new Error('Falha ao carregar imagem')); img.src = activeBlock.url; });
+                  setBgPreviewUrl(removeBackgroundFromImage(img, bgTolerance, bgEdgeThreshold, bgFeatherRadius));
+                } catch (err) { setBgError(err instanceof Error ? err.message : 'Erro ao processar imagem'); }
+                finally { setBgProcessing(false); }
+              }} disabled={bgProcessing} bg="$primary" py="$1">
+                {bgProcessing ? <Spinner size="small" /> : <Text fontSize={11} color="white">Processar</Text>}
+              </Button>
+              {bgError && <Text fontSize={10} color="$error">{bgError}</Text>}
+              {bgPreviewUrl && (
+                <YStack gap="$1">
+                  <Text fontSize={10} color="$textMuted">Preview</Text>
+                  <YStack borderRadius="$3" overflow="hidden" borderWidth={1} borderColor="$border" bg="white" style={{ backgroundImage: 'linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%)', backgroundSize: '12px 12px', backgroundPosition: '0 0, 0 6px, 6px -6px, -6px 0px' }}>
+                    <img src={bgPreviewUrl} alt="Preview" style={{ width: '100%', height: 'auto', display: 'block' }} />
+                  </YStack>
+                  <XStack gap="$2" mt="$1">
+                    <Button onPress={async () => {
+                      if (!bgPreviewUrl || !courseId) return;
+                      setBgProcessing(true); setBgError(null);
+                      try {
+                        const blob = await (await fetch(bgPreviewUrl)).blob();
+                        const file = new File([blob], `bg-removed-${activeBlock.id}.png`, { type: 'image/png' });
+                        const url = await StorageService.uploadCertificateImage(file, courseId, activeBlock.id);
+                        if (url) { updateBlock(activeBlock.id, { url }); setBgPreviewUrl(null); setShowBgEditor(false); }
+                        else throw new Error('Falha ao enviar');
+                      } catch (err) { setBgError(err instanceof Error ? err.message : 'Erro ao salvar'); }
+                      finally { setBgProcessing(false); }
+                    }} disabled={bgProcessing} bg="$primary" flex={1} py="$1">
+                      <Text fontSize={11} color="white">Salvar no Curso</Text>
+                    </Button>
+                    <Button onPress={() => { setBgPreviewUrl(null); setShowBgEditor(false); setBgError(null); }} variant="ghost" flex={1} py="$1">
+                      <Text fontSize={11}>Cancelar</Text>
+                    </Button>
+                  </XStack>
+                </YStack>
+              )}
+            </YStack>
+          )}
 
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
         </YStack>

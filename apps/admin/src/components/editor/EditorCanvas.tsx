@@ -766,6 +766,7 @@ export const EditorCanvas: React.FC = () => {
     startLayout: Layout;
     currentLayouts: Record<string, any>;
     multiLayouts?: { id: string; entry: { layout: Layout; layouts: Record<string, any> } }[];
+    aspectRatio?: number;
   } | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
@@ -808,10 +809,13 @@ export const EditorCanvas: React.FC = () => {
     e.preventDefault();
     e.stopPropagation();
     setIsInteracting(true);
+    document.body.style.cursor = `${handle}-resize`;
 
     const resizeIds = selectedBlockIds.includes(block.id) && selectedBlockIds.length > 1
       ? selectedBlockIds.filter((id) => id !== block.id)
       : [];
+
+    const layout = getLayout(block, viewportMode);
 
     const multiLayouts = resizeIds.map((id) => {
       const b = blocks.find((b2) => b2.id === id);
@@ -821,22 +825,53 @@ export const EditorCanvas: React.FC = () => {
     interactionRef.current = {
       mode: 'resize', blockId: block.id, handle,
       startMouseX: e.clientX, startMouseY: e.clientY,
-      startLayout: getLayout(block, viewportMode),
+      startLayout: layout,
       currentLayouts: block.layouts || {},
       multiLayouts: multiLayouts.length > 0 ? multiLayouts : undefined,
+      aspectRatio: block.type === 'image' && layout.w > 0 && layout.h > 0 ? layout.w / layout.h : undefined,
     };
   }, [viewportMode, selectedBlockIds, blocks]);
 
   useEffect(() => {
     const applyLayout = (e: MouseEvent): Layout | null => {
       if (!interactionRef.current) return null;
-      const { mode, handle, startMouseX, startMouseY, startLayout } = interactionRef.current;
+      const { mode, handle, startMouseX, startMouseY, startLayout, aspectRatio } = interactionRef.current;
       const dx = e.clientX - startMouseX;
       const dy = e.clientY - startMouseY;
       if (mode === 'move') {
-        return { ...startLayout, x: Math.max(0, startLayout.x + dx), y: Math.max(0, startLayout.y + dy) };
+        return { ...startLayout, x: startLayout.x + dx, y: startLayout.y + dy };
       }
       if (mode === 'resize' && handle) {
+        if (aspectRatio) {
+          const fixedX = handle.includes('w') ? startLayout.x + startLayout.w : startLayout.x;
+          const fixedY = handle.includes('n') ? startLayout.y + startLayout.h : startLayout.y;
+          const isCorner = handle.includes('e') && handle.includes('n') ||
+                           handle.includes('e') && handle.includes('s') ||
+                           handle.includes('w') && handle.includes('n') ||
+                           handle.includes('w') && handle.includes('s');
+          const rawDW = handle.includes('e') || handle.includes('w');
+          const rawDH = handle.includes('s') || handle.includes('n');
+          let dw = 0, dh = 0;
+          if (rawDW) dw = dx;
+          if (rawDH) dh = dy;
+          let nw = Math.abs(handle.includes('w') ? startLayout.w - dw : startLayout.w + dw);
+          let nh = Math.abs(handle.includes('n') ? startLayout.h - dh : startLayout.h + dh);
+          nw = Math.max(MIN_W, nw);
+          nh = Math.max(MIN_H, nh);
+          if (isCorner) {
+            if (nw / nh > aspectRatio) nh = nw / aspectRatio;
+            else nw = nh * aspectRatio;
+          } else if (rawDW) {
+            nh = nw / aspectRatio;
+          } else {
+            nw = nh * aspectRatio;
+          }
+          nw = Math.max(MIN_W, nw);
+          nh = Math.max(MIN_H, nh);
+          const x = handle.includes('w') ? fixedX - nw : fixedX;
+          const y = handle.includes('n') ? fixedY - nh : fixedY;
+          return { x, y, w: nw, h: nh, zIndex: startLayout.zIndex };
+        }
         let { x, y, w, h, zIndex } = startLayout;
         if (handle.includes('e')) w = Math.max(MIN_W, startLayout.w + dx);
         if (handle.includes('s')) h = Math.max(MIN_H, startLayout.h + dy);
@@ -904,6 +939,7 @@ export const EditorCanvas: React.FC = () => {
         }
       }
       interactionRef.current = null;
+      document.body.style.cursor = '';
       setIsInteracting(false);
       setGuides({ v: [], h: [], m: [] });
     };
@@ -958,50 +994,68 @@ export const EditorCanvas: React.FC = () => {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [activeBlockId, selectedBlockIds, previewMode, removeBlock, removeBlocks, duplicateBlock, clearSelection, setActiveBlockId, clipboardBlockId]);
 
+  const pageRootRef = useRef<HTMLDivElement>(null);
+
   const onResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-    resizeRef.current = { startY: e.clientY, startH: certCanvasHeight };
+    e.stopPropagation();
+    const el = pageRootRef.current;
+    if (!el) return;
+    const curH = el.offsetHeight;
+    resizeRef.current = { startY: e.clientY, startH: curH };
+    document.body.style.cursor = 'ns-resize';
 
     const onResizeMove = (ev: MouseEvent) => {
       if (!resizeRef.current) return;
       const delta = ev.clientY - resizeRef.current.startY;
-      setCertCanvasHeight(Math.max(200, resizeRef.current.startH + delta));
+      const h = Math.max(200, resizeRef.current.startH + delta);
+      el.style.minHeight = `${h}px`;
     };
 
     const onResizeUp = () => {
       resizeRef.current = null;
+      document.body.style.cursor = '';
+      if (el) { const h = parseInt(el.style.minHeight || '0', 10); if (h) setCertCanvasHeight(h); el.style.minHeight = ''; }
       document.removeEventListener('mousemove', onResizeMove);
       document.removeEventListener('mouseup', onResizeUp);
     };
 
     document.addEventListener('mousemove', onResizeMove);
     document.addEventListener('mouseup', onResizeUp);
-  }, [certCanvasHeight]);
+  }, []);
 
   const onWidthResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-    widthResizeRef.current = { startX: e.clientX, startW: certCanvasWidth };
+    e.stopPropagation();
+    const el = pageRootRef.current;
+    if (!el) return;
+    const curW = el.offsetWidth;
+    widthResizeRef.current = { startX: e.clientX, startW: curW };
+    document.body.style.cursor = 'ew-resize';
 
     const onResizeMove = (ev: MouseEvent) => {
       if (!widthResizeRef.current) return;
       const delta = ev.clientX - widthResizeRef.current.startX;
-      setCertCanvasWidth(Math.max(400, widthResizeRef.current.startW + delta));
+      const w = Math.max(400, widthResizeRef.current.startW + delta);
+      el.style.width = `${w}px`;
     };
 
     const onResizeUp = () => {
       widthResizeRef.current = null;
+      document.body.style.cursor = '';
+      if (el) { const w = parseInt(el.style.width || '0', 10); if (w) setCertCanvasWidth(w); el.style.width = ''; }
       document.removeEventListener('mousemove', onResizeMove);
       document.removeEventListener('mouseup', onResizeUp);
     };
 
     document.addEventListener('mousemove', onResizeMove);
     document.addEventListener('mouseup', onResizeUp);
-  }, [certCanvasWidth]);
+  }, []);
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
       if (!isMarqueeSelecting.current || !marqueeRect) return;
-      const pageDiv = document.querySelector('[data-page-root]');
+      const pageDiv = pageRootRef.current;
       if (!pageDiv) return;
       const rect = pageDiv.getBoundingClientRect();
       setMarqueeRect((prev) => prev ? { ...prev, currentX: e.clientX - rect.left, currentY: e.clientY - rect.top } : null);
@@ -1061,6 +1115,7 @@ export const EditorCanvas: React.FC = () => {
       data-editor-root
     >
       <div
+        ref={pageRootRef}
         data-page-root
         style={{ position: 'relative', width: isCertMode ? certCanvasWidth : PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)', overflow: isCertMode ? 'hidden' : undefined }}
         onMouseDown={(e) => {
@@ -1275,11 +1330,11 @@ export const EditorCanvas: React.FC = () => {
               position: 'absolute', top: '50%', right: 0, transform: 'translateY(-50%)',
               width: 8, height: 60, cursor: 'ew-resize', zIndex: 100,
               backgroundColor: '#cbd5e1', borderRadius: '0 4px 4px 0', opacity: 0.6,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
             <div style={{
               height: 40, width: 3, borderRadius: 2, backgroundColor: '#94a3b8',
-              margin: '0 0 0 2.5px',
             }} />
           </div>
           </>

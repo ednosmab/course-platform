@@ -41,7 +41,7 @@ export const CourseSchema = z.object({
   certificate_enabled: z.boolean().optional().default(false),
   created_at: z.string().or(z.date()),
   updated_at: z.string().or(z.date()),
-}).strict();
+}).passthrough();
 
 export type Course = z.infer<typeof CourseSchema>;
 
