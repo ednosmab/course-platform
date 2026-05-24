@@ -12,6 +12,7 @@ const navTabs = [
 
 type StudentDashboardProps = {
   onPlay: (courseId: string) => void;
+  onLogout: () => void;
 };
 
 interface ActiveProgressState {
@@ -23,7 +24,7 @@ interface ActiveProgressState {
   remaining: string;
 }
 
-export function StudentDashboard({ onPlay }: StudentDashboardProps) {
+export function StudentDashboard({ onPlay, onLogout }: StudentDashboardProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +74,7 @@ export function StudentDashboard({ onPlay }: StudentDashboardProps) {
 
   return (
     <YStack flex={1} bg="$background">
-      <TopBar userProfile={userProfile} />
+      <TopBar userProfile={userProfile} onLogout={onLogout} />
       <ScrollView flex={1} contentContainerStyle={{ paddingBottom: 60 }}>
         <YStack px="$4" pt="$6" gap="$6" maxWidth={1400} als="center" w="100%">
           {loading && (
@@ -413,9 +414,10 @@ export function StudentDashboard({ onPlay }: StudentDashboardProps) {
 
 interface TopBarProps {
   userProfile: { full_name: string; email: string } | null;
+  onLogout: () => void;
 }
 
-function TopBar({ userProfile }: TopBarProps) {
+function TopBar({ userProfile, onLogout }: TopBarProps) {
   const media = useMedia();
   const [searchVal, setSearchVal] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -441,8 +443,7 @@ function TopBar({ userProfile }: TopBarProps) {
     } catch {
       // proceed even if signOut fails
     }
-    const adminUrl = process.env.EXPO_PUBLIC_ADMIN_APP_URL || 'http://localhost:3000';
-    window.location.href = `${adminUrl}/login`;
+    onLogout();
   };
 
   return (

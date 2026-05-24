@@ -1,23 +1,24 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { YStack, XStack, Text, Icon, Theme, Button, Spinner } from '@projeto/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BrandMark } from '../components/brand-mark';
-import { AuthService, CourseService, StorageService } from '@projeto/core';
+import { CourseService, StorageService } from '@projeto/core';
+import { createSupabaseBrowserClient } from '../lib/supabase-client';
 import type { Course } from '@projeto/types';
-import type { Profile } from '@projeto/types';
 
 export default function Dashboard() {
   const router = useRouter();
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [filter, setFilter] = useState(0);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLUListElement>(null);
-  const [userProfile, setUserProfile] = useState<Profile | null>(null);
+  const [userProfile, setUserProfile] = useState<{ full_name: string; email: string } | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -30,8 +31,14 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    AuthService.getCurrentProfile().then(setUserProfile).catch(() => {});
-  }, []);
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('full_name, email').eq('id', user.id).single();
+        if (profile) setUserProfile(profile);
+      }
+    })();
+  }, [supabase]);
 
   const initials = userProfile?.full_name
     ? userProfile.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()

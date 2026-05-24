@@ -79,7 +79,7 @@ export default function App() {
       <TamaguiProvider config={config} defaultTheme={null}>
         <Theme name="cloudWhite">
           <SafeAreaView style={{ flex: 1 }}>
-            <StudentDashboard onPlay={handlePlay} />
+            <StudentDashboard onPlay={handlePlay} onLogout={() => setScreen('login')} />
           </SafeAreaView>
         </Theme>
       </TamaguiProvider>
