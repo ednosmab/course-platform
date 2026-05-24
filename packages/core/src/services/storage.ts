@@ -34,16 +34,5 @@ export function createStorageService(provider: IStorageProvider) {
     async uploadCertificateImage(file: File, courseId: string, blockId: string): Promise<string | null> {
       return provider.uploadCertificateImage(file, courseId, blockId);
     },
-
-    /**
-     * @description Uploads a rendered certificate preview image (PNG) to storage.
-     * Used by the Studio to capture and persist a static preview of the certificate design.
-     * @param blob - The PNG Blob captured via html-to-image.
-     * @param courseId - The UUID of the course.
-     * @returns The public URL of the preview image, or null on failure.
-     */
-    async uploadCertificatePreview(blob: Blob, courseId: string): Promise<string | null> {
-      return provider.uploadCertificatePreview(blob, courseId);
-    },
-  };
+};
 }

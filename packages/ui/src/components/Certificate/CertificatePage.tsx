@@ -20,6 +20,13 @@ export interface CertificatePageProps {
   blocks: CertificateBlock[];
   logoUrl?: string;
   platformName?: string;
+  accentColor?: string;
+  title?: string;
+  subtitle?: string;
+  bodyPrefix?: string;
+  bodySuffix?: string;
+  sealText?: string;
+  cardBg?: string;
 }
 
 function fmtSize(px: number, scale: number): number {
@@ -30,10 +37,19 @@ export const CertificatePage: React.FC<CertificatePageProps> = ({
   studentName,
   courseName,
   workloadHours,
+  completionDate,
   serialNumber,
   signatures,
   blocks,
+  logoUrl,
   platformName,
+  accentColor = '$warning',
+  title = 'CERTIFICADO DE CONCLUSÃO',
+  subtitle = 'Certificamos com distinção acadêmica que o(a) aluno(a)',
+  bodyPrefix = 'concluiu com aproveitamento e êxito todos os módulos teóricos e práticos do curso',
+  bodySuffix = ', totalizando uma carga horária curricular de',
+  sealText = 'Aprovado pelo Conselho',
+  cardBg = '$cwCard',
 }) => {
   const { containerRef, pageWidth, pageHeight, scale, ready } = useA4Scale();
 
@@ -42,7 +58,8 @@ export const CertificatePage: React.FC<CertificatePageProps> = ({
   }
 
   const s = scale;
-  const gold = '$warning';
+  const gold = accentColor;
+  const hoursLabel = workloadHours === 1 ? 'hora acadêmica' : 'horas acadêmicas';
 
   return (
     <div ref={containerRef} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflow: 'hidden', background: 'var(--bg)' }} id="certificate-page">
@@ -50,7 +67,7 @@ export const CertificatePage: React.FC<CertificatePageProps> = ({
         id="certificate-a4-canvas"
         w={pageWidth}
         h={pageHeight}
-        bg="$cwCard"
+        bg={cardBg}
         br={fmtSize(8, s)}
         position="relative"
         overflow="hidden"
@@ -58,7 +75,7 @@ export const CertificatePage: React.FC<CertificatePageProps> = ({
           boxShadow: '0 10px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.05)',
         }}
       >
-        {/* Gold double border frame */}
+        {/* Double border frame */}
         <YStack
           position="absolute"
           inset={fmtSize(26, s)}
@@ -113,7 +130,11 @@ export const CertificatePage: React.FC<CertificatePageProps> = ({
           {/* Header: logo + serial */}
           <XStack jc="space-between" ai="center" borderBottomWidth={1} borderBottomColor="$gray2" pb={fmtSize(16, s)}>
             <XStack ai="center" gap={fmtSize(8, s)}>
-              <Icon name="Award" size={fmtSize(24, s)} color={gold} />
+              {logoUrl ? (
+                <img src={logoUrl} alt="" style={{ width: fmtSize(24, s), height: fmtSize(24, s), objectFit: 'contain' }} />
+              ) : (
+                <Icon name="Award" size={fmtSize(24, s)} color={gold} />
+              )}
               <Text fontSize={fmtSize(14, s)} fontWeight="700" letterSpacing={2} color="$color">
                 {platformName || 'PLATAFORMA DE ENSINO'}
               </Text>
@@ -133,7 +154,7 @@ export const CertificatePage: React.FC<CertificatePageProps> = ({
               color="$color"
               textAlign="center"
             >
-              CERTIFICADO DE CONCLUSÃO
+              {title}
             </Text>
 
             <Text
@@ -143,7 +164,7 @@ export const CertificatePage: React.FC<CertificatePageProps> = ({
               color="$gray5"
               textAlign="center"
             >
-              Certificamos com distinção acadêmica que o(a) aluno(a)
+              {subtitle}
             </Text>
 
             <Text
@@ -166,10 +187,10 @@ export const CertificatePage: React.FC<CertificatePageProps> = ({
               maxWidth="85%"
               lineHeight={fmtSize(22, s)}
             >
-              concluiu com aproveitamento e êxito todos os módulos teóricos e práticos do curso{' '}
+              {bodyPrefix}{' '}
               <Text fontWeight="600" color="$color">{courseName}</Text>
-              , totalizando uma carga horária curricular de{' '}
-              <Text fontWeight="600" color="$color">{workloadHours} horas acadêmicas</Text>.
+              {bodySuffix}{' '}
+              <Text fontWeight="600" color="$color">{workloadHours} {hoursLabel}</Text>.
             </Text>
 
             {/* Certificate blocks from CMS */}
@@ -182,24 +203,31 @@ export const CertificatePage: React.FC<CertificatePageProps> = ({
             )}
           </YStack>
 
-          {/* Footer: signatures */}
-          <XStack jc="space-around" ai="flex-end" pt={fmtSize(16, s)}>
-            {signatures.length >= 2 ? (
-              <>
-                <SignatureColumn signature={signatures[0]} scale={s} />
-                <SealColumn scale={s} />
-                <SignatureColumn signature={signatures[1]} scale={s} />
-              </>
-            ) : signatures.length === 1 ? (
-              <>
-                <SignatureColumn signature={signatures[0]} scale={s} />
-                <SealColumn scale={s} />
-                <YStack flex={1} />
-              </>
-            ) : (
-              <SealColumn scale={s} />
+          {/* Footer: signatures + completion date */}
+          <YStack gap={fmtSize(8, s)}>
+            {completionDate && (
+              <Text fontSize={fmtSize(11, s)} color="$gray5" textAlign="center">
+                Concluído em: {completionDate}
+              </Text>
             )}
-          </XStack>
+            <XStack jc="space-around" ai="flex-end">
+              {signatures.length >= 2 ? (
+                <>
+                  <SignatureColumn signature={signatures[0]} scale={s} />
+                  <SealColumn scale={s} accentColor={gold} sealText={sealText} />
+                  <SignatureColumn signature={signatures[1]} scale={s} />
+                </>
+              ) : signatures.length === 1 ? (
+                <>
+                  <SignatureColumn signature={signatures[0]} scale={s} />
+                  <SealColumn scale={s} accentColor={gold} sealText={sealText} />
+                  <YStack flex={1} />
+                </>
+              ) : (
+                <SealColumn scale={s} accentColor={gold} sealText={sealText} />
+              )}
+            </XStack>
+          </YStack>
         </YStack>
       </YStack>
     </div>
@@ -220,12 +248,12 @@ function SignatureColumn({ signature, scale }: { signature: Signature; scale: nu
   );
 }
 
-function SealColumn({ scale }: { scale: number }) {
+function SealColumn({ scale, accentColor, sealText }: { scale: number; accentColor: string; sealText: string }) {
   return (
     <YStack ai="center" jc="center" flex={1} gap={fmtSize(4, scale)}>
-      <Icon name="Award" size={fmtSize(36, scale)} color="$warning" />
+      <Icon name="Award" size={fmtSize(36, scale)} color={accentColor} />
       <Text fontSize={fmtSize(10, scale)} textTransform="uppercase" letterSpacing={1} fontWeight="700" color="$gray5" textAlign="center">
-        Aprovado pelo Conselho
+        {sealText}
       </Text>
     </YStack>
   );

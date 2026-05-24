@@ -29,15 +29,4 @@ export interface IStorageProvider {
    *          or null if the upload failed.
    */
   uploadCertificateImage(file: File, courseId: string, blockId: string): Promise<string | null>;
-
-  /**
-   * @description Uploads a rendered certificate preview image (PNG) generated from the Studio.
-   * The image is stored in the 'certificate-images' bucket under {courseId}/preview.png.
-   * Business rule: Called on auto-save in certificate mode so the settings page can show
-   * a static image preview instead of re-rendering the blocks live.
-   * @param blob - The PNG Blob from html-to-image capture.
-   * @param courseId - The UUID of the course (used as folder path).
-   * @returns Promise resolving to the public URL of the preview image.
-   */
-  uploadCertificatePreview(blob: Blob, courseId: string): Promise<string | null>;
 }

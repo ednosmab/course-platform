@@ -1,4 +1,10 @@
 /**
+ * @description Provides the lazily-initialised Supabase client singleton used across all core services.
+ * Shared between login, storage, and data services so they use the same auth session.
+ */
+export { getSupabaseClient, setSupabaseClient } from './supabase';
+
+/**
  * @description Provides the singleton CourseService instance bound to the Supabase course repository — manages course CRUD, listing, and retrieval.
  */
 export { courseService as CourseService } from './service-factory';

@@ -17,6 +17,7 @@ function resolveEnv(key: 'url' | 'key'): string {
 }
 
 let _supabase: ReturnType<typeof createClient> | null = null;
+let _supabaseOverride: ReturnType<typeof createClient> | null = null;
 
 /**
  * @description Returns a lazily-initialised Supabase client singleton.
@@ -28,7 +29,18 @@ let _supabase: ReturnType<typeof createClient> | null = null;
  * @returns A Supabase client instance configured with the project URL
  * and anonymous key from environment variables.
  */
+/**
+ * @description Injects an externally-created Supabase client (e.g. from @supabase/ssr)
+ * so that all core services share the same client instance and auth session.
+ * Must be called once during app startup, before any core service is used.
+ * @param client - A Supabase client instance (e.g. from createBrowserClient)
+ */
+export function setSupabaseClient(client: ReturnType<typeof createClient>): void {
+  _supabaseOverride = client;
+}
+
 export function getSupabaseClient() {
+  if (_supabaseOverride) return _supabaseOverride;
   if (!_supabase) {
     const supabaseUrl = resolveEnv('url');
     const supabaseAnonKey = resolveEnv('key');

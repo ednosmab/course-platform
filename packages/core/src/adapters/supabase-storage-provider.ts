@@ -14,8 +14,12 @@ async function uploadToBucket(
   path: string,
   file: File,
 ): Promise<string | null> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  console.log('[uploadToBucket] session:', sessionData?.session ? `user=${sessionData.session.user.id}` : 'null');
+
   const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
   if (error) {
+    console.log('[uploadToBucket] error message:', error.message);
     if (error.message.includes('bucket') || error.message.includes('Bucket')) {
       await ensureBucket(bucket);
       const { error: retryErr } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
@@ -43,12 +47,6 @@ export const supabaseStorageProvider: IStorageProvider = {
   async uploadCertificateImage(file: File, courseId: string, blockId: string): Promise<string | null> {
     const ext = file.name.split('.').pop();
     const path = `${courseId}/certificates/${blockId}.${ext}`;
-    return uploadToBucket(CERT_BUCKET, path, file);
-  },
-
-  async uploadCertificatePreview(blob: Blob, courseId: string): Promise<string | null> {
-    const file = new File([blob], 'preview.png', { type: 'image/png' });
-    const path = `${courseId}/certificate-preview.png`;
     return uploadToBucket(CERT_BUCKET, path, file);
   },
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { YStack, XStack, Text, Image } from 'tamagui';
+import { YStack, XStack, Text } from 'tamagui';
 import { CertificateBlock } from '@projeto/types';
 
 type Props = {
@@ -55,16 +55,18 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale }) => {
     case 'image': {
       if (!block.url) return null;
       const align = block.styles?.align || 'center';
+      const w = block.styles?.width || '80%';
+      const br = Math.round(4 * scale);
       return (
         <XStack
           width="100%"
           jc={align === 'left' ? 'flex-start' : align === 'right' ? 'flex-end' : 'center'}
         >
-          <Image
-            source={{ uri: block.url }}
-            width={block.styles?.width || '80%'}
-            height={block.styles?.height || undefined}
-            style={{ aspectRatio: 16 / 9, borderRadius: 4 * scale, objectFit: 'contain' }}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={block.url}
+            alt={block.alt || ''}
+            style={{ width: w, height: 'auto', aspectRatio: '16 / 9', borderRadius: br, objectFit: 'contain' }}
           />
         </XStack>
       );

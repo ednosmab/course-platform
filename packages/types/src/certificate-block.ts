@@ -14,7 +14,7 @@ export const CertificateTextBlockSchema = z.object({
     height: z.string().optional(),
   }).optional(),
   layouts: BlockLayoutsSchema,
-}).strict();
+}).passthrough();
 
 export type CertificateTextBlock = z.infer<typeof CertificateTextBlockSchema>;
 
@@ -30,7 +30,7 @@ export const CertificateImageBlockSchema = z.object({
     borderRadius: z.string().optional(),
   }).optional(),
   layouts: BlockLayoutsSchema,
-}).strict();
+}).passthrough();
 
 export type CertificateImageBlock = z.infer<typeof CertificateImageBlockSchema>;
 
@@ -47,7 +47,7 @@ export const CertificateHeadingBlockSchema = z.object({
     height: z.string().optional(),
   }).optional(),
   layouts: BlockLayoutsSchema,
-}).strict();
+}).passthrough();
 
 export type CertificateHeadingBlock = z.infer<typeof CertificateHeadingBlockSchema>;
 
@@ -62,7 +62,7 @@ export const CertificateDividerBlockSchema = z.object({
     height: z.string().optional(),
   }).optional(),
   layouts: BlockLayoutsSchema,
-}).strict();
+}).passthrough();
 
 export type CertificateDividerBlock = z.infer<typeof CertificateDividerBlockSchema>;
 

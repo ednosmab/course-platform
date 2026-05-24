@@ -1,8 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useState, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useState, useEffect, useCallback } from 'react';
 import { AnyBlock } from '@projeto/types';
 import { LessonService, CourseService } from '@projeto/core';
+import type { EditorModeConfig, EditorBlockType } from './editor-modes';
 
 interface EditorState {
   blocks: AnyBlock[];
@@ -15,7 +16,7 @@ interface EditorState {
 }
 
 type EditorAction =
-  | { type: 'ADD_BLOCK'; payload: { type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' | 'heading' | 'divider' } }
+  | { type: 'ADD_BLOCK'; payload: { type: EditorBlockType } }
   | { type: 'REMOVE_BLOCK'; payload: { id: string } }
   | { type: 'REMOVE_BLOCKS'; payload: { ids: string[] } }
   | { type: 'UPDATE_BLOCK'; payload: { id: string; updates: Partial<AnyBlock> } }
@@ -300,7 +301,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 }
 
 interface EditorContextType extends EditorState {
-  addBlock: (type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' | 'heading' | 'divider') => void;
+  addBlock: (type: EditorBlockType) => void;
   removeBlock: (id: string) => void;
   removeBlocks: (ids: string[]) => void;
   updateBlock: (id: string, updates: Partial<AnyBlock>) => void;
@@ -322,11 +323,13 @@ interface EditorContextType extends EditorState {
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
   activeLessonId: string;
   publishLesson: () => Promise<void>;
+  saveContent: () => Promise<void>;
   courseId: string;
   courseTitle: string;
   moduleTitle: string;
   lessonTitle: string;
   mode: 'lesson' | 'certificate';
+  allowedBlockTypes: Set<EditorBlockType>;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
@@ -336,8 +339,8 @@ export const EditorProvider: React.FC<{
   lessonId?: string;
   courseId?: string;
   mode?: 'lesson' | 'certificate';
-  onCertificateSaved?: () => void;
-}> = ({ children, lessonId, courseId: initialCourseId, mode = 'lesson', onCertificateSaved }) => {
+  modeConfig: EditorModeConfig;
+}> = ({ children, lessonId, courseId: initialCourseId, mode = 'lesson', modeConfig }) => {
   const [state, dispatch] = useReducer(editorReducer, initialState);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [activeLessonId] = useState(lessonId || '11111111-1111-1111-1111-111111111111');
@@ -347,82 +350,70 @@ export const EditorProvider: React.FC<{
   const [courseTitle, setCourseTitle] = useState('');
   const [moduleTitle, setModuleTitle] = useState('');
 
-  const addBlock = (type: 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' | 'heading' | 'divider') => dispatch({ type: 'ADD_BLOCK', payload: { type } });
-  const removeBlock = (id: string) => dispatch({ type: 'REMOVE_BLOCK', payload: { id } });
-  const removeBlocks = (ids: string[]) => dispatch({ type: 'REMOVE_BLOCKS', payload: { ids } });
-  const duplicateBlock = (id: string) => dispatch({ type: 'DUPLICATE_BLOCK', payload: { id } });
-  const setSelectedBlocks = (ids: string[]) => dispatch({ type: 'SET_SELECTED_BLOCKS', payload: { ids } });
-  const toggleSelectBlock = (id: string) => dispatch({ type: 'TOGGLE_SELECT_BLOCK', payload: { id } });
-  const clearSelection = () => dispatch({ type: 'CLEAR_SELECTION' });
-  const updateBlock = (id: string, updates: Partial<AnyBlock>) => dispatch({ type: 'UPDATE_BLOCK', payload: { id, updates } });
-  const moveBlock = (fromIndex: number, toIndex: number) => dispatch({ type: 'MOVE_BLOCK', payload: { fromIndex, toIndex } });
-  const setActiveBlockId = (id: string | null) => dispatch({ type: 'SET_ACTIVE_BLOCK', payload: { id } });
-  const undo = () => dispatch({ type: 'UNDO' });
-  const redo = () => dispatch({ type: 'REDO' });
-  const setBlocks = (blocks: AnyBlock[]) => dispatch({ type: 'SET_BLOCKS', payload: { blocks } });
-  const reorderBlocks = (blocks: AnyBlock[]) => dispatch({ type: 'REORDER_BLOCKS', payload: { blocks } });
-  const setPreviewMode = (active: boolean) => dispatch({ type: 'SET_PREVIEW_MODE', payload: { active } });
-  const setViewportMode = (mode: 'desktop' | 'tablet' | 'mobile') => dispatch({ type: 'SET_VIEWPORT_MODE', payload: { mode } });
-  const updateBlockSilent = (id: string, updates: Partial<AnyBlock>) => dispatch({ type: 'UPDATE_BLOCK_SILENT', payload: { id, updates } });
+  const addBlock = useCallback((type: EditorBlockType) => dispatch({ type: 'ADD_BLOCK', payload: { type } }), []);
+  const removeBlock = useCallback((id: string) => dispatch({ type: 'REMOVE_BLOCK', payload: { id } }), []);
+  const removeBlocks = useCallback((ids: string[]) => dispatch({ type: 'REMOVE_BLOCKS', payload: { ids } }), []);
+  const duplicateBlock = useCallback((id: string) => dispatch({ type: 'DUPLICATE_BLOCK', payload: { id } }), []);
+  const setSelectedBlocks = useCallback((ids: string[]) => dispatch({ type: 'SET_SELECTED_BLOCKS', payload: { ids } }), []);
+  const toggleSelectBlock = useCallback((id: string) => dispatch({ type: 'TOGGLE_SELECT_BLOCK', payload: { id } }), []);
+  const clearSelection = useCallback(() => dispatch({ type: 'CLEAR_SELECTION' }), []);
+  const updateBlock = useCallback((id: string, updates: Partial<AnyBlock>) => dispatch({ type: 'UPDATE_BLOCK', payload: { id, updates } }), []);
+  const moveBlock = useCallback((fromIndex: number, toIndex: number) => dispatch({ type: 'MOVE_BLOCK', payload: { fromIndex, toIndex } }), []);
+  const setActiveBlockId = useCallback((id: string | null) => dispatch({ type: 'SET_ACTIVE_BLOCK', payload: { id } }), []);
+  const undo = useCallback(() => dispatch({ type: 'UNDO' }), []);
+  const redo = useCallback(() => dispatch({ type: 'REDO' }), []);
+  const setBlocks = useCallback((blocks: AnyBlock[]) => dispatch({ type: 'SET_BLOCKS', payload: { blocks } }), []);
+  const reorderBlocks = useCallback((blocks: AnyBlock[]) => dispatch({ type: 'REORDER_BLOCKS', payload: { blocks } }), []);
+  const setPreviewMode = useCallback((active: boolean) => dispatch({ type: 'SET_PREVIEW_MODE', payload: { active } }), []);
+  const setViewportMode = useCallback((mode: 'desktop' | 'tablet' | 'mobile') => dispatch({ type: 'SET_VIEWPORT_MODE', payload: { mode } }), []);
+  const updateBlockSilent = useCallback((id: string, updates: Partial<AnyBlock>) => dispatch({ type: 'UPDATE_BLOCK_SILENT', payload: { id, updates } }), []);
 
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history.length - 1;
 
-  const certificateCompatibleTypes = new Set(['text', 'heading', 'image', 'divider']);
-  const sanitizeCertificateBlocks = (blocks: AnyBlock[]): AnyBlock[] =>
-    blocks.filter((b) => certificateCompatibleTypes.has(b.type));
+  /**
+   * Computes the entity ID for the current editing context.
+   * In lesson mode this is the lesson ID; in certificate mode it is the course ID.
+   */
+  const entityId: string = mode === 'certificate' ? (courseId || initialCourseId || '') : activeLessonId;
 
-  // 1. Carregamento inicial
+  // 1. Carregamento inicial via modeConfig.load()
   useEffect(() => {
     const initDatabase = async () => {
       try {
-        if (mode === 'certificate') {
-          const targetCourseId = initialCourseId || courseId;
-          if (targetCourseId) {
-            const cData = await CourseService.getCourse(targetCourseId);
-            if (cData) {
-              setBlocks((cData as any).certificate_blocks || []);
-              setCourseTitle(cData.title || '');
-              setCourseId(targetCourseId);
-            }
-          }
-        } else {
-          const draftLesson = await LessonService.getDraftLesson(activeLessonId);
+        const result = await modeConfig.load({
+          courseId: initialCourseId || courseId,
+          lessonId: activeLessonId,
+        });
+        if (result.blocks && result.blocks.length > 0) {
+          setBlocks(result.blocks);
+        }
+        if (result.courseTitle) {
+          setCourseTitle(result.courseTitle);
+          if (initialCourseId) setCourseId(initialCourseId);
+        }
+        if (result.lessonMeta) {
+          setLessonMeta(result.lessonMeta);
+        } else if (mode === 'lesson' && activeLessonId === '11111111-1111-1111-1111-111111111111') {
+          // Demo lesson fallback: seed data when no blocks were found
+          const defaultBlocks = [
+            { id: crypto.randomUUID(), type: 'text', content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.', styles: { align: 'left', fontSize: 'medium' }, layouts: { desktop: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, tablet: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, mobile: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 } } },
+            { id: crypto.randomUUID(), type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', provider: 'youtube', layouts: { desktop: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, tablet: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, mobile: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 } } },
+            { id: crypto.randomUUID(), type: 'quiz', question: 'Qual banco de dados relacional é utilizado no Supabase?', options: [{ id: crypto.randomUUID(), text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' }, { id: crypto.randomUUID(), text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }], layouts: { desktop: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, tablet: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, mobile: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 } } },
+          ] as AnyBlock[];
 
-          if (draftLesson) {
-            setBlocks(draftLesson.blocks || []);
-            setLessonMeta({ module_id: draftLesson.module_id, title: draftLesson.title, order_index: draftLesson.order_index });
-          } else {
-            const publishedLesson = await LessonService.getLesson(activeLessonId);
+          await CourseService.seedDemoData({
+            pathId: '88888888-8888-8888-8888-888888888888',
+            courseId: '99999999-9999-9999-9999-999999999999',
+            moduleId: '00000000-0000-0000-0000-000000000000',
+            activeLessonId,
+            blocks: defaultBlocks,
+          });
 
-            if (publishedLesson) {
-              await LessonService.createDraftFromPublished(activeLessonId);
-              setBlocks(publishedLesson.blocks || []);
-              setLessonMeta({ module_id: publishedLesson.module_id, title: publishedLesson.title, order_index: publishedLesson.order_index });
-            } else {
-              setBlocks([]);
-              if (activeLessonId === '11111111-1111-1111-1111-111111111111') {
-                const defaultBlocks = [
-                  { id: crypto.randomUUID(), type: 'text', content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.', styles: { align: 'left', fontSize: 'medium' }, layouts: { desktop: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, tablet: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, mobile: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 } } },
-                  { id: crypto.randomUUID(), type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', provider: 'youtube', layouts: { desktop: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, tablet: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, mobile: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 } } },
-                  { id: crypto.randomUUID(), type: 'quiz', question: 'Qual banco de dados relacional é utilizado no Supabase?', options: [{ id: crypto.randomUUID(), text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' }, { id: crypto.randomUUID(), text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }], layouts: { desktop: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, tablet: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, mobile: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 } } },
-                ] as AnyBlock[];
-
-                await CourseService.seedDemoData({
-                  pathId: '88888888-8888-8888-8888-888888888888',
-                  courseId: '99999999-9999-9999-9999-999999999999',
-                  moduleId: '00000000-0000-0000-0000-000000000000',
-                  activeLessonId,
-                  blocks: defaultBlocks,
-                });
-
-                setBlocks(defaultBlocks);
-                setLessonMeta({ module_id: '00000000-0000-0000-0000-000000000000', title: '1. Introdução à Plataforma Híbrida', order_index: 1 });
-              } else {
-                setLessonMeta({ module_id: '', title: 'Nova aula', order_index: 1 });
-              }
-            }
-          }
+          setBlocks(defaultBlocks);
+          setLessonMeta({ module_id: '00000000-0000-0000-0000-000000000000', title: '1. Introdução à Plataforma Híbrida', order_index: 1 });
+        } else if (mode === 'lesson' && !result.lessonMeta) {
+          setLessonMeta({ module_id: '', title: 'Nova aula', order_index: 1 });
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err);
@@ -436,9 +427,9 @@ export const EditorProvider: React.FC<{
     initDatabase();
   }, [activeLessonId, mode, initialCourseId]);
 
-  // 1b. Breadcrumb meta
+  // 1b. Breadcrumb meta (only for lesson mode)
   useEffect(() => {
-    if (mode === 'certificate' || !lessonMeta?.module_id) return;
+    if (!modeConfig.fetchBreadcrumb || !lessonMeta?.module_id) return;
     (async () => {
       const meta = await LessonService.getBreadcrumbMeta(lessonMeta.module_id);
       if (meta) {
@@ -447,13 +438,13 @@ export const EditorProvider: React.FC<{
         setCourseTitle(meta.courseTitle);
       }
     })();
-  }, [lessonMeta?.module_id, mode]);
+  }, [lessonMeta?.module_id, modeConfig.fetchBreadcrumb]);
 
-  // 2. Debounced Save
+  // 2. Debounced Auto-Save (500ms debounce as per admin_canvas_plan.md)
   useEffect(() => {
     if (!isLoaded) return;
 
-    if (mode !== 'certificate' && !lessonMeta?.module_id) {
+    if (modeConfig.fetchBreadcrumb && !lessonMeta?.module_id) {
       return;
     }
 
@@ -461,25 +452,13 @@ export const EditorProvider: React.FC<{
 
     const timer = setTimeout(async () => {
       try {
-        if (mode === 'certificate') {
-          const targetCourseId = courseId || initialCourseId;
-          if (targetCourseId) {
-            await CourseService.updateCourse(targetCourseId, { certificate_blocks: sanitizeCertificateBlocks(state.blocks) as any });
-          }
-        } else {
-          const meta = lessonMeta || { module_id: '00000000-0000-0000-0000-000000000000', title: 'Sem título', order_index: 1 };
-          await LessonService.saveDraft(activeLessonId, {
-            module_id: meta.module_id,
-            title: meta.title,
-            order_index: meta.order_index,
-            blocks: state.blocks,
-          });
-        }
+        await modeConfig.save({
+          entityId,
+          blocks: state.blocks,
+          lessonMeta: lessonMeta || undefined,
+        });
 
         setSaveStatus('saved');
-        if (mode === 'certificate') {
-          onCertificateSaved?.();
-        }
         const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
         return () => clearTimeout(resetTimer);
       } catch (err) {
@@ -487,47 +466,31 @@ export const EditorProvider: React.FC<{
         console.error(`Failed to save draft: ${msg}`);
         setSaveStatus('error');
       }
-    }, 10000);
+    }, 500);
 
     return () => clearTimeout(timer);
-  }, [state.blocks, activeLessonId, isLoaded, lessonMeta, mode, courseId, initialCourseId, onCertificateSaved]);
+  }, [state.blocks, activeLessonId, isLoaded, lessonMeta, entityId, modeConfig]);
 
-  // 3. Publish
-  const publishLesson = async () => {
+  // 3. Save Content (renamed from publishLesson for semantic clarity)
+  const saveContent = async () => {
     setSaveStatus('saving');
-    
-    if (mode === 'certificate') {
-      try {
-        const targetCourseId = courseId || initialCourseId;
-        if (targetCourseId) {
-          await CourseService.updateCourse(targetCourseId, { certificate_blocks: sanitizeCertificateBlocks(state.blocks) as any });
-        }
-        setSaveStatus('saved');
-        onCertificateSaved?.();
-        setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch (err) {
-        setSaveStatus('error');
-        throw err;
-      }
-      return;
-    }
-
-    const meta = lessonMeta || { module_id: '00000000-0000-0000-0000-000000000000', title: 'Sem título', order_index: 1 };
 
     try {
-      await LessonService.publishLesson(activeLessonId, {
-        module_id: meta.module_id,
-        title: meta.title,
-        order_index: meta.order_index,
+      await modeConfig.publish({
+        entityId,
         blocks: state.blocks,
+        lessonMeta: lessonMeta || undefined,
       });
       setSaveStatus('saved');
-      const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
+      setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (err) {
       setSaveStatus('error');
       throw err;
     }
   };
+
+  // Backward-compatible alias for components that reference publishLesson (EditorHeader)
+  const publishLesson = saveContent;
 
   return (
     <EditorContext.Provider
@@ -555,11 +518,13 @@ export const EditorProvider: React.FC<{
         saveStatus,
         activeLessonId,
         publishLesson,
+        saveContent,
         courseId,
         courseTitle,
         moduleTitle,
-        lessonTitle: mode === 'certificate' ? 'Design de Certificado' : (lessonMeta?.title || 'Nova aula'),
+        lessonTitle: modeConfig.getTitle(lessonMeta || undefined),
         mode,
+        allowedBlockTypes: modeConfig.allowedBlockTypes,
       }}
     >
       {children}

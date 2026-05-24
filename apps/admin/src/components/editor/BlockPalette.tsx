@@ -4,10 +4,8 @@ import React, { useState } from 'react';
 import { YStack, XStack, Text, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 
-const CERTIFICATE_BLOCK_TYPES = new Set(['text', 'heading', 'image', 'divider']);
-
 export const BlockPalette: React.FC = () => {
-  const { addBlock, mode } = useEditor();
+  const { addBlock, allowedBlockTypes } = useEditor();
   const [collapsed, setCollapsed] = useState(true);
 
   return (
@@ -72,7 +70,7 @@ export const BlockPalette: React.FC = () => {
           ['Minus', 'Divisor', 'divider' as const],
           ['Code', 'HTML', 'html' as const],
         ] as const)
-          .filter(([, , type]) => mode !== 'certificate' || CERTIFICATE_BLOCK_TYPES.has(type))
+          .filter(([, , type]) => allowedBlockTypes.has(type))
           .map(([icon, label, type]) => (
             <BlockBtn key={type} icon={icon} label={label} collapsed={collapsed} onClick={() => addBlock(type)} />
           ))}

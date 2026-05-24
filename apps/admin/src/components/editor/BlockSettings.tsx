@@ -695,11 +695,11 @@ export const BlockSettings: React.FC = () => {
             </XStack>
           </YStack>
 
-          {activeBlock.url && (
+          {activeBlock.url ? (
             <YStack borderRadius="$3" overflow="hidden" borderWidth={1} borderColor="$border">
               <img src={activeBlock.url} alt={activeBlock.alt} style={{ width: '100%', height: 'auto', display: 'block' }} />
             </YStack>
-          )}
+          ) : null}
 
           <ImageUploadBlock blockId={activeBlock.id} courseId={courseId} onUpload={(url) => updateBlock(activeBlock.id, { url })} />
 

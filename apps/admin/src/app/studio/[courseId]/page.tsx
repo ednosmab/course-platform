@@ -1,15 +1,14 @@
 'use client';
 
-import React, { use, useEffect, useRef } from 'react';
+import React, { use, useMemo } from 'react';
 import { YStack, XStack, Text, Button, Icon } from '@projeto/ui';
 import { useRouter } from 'next/navigation';
 import { EditorProvider, useEditor } from '../../../context/EditorContext';
+import { createLessonModeConfig, createCertificateModeConfig } from '../../../context/editor-modes';
 import { EditorHeader } from '../../../components/editor/EditorHeader';
 import { BlockPalette } from '../../../components/editor/BlockPalette';
 import { EditorCanvas } from '../../../components/editor/EditorCanvas';
 import { BlockSettings } from '../../../components/editor/BlockSettings';
-import { CertificateBlockRenderer } from '@projeto/ui';
-import { useCertificateCapture } from '../../../hooks/useCertificateCapture';
 
 function StudioEditorLayout({ courseId }: { courseId: string }) {
   const { previewMode, activeBlockId } = useEditor();
@@ -50,58 +49,6 @@ function EmptyState({ courseId }: { courseId: string }) {
   );
 }
 
-function CaptureContainer({ blocks }: { blocks: any[] }) {
-  return (
-    <YStack w={600} bg="white" p={40} gap={16}>
-      {blocks.map((block: any) => (
-        <CertificateBlockRenderer key={block.id} block={block} scale={1} />
-      ))}
-    </YStack>
-  );
-}
-
-function CertificateEditor({ courseId }: { courseId: string }) {
-  const { previewMode, activeBlockId, blocks, saveStatus } = useEditor();
-  const { captureRef, captureAndUpload } = useCertificateCapture(courseId);
-  const captured = useRef(false);
-
-  useEffect(() => {
-    if (saveStatus === 'saved' && !captured.current) {
-      captured.current = true;
-      captureAndUpload();
-    }
-    if (saveStatus !== 'saved') {
-      captured.current = false;
-    }
-  }, [saveStatus, captureAndUpload]);
-
-  return (
-    <>
-      <YStack f={1} h="100vh" w="100vw" overflow="hidden">
-        <EditorHeader courseId={courseId} />
-        <XStack f={1} overflow="hidden" w="100%">
-          {!previewMode && <BlockPalette />}
-          <EditorCanvas />
-          {!previewMode && activeBlockId && <BlockSettings />}
-        </XStack>
-      </YStack>
-      <div
-        ref={captureRef}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: '-9999px',
-          width: 600,
-          opacity: 0,
-          pointerEvents: 'none',
-        }}
-      >
-        <CaptureContainer blocks={blocks} />
-      </div>
-    </>
-  );
-}
-
 export default function StudioPage({
   params,
   searchParams,
@@ -112,17 +59,20 @@ export default function StudioPage({
   const { courseId } = use(params);
   const { lessonId, mode } = use(searchParams);
 
+  const lessonConfig = useMemo(() => createLessonModeConfig(), []);
+  const certConfig = useMemo(() => createCertificateModeConfig(), []);
+
   if (mode === 'certificate') {
     return (
-      <EditorProvider courseId={courseId} mode="certificate">
-        <CertificateEditor courseId={courseId} />
+      <EditorProvider courseId={courseId} mode="certificate" modeConfig={certConfig}>
+        <StudioEditorLayout courseId={courseId} />
       </EditorProvider>
     );
   }
 
   if (lessonId) {
     return (
-      <EditorProvider lessonId={lessonId}>
+      <EditorProvider lessonId={lessonId} modeConfig={lessonConfig}>
         <StudioEditorLayout courseId={courseId} />
       </EditorProvider>
     );

@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useMemo, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { YStack, XStack, Text, Icon, Theme } from '@projeto/ui';
 import { LoginForm } from '@projeto/ui';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createSupabaseBrowserClient } from '../../lib/supabase-client';
 import { AuthService } from '@projeto/core';
 import { BrandMark } from '../../components/brand-mark';
 
@@ -12,12 +11,11 @@ function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect') || '/';
-  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
   const handleLogin = async (email: string, password: string) => {
     try {
-      await AuthService.signIn(email, password, supabase);
-      const role = await AuthService.getUserRole(supabase);
+      await AuthService.signIn(email, password);
+      const role = await AuthService.getUserRole();
 
       if (role === 'student') {
         const studentUrl = process.env.NEXT_PUBLIC_STUDENT_APP_URL || 'http://localhost:8081';

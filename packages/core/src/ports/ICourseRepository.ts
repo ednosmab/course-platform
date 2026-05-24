@@ -57,7 +57,7 @@ export interface ICourseRepository {
    *                  thumbnail_url, or is_published.
    * @returns Promise resolving when the update completes.
    */
-  updateCourse(courseId: string, updates: Partial<Pick<Course, 'title' | 'description' | 'thumbnail_url' | 'is_published' | 'certificate_blocks' | 'certificate_url'>>): Promise<void>;
+  updateCourse(courseId: string, updates: Partial<Pick<Course, 'title' | 'description' | 'thumbnail_url' | 'is_published' | 'certificate_blocks'>>): Promise<void>;
 
   /**
    * @description Permanently removes a course and its associated data.

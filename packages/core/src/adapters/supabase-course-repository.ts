@@ -88,11 +88,11 @@ export const supabaseCourseRepository: ICourseRepository = {
    * title, description, thumbnail_url, is_published, and certificate_blocks.
    * Business rule: Ensures only owned fields can be mutated; no accidental overrides.
    * @param {string} courseId - The UUID of the course to update.
-   * @param {Partial<Pick<Course, 'title' | 'description' | 'thumbnail_url' | 'is_published' | 'certificate_blocks' | 'certificate_url'>>} updates - The fields to update.
+   * @param {Partial<Pick<Course, 'title' | 'description' | 'thumbnail_url' | 'is_published' | 'certificate_blocks'>>} updates - The fields to update.
    * @returns {Promise<void>}
    * @throws {PostgrestError} If the update operation fails.
    */
-  async updateCourse(courseId: string, updates: Partial<Pick<Course, 'title' | 'description' | 'thumbnail_url' | 'is_published' | 'certificate_blocks' | 'certificate_url'>>): Promise<void> {
+  async updateCourse(courseId: string, updates: Partial<Pick<Course, 'title' | 'description' | 'thumbnail_url' | 'is_published' | 'certificate_blocks'>>): Promise<void> {
     const { error } = await supabase.from('courses').update(updates).eq('id', courseId);
     if (error) throw error;
   },

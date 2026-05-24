@@ -1,17 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { YStack, XStack, Text, Icon, Theme, Button, Spinner } from '@projeto/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BrandMark } from '../components/brand-mark';
-import { CourseService, StorageService } from '@projeto/core';
-import { createSupabaseBrowserClient } from '../lib/supabase-client';
+import { CourseService, StorageService, getSupabaseClient } from '@projeto/core';
 import type { Course } from '@projeto/types';
 
 export default function Dashboard() {
   const router = useRouter();
-  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [filter, setFilter] = useState(0);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,13 +30,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const client = getSupabaseClient();
+      const { data: { user } } = await client.auth.getUser();
       if (user) {
-        const { data: profile } = await supabase.from('profiles').select('full_name, email').eq('id', user.id).single();
+        const { data: profile } = await client.from('profiles').select('full_name, email').eq('id', user.id).single();
         if (profile) setUserProfile(profile);
       }
     })();
-  }, [supabase]);
+  }, []);
 
   const initials = userProfile?.full_name
     ? userProfile.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, use } from 'react';
-import { YStack, XStack, Text, Button, Icon, Spinner, Theme, CertificateMiniature, CertificatePage } from '@projeto/ui';
+import { YStack, XStack, Text, Button, Icon, Spinner, Theme, CertificateMiniature, CertificateBlockRenderer } from '@projeto/ui';
+import type { CertificateBlock } from '@projeto/types';
 import { useRouter } from 'next/navigation';
 import { BrandMark } from '../../../components/brand-mark';
 import { CourseService, StorageService } from '@projeto/core';
@@ -504,8 +505,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                     </Text>
                     <XStack cursor="pointer" onPress={() => setPreviewOpen(true)} hoverStyle={{ opacity: 0.85 }}>
                       <CertificateMiniature
-                        blocks={course.certificate_blocks}
-                        certificateUrl={course.certificate_url}
+                        blocks={course.certificate_blocks || []}
                       />
                     </XStack>
                     <Text fontSize={10} color="$textMuted" textAlign="center">Clique no preview para ampliar</Text>
@@ -537,19 +537,10 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                           <Icon name="X" size={18} color="$textMuted" />
                         </Button>
                       </XStack>
-                      <YStack f={1} position="relative" overflow="hidden">
-                        <CertificatePage
-                          studentName="NOME DO ALUNO"
-                          courseName={course?.title || ''}
-                          workloadHours={40}
-                          completionDate="Concluído"
-                          serialNumber="BSGI-XXXXX-XXXX"
-                          signatures={[
-                            { name: 'Diretor Acadêmico', title: 'Diretor' },
-                            { name: 'Coordenador Pedagógico', title: 'Coordenador' },
-                          ]}
-                          blocks={course?.certificate_blocks || []}
-                        />
+                      <YStack f={1} p={32} ai="center" jc="center" overflow="auto" bg="white" gap={16}>
+                        {(course?.certificate_blocks as CertificateBlock[] || []).map((block) => (
+                          <CertificateBlockRenderer key={block.id} block={block} scale={1} />
+                        ))}
                       </YStack>
                     </YStack>
                   </YStack>
