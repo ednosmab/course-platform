@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { YStack, XStack, Text, Button, Icon, Spinner } from 'tamagui';
+import { YStack, XStack, Text, Button, Spinner } from 'tamagui';
+import { Icon } from '../Icon';
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<{ success: boolean; role?: string | null; error?: string }>;
