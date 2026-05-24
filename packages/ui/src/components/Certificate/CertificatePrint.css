@@ -15,6 +15,35 @@
     print-color-adjust: exact;
   }
 
+  /* Hide everything outside the certificate print root */
+  body * {
+    visibility: hidden !important;
+  }
+
+  #certificate-print-root,
+  #certificate-print-root * {
+    visibility: visible !important;
+  }
+
+  #certificate-modal-header {
+    display: none !important;
+  }
+
+  #certificate-modal-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    background: white !important;
+  }
+
+  #certificate-modal-card {
+    max-width: none !important;
+    max-height: none !important;
+    width: 100% !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
   #certificate-print-root {
     display: flex !important;
     align-items: center;

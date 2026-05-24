@@ -533,6 +533,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                 )}
                 {previewOpen && (
                   <YStack
+                    id="certificate-modal-overlay"
                     position="fixed"
                     inset={0}
                     zIndex={99999}
@@ -541,6 +542,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                     onPress={() => setPreviewOpen(false)}
                   >
                     <YStack
+                      id="certificate-modal-card"
                       bg="white"
                       borderRadius={12}
                       overflow="hidden"
@@ -551,7 +553,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                       style={{ boxShadow: '0 10px 40px rgba(0,0,0,0.25)' }}
                       onPress={(e: any) => e.stopPropagation()}
                     >
-                      <XStack ai="center" jc="space-between" p={12} borderBottomWidth={1} borderBottomColor="$border">
+                      <XStack id="certificate-modal-header" ai="center" jc="space-between" p={12} borderBottomWidth={1} borderBottomColor="$border">
                         <Text fontSize={14} fontWeight="600">Preview do Certificado</Text>
                         <XStack ai="center" gap={8}>
                           <Button variant="ghost" borderWidth={1} borderColor="$border" onPress={() => window.print()}>
