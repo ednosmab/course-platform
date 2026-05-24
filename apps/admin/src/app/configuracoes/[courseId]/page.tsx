@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, use, useRef } from 'react';
 import { YStack, XStack, Text, Button, Icon, Spinner, Theme, CertificateMiniature, CertificateBlockRenderer } from '@projeto/ui';
-import type { CertificateBlock } from '@projeto/types';
 import { useRouter } from 'next/navigation';
 import { BrandMark } from '../../../components/brand-mark';
 import { CourseService, StorageService } from '@projeto/core';
@@ -33,6 +32,27 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const measureRef = useRef<HTMLDivElement>(null);
+  const [measuredWidth, setMeasuredWidth] = useState(0);
+
+  useEffect(() => {
+    if (!previewOpen) {
+      setMeasuredWidth(0);
+      return;
+    }
+    const el = measureRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const cw = entry.contentRect.width;
+      if (cw <= 0) return;
+      setMeasuredWidth(cw);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [previewOpen]);
+
+  const previewScale = measuredWidth ? measuredWidth / 1050 : 1;
+  const previewReady = measuredWidth > 0;
 
   const flashHighlight = (id: string) => {
     setHighlightedId(id);
@@ -533,14 +553,52 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                     >
                       <XStack ai="center" jc="space-between" p={12} borderBottomWidth={1} borderBottomColor="$border">
                         <Text fontSize={14} fontWeight="600">Preview do Certificado</Text>
-                        <Button variant="ghost" onPress={() => setPreviewOpen(false)} px="$2">
-                          <Icon name="X" size={18} color="$textMuted" />
-                        </Button>
+                        <XStack ai="center" gap={8}>
+                          <Button variant="ghost" borderWidth={1} borderColor="$border" onPress={() => window.print()}>
+                            <Icon name="Download" size={14} color="$textMuted" />
+                          </Button>
+                          <Button variant="ghost" onPress={() => setPreviewOpen(false)} px="$2">
+                            <Icon name="X" size={18} color="$textMuted" />
+                          </Button>
+                        </XStack>
                       </XStack>
-                      <YStack f={1} p={32} ai="center" jc="center" bg="white" gap={16} style={{ overflow: 'auto' }}>
-                        {(course?.certificate_blocks as CertificateBlock[] || []).map((block) => (
-                          <CertificateBlockRenderer key={block.id} block={block} scale={1} />
-                        ))}
+                      <YStack f={1} bg="white" style={{ overflow: 'hidden' }}>
+                        <div
+                          id="certificate-print-root"
+                          ref={measureRef}
+                          style={{
+                            flex: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: 16,
+                            overflow: 'hidden',
+                            background: 'white',
+                          }}
+                        >
+                          {previewReady ? (
+                            <YStack
+                              id="certificate-a4-canvas"
+                              bg="white"
+                              position="relative"
+                              overflow="hidden"
+                              p={Math.round(48 * previewScale)}
+                              gap={Math.round(16 * previewScale)}
+                              style={{
+                                width: '100%',
+                                maxWidth: Math.min(measuredWidth, 1050),
+                                aspectRatio: '29.7 / 21',
+                                boxShadow: '0 10px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.05)',
+                              }}
+                            >
+                              {(course?.certificate_blocks || []).map((block: any) => (
+                                <CertificateBlockRenderer key={block.id} block={block} scale={previewScale} />
+                              ))}
+                            </YStack>
+                          ) : (
+                            <YStack style={{ width: '100%', aspectRatio: '29.7 / 21' }} />
+                          )}
+                        </div>
                       </YStack>
                     </YStack>
                   </YStack>

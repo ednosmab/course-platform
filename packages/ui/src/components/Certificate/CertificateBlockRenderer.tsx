@@ -55,8 +55,20 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale }) => {
     case 'image': {
       if (!block.url) return null;
       const align = block.styles?.align || 'center';
-      const w = block.styles?.width || '80%';
+      const rawWidth = block.styles?.width || '80%';
+      const rawHeight = block.styles?.height;
       const br = Math.round(4 * scale);
+
+      const scaleDim = (val: string | undefined, fallback: string): string => {
+        if (!val) return fallback;
+        const px = val.match(/^(\d+(?:\.\d+)?)px$/);
+        if (px) return `${fmtSize(Number(px[1]), scale)}px`;
+        return val;
+      };
+
+      const w = scaleDim(rawWidth, '80%');
+      const h = scaleDim(rawHeight, 'auto');
+
       return (
         <XStack
           width="100%"
@@ -66,7 +78,7 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale }) => {
           <img
             src={block.url}
             alt={block.alt || ''}
-            style={{ width: w, height: 'auto', aspectRatio: '16 / 9', borderRadius: br, objectFit: 'contain' }}
+            style={{ width: w, height: h, borderRadius: br, objectFit: 'contain' }}
           />
         </XStack>
       );
