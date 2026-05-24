@@ -113,32 +113,57 @@ export default function Dashboard() {
               <Icon name="Bell" size={16} color="$textMuted" />
               <XStack position="absolute" right={6} top={6} w={6} h={6} borderRadius={3} bg="$primary" />
             </XStack>
-            <XStack position="relative" ref={userMenuRef}>
-              <XStack ai="center" gap={8} px={8} py={4} borderRadius={6} borderWidth={1} borderColor="$border" backgroundColor="$card" cursor="pointer" onPress={() => setShowUserMenu(!showUserMenu)}>
-                <XStack width={24} height={24} borderRadius={4} ai="center" jc="center" backgroundColor="$accent">
-                  <Text fontSize={11} fontWeight="$6" color="$accentForeground">MR</Text>
-                </XStack>
-                <Text fontSize={14}>Maria</Text>
-                <Icon name="ChevronDown" size={14} color="$textMuted" />
-              </XStack>
-              {showUserMenu && (
-                <XStack
-                  position="absolute" top="100%" right={0} mt={4}
-                  bg="$card" borderWidth={1} borderColor="$border" borderRadius={8}
-                  p={4} minWidth={160} elevation={8}
+            <ul ref={userMenuRef} style={{ listStyle: 'none', margin: 0, padding: 0, position: 'relative' }}>
+              <li>
+                <a
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); setShowUserMenu(!showUserMenu); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '6px 10px', borderRadius: 6,
+                    border: '1px solid #DEE1EB', background: '#FFFFFF',
+                    cursor: 'pointer', textDecoration: 'none', color: 'inherit',
+                    fontFamily: 'inherit', fontSize: 'inherit',
+                  }}
                 >
-                  <XStack
-                    onPress={() => { setShowUserMenu(false); router.push('/logout'); }}
-                    px={12} py={8} borderRadius={4} cursor="pointer"
-                    hoverStyle={{ bg: '$secondary' }}
-                    ai="center" gap={8}
-                  >
-                    <Icon name="LogOut" size={16} color="$textMuted" />
-                    <Text fontSize={14} color="$danger">Sair</Text>
+                  <XStack width={24} height={24} borderRadius={4} ai="center" jc="center" backgroundColor="$accent">
+                    <Text fontSize={11} fontWeight="$6" color="$accentForeground">MR</Text>
                   </XStack>
-                </XStack>
-              )}
-            </XStack>
+                  <Text fontSize={14}>Maria</Text>
+                  <Icon name="ChevronDown" size={14} color="$textMuted" />
+                </a>
+
+                {showUserMenu && (
+                  <ul
+                    style={{
+                      position: 'absolute', top: '100%', right: 0, marginTop: 4,
+                      listStyle: 'none', margin: 0, padding: 8, minWidth: 160,
+                      borderRadius: 8, zIndex: 999,
+                      background: '#FFFFFF', border: '1px solid #DEE1EB',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                    }}
+                  >
+                    <li>
+                      <a
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); setShowUserMenu(false); router.push('/logout'); }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
+                          textDecoration: 'none', color: 'inherit',
+                          fontFamily: 'inherit', fontSize: 'inherit',
+                        }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F7F8FC'; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                      >
+                        <Icon name="LogOut" size={16} color="$textMuted" />
+                        <Text fontSize={14} color="$danger">Sair</Text>
+                      </a>
+                    </li>
+                  </ul>
+                )}
+              </li>
+            </ul>
           </XStack>
         </XStack>
 
