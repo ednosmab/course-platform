@@ -54,6 +54,24 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const previewScale = measuredWidth ? measuredWidth / 1050 : 1;
   const previewReady = measuredWidth > 0;
 
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.id = 'certificate-print-styles';
+    style.textContent = `@media print {
+      @page { size: A4 landscape; margin: 0; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body * { visibility: hidden !important; }
+      #certificate-print-root, #certificate-print-root * { visibility: visible !important; }
+      #certificate-modal-header { display: none !important; }
+      #certificate-modal-overlay { position: fixed !important; inset: 0 !important; background: white !important; }
+      #certificate-modal-card { max-width: none !important; max-height: none !important; width: 100% !important; height: 100vh !important; border-radius: 0 !important; box-shadow: none !important; }
+      #certificate-print-root { display: flex !important; align-items: center; justify-content: center; width: 100%; height: 100vh; padding: 0 !important; margin: 0; background: white !important; }
+      #certificate-a4-canvas { width: 297mm !important; height: 210mm !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; page-break-inside: avoid !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }`;
+    document.head.appendChild(style);
+    return () => style.remove();
+  }, []);
+
   const flashHighlight = (id: string) => {
     setHighlightedId(id);
     setTimeout(() => setHighlightedId(null), 2000);
