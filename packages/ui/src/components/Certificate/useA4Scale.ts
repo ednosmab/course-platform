@@ -6,15 +6,14 @@ export const DESIGN_W = 1050;
 
 interface A4ScaleResult {
   containerRef: React.RefObject<HTMLDivElement>;
-  pageWidth: number;
-  pageHeight: number;
+  a4Width: number;
   scale: number;
   ready: boolean;
 }
 
-export function useA4Scale(padding = 48): A4ScaleResult {
+export function useA4Scale(): A4ScaleResult {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dims, setDims] = useState({ w: 0, h: 0 });
+  const [width, setWidth] = useState(0);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -22,33 +21,23 @@ export function useA4Scale(padding = 48): A4ScaleResult {
     if (!el) return;
 
     const ro = new ResizeObserver(([entry]) => {
-      const cw = entry.contentRect.width - padding;
-      const ch = entry.contentRect.height - padding;
-      if (cw <= 0 || ch <= 0) return;
-
-      const ratio = A4_RATIO_W / A4_RATIO_H;
-      const maxW = Math.min(cw, DESIGN_W);
-      let w = maxW;
-      let h = w / ratio;
-
-      if (h > ch) {
-        h = ch;
-        w = h * ratio;
-      }
-
-      setDims({ w, h });
+      const cw = entry.contentRect.width;
+      if (cw <= 0) return;
+      setWidth(cw);
       setReady(true);
     });
 
-    ro.observe(el);
+    requestAnimationFrame(() => {
+      if (containerRef.current) ro.observe(containerRef.current);
+    });
+
     return () => ro.disconnect();
-  }, [padding]);
+  }, []);
 
   return {
     containerRef: containerRef as React.RefObject<HTMLDivElement>,
-    pageWidth: dims.w,
-    pageHeight: dims.h,
-    scale: dims.w / DESIGN_W,
+    a4Width: width,
+    scale: width ? width / DESIGN_W : 1,
     ready,
   };
 }

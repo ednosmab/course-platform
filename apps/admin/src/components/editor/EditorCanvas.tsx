@@ -720,7 +720,7 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
 }
 
 export const EditorCanvas: React.FC = () => {
-  const { blocks, activeBlockId, selectedBlockIds, setActiveBlockId, removeBlock, removeBlocks, duplicateBlock, toggleSelectBlock, clearSelection, updateBlock, updateBlockSilent, previewMode, viewportMode } = useEditor();
+  const { blocks, activeBlockId, selectedBlockIds, setActiveBlockId, removeBlock, removeBlocks, duplicateBlock, toggleSelectBlock, clearSelection, updateBlock, updateBlockSilent, previewMode, viewportMode, mode } = useEditor();
   const [mounted, setMounted] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
@@ -1006,18 +1006,19 @@ export const EditorCanvas: React.FC = () => {
   if (viewportMode === 'tablet') return <TableViewport blocks={blocks} onImageDrop={handleImageDrop} />;
 
   const sortedBlocks = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
-  const pageH = Math.max(800, ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
+  const isCertMode = mode === 'certificate';
+  const pageH = isCertMode ? 510 : Math.max(800, ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
 
   return (
     <YStack
-      flex={1} p="$5" style={{ overflow: 'auto' }}
+      flex={1} p="$5" style={{ overflow: isCertMode ? 'hidden' : 'auto' }}
       bg="$background"
       onPress={() => setActiveBlockId(null)}
       data-editor-root
     >
       <div
         data-page-root
-        style={{ position: 'relative', width: PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)' }}
+        style={{ position: 'relative', width: PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)', overflow: isCertMode ? 'hidden' : undefined }}
         onMouseDown={(e) => {
           if ((e.target as HTMLElement).closest('[role="button"]')) return;
           if (inlineEditingId) return;

@@ -1,5 +1,5 @@
 export { CertificatePage } from './CertificatePage';
-export type { CertificatePageProps, Signature } from './CertificatePage';
+export type { CertificatePageProps } from './CertificatePage';
 export { CertificateBlockRenderer } from './CertificateBlockRenderer';
 export { CertificateMiniature } from './CertificateMiniature';
 export type { CertificateMiniatureProps } from './CertificateMiniature';
