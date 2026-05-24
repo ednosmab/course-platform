@@ -520,43 +520,49 @@ function TopBar({ userProfile }: TopBarProps) {
           </Button>
 
           <XStack position="relative" ref={menuRef}>
-            <Button
-              variant="ghost"
-              p="$2"
-              br="$3"
-              borderWidth={1}
-              borderColor="$border"
-              bg="$surface"
-              onPress={() => setShowUserMenu(!showUserMenu)}
-              pressStyle={{ opacity: 0.7 }}
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '6px 10px', borderRadius: 8,
+                border: '1px solid #DEE1EB', background: '#F1F2F8',
+                cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit',
+                color: 'inherit',
+              }}
             >
               <XStack w={24} h={24} br={12} bg="$secondary" ai="center" jc="center">
                 <Text fontSize={10} fontWeight="bold" color="$text">{initials}</Text>
               </XStack>
-              <Text fontSize={12} fontWeight="600" color="$text" ml="$2" $sm={{ display: 'none' }}>
+              <Text fontSize={12} fontWeight="600" color="$text" $sm={{ display: 'none' }}>
                 {firstName}
               </Text>
-              <Icon name="ChevronDown" size={13} color="$textMuted" ml="$1" />
-            </Button>
+              <Icon name="ChevronDown" size={13} color="$textMuted" />
+            </button>
 
             {showUserMenu && (
-              <XStack
-                position="absolute" top="100%" right={0} mt={2}
-                bg="$surface" borderWidth={1} borderColor="$border" borderRadius={8}
-                p={4} minWidth={180}
-                elevation={12}
-                zIndex={999}
+              <ul
+                style={{
+                  position: 'absolute', top: '100%', right: 0, marginTop: 4,
+                  listStyle: 'none', margin: 0, padding: 8, minWidth: 180,
+                  borderRadius: 8, zIndex: 999,
+                  background: '#F1F2F8', border: '1px solid #DEE1EB',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                }}
               >
-                <XStack
-                  onPress={handleLogout}
-                  px={12} py={10} borderRadius={4} cursor="pointer"
-                  hoverStyle={{ bg: '$background' }}
-                  ai="center" gap={8}
+                <li
+                  onClick={handleLogout}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
+                    listStyle: 'none',
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F7F8FC'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                 >
                   <Icon name="LogOut" size={16} color="$textMuted" />
                   <Text fontSize={14} color="$danger">Sair</Text>
-                </XStack>
-              </XStack>
+                </li>
+              </ul>
             )}
           </XStack>
         </XStack>
