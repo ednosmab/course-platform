@@ -336,7 +336,8 @@ export const EditorProvider: React.FC<{
   lessonId?: string;
   courseId?: string;
   mode?: 'lesson' | 'certificate';
-}> = ({ children, lessonId, courseId: initialCourseId, mode = 'lesson' }) => {
+  onCertificateSaved?: () => void;
+}> = ({ children, lessonId, courseId: initialCourseId, mode = 'lesson', onCertificateSaved }) => {
   const [state, dispatch] = useReducer(editorReducer, initialState);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [activeLessonId] = useState(lessonId || '11111111-1111-1111-1111-111111111111');
@@ -476,6 +477,9 @@ export const EditorProvider: React.FC<{
         }
 
         setSaveStatus('saved');
+        if (mode === 'certificate') {
+          onCertificateSaved?.();
+        }
         const resetTimer = setTimeout(() => setSaveStatus('idle'), 2000);
         return () => clearTimeout(resetTimer);
       } catch (err) {
@@ -486,7 +490,7 @@ export const EditorProvider: React.FC<{
     }, 10000);
 
     return () => clearTimeout(timer);
-  }, [state.blocks, activeLessonId, isLoaded, lessonMeta, mode, courseId, initialCourseId]);
+  }, [state.blocks, activeLessonId, isLoaded, lessonMeta, mode, courseId, initialCourseId, onCertificateSaved]);
 
   // 3. Publish
   const publishLesson = async () => {
@@ -499,6 +503,7 @@ export const EditorProvider: React.FC<{
           await CourseService.updateCourse(targetCourseId, { certificate_blocks: sanitizeCertificateBlocks(state.blocks) as any });
         }
         setSaveStatus('saved');
+        onCertificateSaved?.();
         setTimeout(() => setSaveStatus('idle'), 2000);
       } catch (err) {
         setSaveStatus('error');

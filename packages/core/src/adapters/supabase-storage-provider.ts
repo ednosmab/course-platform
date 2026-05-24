@@ -1,43 +1,54 @@
 import { supabase } from '../supabase';
 import type { IStorageProvider } from '../ports/IStorageProvider';
 
-const BUCKET = 'course-thumbnails';
+const THUMB_BUCKET = 'course-thumbnails';
+const CERT_BUCKET = 'certificate-images';
 
-async function ensureBucket(): Promise<void> {
-  const { error } = await supabase.storage.createBucket(BUCKET, { public: true, fileSizeLimit: 2 * 1024 * 1024 });
+async function ensureBucket(bucket: string): Promise<void> {
+  const { error } = await supabase.storage.createBucket(bucket, { public: true, fileSizeLimit: 5 * 1024 * 1024 });
   if (error && !error.message.includes('already exists')) throw error;
+}
+
+async function uploadToBucket(
+  bucket: string,
+  path: string,
+  file: File,
+): Promise<string | null> {
+  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+  if (error) {
+    if (error.message.includes('bucket') || error.message.includes('Bucket')) {
+      await ensureBucket(bucket);
+      const { error: retryErr } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+      if (retryErr) { console.error(retryErr); return null; }
+    } else { console.error(error); return null; }
+  }
+  const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path);
+  return publicUrl;
 }
 
 /**
  * @description Supabase-backed implementation of the StorageProvider port.
- * Handles file uploads to Supabase Storage, specifically course thumbnail images.
- * Business rule: Thumbnails are stored in the 'course-thumbnails' public bucket
- * with a 2MB size limit. The bucket is auto-created on first upload if it doesn't exist.
+ * Handles file uploads to Supabase Storage for course thumbnails and certificate images.
+ * Business rule: Files are stored in public buckets with size limits.
+ * Buckets are auto-created lazily on first upload if they don't exist.
  * @implements {IStorageProvider}
  */
 export const supabaseStorageProvider: IStorageProvider = {
-  /**
-   * @description Uploads a course thumbnail image to Supabase Storage.
-   * Tries the upload first; if the bucket doesn't exist, creates it with public access
-   * and a 2MB file limit, then retries the upload. Returns the public URL on success.
-   * Business rule: The file is stored at `{courseId}/thumbnail.{ext}` with upsert enabled
-   * so re-uploading replaces the previous thumbnail. The bucket is auto-provisioned lazily.
-   * @param {File} file - The image file to upload (must be under 2MB).
-   * @param {string} courseId - The UUID of the course (used as folder path).
-   * @returns {Promise<string | null>} The public URL of the uploaded thumbnail, or null on failure.
-   */
   async uploadThumbnail(file: File, courseId: string): Promise<string | null> {
     const ext = file.name.split('.').pop();
     const path = `${courseId}/thumbnail.${ext}`;
-    const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true });
-    if (error) {
-      if (error.message.includes('bucket') || error.message.includes('Bucket')) {
-        await ensureBucket();
-        const { error: retryErr } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true });
-        if (retryErr) { console.error(retryErr); return null; }
-      } else { console.error(error); return null; }
-    }
-    const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(path);
-    return publicUrl;
+    return uploadToBucket(THUMB_BUCKET, path, file);
+  },
+
+  async uploadCertificateImage(file: File, courseId: string, blockId: string): Promise<string | null> {
+    const ext = file.name.split('.').pop();
+    const path = `${courseId}/certificates/${blockId}.${ext}`;
+    return uploadToBucket(CERT_BUCKET, path, file);
+  },
+
+  async uploadCertificatePreview(blob: Blob, courseId: string): Promise<string | null> {
+    const file = new File([blob], 'preview.png', { type: 'image/png' });
+    const path = `${courseId}/certificate-preview.png`;
+    return uploadToBucket(CERT_BUCKET, path, file);
   },
 };

@@ -504,10 +504,8 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                     </Text>
                     <XStack cursor="pointer" onPress={() => setPreviewOpen(true)} hoverStyle={{ opacity: 0.85 }}>
                       <CertificateMiniature
-                        studentName="NOME DO ALUNO"
-                        courseName={course?.title}
                         blocks={course.certificate_blocks}
-                        serialNumber="BSGI-XXXXX-XXXX"
+                        certificateUrl={course.certificate_url}
                       />
                     </XStack>
                     <Text fontSize={10} color="$textMuted" textAlign="center">Clique no preview para ampliar</Text>

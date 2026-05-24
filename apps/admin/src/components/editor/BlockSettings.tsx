@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { YStack, XStack, Text, Button, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
+import { StorageService } from '@projeto/core';
 
 function parseMarkdownToHtml(text: string): string {
   if (!text) return '';
@@ -288,8 +289,38 @@ const TypographyAndBackgroundControls: React.FC<{ block: any; updateBlock: any }
   );
 };
 
+const ImageUploadBlock: React.FC<{ blockId: string; courseId?: string; onUpload: (url: string) => void }> = ({ blockId, courseId, onUpload }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !courseId) return;
+    if (file.size > 5 * 1024 * 1024) { alert('Arquivo muito grande. Máximo: 5MB.'); return; }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { alert('Formato não suportado. Use JPEG, PNG ou WebP.'); return; }
+    setUploading(true);
+    try {
+      const url = await StorageService.uploadCertificateImage(file, courseId, blockId);
+      if (url) onUpload(url);
+      else alert('Erro ao enviar imagem.');
+    } catch { alert('Erro ao enviar imagem.'); }
+    finally { setUploading(false); if (inputRef.current) inputRef.current.value = ''; }
+  };
+
+  return (
+    <YStack p="$3" borderRadius="$3" bg="$secondary" gap={8}>
+      <Text fontSize={11} fontWeight="600">UPLOAD DE IMAGENS</Text>
+      <Text fontSize={11} color="$textMuted">Envie uma imagem do seu computador. Formatos aceitos: JPEG, PNG, WebP (máx. 5MB).</Text>
+      <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }} onChange={handleFile} />
+      <Button variant="ghost" borderWidth={1} borderColor="$border" onPress={() => inputRef.current?.click()} disabled={uploading} size="$2">
+        <Icon name="Upload" size={14} /><Text ml={4} fontSize={12}>{uploading ? 'Enviando...' : 'Selecionar imagem'}</Text>
+      </Button>
+    </YStack>
+  );
+};
+
 export const BlockSettings: React.FC = () => {
-  const { blocks, activeBlockId, updateBlock, removeBlock } = useEditor();
+  const { blocks, activeBlockId, updateBlock, removeBlock, courseId } = useEditor();
   const [activeTab, setActiveTab] = useState<'props' | 'html'>('props');
   const [collapsed, setCollapsed] = useState(false);
 
@@ -670,12 +701,7 @@ export const BlockSettings: React.FC = () => {
             </YStack>
           )}
 
-          <YStack p="$3" borderRadius="$3" bg="$secondary">
-            <Text fontSize={11} fontWeight="600">UPLOAD DE IMAGENS</Text>
-            <Text fontSize={11} color="$textMuted">
-              Cole a URL de uma imagem existente ou hospedada. Suporte a upload direto para o Supabase Storage será habilitado em breve.
-            </Text>
-          </YStack>
+          <ImageUploadBlock blockId={activeBlock.id} courseId={courseId} onUpload={(url) => updateBlock(activeBlock.id, { url })} />
 
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
         </YStack>
