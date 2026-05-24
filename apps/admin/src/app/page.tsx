@@ -5,8 +5,9 @@ import { YStack, XStack, Text, Icon, Theme, Button, Spinner } from '@projeto/ui'
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BrandMark } from '../components/brand-mark';
-import { CourseService, StorageService } from '@projeto/core';
+import { AuthService, CourseService, StorageService } from '@projeto/core';
 import type { Course } from '@projeto/types';
+import type { Profile } from '@projeto/types';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -15,7 +16,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLUListElement>(null);
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -26,6 +28,15 @@ export default function Dashboard() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    AuthService.getCurrentProfile().then(setUserProfile).catch(() => {});
+  }, []);
+
+  const initials = userProfile?.full_name
+    ? userProfile.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : '??';
+  const displayName = userProfile?.full_name || 'Usuário';
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formThumbnail, setFormThumbnail] = useState<File | null>(null);
@@ -127,9 +138,9 @@ export default function Dashboard() {
                   }}
                 >
                   <XStack width={24} height={24} borderRadius={4} ai="center" jc="center" backgroundColor="$accent">
-                    <Text fontSize={11} fontWeight="$6" color="$accentForeground">MR</Text>
+                    <Text fontSize={11} fontWeight="$6" color="$accentForeground">{initials}</Text>
                   </XStack>
-                  <Text fontSize={14}>Maria</Text>
+                  <Text fontSize={14}>{displayName}</Text>
                   <Icon name="ChevronDown" size={14} color="$textMuted" />
                 </a>
 
