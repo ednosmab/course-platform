@@ -387,7 +387,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
           <XStack borderWidth={1} borderColor="$primary" px={2} py={0} borderRadius={1} bg="white">
             <Text fontSize={9} fontWeight="700" color="$primary">QUIZ</Text>
           </XStack>
-          <Text style={{ fontSize }} lineHeight="1.4">{questionElement}</Text>
+          <Text style={{ fontSize, lineHeight: 1.4 }}>{questionElement}</Text>
         </XStack>
         <YStack gap={1}>
           {block.options.map((opt, i) => (
@@ -749,6 +749,10 @@ export const EditorCanvas: React.FC = () => {
   };
 
   const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
+  const [certCanvasHeight, setCertCanvasHeight] = useState(510);
+  const [certCanvasWidth, setCertCanvasWidth] = useState(PAGE_W);
+  const resizeRef = useRef<{ startY: number; startH: number } | null>(null);
+  const widthResizeRef = useRef<{ startX: number; startW: number } | null>(null);
   const [clipboardBlockId, setClipboardBlockId] = useState<string | null>(null);
   const [marqueeRect, setMarqueeRect] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
   const isMarqueeSelecting = useRef(false);
@@ -954,6 +958,46 @@ export const EditorCanvas: React.FC = () => {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [activeBlockId, selectedBlockIds, previewMode, removeBlock, removeBlocks, duplicateBlock, clearSelection, setActiveBlockId, clipboardBlockId]);
 
+  const onResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    resizeRef.current = { startY: e.clientY, startH: certCanvasHeight };
+
+    const onResizeMove = (ev: MouseEvent) => {
+      if (!resizeRef.current) return;
+      const delta = ev.clientY - resizeRef.current.startY;
+      setCertCanvasHeight(Math.max(200, resizeRef.current.startH + delta));
+    };
+
+    const onResizeUp = () => {
+      resizeRef.current = null;
+      document.removeEventListener('mousemove', onResizeMove);
+      document.removeEventListener('mouseup', onResizeUp);
+    };
+
+    document.addEventListener('mousemove', onResizeMove);
+    document.addEventListener('mouseup', onResizeUp);
+  }, [certCanvasHeight]);
+
+  const onWidthResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    widthResizeRef.current = { startX: e.clientX, startW: certCanvasWidth };
+
+    const onResizeMove = (ev: MouseEvent) => {
+      if (!widthResizeRef.current) return;
+      const delta = ev.clientX - widthResizeRef.current.startX;
+      setCertCanvasWidth(Math.max(400, widthResizeRef.current.startW + delta));
+    };
+
+    const onResizeUp = () => {
+      widthResizeRef.current = null;
+      document.removeEventListener('mousemove', onResizeMove);
+      document.removeEventListener('mouseup', onResizeUp);
+    };
+
+    document.addEventListener('mousemove', onResizeMove);
+    document.addEventListener('mouseup', onResizeUp);
+  }, [certCanvasWidth]);
+
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
       if (!isMarqueeSelecting.current || !marqueeRect) return;
@@ -1007,7 +1051,7 @@ export const EditorCanvas: React.FC = () => {
 
   const sortedBlocks = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
   const isCertMode = mode === 'certificate';
-  const pageH = isCertMode ? 510 : Math.max(800, ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
+  const pageH = isCertMode ? Math.max(200, certCanvasHeight) : Math.max(800, ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
 
   return (
     <YStack
@@ -1018,7 +1062,7 @@ export const EditorCanvas: React.FC = () => {
     >
       <div
         data-page-root
-        style={{ position: 'relative', width: PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)', overflow: isCertMode ? 'hidden' : undefined }}
+        style={{ position: 'relative', width: isCertMode ? certCanvasWidth : PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)', overflow: isCertMode ? 'hidden' : undefined }}
         onMouseDown={(e) => {
           if ((e.target as HTMLElement).closest('[role="button"]')) return;
           if (inlineEditingId) return;
@@ -1030,7 +1074,7 @@ export const EditorCanvas: React.FC = () => {
         }}
       >
         <Text position="absolute" top={-22} left={0} fontSize={10} color="$textMuted" userSelect="none" style={{ fontFamily: 'monospace', pointerEvents: 'none' }}>
-          {PAGE_W}px — Desktop
+          {isCertMode ? `${certCanvasWidth} × ${pageH}` : `${PAGE_W}px`} — Desktop
         </Text>
 
         {blocks.length === 0 && (
@@ -1046,7 +1090,7 @@ export const EditorCanvas: React.FC = () => {
           const isHovered = hoveredBlockId === block.id;
           const showToolbar = isActive || isHovered;
           const layout = getLayout(block);
-          const outOfBounds = isOutOfBounds(block, PAGE_W);
+          const outOfBounds = isOutOfBounds(block, isCertMode ? certCanvasWidth : PAGE_W);
 
           return (
             <div
@@ -1172,7 +1216,7 @@ export const EditorCanvas: React.FC = () => {
           <div key={`gv-${i}`} style={{ position: 'absolute', left: x, top: 0, width: 0, height: pageH, borderLeft: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
         ))}
         {guides.h.map((y, i) => (
-          <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y, width: PAGE_W, height: 0, borderTop: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+          <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y, width: isCertMode ? certCanvasWidth : PAGE_W, height: 0, borderTop: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
         ))}
         {guides.m.map((m, i) => {
           if (m.orientation === 'h') {
@@ -1208,6 +1252,37 @@ export const EditorCanvas: React.FC = () => {
             zIndex: 1000,
             borderRadius: '4px',
           }} />
+        )}
+
+        {isCertMode && (
+          <>
+          <div
+            onMouseDown={onResizeStart}
+            style={{
+              position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+              width: 60, height: 8, cursor: 'ns-resize', zIndex: 100,
+              backgroundColor: '#cbd5e1', borderRadius: '4px 4px 0 0', opacity: 0.6,
+            }}
+          >
+            <div style={{
+              width: 40, height: 3, borderRadius: 2, backgroundColor: '#94a3b8',
+              margin: '2.5px auto 0',
+            }} />
+          </div>
+          <div
+            onMouseDown={onWidthResizeStart}
+            style={{
+              position: 'absolute', top: '50%', right: 0, transform: 'translateY(-50%)',
+              width: 8, height: 60, cursor: 'ew-resize', zIndex: 100,
+              backgroundColor: '#cbd5e1', borderRadius: '0 4px 4px 0', opacity: 0.6,
+            }}
+          >
+            <div style={{
+              height: 40, width: 3, borderRadius: 2, backgroundColor: '#94a3b8',
+              margin: '0 0 0 2.5px',
+            }} />
+          </div>
+          </>
         )}
       </div>
 

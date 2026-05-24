@@ -33,7 +33,7 @@ export const supabaseCertificateRepository: ICertificateRepository = {
    * @throws {Error} If the database insert fails; error is logged before re-throw.
    */
   async insertCertificate(userId: string, courseId: string, uuidBsgi: string): Promise<Certificate> {
-    const { data, error } = await supabase.from('certificates').insert({ user_id: userId, course_id: courseId, uuid_bsgi: uuidBsgi }).select('*').single();
+    const { data, error } = await (supabase.from('certificates') as any).insert({ user_id: userId, course_id: courseId, uuid_bsgi: uuidBsgi }).select('*').single();
     if (error) { console.error('Error issuing certificate:', error); throw error; }
     return CertificateSchema.parse(data);
   },

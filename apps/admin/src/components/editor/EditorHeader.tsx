@@ -157,7 +157,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({ courseId }) => {
             )}
           </Button>
           {publishError && (
-            <Text fontSize={12} color="$danger" maxWidth={220} lineHeight="1.3">
+            <Text fontSize={12} color="$danger" maxWidth={220} style={{ lineHeight: 1.3 }}>
               {publishError}
             </Text>
           )}

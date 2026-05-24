@@ -312,7 +312,7 @@ const ImageUploadBlock: React.FC<{ blockId: string; courseId?: string; onUpload:
       <Text fontSize={11} fontWeight="600">UPLOAD DE IMAGENS</Text>
       <Text fontSize={11} color="$textMuted">Envie uma imagem do seu computador. Formatos aceitos: JPEG, PNG, WebP (máx. 5MB).</Text>
       <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }} onChange={handleFile} />
-      <Button variant="ghost" borderWidth={1} borderColor="$border" onPress={() => inputRef.current?.click()} disabled={uploading} size="$2">
+      <Button variant="ghost" borderWidth={1} borderColor="$border" onPress={() => inputRef.current?.click()} disabled={uploading}>
         <Icon name="Upload" size={14} /><Text ml={4} fontSize={12}>{uploading ? 'Enviando...' : 'Selecionar imagem'}</Text>
       </Button>
     </YStack>

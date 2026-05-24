@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { YStack, XStack, Text, Button, Spinner } from 'tamagui';
+import { YStack, XStack, Text, Spinner } from 'tamagui';
+import { Button } from '../Button';
 import { Icon } from '../Icon';
 
 interface LoginFormProps {

@@ -264,7 +264,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
             <YStack f={3} gap={16}>
               <XStack ai="center" jc="space-between">
                 <Text fontFamily="$display" fontSize={18} fontWeight="$6">Grade de Aulas</Text>
-                <Button onPress={() => { setNewTitle(''); setShowModuleInput(true); }} variant="ghost" borderWidth={1} borderColor="$border" size="$2">
+                  <Button onPress={() => { setNewTitle(''); setShowModuleInput(true); }} variant="ghost" borderWidth={1} borderColor="$border">
                   <Icon name="Plus" size={14} /><Text ml={4} fontSize={12}>Novo módulo</Text>
                 </Button>
               </XStack>
@@ -279,8 +279,8 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                     style={{ flex: 1, height: 36, borderRadius: 6, border: '1px solid #DEE1EB', padding: '0 12px', fontSize: 14, outline: 'none' }}
                     onKeyDown={e => { if (e.key === 'Enter') createModule(); if (e.key === 'Escape') setShowModuleInput(false); }}
                   />
-                  <Button onPress={createModule} disabled={!newTitle.trim()} variant="ghost" borderWidth={1} borderColor="$border" size="$2">Adicionar</Button>
-                  <Button variant="secondary" onPress={() => setShowModuleInput(false)} size="$2">Cancelar</Button>
+                  <Button onPress={createModule} disabled={!newTitle.trim()} variant="ghost" borderWidth={1} borderColor="$border">Adicionar</Button>
+                  <Button variant="secondary" onPress={() => setShowModuleInput(false)}>Cancelar</Button>
                 </XStack>
               )}
 
@@ -307,7 +307,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                           style={{ flex: 1, height: 32, borderRadius: 6, border: '1px solid #3B82F6', padding: '0 10px', fontSize: 14, outline: 'none' }}
                           onKeyDown={e => { if (e.key === 'Enter') renameModule(mod.id); if (e.key === 'Escape') setEditingModuleId(null); }}
                         />
-                        <Button onPress={() => renameModule(mod.id)} px="$3" py="$1" variant="ghost" borderWidth={1} borderColor="$border" size="$2">
+                        <Button onPress={() => renameModule(mod.id)} px="$3" py="$1" variant="ghost" borderWidth={1} borderColor="$border">
                           <Text fontSize={12}>Salvar</Text>
                         </Button>
                       </XStack>
@@ -343,10 +343,10 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                             style={{ flex: 1, height: 32, borderRadius: 6, border: '1px solid #DEE1EB', padding: '0 12px', fontSize: 13, outline: 'none' }}
                             onKeyDown={e => { if (e.key === 'Enter') createLesson(mod.id); if (e.key === 'Escape') setShowLessonInput(null); }}
                           />
-                          <Button onPress={() => createLesson(mod.id)} disabled={!newTitle.trim()} px="$3" py="$1" variant="ghost" borderWidth={1} borderColor="$border" size="$2">
+                          <Button onPress={() => createLesson(mod.id)} disabled={!newTitle.trim()} px="$3" py="$1" variant="ghost" borderWidth={1} borderColor="$border">
                             <Text fontSize={12}>Adicionar</Text>
                           </Button>
-                          <Button variant="secondary" onPress={() => setShowLessonInput(null)} px="$3" py="$1" size="$2">
+                          <Button variant="secondary" onPress={() => setShowLessonInput(null)} px="$3" py="$1">
                             <Text fontSize={12}>Cancelar</Text>
                           </Button>
                         </XStack>
@@ -375,7 +375,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                                 style={{ flex: 1, height: 28, borderRadius: 6, border: '1px solid #3B82F6', padding: '0 8px', fontSize: 13, outline: 'none' }}
                                 onKeyDown={e => { if (e.key === 'Enter') renameLesson(lesson.id); if (e.key === 'Escape') setEditingLessonId(null); }}
                               />
-                              <Button onPress={() => renameLesson(lesson.id)} px="$3" py="$1" variant="ghost" borderWidth={1} borderColor="$border" size="$2">
+                              <Button onPress={() => renameLesson(lesson.id)} px="$3" py="$1" variant="ghost" borderWidth={1} borderColor="$border">
                                 <Text fontSize={12}>Salvar</Text>
                               </Button>
                             </XStack>
@@ -537,7 +537,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                           <Icon name="X" size={18} color="$textMuted" />
                         </Button>
                       </XStack>
-                      <YStack f={1} p={32} ai="center" jc="center" overflow="auto" bg="white" gap={16}>
+                      <YStack f={1} p={32} ai="center" jc="center" bg="white" gap={16} style={{ overflow: 'auto' }}>
                         {(course?.certificate_blocks as CertificateBlock[] || []).map((block) => (
                           <CertificateBlockRenderer key={block.id} block={block} scale={1} />
                         ))}
@@ -550,7 +550,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                   onPress={() => router.push(`/studio/${courseId}?mode=certificate`)}
                   backgroundColor="$primary"
                   hoverStyle={{ opacity: 0.9 }}
-                  size="$3"
+                 
                 >
                   <XStack ai="center" gap={8}>
                     <Icon name="Settings" size={14} color="white" />
@@ -565,7 +565,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                   </XStack>
                 )}
 
-                <Button onPress={saveCourseSettings} disabled={saving} size="$3" variant="ghost" borderWidth={1} borderColor="$border" opacity={saving ? 0.6 : 1}>
+                <Button onPress={saveCourseSettings} disabled={saving} variant="ghost" borderWidth={1} borderColor="$border" opacity={saving ? 0.6 : 1}>
                   <Text fontSize={13} fontWeight="600">{saving ? 'Salvando...' : 'Salvar Alterações'}</Text>
                 </Button>
               </YStack>

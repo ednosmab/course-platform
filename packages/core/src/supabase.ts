@@ -61,7 +61,7 @@ export function getSupabaseClient() {
  * Existing import `import { supabase } from '../supabase'` will continue to work
  * because the binding is a getter proxy that delegates to getSupabaseClient().
  */
-export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
+export const supabase = new Proxy({} as ReturnType<typeof createClient<any, 'public', any>>, {
   get(_, prop) {
     const client = getSupabaseClient();
     const value = (client as any)[prop];

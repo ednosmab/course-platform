@@ -61,12 +61,12 @@ function LoginPageContent() {
           </XStack>
 
           <YStack gap="$4">
-            <Text fontFamily="$display" fontSize={36} $lg={{ fontSize: 48 }} fontWeight="600" lineHeight="1.05" letterSpacing={-0.5} color="$white">
+            <Text fontFamily="$display" fontSize={36} $lg={{ fontSize: 48 }} fontWeight="600" letterSpacing={-0.5} color="$white" style={{ lineHeight: 1.05 }}>
               Crie aulas visualmente ricas.
               <br />
               <span style={{ opacity: 0.8 }}>Sem código. Sem fricção.</span>
             </Text>
-            <Text fontSize={16} color="rgba(255,255,255,0.85)" lineHeight="1.6">
+            <Text fontSize={16} color="rgba(255,255,255,0.85)" style={{ lineHeight: 1.6 }}>
               Um lugar só pra montar cursos, acompanhar alunos e entregar uma experiência fluida — do primeiro clique ao certificado.
             </Text>
           </YStack>

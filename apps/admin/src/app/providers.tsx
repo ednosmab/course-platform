@@ -13,7 +13,7 @@ import { createSupabaseBrowserClient } from '../lib/supabase-client';
  */
 function SupabaseClientInit() {
   useEffect(() => {
-    setSupabaseClient(createSupabaseBrowserClient());
+    setSupabaseClient(createSupabaseBrowserClient() as any);
   }, []);
   return null;
 }
