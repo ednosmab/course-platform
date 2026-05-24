@@ -176,7 +176,7 @@ export function StudentDashboard({ onPlay }: StudentDashboardProps) {
                         <Icon name="Sparkles" size={18} color="$white" />
                       </YStack>
                       <YStack>
-                        <Text variant="caption">Oi, {userProfile?.full_name || '...'} 👋</Text>
+                        <Text variant="caption">Oi, {userProfile?.full_name || 'estudante'} 👋</Text>
                         <Text variant="h3" fontWeight="bold">Bora manter o ritmo?</Text>
                       </YStack>
                     </XStack>
@@ -422,8 +422,8 @@ function TopBar({ userProfile }: TopBarProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const initials = userProfile?.full_name
     ? userProfile.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
-    : '..';
-  const firstName = userProfile?.full_name ? userProfile.full_name.split(' ')[0] : '...';
+    : '--';
+  const firstName = userProfile?.full_name ? userProfile.full_name.split(' ')[0] : '--';
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
