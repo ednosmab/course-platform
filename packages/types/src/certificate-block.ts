@@ -66,17 +66,25 @@ export const CertificateDividerBlockSchema = z.object({
 
 export type CertificateDividerBlock = z.infer<typeof CertificateDividerBlockSchema>;
 
+export const CertificateMetaBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal('__meta__'),
+  designWidth: z.number(),
+  designHeight: z.number(),
+}).passthrough();
+
 export const CertificateBlockSchema = z.discriminatedUnion('type', [
   CertificateTextBlockSchema,
   CertificateImageBlockSchema,
   CertificateHeadingBlockSchema,
   CertificateDividerBlockSchema,
+  CertificateMetaBlockSchema,
 ]);
 
 export type CertificateBlock = z.infer<typeof CertificateBlockSchema>;
 
 /** @description Metadata block appended to certificate_blocks array to persist design dimensions.
- *  Not part of CertificateBlockSchema (avoids .catch([]) clearing the array).
+ *  Included in CertificateBlockSchema so CourseSchema.parse() doesn't .catch([]) the entire array.
  *  Filtered out by createCertificateModeConfig on load, injected on save. */
 export interface CertificateMetaBlock {
   type: '__meta__';
