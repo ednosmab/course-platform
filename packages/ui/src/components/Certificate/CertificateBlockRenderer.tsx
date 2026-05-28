@@ -55,7 +55,8 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale }) => {
     case 'image': {
       if (!block.url) return null;
       const align = block.styles?.align || 'center';
-      const rawWidth = block.styles?.width || '80%';
+      const layoutW = block.layouts?.desktop?.w;
+      const rawWidth = block.styles?.width || (layoutW ? `${Math.round((layoutW / 1100) * 100)}%` : '80%');
       const rawHeight = block.styles?.height;
       const br = Math.round(4 * scale);
 
