@@ -4,6 +4,7 @@ import React, { createContext, useContext, useReducer, useState, useEffect, useC
 import { AnyBlock } from '@projeto/types';
 import { LessonService, CourseService } from '@projeto/core';
 import type { EditorModeConfig, EditorBlockType } from './editor-modes';
+import { DEFAULT_CERT_WIDTH, DEFAULT_CERT_HEIGHT } from './editor-modes';
 
 interface EditorState {
   blocks: AnyBlock[];
@@ -330,6 +331,10 @@ interface EditorContextType extends EditorState {
   lessonTitle: string;
   mode: 'lesson' | 'certificate';
   allowedBlockTypes: Set<EditorBlockType>;
+  certDesignWidth: number;
+  certDesignHeight: number;
+  certDesignChosen: boolean;
+  setCertDesignSize: (width: number, height: number) => void;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
@@ -368,6 +373,15 @@ export const EditorProvider: React.FC<{
   const setViewportMode = useCallback((mode: 'desktop' | 'tablet' | 'mobile') => dispatch({ type: 'SET_VIEWPORT_MODE', payload: { mode } }), []);
   const updateBlockSilent = useCallback((id: string, updates: Partial<AnyBlock>) => dispatch({ type: 'UPDATE_BLOCK_SILENT', payload: { id, updates } }), []);
 
+  const [certDesignWidth, setCertDesignWidth] = useState(DEFAULT_CERT_WIDTH);
+  const [certDesignHeight, setCertDesignHeight] = useState(DEFAULT_CERT_HEIGHT);
+  const [certDesignChosen, setCertDesignChosen] = useState(false);
+  const setCertDesignSize = useCallback((width: number, height: number) => {
+    setCertDesignWidth(width);
+    setCertDesignHeight(height);
+    setCertDesignChosen(true);
+  }, []);
+
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history.length - 1;
 
@@ -391,6 +405,13 @@ export const EditorProvider: React.FC<{
         if (result.courseTitle) {
           setCourseTitle(result.courseTitle);
           if (initialCourseId) setCourseId(initialCourseId);
+        }
+        if (result.certMeta) {
+          setCertDesignWidth(result.certMeta.designWidth);
+          setCertDesignHeight(result.certMeta.designHeight);
+          setCertDesignChosen(true);
+        } else if (mode === 'certificate' && result.blocks.length > 0) {
+          setCertDesignChosen(true);
         }
         if (result.lessonMeta) {
           setLessonMeta(result.lessonMeta);
@@ -456,6 +477,8 @@ export const EditorProvider: React.FC<{
           entityId,
           blocks: state.blocks,
           lessonMeta: lessonMeta || undefined,
+          certDesignWidth,
+          certDesignHeight,
         });
 
         setSaveStatus('saved');
@@ -480,6 +503,8 @@ export const EditorProvider: React.FC<{
         entityId,
         blocks: state.blocks,
         lessonMeta: lessonMeta || undefined,
+        certDesignWidth,
+        certDesignHeight,
       });
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
@@ -525,6 +550,10 @@ export const EditorProvider: React.FC<{
         lessonTitle: modeConfig.getTitle(lessonMeta || undefined),
         mode,
         allowedBlockTypes: modeConfig.allowedBlockTypes,
+        certDesignWidth,
+        certDesignHeight,
+        certDesignChosen,
+        setCertDesignSize,
       }}
     >
       {children}

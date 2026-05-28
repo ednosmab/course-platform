@@ -7,6 +7,7 @@ import { AnyBlock } from '@projeto/types';
 
 const CANVAS_W = 1100;
 const PAGE_W   = 1100;
+const A4_RATIO = 1.414;
 const MOBILE_W = 390;
 const TABLET_W = 650;
 const MOBILE_H = 720;
@@ -720,7 +721,7 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
 }
 
 export const EditorCanvas: React.FC = () => {
-  const { blocks, activeBlockId, selectedBlockIds, setActiveBlockId, removeBlock, removeBlocks, duplicateBlock, toggleSelectBlock, clearSelection, updateBlock, updateBlockSilent, previewMode, viewportMode, mode } = useEditor();
+  const { blocks, activeBlockId, selectedBlockIds, setActiveBlockId, removeBlock, removeBlocks, duplicateBlock, toggleSelectBlock, clearSelection, updateBlock, updateBlockSilent, previewMode, viewportMode, mode, certDesignWidth, certDesignHeight, certDesignChosen, setCertDesignSize } = useEditor();
   const [mounted, setMounted] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
@@ -749,10 +750,6 @@ export const EditorCanvas: React.FC = () => {
   };
 
   const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
-  const [certCanvasHeight, setCertCanvasHeight] = useState(510);
-  const [certCanvasWidth, setCertCanvasWidth] = useState(PAGE_W);
-  const resizeRef = useRef<{ startY: number; startH: number } | null>(null);
-  const widthResizeRef = useRef<{ startX: number; startW: number } | null>(null);
   const [clipboardBlockId, setClipboardBlockId] = useState<string | null>(null);
   const [marqueeRect, setMarqueeRect] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
   const isMarqueeSelecting = useRef(false);
@@ -996,62 +993,6 @@ export const EditorCanvas: React.FC = () => {
 
   const pageRootRef = useRef<HTMLDivElement>(null);
 
-  const onResizeStart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const el = pageRootRef.current;
-    if (!el) return;
-    const curH = el.offsetHeight;
-    resizeRef.current = { startY: e.clientY, startH: curH };
-    document.body.style.cursor = 'ns-resize';
-
-    const onResizeMove = (ev: MouseEvent) => {
-      if (!resizeRef.current) return;
-      const delta = ev.clientY - resizeRef.current.startY;
-      const h = Math.max(200, resizeRef.current.startH + delta);
-      el.style.minHeight = `${h}px`;
-    };
-
-    const onResizeUp = () => {
-      resizeRef.current = null;
-      document.body.style.cursor = '';
-      if (el) { const h = parseInt(el.style.minHeight || '0', 10); if (h) setCertCanvasHeight(h); el.style.minHeight = ''; }
-      document.removeEventListener('mousemove', onResizeMove);
-      document.removeEventListener('mouseup', onResizeUp);
-    };
-
-    document.addEventListener('mousemove', onResizeMove);
-    document.addEventListener('mouseup', onResizeUp);
-  }, []);
-
-  const onWidthResizeStart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const el = pageRootRef.current;
-    if (!el) return;
-    const curW = el.offsetWidth;
-    widthResizeRef.current = { startX: e.clientX, startW: curW };
-    document.body.style.cursor = 'ew-resize';
-
-    const onResizeMove = (ev: MouseEvent) => {
-      if (!widthResizeRef.current) return;
-      const delta = ev.clientX - widthResizeRef.current.startX;
-      const w = Math.max(400, widthResizeRef.current.startW + delta);
-      el.style.width = `${w}px`;
-    };
-
-    const onResizeUp = () => {
-      widthResizeRef.current = null;
-      document.body.style.cursor = '';
-      if (el) { const w = parseInt(el.style.width || '0', 10); if (w) setCertCanvasWidth(w); el.style.width = ''; }
-      document.removeEventListener('mousemove', onResizeMove);
-      document.removeEventListener('mouseup', onResizeUp);
-    };
-
-    document.addEventListener('mousemove', onResizeMove);
-    document.addEventListener('mouseup', onResizeUp);
-  }, []);
-
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
       if (!isMarqueeSelecting.current || !marqueeRect) return;
@@ -1105,11 +1046,20 @@ export const EditorCanvas: React.FC = () => {
 
   const sortedBlocks = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
   const isCertMode = mode === 'certificate';
-  const pageH = isCertMode ? Math.max(200, certCanvasHeight) : Math.max(800, ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
+  const pageH = isCertMode ? Math.max(200, certDesignHeight) : Math.max(800, ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
+
+  if (isCertMode && !certDesignChosen) {
+    return (
+      <YStack flex={1} p="$5" bg="$background" ai="center" jc="center" gap="$3">
+        <Text fontSize={16} fontWeight="600">Personalize seu Certificado</Text>
+        <Text fontSize={13} color="$textMuted" textAlign="center">Selecione um tamanho de layout no painel à direita para começar</Text>
+      </YStack>
+    );
+  }
 
   return (
     <YStack
-      flex={1} p="$5" style={{ overflow: isCertMode ? 'hidden' : 'auto' }}
+      flex={1} p="$5"         style={{ overflow: 'auto' }}
       bg="$background"
       onPress={() => setActiveBlockId(null)}
       data-editor-root
@@ -1117,7 +1067,7 @@ export const EditorCanvas: React.FC = () => {
       <div
         ref={pageRootRef}
         data-page-root
-        style={{ position: 'relative', width: isCertMode ? certCanvasWidth : PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)', overflow: isCertMode ? 'hidden' : undefined }}
+        style={{ position: 'relative', width: isCertMode ? certDesignWidth : PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)', overflow: isCertMode ? 'hidden' : undefined }}
         onMouseDown={(e) => {
           if ((e.target as HTMLElement).closest('[role="button"]')) return;
           if (inlineEditingId) return;
@@ -1129,7 +1079,7 @@ export const EditorCanvas: React.FC = () => {
         }}
       >
         <Text position="absolute" top={-22} left={0} fontSize={10} color="$textMuted" userSelect="none" style={{ fontFamily: 'monospace', pointerEvents: 'none' }}>
-          {isCertMode ? `${certCanvasWidth} × ${pageH}` : `${PAGE_W}px`} — Desktop
+          {isCertMode ? `${certDesignWidth} × ${pageH}` : `${PAGE_W}px`} — Desktop
         </Text>
 
         {blocks.length === 0 && (
@@ -1145,7 +1095,7 @@ export const EditorCanvas: React.FC = () => {
           const isHovered = hoveredBlockId === block.id;
           const showToolbar = isActive || isHovered;
           const layout = getLayout(block);
-          const outOfBounds = isOutOfBounds(block, isCertMode ? certCanvasWidth : PAGE_W);
+          const outOfBounds = isOutOfBounds(block, isCertMode ? certDesignWidth : PAGE_W);
 
           return (
             <div
@@ -1271,7 +1221,7 @@ export const EditorCanvas: React.FC = () => {
           <div key={`gv-${i}`} style={{ position: 'absolute', left: x, top: 0, width: 0, height: pageH, borderLeft: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
         ))}
         {guides.h.map((y, i) => (
-          <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y, width: isCertMode ? certCanvasWidth : PAGE_W, height: 0, borderTop: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+          <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y, width: isCertMode ? certDesignWidth : PAGE_W, height: 0, borderTop: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
         ))}
         {guides.m.map((m, i) => {
           if (m.orientation === 'h') {
@@ -1309,36 +1259,6 @@ export const EditorCanvas: React.FC = () => {
           }} />
         )}
 
-        {isCertMode && (
-          <>
-          <div
-            onMouseDown={onResizeStart}
-            style={{
-              position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-              width: 60, height: 8, cursor: 'ns-resize', zIndex: 100,
-              backgroundColor: '#cbd5e1', borderRadius: '4px 4px 0 0', opacity: 0.6,
-            }}
-          >
-            <div style={{
-              width: 40, height: 3, borderRadius: 2, backgroundColor: '#94a3b8',
-              margin: '2.5px auto 0',
-            }} />
-          </div>
-          <div
-            onMouseDown={onWidthResizeStart}
-            style={{
-              position: 'absolute', top: '50%', right: 0, transform: 'translateY(-50%)',
-              width: 8, height: 60, cursor: 'ew-resize', zIndex: 100,
-              backgroundColor: '#cbd5e1', borderRadius: '0 4px 4px 0', opacity: 0.6,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <div style={{
-              height: 40, width: 3, borderRadius: 2, backgroundColor: '#94a3b8',
-            }} />
-          </div>
-          </>
-        )}
       </div>
 
       {floatToolbar && (

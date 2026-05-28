@@ -51,8 +51,11 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
     return () => ro.disconnect();
   }, [previewOpen]);
 
-  const previewScale = measuredWidth ? measuredWidth / 1100 : 1;
+  const certDesignWidth = (course?.certificate_blocks || []).find((b: any) => b.type === '__meta__')?.designWidth ?? 1100;
+  const previewScale = measuredWidth ? Math.min(1, measuredWidth / certDesignWidth) : 1;
+  const previewContainerWidth = Math.min(measuredWidth, certDesignWidth);
   const previewReady = measuredWidth > 0;
+  const certificateBlocks = (course?.certificate_blocks || []).filter((b: any) => b.type !== '__meta__');
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -536,14 +539,14 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                   </XStack>
                 </XStack>
 
-                {certificateEnabled && course?.certificate_blocks?.length > 0 && (
+                {certificateEnabled && certificateBlocks.length > 0 && (
                   <YStack gap={8}>
                     <Text fontSize={11} fontWeight="600" color="$textMuted" textTransform="uppercase" letterSpacing={1}>
                       Preview do Certificado
                     </Text>
                     <XStack cursor="pointer" onPress={() => setPreviewOpen(true)} hoverStyle={{ opacity: 0.85 }}>
                       <CertificateMiniature
-                        blocks={course.certificate_blocks || []}
+                        blocks={certificateBlocks}
                       />
                     </XStack>
                     <Text fontSize={10} color="$textMuted" textAlign="center">Clique no preview para ampliar</Text>
@@ -602,14 +605,14 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                               style={{
                                 position: 'relative',
                                 width: '100%',
-                                maxWidth: Math.min(measuredWidth, 1100),
+                                maxWidth: previewContainerWidth,
                                 aspectRatio: '29.7 / 21',
                                 overflow: 'hidden',
                                 background: 'white',
                                 boxShadow: '0 10px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.05)',
                               }}
                             >
-                              {(course?.certificate_blocks || []).map((block: any) => {
+                              {certificateBlocks.map((block: any) => {
                                 const layout = block.layouts?.desktop || { x: 0, y: 0, w: 200, h: 100, zIndex: 0 };
                                 return (
                                   <div

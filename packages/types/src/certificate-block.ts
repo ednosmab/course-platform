@@ -74,3 +74,12 @@ export const CertificateBlockSchema = z.discriminatedUnion('type', [
 ]);
 
 export type CertificateBlock = z.infer<typeof CertificateBlockSchema>;
+
+/** @description Metadata block appended to certificate_blocks array to persist design dimensions.
+ *  Not part of CertificateBlockSchema (avoids .catch([]) clearing the array).
+ *  Filtered out by createCertificateModeConfig on load, injected on save. */
+export interface CertificateMetaBlock {
+  type: '__meta__';
+  designWidth: number;
+  designHeight: number;
+}

@@ -1,10 +1,10 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-SESSAO ATIVA — Cleanup: remover código morto da abordagem de captura abandonada.
+SESSAO CONCLUIDA — Certificado: preview/print A4 com presets, header colapsável, ajustes finos de layout.
 
 ## 🎯 Tarefa em Execução
-Limpeza de dead code: remover `html-to-image`, `useCertificateCapture`, `uploadCertificatePreview`, `certificate_url` e migration obsoleta de Storage RLS.
+*Sessão encerrada. Último commit: `dac985e`.*
 
 ## 🕹️ Documentos Carregados via MCP
 - `docs/FORBIDDEN_OPERATIONS.md` — Regras vinculantes
@@ -13,51 +13,55 @@ Limpeza de dead code: remover `html-to-image`, `useCertificateCapture`, `uploadC
 - `docs/BACKLOG.md` — Prioridades do projeto
 - `docs/roadmaps/design-system-reforma.md` — Plano do DS
 
-## Implementação
+## 🚀 Novidades desta sessão
 
-### Abordagem atual: Preview ao vivo (sem captura)
-O preview do certificado na página de configurações renderiza os blocos JSONB ao vivo via `CertificateBlockRenderer`, sem captura de screenshot. A abordagem anterior (captura com `html-to-image` + Storage) foi abandonada porque PNGs gerados de elementos off-screen (`opacity:0`) resultavam em arquivos inválidos.
+### Certificado: Canvas A4 com presets fixos
+- Canvas usa **presets A4 fixos** (700/900/1100/1300px), sem drag-resize volátil
+- Altura sempre `largura / 1.414` (proporção A4 paisagem)
+- Blocos posicionados com layout absoluto (`position: absolute`, `layout.x/y/w/h` em pixels)
+- Imagem preenche 100% com `objectFit: fill`
+- `@media print` força A4 paisagem (297×210mm) com margem zero
+- CSS de print injetado via `useEffect` (exceção D-03)
+- `CertificateMetaBlock` type-only em `packages/types/src/certificate-block.ts`
+- `editor-modes.ts`: `A4_PRESETS`, `A4_RATIO`, `createCertificateModeConfig` com load/save/publish
+- `EditorContext.tsx`: `certDesignWidth`, `certDesignHeight`, `certDesignChosen`, `setCertDesignSize`
 
-### Flows
-1. **Studio (certificate mode):** Usuário adiciona blocos de texto/imagem no editor → auto-save salva em `courses.certificate_blocks` (JSONB) → imagens uploaded para `certificate-images/{courseId}/certificates/{blockId}.ext`
-2. **Config page preview:** Lê `certificate_blocks` do course → renderiza ao vivo via `CertificateBlockRenderer` → usa `<img>` nativo para imagens (não Tamagui Image, que falha no web)
-3. **Editor mode strategy:** `editor-modes.ts` com `LessonModeConfig` e `CertificateModeConfig` evitam `if (mode === 'certificate')` espalhado
+### Modo certificado isolado
+- `editor-modes.ts`: `CertificateCanvasPanel` com 4 presets A4
+- `BlockSettings.tsx`: renderiza `CertificateCanvasPanel` quando `!activeBlock && mode === 'certificate'`
+- `page.tsx`: `(activeBlockId || mode === 'certificate')` condiciona `BlockSettings`
+- Modo aula e certificado completamente isolados
+- Blocos incompatíveis filtrados no palette (só text/heading/image/divider)
 
-### Mudanças arquiteturais
-- **Capture approach ABANDONADA:** removidos `useCertificateCapture`, `html-to-image` dependency, `uploadCertificatePreview` do IStorageProvider/storage service/supabase adapter, `certificate_url` do CourseSchema/ICourseRepository/course repository
-- **Migrations removidas:** `20260523000002_add_certificate_url.sql` e `20260524000001_add_storage_rls_certificate.sql`
-- **CertificateBlock schemas:** `.passthrough()` em vez de `.strict()` — aceita propriedades extras do editor sem falhar Zod
-- **Dispatch functions:** `useCallback([])` no EditorContext para evitar loop infinito
-- **Auto-save debounce:** reduzido de 10000ms para 500ms
-- **SSR client injection:** `SupabaseClientInit` provider injeta `setSupabaseClient(createSupabaseBrowserClient())` no core
+### Preview e configurações
+- Config page: `certDesignWidth` dinâmico do `__meta__`, `previewScale = Math.min(1, measuredWidth / certDesignWidth)`
+- `CertificateBlockRenderer`: `fillContainer` para imagem, `scaleDim` para px
+- `useA4Scale.ts` mantido (`DESIGN_W = 1050`) para compat app aluno
 
-## Arquivos ativos do Certificate feature
+### EditorHeader colapsável
+- Clique em qualquer lugar do header recolhe/expande
+- Altura collapsed: `0` (antes 8), `overflow: hidden` removido
+- Botão flutuante `position: fixed; right: 50; zIndex: 9999` com `ChevronDown`
+- Botão com destaque suave: `bg #EFF6FF`, `borderColor $primary`, `opacity 0.55`, hover `opacity 1`
+- Ícone `ChevronUp` sutil (opacity 0.35) no header expandido como dica
+- Tudo encapsulado em `YStack position="relative"`
 
-### Types
-- `packages/types/src/certificate-block.ts` — schemas com `.passthrough()`
+### Fixes aplicados
+- `BlockSettings.tsx`: early return reestruturado (`if (!activeBlock) { if cert ... }`) elimina 116 erros TS
+- `BlockSettings.tsx`: `useEffect` reseta `collapsed = false` quando `activeBlockId` muda (cert mode)
+- `EditorCanvas.tsx`: removido `opacity: 0.35` em outOfBounds (confundia com imagem)
+- `EditorCanvas.tsx`: removido tracejado A4 (redundante com borda amarela de overflow)
 
-### Core
-- `packages/core/src/ports/IStorageProvider.ts` — `uploadCertificateImage` (mantido), `uploadCertificatePreview` (removido)
-- `packages/core/src/adapters/supabase-storage-provider.ts` — upload de imagens de blocos para `certificate-images` bucket
-- `packages/core/src/services/storage.ts` — `uploadCertificateImage` (mantido), `uploadCertificatePreview` (removido)
-- `packages/core/src/ports/ICourseRepository.ts` — `certificate_blocks` no Pick, `certificate_url` removido
-- `packages/core/src/adapters/supabase-course-repository.ts` — atualizado
-
-### UI
-- `packages/ui/src/components/Certificate/CertificateMiniature.tsx` — renderiza blocos ao vivo via `CertificateBlockRenderer`
-- `packages/ui/src/components/Certificate/CertificateBlockRenderer.tsx` — renderizador com `<img>` nativo para imagem
-- `packages/ui/src/components/Certificate/CertificatePage.tsx` — template A4 com molduras douradas, texto parametrizado (props)
-- `packages/ui/src/components/Certificate/useA4Scale.ts` — hook de escala A4
-
-### Admin
-- `apps/admin/src/context/EditorContext.tsx` — dispatch com `useCallback`
-- `apps/admin/src/context/editor-modes.ts` — strategy pattern
-- `apps/admin/src/components/editor/BlockSettings.tsx` — config de blocos com upload de imagem
-- `apps/admin/src/app/providers.tsx` — injeção SSR client
-
-### Migrations mantidas
-- `supabase/migrations/20260520000001_add_certificate_enabled.sql` — coluna `certificate_enabled boolean`
-- `supabase/migrations/20260523000000_add_course_certificate_blocks.sql` — coluna `certificate_blocks jsonb`
+## Arquivos modificados nesta sessão
+- `apps/admin/src/components/editor/BlockSettings.tsx` — CertificateCanvasPanel, collapsed fix, TS error fix
+- `apps/admin/src/components/editor/EditorCanvas.tsx` — A4 guide line, overflow, opacity removed
+- `apps/admin/src/components/editor/EditorHeader.tsx` — collapsible, floating button, ChevronUp hint
+- `apps/admin/src/context/editor-modes.ts` — A4_PRESETS, createCertificateModeConfig
+- `apps/admin/src/context/EditorContext.tsx` — certDesignWidth/Height/Chosen
+- `apps/admin/src/app/studio/[courseId]/page.tsx` — BlockSettings conditional render
+- `apps/admin/src/app/configuracoes/[courseId]/page.tsx` — dynamic certDesignWidth
+- `packages/types/src/certificate-block.ts` — CertificateMetaBlock interface
+- `docs/context_buffer.md` — this update
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
 *Nenhum erro ativo.*

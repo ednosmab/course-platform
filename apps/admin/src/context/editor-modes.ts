@@ -8,10 +8,21 @@
  * as well as which block types are available in the palette.
  */
 
-import { AnyBlock } from '@projeto/types';
+import { AnyBlock, CertificateMetaBlock } from '@projeto/types';
 import { LessonService, CourseService } from '@projeto/core';
 
 export type EditorBlockType = 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' | 'heading' | 'divider';
+
+export const A4_PRESETS = [
+  { label: 'Pequeno', width: 700 },
+  { label: 'Médio', width: 900 },
+  { label: 'Padrão', width: 1100 },
+  { label: 'Grande', width: 1300 },
+] as const;
+
+export const A4_RATIO = 1.414;
+export const DEFAULT_CERT_WIDTH = 1100;
+export const DEFAULT_CERT_HEIGHT = Math.round(DEFAULT_CERT_WIDTH / A4_RATIO);
 
 export interface EditorModeConfig {
   /** Load initial blocks and metadata for editing */
@@ -19,18 +30,23 @@ export interface EditorModeConfig {
     blocks: AnyBlock[];
     courseTitle?: string;
     lessonMeta?: { module_id: string; title: string; order_index: number };
+    certMeta?: { designWidth: number; designHeight: number };
   }>;
   /** Persist current blocks (auto-save or draft) */
   save: (params: {
     entityId: string;
     blocks: AnyBlock[];
     lessonMeta?: { module_id: string; title: string; order_index: number };
+    certDesignWidth?: number;
+    certDesignHeight?: number;
   }) => Promise<void>;
   /** Publish blocks (for lessons: validates course published first; for cert: same as save) */
   publish: (params: {
     entityId: string;
     blocks: AnyBlock[];
     lessonMeta?: { module_id: string; title: string; order_index: number };
+    certDesignWidth?: number;
+    certDesignHeight?: number;
   }) => Promise<void>;
   /** Display title shown in the editor header breadcrumb */
   getTitle: (lessonMeta?: { title: string }) => string;
@@ -109,25 +125,43 @@ const CERTIFICATE_COMPATIBLE_TYPES = new Set<EditorBlockType>(['text', 'heading'
 export function createCertificateModeConfig(): EditorModeConfig {
   return {
     load: async ({ courseId }) => {
-      if (!courseId) return { blocks: [] };
+      if (!courseId) return { blocks: [], certMeta: { designWidth: DEFAULT_CERT_WIDTH, designHeight: DEFAULT_CERT_HEIGHT } };
       const cData = await CourseService.getCourse(courseId);
-      if (!cData) return { blocks: [] };
-      const blocks = ((cData as any).certificate_blocks || []).filter(
+      if (!cData) return { blocks: [], certMeta: { designWidth: DEFAULT_CERT_WIDTH, designHeight: DEFAULT_CERT_HEIGHT } };
+      const rawBlocks: AnyBlock[] = ((cData as any).certificate_blocks || []);
+      const blocks = rawBlocks.filter(
         (b: AnyBlock) => CERTIFICATE_COMPATIBLE_TYPES.has(b.type as EditorBlockType),
       );
-      return { blocks, courseTitle: cData.title || '' };
+      const meta = rawBlocks.find((b: any) => b.type === '__meta__') as CertificateMetaBlock | undefined;
+      return {
+        blocks,
+        courseTitle: cData.title || '',
+        certMeta: meta
+          ? { designWidth: meta.designWidth, designHeight: meta.designHeight }
+          : { designWidth: DEFAULT_CERT_WIDTH, designHeight: DEFAULT_CERT_HEIGHT },
+      };
     },
-    save: async ({ entityId, blocks }) => {
+    save: async ({ entityId, blocks, certDesignWidth, certDesignHeight }) => {
       const sanitized = blocks.filter((b) =>
         CERTIFICATE_COMPATIBLE_TYPES.has(b.type as EditorBlockType),
       );
-      await CourseService.updateCourse(entityId, { certificate_blocks: sanitized as any });
+      const meta: CertificateMetaBlock = {
+        type: '__meta__',
+        designWidth: certDesignWidth ?? DEFAULT_CERT_WIDTH,
+        designHeight: certDesignHeight ?? DEFAULT_CERT_HEIGHT,
+      };
+      await CourseService.updateCourse(entityId, { certificate_blocks: [...sanitized, meta] } as any);
     },
-    publish: async ({ entityId, blocks }) => {
+    publish: async ({ entityId, blocks, certDesignWidth, certDesignHeight }) => {
       const sanitized = blocks.filter((b) =>
         CERTIFICATE_COMPATIBLE_TYPES.has(b.type as EditorBlockType),
       );
-      await CourseService.updateCourse(entityId, { certificate_blocks: sanitized as any });
+      const meta: CertificateMetaBlock = {
+        type: '__meta__',
+        designWidth: certDesignWidth ?? DEFAULT_CERT_WIDTH,
+        designHeight: certDesignHeight ?? DEFAULT_CERT_HEIGHT,
+      };
+      await CourseService.updateCourse(entityId, { certificate_blocks: [...sanitized, meta] } as any);
     },
     getTitle: () => 'Design de Certificado',
     allowedBlockTypes: CERTIFICATE_COMPATIBLE_TYPES,

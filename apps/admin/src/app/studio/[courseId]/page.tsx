@@ -11,7 +11,7 @@ import { EditorCanvas } from '../../../components/editor/EditorCanvas';
 import { BlockSettings } from '../../../components/editor/BlockSettings';
 
 function StudioEditorLayout({ courseId }: { courseId: string }) {
-  const { previewMode, activeBlockId } = useEditor();
+  const { previewMode, activeBlockId, mode } = useEditor();
 
   return (
     <YStack f={1} h="100vh" w="100vw" overflow="hidden">
@@ -19,7 +19,7 @@ function StudioEditorLayout({ courseId }: { courseId: string }) {
       <XStack f={1} overflow="hidden" w="100%">
         {!previewMode && <BlockPalette />}
         <EditorCanvas />
-        {!previewMode && activeBlockId && <BlockSettings />}
+        {!previewMode && (activeBlockId || mode === 'certificate') && <BlockSettings />}
       </XStack>
     </YStack>
   );

@@ -5,6 +5,7 @@ import { YStack, XStack, Text, Button, Icon, Spinner } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
 import { StorageService } from '@projeto/core';
+import { A4_PRESETS, A4_RATIO } from '../../context/editor-modes';
 
 function parseMarkdownToHtml(text: string): string {
   if (!text) return '';
@@ -432,8 +433,70 @@ function removeBackgroundFromImage(img: HTMLImageElement, tolerance: number, edg
   return c.toDataURL('image/png');
 }
 
+const A4_PRESET_NAMES: Record<number, string> = {};
+A4_PRESETS.forEach(p => { A4_PRESET_NAMES[p.width] = p.label; });
+
+const CertificateCanvasPanel: React.FC<{
+  designWidth: number;
+  designHeight: number;
+  onSelectPreset: (w: number, h: number) => void;
+  onToggleCollapse?: () => void;
+}> = ({ designWidth, designHeight, onSelectPreset, onToggleCollapse }) => (
+  <YStack w={320} minWidth={320} h="100%" borderLeftWidth={1} borderLeftColor="$border" bg="$background">
+    <YStack px="$5" pt="$4" pb="$3" borderBottomWidth={1} borderBottomColor="$border" flexShrink={0}>
+      <XStack ai="center" jc="space-between">
+        <Text fontSize={11} fontWeight="700" textTransform="uppercase" color="$textSecondary" letterSpacing={0.5}>Certificado</Text>
+        {onToggleCollapse && (
+          <XStack
+            w={26} h={26} ai="center" jc="center"
+            borderWidth={1} borderColor="$border" borderRadius="$3" bg="$background"
+            cursor="pointer" role="button" tabIndex={0}
+            aria-label="Recolher painel"
+            onPress={onToggleCollapse}
+            onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggleCollapse(); } }}
+            hoverStyle={{ borderColor: '$primary' }}
+          >
+            <Icon name="ChevronRight" size={14} />
+          </XStack>
+        )}
+      </XStack>
+    </YStack>
+    <YStack p="$4" gap="$3" overflowY="auto" flex={1}>
+      <Text fontSize={11} fontWeight="600">Tamanho do Canvas</Text>
+      <Text fontSize={10} color="$textMuted">Dimensões em proporção A4 paisagem (297×210mm)</Text>
+      <XStack flexWrap="wrap" gap="$2">
+        {A4_PRESETS.map((p) => {
+          const active = designWidth === p.width;
+          const h = Math.round(p.width / A4_RATIO);
+          return (
+            <XStack
+              key={p.width}
+              onPress={() => onSelectPreset(p.width, h)}
+              px="$3" py="$2"
+              borderRadius="$3"
+              borderWidth={active ? 2 : 1}
+              borderColor={active ? '$primary' : '$border'}
+              bg={active ? 'rgba(59,130,246,0.06)' : '$background'}
+              cursor="pointer"
+              hoverStyle={{ borderColor: '$primary', bg: 'rgba(59,130,246,0.03)' }}
+              ai="center" gap="$2"
+            >
+              <Text fontSize={13} fontWeight={active ? '700' : '500'} color={active ? '$primary' : '$text'}>{p.label}</Text>
+              <Text fontSize={10} color="$textMuted">{p.width}×{h}</Text>
+            </XStack>
+          );
+        })}
+      </XStack>
+      <XStack ai="center" gap="$2" pt="$2" borderTopWidth={1} borderTopColor="$border">
+        <Text fontSize={11} color="$textMuted">Atual:</Text>
+        <Text fontSize={11} fontWeight="600">{designWidth} × {designHeight}</Text>
+      </XStack>
+    </YStack>
+  </YStack>
+);
+
 export const BlockSettings: React.FC = () => {
-  const { blocks, activeBlockId, updateBlock, removeBlock, courseId } = useEditor();
+  const { blocks, activeBlockId, updateBlock, removeBlock, courseId, mode, certDesignWidth, certDesignHeight, setCertDesignSize } = useEditor();
   const [activeTab, setActiveTab] = useState<'props' | 'html'>('props');
   const [collapsed, setCollapsed] = useState(false);
   const [bgProcessing, setBgProcessing] = useState(false);
@@ -451,9 +514,9 @@ export const BlockSettings: React.FC = () => {
     if (activeBlock) setHtmlDraft(getHtmlFromBlock(activeBlock));
   }, [activeBlock]);
 
-  if (!activeBlock) {
-    return null;
-  }
+  useEffect(() => {
+    if (activeBlock) setCollapsed(false);
+  }, [activeBlockId]);
 
   if (collapsed) {
     return (
@@ -471,6 +534,20 @@ export const BlockSettings: React.FC = () => {
         </XStack>
       </XStack>
     );
+  }
+
+  if (!activeBlock) {
+    if (mode === 'certificate') {
+      return (
+        <CertificateCanvasPanel
+          designWidth={certDesignWidth}
+          designHeight={certDesignHeight}
+          onSelectPreset={(w, h) => setCertDesignSize(w, h)}
+          onToggleCollapse={() => setCollapsed(true)}
+        />
+      );
+    }
+    return null;
   }
 
   const handleHtmlEdit = (value: string) => {
@@ -562,6 +639,35 @@ export const BlockSettings: React.FC = () => {
 
       {activeTab === 'props' && (
       <YStack p="$4" overflowY="auto" flex={1}>
+
+      {mode === 'certificate' && (
+        <YStack pb="$3" mb="$3" borderBottomWidth={1} borderBottomColor="$border" gap="$2">
+          <Text fontSize={11} fontWeight="600">Tamanho do Certificado</Text>
+          <XStack flexWrap="wrap" gap="$2">
+            {A4_PRESETS.map((p) => {
+              const active = certDesignWidth === p.width;
+              const h = Math.round(p.width / A4_RATIO);
+              return (
+                <XStack
+                  key={p.width}
+                  onPress={() => setCertDesignSize(p.width, h)}
+                  px="$2" py="$1"
+                  borderRadius="$2"
+                  borderWidth={active ? 2 : 1}
+                  borderColor={active ? '$primary' : '$border'}
+                  bg={active ? 'rgba(59,130,246,0.06)' : '$background'}
+                  cursor="pointer"
+                  hoverStyle={{ borderColor: '$primary' }}
+                  ai="center" gap="$1"
+                >
+                  <Text fontSize={11} fontWeight={active ? '700' : '500'} color={active ? '$primary' : '$text'}>{p.label}</Text>
+                  <Text fontSize={9} color="$textMuted">{p.width}×{h}</Text>
+                </XStack>
+              );
+            })}
+          </XStack>
+        </YStack>
+      )}
 
       {activeBlock.type === 'text' && (
         <YStack gap="$2">
