@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { YStack, XStack, Text, Icon, Spinner } from '@projeto/ui';
+import { YStack, XStack, Text, Icon, Spinner, CertificateBlockRenderer } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
 
@@ -607,10 +607,46 @@ function renderViewportBlocks(args: {
   );
 }
 
-function PreviewCanvas({ blocks, viewportMode }: { blocks: AnyBlock[]; viewportMode: 'desktop' | 'tablet' | 'mobile' }) {
+function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesignHeight }: {
+  blocks: AnyBlock[];
+  viewportMode: 'desktop' | 'tablet' | 'mobile';
+  mode?: 'lesson' | 'certificate';
+  certDesignWidth?: number;
+  certDesignHeight?: number;
+}) {
+  const isCertMode = mode === 'certificate';
   const isMobile = viewportMode === 'mobile';
   const isTablet = viewportMode === 'tablet';
   const isDesktop = viewportMode === 'desktop';
+
+  if (isCertMode) {
+    const pageW = certDesignWidth || 1100;
+    const pageH = certDesignHeight || Math.round(1100 / 1.414);
+    const sorted = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
+    return (
+      <YStack flex={1} ai="center" p="$5" overflowY="auto" bg="$background">
+        <div style={{
+          position: 'relative', width: pageW, minHeight: pageH,
+          backgroundColor: 'white', borderRadius: 8,
+          boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)',
+          overflow: 'hidden',
+        }}>
+          {sorted.map((block) => {
+            const layout = getLayout(block);
+            return (
+              <div key={block.id} style={{
+                position: 'absolute', left: layout.x, top: layout.y,
+                width: layout.w, height: layout.h, zIndex: layout.zIndex + 1,
+              }}>
+                <CertificateBlockRenderer block={block as any} scale={1} fillContainer />
+              </div>
+            );
+          })}
+        </div>
+      </YStack>
+    );
+  }
+
   const pageH = Math.max(800, ...blocks.map(b => { const l = getLayout(b, viewportMode); return l.y + l.h + 120; }));
   const sortedBlocks = [...blocks].sort((a, b) => getLayout(a, viewportMode).zIndex - getLayout(b, viewportMode).zIndex);
   return (
@@ -1039,7 +1075,7 @@ export const EditorCanvas: React.FC = () => {
 
   if (!mounted) return <YStack flex={1} bg="$background" ai="center" jc="center" gap={12} opacity={0.7}><Spinner size="large" color="$primary" /><Text color="$textMuted" fontSize={14}>Carregando canvas…</Text></YStack>;
 
-  if (previewMode) return <PreviewCanvas blocks={blocks} viewportMode={viewportMode} />;
+  if (previewMode) return <PreviewCanvas blocks={blocks} viewportMode={viewportMode} mode={mode} certDesignWidth={certDesignWidth} certDesignHeight={certDesignHeight} />;
 
   if (viewportMode === 'mobile') return <MobileViewport blocks={blocks} onImageDrop={handleImageDrop} />;
   if (viewportMode === 'tablet') return <TableViewport blocks={blocks} onImageDrop={handleImageDrop} />;
