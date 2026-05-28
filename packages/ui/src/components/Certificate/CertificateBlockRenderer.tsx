@@ -5,6 +5,7 @@ import { CertificateBlock } from '@projeto/types';
 type Props = {
   block: CertificateBlock;
   scale: number;
+  fillContainer?: boolean;
 };
 
 function fmtSize(px: number, scale: number): number {
@@ -18,7 +19,7 @@ const FONT_SIZE: Record<string, number> = {
   xlarge: 32,
 };
 
-export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale }) => {
+export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale, fillContainer }) => {
   switch (block.type) {
     case 'heading': {
       const lvl = block.level || 2;
@@ -54,6 +55,17 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale }) => {
 
     case 'image': {
       if (!block.url) return null;
+
+      if (fillContainer) {
+        return (
+          <img
+            src={block.url}
+            alt={block.alt || ''}
+            style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }}
+          />
+        );
+      }
+
       const align = block.styles?.align || 'center';
       const layoutW = block.layouts?.desktop?.w;
       const rawWidth = block.styles?.width || (layoutW ? `${Math.round((layoutW / 1100) * 100)}%` : '80%');

@@ -51,7 +51,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
     return () => ro.disconnect();
   }, [previewOpen]);
 
-  const previewScale = measuredWidth ? measuredWidth / 1050 : 1;
+  const previewScale = measuredWidth ? measuredWidth / 1100 : 1;
   const previewReady = measuredWidth > 0;
 
   useEffect(() => {
@@ -597,26 +597,40 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                           }}
                         >
                           {previewReady ? (
-                            <YStack
+                            <div
                               id="certificate-a4-canvas"
-                              bg="white"
-                              position="relative"
-                              overflow="hidden"
-                              p={Math.round(48 * previewScale)}
-                              gap={Math.round(16 * previewScale)}
                               style={{
+                                position: 'relative',
                                 width: '100%',
-                                maxWidth: Math.min(measuredWidth, 1050),
+                                maxWidth: Math.min(measuredWidth, 1100),
                                 aspectRatio: '29.7 / 21',
+                                overflow: 'hidden',
+                                background: 'white',
                                 boxShadow: '0 10px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.05)',
                               }}
                             >
-                              {(course?.certificate_blocks || []).map((block: any) => (
-                                <CertificateBlockRenderer key={block.id} block={block} scale={previewScale} />
-                              ))}
-                            </YStack>
+                              {(course?.certificate_blocks || []).map((block: any) => {
+                                const layout = block.layouts?.desktop || { x: 0, y: 0, w: 200, h: 100, zIndex: 0 };
+                                return (
+                                  <div
+                                    key={block.id}
+                                    style={{
+                                      position: 'absolute',
+                                      left: layout.x * previewScale,
+                                      top: layout.y * previewScale,
+                                      width: layout.w * previewScale,
+                                      height: layout.h * previewScale,
+                                      zIndex: layout.zIndex + 1,
+                                      overflow: 'hidden',
+                                    }}
+                                  >
+                                    <CertificateBlockRenderer block={block} scale={previewScale} fillContainer />
+                                  </div>
+                                );
+                              })}
+                            </div>
                           ) : (
-                            <YStack style={{ width: '100%', aspectRatio: '29.7 / 21' }} />
+                            <div style={{ width: '100%', aspectRatio: '29.7 / 21' }} />
                           )}
                         </div>
                       </YStack>
