@@ -614,17 +614,30 @@ function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesign
   certDesignWidth?: number;
   certDesignHeight?: number;
 }) {
+  const [zoom, setZoom] = useState(1);
   const isCertMode = mode === 'certificate';
   const isMobile = viewportMode === 'mobile';
   const isTablet = viewportMode === 'tablet';
   const isDesktop = viewportMode === 'desktop';
 
-  if (isCertMode) {
-    const pageW = certDesignWidth || 1100;
-    const pageH = certDesignHeight || Math.round(1100 / 1.414);
-    const sorted = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
-    return (
-      <YStack flex={1} ai="center" p="$5" overflowY="auto" bg="$background">
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      setZoom(z => Math.max(0.25, Math.min(3, z + delta)));
+    }
+  }, []);
+
+  const zoomLabel = `${Math.round(zoom * 100)}%`;
+  const zoomIn = () => setZoom(z => Math.min(3, z + 0.1));
+  const zoomOut = () => setZoom(z => Math.max(0.25, z - 0.1));
+
+  const content = (() => {
+    if (isCertMode) {
+      const pageW = certDesignWidth || 1100;
+      const pageH = certDesignHeight || Math.round(1100 / 1.414);
+      const sorted = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
+      return (
         <div style={{
           position: 'relative', width: pageW, minHeight: pageH,
           backgroundColor: 'white', borderRadius: 8,
@@ -643,15 +656,13 @@ function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesign
             );
           })}
         </div>
-      </YStack>
-    );
-  }
+      );
+    }
 
-  const pageH = Math.max(800, ...blocks.map(b => { const l = getLayout(b, viewportMode); return l.y + l.h + 120; }));
-  const sortedBlocks = [...blocks].sort((a, b) => getLayout(a, viewportMode).zIndex - getLayout(b, viewportMode).zIndex);
-  return (
-    <YStack flex={1} ai="center" p="$5" overflowY="auto" bg="$background">
-      {isDesktop ? (
+    const pageH = Math.max(800, ...blocks.map(b => { const l = getLayout(b, viewportMode); return l.y + l.h + 120; }));
+    const sortedBlocks = [...blocks].sort((a, b) => getLayout(a, viewportMode).zIndex - getLayout(b, viewportMode).zIndex);
+    if (isDesktop) {
+      return (
         <div style={{ position: 'relative', width: PAGE_W, minHeight: pageH, backgroundColor: 'white', borderRadius: 8, boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)' }}>
           {sortedBlocks.map((block) => {
             const layout = getLayout(block, viewportMode);
@@ -662,36 +673,78 @@ function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesign
             );
           })}
         </div>
-      ) : (
-        <YStack w={isMobile ? MOBILE_W : TABLET_W} maxWidth={isMobile ? MOBILE_W : TABLET_W} bg="white" borderRadius={isMobile ? 36 : 12} style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} overflow="hidden" borderWidth={6} borderColor="$surface" maxHeight="80vh">
-          {isMobile ? (
-            <XStack bg="$surface" height={28} ai="center" jc="center" flexShrink={0}>
-              <XStack w={60} height={6} borderRadius={3} bg="$gray6" />
-            </XStack>
-          ) : (
-            <XStack bg="$surface" px="$4" py={1} ai="center" jc="center" flexShrink={0}>
-              <XStack w={8} h={8} borderRadius={4} bg="$background" borderWidth={1} borderColor="$gray7" />
-              <Text ml="auto" fontSize={10} color="$gray4">Preview Tablet</Text>
-            </XStack>
-          )}
-          <YStack overflowY="auto" overflowX="hidden" flex={1}>
-            <div style={{ position: 'relative', width: (isMobile ? MOBILE_W : TABLET_W), minHeight: pageH * ((isMobile ? MOBILE_W : TABLET_W) / CANVAS_W) }}>
-              {sortedBlocks.map((block) => {
-                const layout = getLayout(block, viewportMode);
-                const scale = (isMobile ? MOBILE_W : TABLET_W) / CANVAS_W;
-                return (
-                  <div key={block.id} style={{ position: 'absolute', left: layout.x * scale, top: layout.y * scale, width: layout.w * scale, height: layout.h * scale, zIndex: layout.zIndex + 1 }}>
-                    <BlockContent block={block} isMobile={!isDesktop} />
-                  </div>
-                );
-              })}
-            </div>
-          </YStack>
-          <XStack bg="white" height={isMobile ? 20 : 16} ai="center" jc="center" flexShrink={0}>
-            <XStack w={40} height={4} borderRadius={2} bg="$gray2" />
+      );
+    }
+
+    return (
+      <YStack w={isMobile ? MOBILE_W : TABLET_W} maxWidth={isMobile ? MOBILE_W : TABLET_W} bg="white" borderRadius={isMobile ? 36 : 12} style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} overflow="hidden" borderWidth={6} borderColor="$surface" maxHeight="80vh">
+        {isMobile ? (
+          <XStack bg="$surface" height={28} ai="center" jc="center" flexShrink={0}>
+            <XStack w={60} height={6} borderRadius={3} bg="$gray6" />
           </XStack>
+        ) : (
+          <XStack bg="$surface" px="$4" py={1} ai="center" jc="center" flexShrink={0}>
+            <XStack w={8} h={8} borderRadius={4} bg="$background" borderWidth={1} borderColor="$gray7" />
+            <Text ml="auto" fontSize={10} color="$gray4">Preview Tablet</Text>
+          </XStack>
+        )}
+        <YStack overflowY="auto" overflowX="hidden" flex={1}>
+          <div style={{ position: 'relative', width: (isMobile ? MOBILE_W : TABLET_W), minHeight: pageH * ((isMobile ? MOBILE_W : TABLET_W) / CANVAS_W) }}>
+            {sortedBlocks.map((block) => {
+              const layout = getLayout(block, viewportMode);
+              const scale = (isMobile ? MOBILE_W : TABLET_W) / CANVAS_W;
+              return (
+                <div key={block.id} style={{ position: 'absolute', left: layout.x * scale, top: layout.y * scale, width: layout.w * scale, height: layout.h * scale, zIndex: layout.zIndex + 1 }}>
+                  <BlockContent block={block} isMobile={!isDesktop} />
+                </div>
+              );
+            })}
+          </div>
         </YStack>
-      )}
+        <XStack bg="white" height={isMobile ? 20 : 16} ai="center" jc="center" flexShrink={0}>
+          <XStack w={40} height={4} borderRadius={2} bg="$gray2" />
+        </XStack>
+      </YStack>
+    );
+  })();
+
+  return (
+    <YStack flex={1} bg="$background" onWheel={handleWheel}>
+      <XStack ai="center" jc="center" gap="$2" p="$2" borderBottomWidth={1} borderBottomColor="$border" bg="$background" flexShrink={0}>
+        <XStack
+          w={28} h={26} ai="center" jc="center" cursor="pointer"
+          borderWidth={1} borderColor="$border" borderRadius="$2"
+          hoverStyle={{ bg: '$secondary' }}
+          onPress={zoomOut}
+        >
+          <Icon name="ZoomOut" size={14} />
+        </XStack>
+        <Text fontSize={12} w={44} textAlign="center" userSelect="none">{zoomLabel}</Text>
+        <XStack
+          w={28} h={26} ai="center" jc="center" cursor="pointer"
+          borderWidth={1} borderColor="$border" borderRadius="$2"
+          hoverStyle={{ bg: '$secondary' }}
+          onPress={zoomIn}
+        >
+          <Icon name="ZoomIn" size={14} />
+        </XStack>
+        {zoom !== 1 && (
+          <XStack
+            w={28} h={26} ai="center" jc="center" cursor="pointer" ml="$1"
+            borderWidth={1} borderColor="$border" borderRadius="$2"
+            hoverStyle={{ bg: '$secondary' }}
+            onPress={() => setZoom(1)}
+          >
+            <Icon name="RotateCcw" size={14} />
+          </XStack>
+        )}
+        <Text fontSize={10} color="$textMuted" ml="$2">Ctrl + scroll para zoom</Text>
+      </XStack>
+      <YStack flex={1} ai="center" p="$5" style={{ overflow: 'auto' }}>
+        <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top center', flexShrink: 0 }}>
+          {content}
+        </div>
+      </YStack>
     </YStack>
   );
 }
