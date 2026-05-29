@@ -743,23 +743,23 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                                              borderRadius: isBg ? '0px' : '6px',
                                            }}
                                          >
-                                           {block.type === 'image' && block.url ? (
-                                             <img
-                                               src={block.url}
-                                               alt={block.alt || ''}
-                                               style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, display: 'block' }}
-                                             />
-                                           ) : (
-                                             <CertificateBlockRenderer block={block} scale={1} fillContainer />
-                                           )}
-                                         </div>
-                                       );
-                                     });
-                                   })()}
-                                </div>
-                              </div>
+                                            {block.type === 'image' && block.url ? (
+                                              <img
+                                                src={block.url}
+                                                alt={block.alt || ''}
+                                                style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, display: 'block', transform: [(block.styles?.rotate ? `rotate(${block.styles.rotate}deg)` : ''), (block.styles?.flipH ? 'scaleX(-1)' : ''), (block.styles?.flipV ? 'scaleY(-1)' : '')].filter(Boolean).join(' ') }}
+                                              />
+                                            ) : (
+                                              <CertificateBlockRenderer block={block} scale={1} fillContainer />
+                                            )}
+                                          </div>
+                                        );
+                                      });
+                                    })()}
+                                 </div>
+                               </div>
 
-                              {/* 2. Modo Impressão (Oculto na tela, visível apenas na impressão - suporta duplex) */}
+                               {/* 2. Modo Impressão (Oculto na tela, visível apenas na impressão - suporta duplex) */}
                               {['front', ...(certIsDoubleSided ? ['back'] : [])].map(side => (
                                 <div
                                   key={`print-${side}`}
@@ -804,15 +804,15 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                                                borderRadius: isBg ? '0px' : '6px',
                                              }}
                                            >
-                                             {block.type === 'image' && block.url ? (
-                                               <img
-                                                 src={block.url}
-                                                 alt={block.alt || ''}
-                                                 style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, display: 'block' }}
-                                               />
-                                             ) : (
-                                               <CertificateBlockRenderer block={block} scale={1} fillContainer />
-                                             )}
+                                              {block.type === 'image' && block.url ? (
+                                                <img
+                                                  src={block.url}
+                                                  alt={block.alt || ''}
+                                                  style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, display: 'block', transform: [(block.styles?.rotate ? `rotate(${block.styles.rotate}deg)` : ''), (block.styles?.flipH ? 'scaleX(-1)' : ''), (block.styles?.flipV ? 'scaleY(-1)' : '')].filter(Boolean).join(' ') }}
+                                                />
+                                              ) : (
+                                                <CertificateBlockRenderer block={block} scale={1} fillContainer />
+                                              )}
                                            </div>
                                          );
                                        });

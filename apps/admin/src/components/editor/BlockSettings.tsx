@@ -6,6 +6,7 @@ import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
 import { StorageService } from '@projeto/core';
 import { A4_PRESETS, A4_RATIO } from '../../context/editor-modes';
+import ImageCropOverlay from './ImageCropOverlay';
 
 function parseMarkdownToHtml(text: string): string {
   if (!text) return '';
@@ -506,6 +507,7 @@ export const BlockSettings: React.FC = () => {
   const [bgEdgeThreshold, setBgEdgeThreshold] = useState(0.3);
   const [bgFeatherRadius, setBgFeatherRadius] = useState(2);
   const [bgPreviewUrl, setBgPreviewUrl] = useState<string | null>(null);
+  const [showCropOverlay, setShowCropOverlay] = useState(false);
 
   const activeBlock = blocks.find((b) => b.id === activeBlockId);
   const [htmlDraft, setHtmlDraft] = useState('');
@@ -990,6 +992,65 @@ export const BlockSettings: React.FC = () => {
             </XStack>
           </YStack>
 
+          {/* Rotate, Flip & Crop */}
+          {activeBlock.url && (
+            <YStack gap="$1">
+              <Text fontSize={11} fontWeight="500">Rotacionar / Espelhar / Cortar</Text>
+              <XStack gap="$1" flexWrap="wrap">
+                <Button
+                  variant="ghost"
+                  borderWidth={1}
+                  borderColor="$border"
+                  flex={1}
+                  py="$1"
+                  onPress={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, rotate: ((activeBlock.styles?.rotate ?? 0) - 90 + 360) % 360 } })}
+                >
+                  <XStack ai="center" gap={4}><Icon name="RotateCcw" size={14} /><Text fontSize={10}>90°</Text></XStack>
+                </Button>
+                <Button
+                  variant="ghost"
+                  borderWidth={1}
+                  borderColor="$border"
+                  flex={1}
+                  py="$1"
+                  onPress={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, rotate: ((activeBlock.styles?.rotate ?? 0) + 90) % 360 } })}
+                >
+                  <XStack ai="center" gap={4}><Icon name="RotateCw" size={14} /><Text fontSize={10}>90°</Text></XStack>
+                </Button>
+                <Button
+                  variant="ghost"
+                  borderWidth={1}
+                  borderColor="$border"
+                  flex={1}
+                  py="$1"
+                  onPress={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, flipH: !activeBlock.styles?.flipH } })}
+                >
+                  <XStack ai="center" gap={4}><Icon name="FlipHorizontal" size={14} /><Text fontSize={10}>H</Text></XStack>
+                </Button>
+                <Button
+                  variant="ghost"
+                  borderWidth={1}
+                  borderColor="$border"
+                  flex={1}
+                  py="$1"
+                  onPress={() => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, flipV: !activeBlock.styles?.flipV } })}
+                >
+                  <XStack ai="center" gap={4}><Icon name="FlipVertical" size={14} /><Text fontSize={10}>V</Text></XStack>
+                </Button>
+                <Button
+                  variant="ghost"
+                  borderWidth={1}
+                  borderColor="$border"
+                  flex={1}
+                  py="$1"
+                  onPress={() => setShowCropOverlay(true)}
+                >
+                  <XStack ai="center" gap={4}><Icon name="Crop" size={14} /><Text fontSize={10}>Cortar</Text></XStack>
+                </Button>
+              </XStack>
+            </YStack>
+          )}
+
           {activeBlock.url ? (
             <YStack borderRadius="$3" overflow="hidden" borderWidth={1} borderColor="$border">
               <img src={activeBlock.url} alt={activeBlock.alt} style={{ width: '100%', height: 'auto', display: 'block' }} />
@@ -1274,6 +1335,20 @@ export const BlockSettings: React.FC = () => {
         </YStack>
       )}
       </YStack>
+      )}
+
+      {/* Crop overlay */}
+      {showCropOverlay && activeBlock.type === 'image' && activeBlock.url && (
+        <ImageCropOverlay
+          imageUrl={activeBlock.url}
+          blockId={activeBlock.id}
+          courseId={courseId}
+          onCrop={(newUrl) => {
+            updateBlock(activeBlock.id, { url: newUrl });
+            setShowCropOverlay(false);
+          }}
+          onClose={() => setShowCropOverlay(false)}
+        />
       )}
     </YStack>
   );

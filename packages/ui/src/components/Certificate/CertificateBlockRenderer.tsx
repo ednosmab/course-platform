@@ -56,12 +56,18 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale, fillCo
     case 'image': {
       if (!block.url) return null;
 
+      const imgTransform = [
+        block.styles?.rotate ? `rotate(${block.styles.rotate}deg)` : '',
+        block.styles?.flipH ? `scaleX(-1)` : '',
+        block.styles?.flipV ? `scaleY(-1)` : '',
+      ].filter(Boolean).join(' ');
+
       if (fillContainer) {
         return (
           <img
             src={block.url}
             alt={block.alt || ''}
-            style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, borderRadius: block.styles?.isBackground ? '0px' : '6px', display: 'block' }}
+            style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, borderRadius: block.styles?.isBackground ? '0px' : '6px', display: 'block', transform: imgTransform }}
           />
         );
       }
@@ -91,7 +97,7 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale, fillCo
           <img
             src={block.url}
             alt={block.alt || ''}
-            style={{ width: w, height: h, borderRadius: br, objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'contain')) as any }}
+            style={{ width: w, height: h, borderRadius: br, objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'contain')) as any, transform: imgTransform }}
           />
         </XStack>
       );

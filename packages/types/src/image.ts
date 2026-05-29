@@ -14,6 +14,9 @@ export const ImageBlockSchema = z.object({
     objectFit: z.enum(['cover', 'contain', 'fill']).optional(),
     isBackground: z.boolean().optional(),
     side: z.enum(['front', 'back']).optional(),
+    rotate: z.number().optional(),
+    flipH: z.boolean().optional(),
+    flipV: z.boolean().optional(),
   }).optional(),
   layouts: BlockLayoutsSchema,
 }).strict();
