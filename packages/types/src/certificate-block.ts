@@ -67,7 +67,7 @@ export const CertificateDividerBlockSchema = z.object({
 export type CertificateDividerBlock = z.infer<typeof CertificateDividerBlockSchema>;
 
 export const CertificateMetaBlockSchema = z.object({
-  id: z.string(),
+  id: z.string().optional(),
   type: z.literal('__meta__'),
   designWidth: z.number(),
   designHeight: z.number(),
