@@ -38,6 +38,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const [previewOpen, setPreviewOpen] = useState(false);
   const [printing, setPrinting] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [previewSide, setPreviewSide] = useState<'front' | 'back'>('front');
   const measureRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
 
@@ -73,8 +74,10 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
     return () => ro.disconnect();
   }, [previewOpen]);
 
-  const certDesignWidth = (course?.certificate_blocks || []).find((b: any) => b.type === '__meta__')?.designWidth ?? 1100;
-  const certDesignHeight = (course?.certificate_blocks || []).find((b: any) => b.type === '__meta__')?.designHeight ?? Math.round(1100 / 1.414);
+  const certMeta = (course?.certificate_blocks || []).find((b: any) => b.type === '__meta__') as any;
+  const certDesignWidth = certMeta?.designWidth ?? 1100;
+  const certDesignHeight = certMeta?.designHeight ?? Math.round(1100 / 1.414);
+  const certIsDoubleSided = !!certMeta?.isDoubleSided;
   const previewScale = (containerSize.w && containerSize.h)
     ? Math.min(1, containerSize.w / certDesignWidth, containerSize.h / certDesignHeight)
     : 1;
@@ -294,6 +297,40 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
       // Silently handle
     }
     setCourse((prev: any) => ({ ...prev, is_published: next }));
+  };
+
+  const handleDeleteCertificate = async () => {
+    const confirm = window.confirm("Tem certeza que deseja excluir permanentemente o design do certificado deste curso?");
+    if (!confirm) return;
+
+    setSaving(true);
+    setSaveMessage(null);
+    try {
+      await CourseService.updateCourse(courseId, { certificate_blocks: [] });
+      await CourseService.updateCourseSettings(courseId, {
+        title: editTitle.trim(),
+        description: editDescription.trim(),
+        certificate_enabled: false,
+        thumbnail_url: course?.thumbnail_url || null,
+      });
+
+      setCourse((prev: any) => ({
+        ...prev,
+        certificate_blocks: [],
+        certificate_enabled: false,
+      }));
+      setCertificateEnabled(false);
+
+      setSaveMessage({ type: 'success', text: 'Certificado excluído com sucesso!' });
+      setTimeout(() => setSaveMessage(null), 4000);
+    } catch (err: any) {
+      console.error('Delete certificate error:', err);
+      const msg = err?.message || 'Erro ao excluir certificado.';
+      setSaveMessage({ type: 'error', text: msg });
+      setTimeout(() => setSaveMessage(null), 8000);
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) return <YStack f={1} ai="center" jc="center" gap={12} opacity={0.7} h="100vh"><Spinner size="large" color="$primary" /><Text color="$textMuted" fontSize={14}>Carregando configurações…</Text></YStack>;
@@ -599,7 +636,21 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                       onPress={(e: any) => e.stopPropagation()}
                     >
                       <XStack id="certificate-modal-header" ai="center" jc="space-between" p={12} borderBottomWidth={1} borderBottomColor="$border">
-                        <Text fontSize={14} fontWeight="600">Preview do Certificado</Text>
+                        <XStack ai="center" gap={12}>
+                          <Text fontSize={14} fontWeight="600">Preview do Certificado</Text>
+                          {certIsDoubleSided && (
+                            <XStack ai="center" bg="$background" p={2} borderRadius={6} borderWidth={1} borderColor="$border" gap={2}>
+                              <button
+                                onClick={() => setPreviewSide('front')}
+                                style={{ padding: '3px 10px', borderRadius: 4, border: 'none', background: previewSide === 'front' ? '#3b82f6' : 'transparent', color: previewSide === 'front' ? 'white' : 'inherit', fontWeight: 600, fontSize: 11, cursor: 'pointer' }}
+                              >Frente</button>
+                              <button
+                                onClick={() => setPreviewSide('back')}
+                                style={{ padding: '3px 10px', borderRadius: 4, border: 'none', background: previewSide === 'back' ? '#3b82f6' : 'transparent', color: previewSide === 'back' ? 'white' : 'inherit', fontWeight: 600, fontSize: 11, cursor: 'pointer' }}
+                              >Verso</button>
+                            </XStack>
+                          )}
+                        </XStack>
                         <XStack ai="center" gap={8}>
                           <Button variant="ghost" borderWidth={1} borderColor="$border" onPress={() => window.print()}>
                             <Icon name="Download" size={14} color="$textMuted" />
@@ -652,33 +703,48 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                                   boxShadow: '0 10px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.05)',
                                 }}
                               >
-                                {certificateBlocks.map((block: any) => {
-                                  const layout = block.layouts?.desktop || { x: 0, y: 0, w: 200, h: 100, zIndex: 0 };
-                                  return (
-                                    <div
-                                      key={block.id}
-                                      style={{
-                                        position: 'absolute',
-                                        left: layout.x,
-                                        top: layout.y,
-                                        width: layout.w,
-                                        height: layout.h,
-                                        zIndex: layout.zIndex + 1,
-                                        overflow: 'hidden',
-                                      }}
-                                    >
-                                      {block.type === 'image' && block.url ? (
-                                        <img
-                                          src={block.url}
-                                          alt={block.alt || ''}
-                                          style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }}
-                                        />
-                                      ) : (
-                                        <CertificateBlockRenderer block={block} scale={1} fillContainer />
-                                      )}
-                                    </div>
-                                  );
-                                })}
+                                {(() => {
+                                   const visibleBlocks = certIsDoubleSided
+                                     ? certificateBlocks.filter((b: any) => (b.styles?.side || 'front') === previewSide)
+                                     : certificateBlocks;
+                                   const sorted = [...visibleBlocks].sort((a: any, b: any) => {
+                                     const aBg = a.styles?.isBackground ? 1 : 0;
+                                     const bBg = b.styles?.isBackground ? 1 : 0;
+                                     if (aBg !== bBg) return aBg - bBg;
+                                     return (a.layouts?.desktop?.zIndex ?? 0) - (b.layouts?.desktop?.zIndex ?? 0);
+                                   });
+                                   return sorted.map((block: any) => {
+                                     const isBg = !!block.styles?.isBackground;
+                                     const layout = isBg 
+                                       ? { x: 0, y: 0, w: certDesignWidth, h: certDesignHeight, zIndex: -10 }
+                                       : (block.layouts?.desktop || { x: 0, y: 0, w: 200, h: 100, zIndex: 0 });
+                                     return (
+                                       <div
+                                         key={block.id}
+                                         style={{
+                                           position: 'absolute',
+                                           left: layout.x,
+                                           top: layout.y,
+                                           width: layout.w,
+                                           height: layout.h,
+                                           zIndex: layout.zIndex + 1,
+                                           overflow: 'hidden',
+                                           borderRadius: isBg ? '0px' : '6px',
+                                         }}
+                                       >
+                                         {block.type === 'image' && block.url ? (
+                                           <img
+                                             src={block.url}
+                                             alt={block.alt || ''}
+                                             style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, display: 'block' }}
+                                           />
+                                         ) : (
+                                           <CertificateBlockRenderer block={block} scale={1} fillContainer />
+                                         )}
+                                       </div>
+                                     );
+                                   });
+                                 })()}
                               </div>
                             </div>
                           ) : (
@@ -691,17 +757,35 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                   document.body
                 )}
 
-                <Button
-                  onPress={() => router.push(`/studio/${courseId}?mode=certificate`)}
-                  backgroundColor="$primary"
-                  hoverStyle={{ opacity: 0.9 }}
-                 
-                >
-                  <XStack ai="center" gap={8}>
-                    <Icon name="Settings" size={14} color="white" />
-                    <Text color="white" fontSize={12} fontWeight="600">Personalizar Certificado no Studio</Text>
-                  </XStack>
-                </Button>
+                <XStack gap={8} w="100%">
+                  <Button
+                    onPress={() => router.push(`/studio/${courseId}?mode=certificate`)}
+                    backgroundColor="$primary"
+                    hoverStyle={{ opacity: 0.9 }}
+                    flex={1}
+                  >
+                    <XStack ai="center" gap={8}>
+                      <Icon name="Settings" size={14} color="white" />
+                      <Text color="white" fontSize={12} fontWeight="600">Personalizar no Studio</Text>
+                    </XStack>
+                  </Button>
+
+                  {certificateBlocks.length > 0 && (
+                    <Button
+                      onPress={handleDeleteCertificate}
+                      backgroundColor="#ffe4e6"
+                      hoverStyle={{ backgroundColor: "#fecdd3" }}
+                      borderWidth={1}
+                      borderColor="#fecdd3"
+                      px="$3"
+                    >
+                      <XStack ai="center" gap={6}>
+                        <Icon name="Trash2" size={14} color="#b91c1c" />
+                        <Text color="#b91c1c" fontSize={12} fontWeight="600">Excluir</Text>
+                      </XStack>
+                    </Button>
+                  )}
+                </XStack>
 
                 {saveMessage && (
                   <XStack p={8} borderRadius={6} borderWidth={1} borderColor={saveMessage.type === 'success' ? '$success' : '$danger'} bg="white" ai="center" gap={8}>

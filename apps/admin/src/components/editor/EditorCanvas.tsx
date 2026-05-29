@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { YStack, XStack, Text, Icon, Spinner, CertificateBlockRenderer } from '@projeto/ui';
+import { YStack, XStack, Text, Icon, Spinner, Button, CertificateBlockRenderer } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
 
@@ -265,7 +265,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     return (
       <YStack w="100%" h="100%" onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
         {block.url ? (
-          <img src={block.url} alt={block.alt || ''} style={{ width: '100%', height: '100%', objectFit: 'fill', borderRadius: '6px', display: 'block' }} />
+          <img src={block.url} alt={block.alt || ''} style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, borderRadius: block.styles?.isBackground ? '0px' : '6px', display: 'block' }} />
         ) : (
           <YStack w="100%" h="100%" borderWidth={2} borderColor="$info" borderRadius="$3" borderStyle="dashed" ai="center" jc="center" gap="$2" bg="#eff6ff">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -810,7 +810,7 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
 }
 
 export const EditorCanvas: React.FC = () => {
-  const { blocks, activeBlockId, selectedBlockIds, setActiveBlockId, removeBlock, removeBlocks, duplicateBlock, toggleSelectBlock, clearSelection, updateBlock, updateBlockSilent, previewMode, viewportMode, mode, certDesignWidth, certDesignHeight, certDesignChosen, setCertDesignSize } = useEditor();
+  const { blocks, activeBlockId, selectedBlockIds, setActiveBlockId, removeBlock, removeBlocks, duplicateBlock, toggleSelectBlock, clearSelection, updateBlock, updateBlockSilent, previewMode, viewportMode, mode, certDesignWidth, certDesignHeight, certDesignChosen, setCertDesignSize, activeSide, setActiveSide, certIsDoubleSided } = useEditor();
   const [mounted, setMounted] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
@@ -871,6 +871,7 @@ export const EditorCanvas: React.FC = () => {
     e.preventDefault();
     e.stopPropagation();
     setActiveBlockId(block.id);
+    if ((block as any).styles?.isBackground) return;
     setIsInteracting(true);
 
     const moveIds = selectedBlockIds.includes(block.id) && selectedBlockIds.length > 1
@@ -1152,7 +1153,32 @@ export const EditorCanvas: React.FC = () => {
       bg="$background"
       onPress={() => setActiveBlockId(null)}
       data-editor-root
+      ai="center"
     >
+      {isCertMode && certIsDoubleSided && (
+        <XStack ai="center" jc="center" gap="$2" mb="$4" bg="white" p="$1.5" borderRadius="$3" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)' }}>
+          <Button
+            backgroundColor={activeSide === 'front' ? '$primary' : 'transparent'}
+            hoverStyle={{ backgroundColor: activeSide === 'front' ? '$primary' : 'rgba(0,0,0,0.03)' }}
+            borderWidth={0}
+            onPress={(e: any) => { e.stopPropagation(); setActiveSide('front'); }}
+            px="$4"
+            borderRadius="$2"
+          >
+            <Text color={activeSide === 'front' ? 'white' : '$text'} fontWeight="600" fontSize={12}>Frente do Certificado</Text>
+          </Button>
+          <Button
+            backgroundColor={activeSide === 'back' ? '$primary' : 'transparent'}
+            hoverStyle={{ backgroundColor: activeSide === 'back' ? '$primary' : 'rgba(0,0,0,0.03)' }}
+            borderWidth={0}
+            onPress={(e: any) => { e.stopPropagation(); setActiveSide('back'); }}
+            px="$4"
+            borderRadius="$2"
+          >
+            <Text color={activeSide === 'back' ? 'white' : '$text'} fontWeight="600" fontSize={12}>Verso do Certificado</Text>
+          </Button>
+        </XStack>
+      )}
       <div
         ref={pageRootRef}
         data-page-root
@@ -1177,14 +1203,26 @@ export const EditorCanvas: React.FC = () => {
           </Text>
         )}
 
-        {sortedBlocks.map((block) => {
-          const isActive = block.id === activeBlockId;
-          const isSelected = selectedBlockIds.includes(block.id);
-          const isEditing = block.id === inlineEditingId;
-          const isHovered = hoveredBlockId === block.id;
-          const showToolbar = isActive || isHovered;
-          const layout = getLayout(block);
-          const outOfBounds = isOutOfBounds(block, isCertMode ? certDesignWidth : PAGE_W);
+        {(() => {
+          const canvasBlocks = isCertMode && certIsDoubleSided
+            ? blocks.filter((b) => ((b as any).styles?.side || 'front') === activeSide)
+            : blocks;
+          const sorted = [...canvasBlocks].sort((a, b) => {
+            const aBg = (a as any).styles?.isBackground ? 1 : 0;
+            const bBg = (b as any).styles?.isBackground ? 1 : 0;
+            if (aBg !== bBg) return aBg - bBg; // Backgrounds first (rendered first = at the bottom in DOM stacking)
+            return getLayout(a).zIndex - getLayout(b).zIndex;
+          });
+          return sorted.map((block) => {
+            const isActive = block.id === activeBlockId;
+            const isSelected = selectedBlockIds.includes(block.id);
+            const isEditing = block.id === inlineEditingId;
+            const isHovered = hoveredBlockId === block.id;
+            const showToolbar = isActive || isHovered;
+            const isBg = !!((block as any).styles?.isBackground && isCertMode);
+            const layout = isBg ? { x: 0, y: 0, w: certDesignWidth, h: pageH, zIndex: -10 } : getLayout(block);
+            const outOfBounds = isBg ? false : isOutOfBounds(block, isCertMode ? certDesignWidth : PAGE_W);
+
 
           return (
             <div
@@ -1235,7 +1273,12 @@ export const EditorCanvas: React.FC = () => {
                 </XStack>
               )}
 
-              <div style={{ position: 'absolute', inset: 2, borderRadius: '4px', overflow: 'hidden', zIndex: 1 }}>
+              <div style={{ position: 'absolute', inset: isBg ? 0 : 2, borderRadius: isBg ? '0px' : '4px', overflow: 'hidden', zIndex: 1 }}>
+                {isBg && (
+                  <XStack position="absolute" top={8} left={8} zIndex={25} bg="$primary" py={1} px={2} borderRadius={4} ai="center" gap={4} style={{ pointerEvents: 'none', whiteSpace: 'nowrap' }}>
+                    <Text fontSize={9} fontWeight="600" color="white">✦ Plano de Fundo (Bloqueado)</Text>
+                  </XStack>
+                )}
                 <BlockContent
                   block={block}
                   onImageDrop={handleImageDrop}
@@ -1294,7 +1337,7 @@ export const EditorCanvas: React.FC = () => {
                 </XStack>
               )}
 
-              {(isActive || isSelected) && HANDLES.map(({ id, cursor, style }) => (
+              {(isActive || isSelected) && !isBg && HANDLES.map(({ id, cursor, style }) => (
                 <div
                   key={id}
                   data-handle={id}
@@ -1304,7 +1347,8 @@ export const EditorCanvas: React.FC = () => {
               ))}
             </div>
           );
-        })}
+        });
+      })()}
 
         {guides.v.map((x, i) => (
           <div key={`gv-${i}`} style={{ position: 'absolute', left: x, top: 0, width: 0, height: pageH, borderLeft: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />

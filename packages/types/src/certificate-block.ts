@@ -12,6 +12,7 @@ export const CertificateTextBlockSchema = z.object({
     fontFamily: z.string().optional(),
     width: z.string().optional(),
     height: z.string().optional(),
+    side: z.enum(['front', 'back']).optional(),
   }).optional(),
   layouts: BlockLayoutsSchema,
 }).passthrough();
@@ -28,6 +29,9 @@ export const CertificateImageBlockSchema = z.object({
     width: z.string().optional(),
     height: z.string().optional(),
     borderRadius: z.string().optional(),
+    objectFit: z.enum(['cover', 'contain', 'fill']).optional(),
+    isBackground: z.boolean().optional(),
+    side: z.enum(['front', 'back']).optional(),
   }).optional(),
   layouts: BlockLayoutsSchema,
 }).passthrough();
@@ -45,6 +49,7 @@ export const CertificateHeadingBlockSchema = z.object({
     fontFamily: z.string().optional(),
     width: z.string().optional(),
     height: z.string().optional(),
+    side: z.enum(['front', 'back']).optional(),
   }).optional(),
   layouts: BlockLayoutsSchema,
 }).passthrough();
@@ -60,6 +65,7 @@ export const CertificateDividerBlockSchema = z.object({
     style: z.enum(['solid', 'dashed', 'dotted']).default('solid'),
     width: z.string().optional(),
     height: z.string().optional(),
+    side: z.enum(['front', 'back']).optional(),
   }).optional(),
   layouts: BlockLayoutsSchema,
 }).passthrough();
@@ -71,6 +77,7 @@ export const CertificateMetaBlockSchema = z.object({
   type: z.literal('__meta__'),
   designWidth: z.number(),
   designHeight: z.number(),
+  isDoubleSided: z.boolean().optional(),
 }).passthrough();
 
 export const CertificateBlockSchema = z.discriminatedUnion('type', [
@@ -90,4 +97,5 @@ export interface CertificateMetaBlock {
   type: '__meta__';
   designWidth: number;
   designHeight: number;
+  isDoubleSided?: boolean;
 }

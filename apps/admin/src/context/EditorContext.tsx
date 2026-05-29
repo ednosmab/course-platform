@@ -14,6 +14,7 @@ interface EditorState {
   historyIndex: number;
   previewMode: boolean;
   viewportMode: 'desktop' | 'tablet' | 'mobile';
+  activeSide: 'front' | 'back';
 }
 
 type EditorAction =
@@ -33,7 +34,8 @@ type EditorAction =
   | { type: 'TOGGLE_SELECT_BLOCK'; payload: { id: string } }
   | { type: 'CLEAR_SELECTION' }
   | { type: 'SET_PREVIEW_MODE'; payload: { active: boolean } }
-  | { type: 'SET_VIEWPORT_MODE'; payload: { mode: 'desktop' | 'tablet' | 'mobile' } };
+  | { type: 'SET_VIEWPORT_MODE'; payload: { mode: 'desktop' | 'tablet' | 'mobile' } }
+  | { type: 'SET_ACTIVE_SIDE'; payload: { side: 'front' | 'back' } };
 
 const initialState: EditorState = {
   blocks: [],
@@ -43,6 +45,7 @@ const initialState: EditorState = {
   historyIndex: 0,
   previewMode: false,
   viewportMode: 'desktop',
+  activeSide: 'front',
 };
 
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
@@ -141,6 +144,13 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
             { id: crypto.randomUUID(), text: 'Opção A', isCorrect: true, feedback: 'Excelente!' },
             { id: crypto.randomUUID(), text: 'Opção B', isCorrect: false, feedback: 'Tente novamente.' },
           ],
+        };
+      }
+
+      if (newBlock) {
+        (newBlock as any).styles = {
+          ...((newBlock as any).styles || {}),
+          side: state.activeSide || 'front',
         };
       }
 
@@ -296,6 +306,15 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       return { ...state, viewportMode: newMode, blocks: newBlocks };
     }
 
+    case 'SET_ACTIVE_SIDE': {
+      return {
+        ...state,
+        activeSide: action.payload.side,
+        activeBlockId: null,
+        selectedBlockIds: [],
+      };
+    }
+
     default:
       return state;
   }
@@ -335,6 +354,9 @@ interface EditorContextType extends EditorState {
   certDesignHeight: number;
   certDesignChosen: boolean;
   setCertDesignSize: (width: number, height: number) => void;
+  certIsDoubleSided: boolean;
+  setCertIsDoubleSided: (val: boolean) => void;
+  setActiveSide: (side: 'front' | 'back') => void;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
@@ -354,6 +376,7 @@ export const EditorProvider: React.FC<{
   const [courseId, setCourseId] = useState(initialCourseId || '');
   const [courseTitle, setCourseTitle] = useState('');
   const [moduleTitle, setModuleTitle] = useState('');
+  const [certIsDoubleSided, setCertIsDoubleSided] = useState(false);
 
   const addBlock = useCallback((type: EditorBlockType) => dispatch({ type: 'ADD_BLOCK', payload: { type } }), []);
   const removeBlock = useCallback((id: string) => dispatch({ type: 'REMOVE_BLOCK', payload: { id } }), []);
@@ -409,6 +432,7 @@ export const EditorProvider: React.FC<{
         if (result.certMeta) {
           setCertDesignWidth(result.certMeta.designWidth);
           setCertDesignHeight(result.certMeta.designHeight);
+          setCertIsDoubleSided(!!result.certMeta.isDoubleSided);
           setCertDesignChosen(true);
         } else if (mode === 'certificate' && result.blocks.length > 0) {
           setCertDesignChosen(true);
@@ -479,6 +503,7 @@ export const EditorProvider: React.FC<{
           lessonMeta: lessonMeta || undefined,
           certDesignWidth,
           certDesignHeight,
+          certIsDoubleSided,
         });
 
         setSaveStatus('saved');
@@ -492,7 +517,7 @@ export const EditorProvider: React.FC<{
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [state.blocks, activeLessonId, isLoaded, lessonMeta, entityId, modeConfig]);
+  }, [state.blocks, activeLessonId, isLoaded, lessonMeta, entityId, modeConfig, certDesignWidth, certDesignHeight, certIsDoubleSided]);
 
   // 3. Save Content (renamed from publishLesson for semantic clarity)
   const saveContent = async () => {
@@ -505,6 +530,7 @@ export const EditorProvider: React.FC<{
         lessonMeta: lessonMeta || undefined,
         certDesignWidth,
         certDesignHeight,
+        certIsDoubleSided,
       });
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
@@ -554,6 +580,9 @@ export const EditorProvider: React.FC<{
         certDesignHeight,
         certDesignChosen,
         setCertDesignSize,
+        certIsDoubleSided,
+        setCertIsDoubleSided,
+        setActiveSide: useCallback((side: 'front' | 'back') => dispatch({ type: 'SET_ACTIVE_SIDE', payload: { side } }), []),
       }}
     >
       {children}

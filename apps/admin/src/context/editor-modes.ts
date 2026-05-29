@@ -30,7 +30,7 @@ export interface EditorModeConfig {
     blocks: AnyBlock[];
     courseTitle?: string;
     lessonMeta?: { module_id: string; title: string; order_index: number };
-    certMeta?: { designWidth: number; designHeight: number };
+    certMeta?: { designWidth: number; designHeight: number; isDoubleSided?: boolean };
   }>;
   /** Persist current blocks (auto-save or draft) */
   save: (params: {
@@ -39,6 +39,7 @@ export interface EditorModeConfig {
     lessonMeta?: { module_id: string; title: string; order_index: number };
     certDesignWidth?: number;
     certDesignHeight?: number;
+    certIsDoubleSided?: boolean;
   }) => Promise<void>;
   /** Publish blocks (for lessons: validates course published first; for cert: same as save) */
   publish: (params: {
@@ -47,6 +48,7 @@ export interface EditorModeConfig {
     lessonMeta?: { module_id: string; title: string; order_index: number };
     certDesignWidth?: number;
     certDesignHeight?: number;
+    certIsDoubleSided?: boolean;
   }) => Promise<void>;
   /** Display title shown in the editor header breadcrumb */
   getTitle: (lessonMeta?: { title: string }) => string;
@@ -125,41 +127,43 @@ const CERTIFICATE_COMPATIBLE_TYPES = new Set<EditorBlockType>(['text', 'heading'
 export function createCertificateModeConfig(): EditorModeConfig {
   return {
     load: async ({ courseId }) => {
-      if (!courseId) return { blocks: [], certMeta: { designWidth: DEFAULT_CERT_WIDTH, designHeight: DEFAULT_CERT_HEIGHT } };
+      if (!courseId) return { blocks: [], certMeta: { designWidth: DEFAULT_CERT_WIDTH, designHeight: DEFAULT_CERT_HEIGHT, isDoubleSided: false } };
       const cData = await CourseService.getCourse(courseId);
-      if (!cData) return { blocks: [], certMeta: { designWidth: DEFAULT_CERT_WIDTH, designHeight: DEFAULT_CERT_HEIGHT } };
+      if (!cData) return { blocks: [], certMeta: { designWidth: DEFAULT_CERT_WIDTH, designHeight: DEFAULT_CERT_HEIGHT, isDoubleSided: false } };
       const rawBlocks: AnyBlock[] = ((cData as any).certificate_blocks || []);
       const blocks = rawBlocks.filter(
         (b: AnyBlock) => CERTIFICATE_COMPATIBLE_TYPES.has(b.type as EditorBlockType),
       );
-      const meta = rawBlocks.find((b: any) => b.type === '__meta__') as CertificateMetaBlock | undefined;
+      const meta = rawBlocks.find((b: any) => b.type === '__meta__') as any;
       return {
         blocks,
         courseTitle: cData.title || '',
         certMeta: meta
-          ? { designWidth: meta.designWidth, designHeight: meta.designHeight }
-          : { designWidth: DEFAULT_CERT_WIDTH, designHeight: DEFAULT_CERT_HEIGHT },
+          ? { designWidth: meta.designWidth, designHeight: meta.designHeight, isDoubleSided: !!meta.isDoubleSided }
+          : { designWidth: DEFAULT_CERT_WIDTH, designHeight: DEFAULT_CERT_HEIGHT, isDoubleSided: false },
       };
     },
-    save: async ({ entityId, blocks, certDesignWidth, certDesignHeight }) => {
+    save: async ({ entityId, blocks, certDesignWidth, certDesignHeight, certIsDoubleSided }) => {
       const sanitized = blocks.filter((b) =>
         CERTIFICATE_COMPATIBLE_TYPES.has(b.type as EditorBlockType),
       );
-      const meta: CertificateMetaBlock = {
+      const meta: any = {
         type: '__meta__',
         designWidth: certDesignWidth ?? DEFAULT_CERT_WIDTH,
         designHeight: certDesignHeight ?? DEFAULT_CERT_HEIGHT,
+        isDoubleSided: !!certIsDoubleSided,
       };
       await CourseService.updateCourse(entityId, { certificate_blocks: [...sanitized, meta] } as any);
     },
-    publish: async ({ entityId, blocks, certDesignWidth, certDesignHeight }) => {
+    publish: async ({ entityId, blocks, certDesignWidth, certDesignHeight, certIsDoubleSided }) => {
       const sanitized = blocks.filter((b) =>
         CERTIFICATE_COMPATIBLE_TYPES.has(b.type as EditorBlockType),
       );
-      const meta: CertificateMetaBlock = {
+      const meta: any = {
         type: '__meta__',
         designWidth: certDesignWidth ?? DEFAULT_CERT_WIDTH,
         designHeight: certDesignHeight ?? DEFAULT_CERT_HEIGHT,
+        isDoubleSided: !!certIsDoubleSided,
       };
       await CourseService.updateCourse(entityId, { certificate_blocks: [...sanitized, meta] } as any);
     },
