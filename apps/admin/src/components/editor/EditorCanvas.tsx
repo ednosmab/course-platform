@@ -897,11 +897,21 @@ export const EditorCanvas: React.FC = () => {
     };
   }, [setActiveBlockId, viewportMode, inlineEditingId, selectedBlockIds, blocks]);
 
+  const forceCursor = useCallback((cursor: string) => {
+    let el = document.getElementById('force-cursor');
+    if (!el) {
+      el = document.createElement('style');
+      el.id = 'force-cursor';
+      document.head.appendChild(el);
+    }
+    el.textContent = cursor ? `body * { cursor: ${cursor} !important; }` : '';
+  }, []);
+
   const onHandleMouseDown = useCallback((e: React.MouseEvent, block: AnyBlock, handle: HandleDir) => {
     e.preventDefault();
     e.stopPropagation();
     setIsInteracting(true);
-    document.body.style.cursor = `${handle}-resize`;
+    forceCursor(`${handle}-resize`);
 
     const resizeIds = selectedBlockIds.includes(block.id) && selectedBlockIds.length > 1
       ? selectedBlockIds.filter((id) => id !== block.id)
@@ -934,7 +944,7 @@ export const EditorCanvas: React.FC = () => {
         return { ...startLayout, x: startLayout.x + dx, y: startLayout.y + dy };
       }
       if (mode === 'resize' && handle) {
-        if (aspectRatio) {
+          if (aspectRatio) {
           const fixedX = handle.includes('w') ? startLayout.x + startLayout.w : startLayout.x;
           const fixedY = handle.includes('n') ? startLayout.y + startLayout.h : startLayout.y;
           const isCorner = handle.includes('e') && handle.includes('n') ||
@@ -960,8 +970,8 @@ export const EditorCanvas: React.FC = () => {
           }
           nw = Math.max(MIN_W, nw);
           nh = Math.max(MIN_H, nh);
-          const x = handle.includes('w') ? fixedX - nw : fixedX;
-          const y = handle.includes('n') ? fixedY - nh : fixedY;
+          const x = handle.includes('w') ? fixedX - nw : startLayout.x + (startLayout.w - nw) / 2;
+          const y = handle.includes('n') ? fixedY - nh : startLayout.y + (startLayout.h - nh) / 2;
           return { x, y, w: nw, h: nh, zIndex: startLayout.zIndex };
         }
         let { x, y, w, h, zIndex } = startLayout;
@@ -1031,7 +1041,7 @@ export const EditorCanvas: React.FC = () => {
         }
       }
       interactionRef.current = null;
-      document.body.style.cursor = '';
+      forceCursor('');
       setIsInteracting(false);
       setGuides({ v: [], h: [], m: [] });
     };
