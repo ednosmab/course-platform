@@ -20,7 +20,7 @@
 - **BUG: Zod schema — `LessonSchema.blocks` missing `heading` e `divider`** — Validação Zod falha silenciosamente ao encontrar esses blocos no banco.
 - **Chore: Student app — ErrorBoundary** — Adicionar ErrorBoundary no `App.tsx` para evitar crash total em erros não tratados.
 - **Chore: Student app — sanitização XSS** — `dangerouslySetInnerHTML` no `BlockRenderer` sem sanitização (violação S-01).
-- **Feat: Student app — refinamento de layout** — Melhorar layout geral do student (responsividade, espaçamentos, navegação).
+- **Feat: Student app — refinamento de layout** — Ajustar espaçamentos laterais e superior (atualmente com folgas inconsistentes). Revisar padding/margin em telas cheias e componentes (LessonPlayer, Dashboard, navegação).
 - **Feat: Student app — tela de aulas e exercícios extras** — Criar tela para visualizar aulas e exercícios complementares no student.
 - **Feat: Student app — central de certificados** — Criar tela que liste todos os certificados obtidos em todos os cursos concluídos.
 - **Feat: Admin — seção de exercícios extras** — Adicionar no admin uma seção/aba para criar e gerenciar exercícios extras por aula/curso.
