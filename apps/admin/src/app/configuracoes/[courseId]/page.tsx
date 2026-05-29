@@ -7,6 +7,9 @@ import { BrandMark } from '../../../components/brand-mark';
 import { CourseService, StorageService } from '@projeto/core';
 import type { Module, Lesson, Course } from '@projeto/types';
 
+const A4_PRINT_W = 1123;
+const A4_PRINT_H = 794;
+
 export default function CourseConfigPage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = use(params);
   const router = useRouter();
@@ -72,9 +75,9 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const canvasWidth = Math.round(certDesignWidth * previewScale);
   const canvasHeight = Math.round(certDesignHeight * previewScale);
   const previewReady = containerSize.w > 0 && containerSize.h > 0;
-  const effectiveScale = printing ? 1 : previewScale;
-  const effCanvasWidth = Math.round(certDesignWidth * effectiveScale);
-  const effCanvasHeight = Math.round(certDesignHeight * effectiveScale);
+  const effectiveScale = printing ? A4_PRINT_W / certDesignWidth : previewScale;
+  const effCanvasWidth = printing ? A4_PRINT_W : Math.round(certDesignWidth * previewScale);
+  const effCanvasHeight = printing ? A4_PRINT_H : Math.round(certDesignHeight * previewScale);
   const certificateBlocks = (course?.certificate_blocks || []).filter((b: any) => b.type !== '__meta__');
 
   useEffect(() => {
@@ -646,7 +649,15 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                                       overflow: 'hidden',
                                     }}
                                   >
-                                    <CertificateBlockRenderer block={block} scale={effectiveScale} fillContainer />
+                                    {block.type === 'image' && block.url ? (
+                                      <img
+                                        src={block.url}
+                                        alt={block.alt || ''}
+                                        style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }}
+                                      />
+                                    ) : (
+                                      <CertificateBlockRenderer block={block} scale={effectiveScale} fillContainer />
+                                    )}
                                   </div>
                                 );
                               })}
