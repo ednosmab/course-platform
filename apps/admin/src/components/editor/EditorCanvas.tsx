@@ -6,7 +6,7 @@ import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
 
 const CANVAS_W = 1100;
-const PAGE_W   = 1100;
+const PAGE_W = 1100;
 const A4_RATIO = 1.414;
 const MOBILE_W = 390;
 const TABLET_W = 650;
@@ -170,17 +170,17 @@ function computeBlockGuides(
 
 const HANDLES: { id: HandleDir; cursor: string; style: React.CSSProperties }[] = [
   { id: 'nw', cursor: 'nw-resize', style: { top: -5, left: -5 } },
-  { id: 'n',  cursor: 'n-resize',  style: { top: -5, left: '50%', transform: 'translateX(-50%)' } },
+  { id: 'n', cursor: 'n-resize', style: { top: -5, left: '50%', transform: 'translateX(-50%)' } },
   { id: 'ne', cursor: 'ne-resize', style: { top: -5, right: -5 } },
-  { id: 'w',  cursor: 'w-resize',  style: { top: '50%', left: -5, transform: 'translateY(-50%)' } },
-  { id: 'e',  cursor: 'e-resize',  style: { top: '50%', right: -5, transform: 'translateY(-50%)' } },
+  { id: 'w', cursor: 'w-resize', style: { top: '50%', left: -5, transform: 'translateY(-50%)' } },
+  { id: 'e', cursor: 'e-resize', style: { top: '50%', right: -5, transform: 'translateY(-50%)' } },
   { id: 'sw', cursor: 'sw-resize', style: { bottom: -5, left: -5 } },
-  { id: 's',  cursor: 's-resize',  style: { bottom: -5, left: '50%', transform: 'translateX(-50%)' } },
+  { id: 's', cursor: 's-resize', style: { bottom: -5, left: '50%', transform: 'translateX(-50%)' } },
   { id: 'se', cursor: 'se-resize', style: { bottom: -5, right: -5 } },
 ];
 
 const FONT_DESKTOP: Record<string, string> = { small: '13px', medium: '16px', large: '24px', xlarge: '32px' };
-const FONT_MOBILE:  Record<string, string> = { small: '12px', medium: '15px', large: '19px', xlarge: '24px' };
+const FONT_MOBILE: Record<string, string> = { small: '12px', medium: '15px', large: '19px', xlarge: '24px' };
 
 function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = false, isEditing = false, onEditComplete }: {
   block: AnyBlock;
@@ -249,7 +249,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     return (
       <YStack w="100%" h="100%" bg="$surface" borderRadius="$3" ai="center" jc="center" position="relative" overflow="hidden">
         <XStack w={44} h={44} borderRadius={22} bg="white" ai="center" jc="center">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="#1e293b" style={{ marginLeft: 3 }}><path d="M5 3l14 9-14 9V3z"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#1e293b" style={{ marginLeft: 3 }}><path d="M5 3l14 9-14 9V3z" /></svg>
         </XStack>
         <Text position="absolute" bottom="$2" left="$3" color="white" fontSize={11} opacity={0.6}>{block.provider}</Text>
       </YStack>
@@ -262,18 +262,13 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
       const file = e.dataTransfer.files[0];
       if (file && file.type.startsWith('image/') && onImageDrop) onImageDrop(block.id, file);
     };
-    const imgTransform = [
-      block.styles?.rotate ? `rotate(${block.styles.rotate}deg)` : '',
-      block.styles?.flipH ? `scaleX(-1)` : '',
-      block.styles?.flipV ? `scaleY(-1)` : '',
-    ].filter(Boolean).join(' ');
     return (
       <YStack w="100%" h="100%" onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
         {block.url ? (
-          <img src={block.url} alt={block.alt || ''} style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, borderRadius: block.styles?.isBackground ? '0px' : '6px', display: 'block', transform: imgTransform }} />
+          <img src={block.url} alt={block.alt || ''} style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, borderRadius: block.styles?.isBackground ? '0px' : '6px', display: 'block' }} />
         ) : (
           <YStack w="100%" h="100%" borderWidth={2} borderColor="$info" borderRadius="$3" borderStyle="dashed" ai="center" jc="center" gap="$2" bg="#eff6ff">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg>
             <Text fontSize={12} color="$info" fontWeight="500">Arraste uma imagem aqui</Text>
             <Text fontSize={11}>ou cole a URL no painel →</Text>
           </YStack>
@@ -413,10 +408,6 @@ function useViewportInteraction(scale: number) {
   const { blocks, activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent, viewportMode } = useEditor();
   const [isInteracting, setIsInteracting] = useState(false);
   const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
-  const blocksRef = useRef(blocks);
-  const viewportModeRef = useRef(viewportMode);
-  blocksRef.current = blocks;
-  viewportModeRef.current = viewportMode;
   const interactionRef = useRef<{
     mode: 'move' | 'resize';
     blockId: string;
@@ -475,7 +466,7 @@ function useViewportInteraction(scale: number) {
 
     const buildUpdate = (layout: Layout) => {
       const { currentLayouts } = interactionRef.current!;
-      return { layouts: { ...currentLayouts, [viewportModeRef.current]: layout } } as Partial<AnyBlock>;
+      return { layouts: { ...currentLayouts, [viewportMode]: layout } } as Partial<AnyBlock>;
     };
 
     const onMouseMove = (e: MouseEvent) => {
@@ -483,7 +474,7 @@ function useViewportInteraction(scale: number) {
       const newLayout = applyLayout(e);
       if (newLayout) {
         updateBlockSilent(interactionRef.current.blockId, buildUpdate(newLayout));
-        setGuides(computeBlockGuides(newLayout, interactionRef.current.blockId, blocksRef.current, viewportModeRef.current));
+        setGuides(computeBlockGuides(newLayout, interactionRef.current.blockId, blocks, viewportMode));
       }
     };
 
@@ -826,10 +817,6 @@ export const EditorCanvas: React.FC = () => {
   const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
   const [floatToolbar, setFloatToolbar] = useState<{ x: number; y: number } | null>(null);
   const floatToolbarRef = useRef<HTMLDivElement>(null);
-  const blocksRef = useRef(blocks);
-  const viewportModeRef = useRef(viewportMode);
-  blocksRef.current = blocks;
-  viewportModeRef.current = viewportMode;
 
   const handleFloatFormat = (command: string, value?: string) => {
     const sel = window.getSelection();
@@ -905,21 +892,11 @@ export const EditorCanvas: React.FC = () => {
     };
   }, [setActiveBlockId, viewportMode, inlineEditingId, selectedBlockIds, blocks]);
 
-  const forceCursor = useCallback((cursor: string) => {
-    let el = document.getElementById('force-cursor');
-    if (!el) {
-      el = document.createElement('style');
-      el.id = 'force-cursor';
-      document.head.appendChild(el);
-    }
-    el.textContent = cursor ? `body * { cursor: ${cursor} !important; }` : '';
-  }, []);
-
   const onHandleMouseDown = useCallback((e: React.MouseEvent, block: AnyBlock, handle: HandleDir) => {
     e.preventDefault();
     e.stopPropagation();
     setIsInteracting(true);
-    forceCursor(`${handle}-resize`);
+    document.body.style.cursor = `${handle}-resize`;
 
     const resizeIds = selectedBlockIds.includes(block.id) && selectedBlockIds.length > 1
       ? selectedBlockIds.filter((id) => id !== block.id)
@@ -952,13 +929,13 @@ export const EditorCanvas: React.FC = () => {
         return { ...startLayout, x: startLayout.x + dx, y: startLayout.y + dy };
       }
       if (mode === 'resize' && handle) {
-        const isCorner = handle.includes('e') && handle.includes('n') ||
-                         handle.includes('e') && handle.includes('s') ||
-                         handle.includes('w') && handle.includes('n') ||
-                         handle.includes('w') && handle.includes('s');
-        if (aspectRatio && isCorner) {
+        if (aspectRatio) {
           const fixedX = handle.includes('w') ? startLayout.x + startLayout.w : startLayout.x;
           const fixedY = handle.includes('n') ? startLayout.y + startLayout.h : startLayout.y;
+          const isCorner = handle.includes('e') && handle.includes('n') ||
+            handle.includes('e') && handle.includes('s') ||
+            handle.includes('w') && handle.includes('n') ||
+            handle.includes('w') && handle.includes('s');
           const rawDW = handle.includes('e') || handle.includes('w');
           const rawDH = handle.includes('s') || handle.includes('n');
           let dw = 0, dh = 0;
@@ -968,12 +945,18 @@ export const EditorCanvas: React.FC = () => {
           let nh = Math.abs(handle.includes('n') ? startLayout.h - dh : startLayout.h + dh);
           nw = Math.max(MIN_W, nw);
           nh = Math.max(MIN_H, nh);
-          if (nw / nh > aspectRatio) nh = nw / aspectRatio;
-          else nw = nh * aspectRatio;
+          if (isCorner) {
+            if (nw / nh > aspectRatio) nh = nw / aspectRatio;
+            else nw = nh * aspectRatio;
+          } else if (rawDW) {
+            nh = nw / aspectRatio;
+          } else {
+            nw = nh * aspectRatio;
+          }
           nw = Math.max(MIN_W, nw);
           nh = Math.max(MIN_H, nh);
-          const x = handle.includes('w') ? fixedX - nw : startLayout.x + (startLayout.w - nw) / 2;
-          const y = handle.includes('n') ? fixedY - nh : startLayout.y + (startLayout.h - nh) / 2;
+          const x = handle.includes('w') ? fixedX - nw : fixedX;
+          const y = handle.includes('n') ? fixedY - nh : fixedY;
           return { x, y, w: nw, h: nh, zIndex: startLayout.zIndex };
         }
         let { x, y, w, h, zIndex } = startLayout;
@@ -1015,11 +998,11 @@ export const EditorCanvas: React.FC = () => {
               ? { ...entry.layout, x: Math.max(0, entry.layout.x + dx), y: Math.max(0, entry.layout.y + dy) }
               : applyResizeToEntry(entry, dx, dy, handle!);
             updateBlockSilent(id, {
-              layouts: { ...entry.layouts, [viewportModeRef.current]: newL },
+              layouts: { ...entry.layouts, [viewportMode]: newL },
             } as Partial<AnyBlock>);
           }
         }
-        setGuides(computeBlockGuides(layout, mainBlockId, blocksRef.current, viewportModeRef.current));
+        setGuides(computeBlockGuides(layout, mainBlockId, blocks, viewportMode));
       }
     };
 
@@ -1043,7 +1026,7 @@ export const EditorCanvas: React.FC = () => {
         }
       }
       interactionRef.current = null;
-      forceCursor('');
+      document.body.style.cursor = '';
       setIsInteracting(false);
       setGuides({ v: [], h: [], m: [] });
     };
@@ -1166,7 +1149,7 @@ export const EditorCanvas: React.FC = () => {
 
   return (
     <YStack
-      flex={1} p="$5"         style={{ overflow: 'auto' }}
+      flex={1} p="$5" style={{ overflow: 'auto' }}
       bg="$background"
       onPress={() => setActiveBlockId(null)}
       data-editor-root
@@ -1237,135 +1220,135 @@ export const EditorCanvas: React.FC = () => {
             const isHovered = hoveredBlockId === block.id;
             const showToolbar = isActive || isHovered;
             const isBg = !!((block as any).styles?.isBackground && isCertMode);
-            const layout = isBg ? { x: 0, y: 0, w: certDesignWidth, h: pageH, zIndex: 0 } : getLayout(block);
+            const layout = isBg ? { x: 0, y: 0, w: certDesignWidth, h: pageH, zIndex: -10 } : getLayout(block);
             const outOfBounds = isBg ? false : isOutOfBounds(block, isCertMode ? certDesignWidth : PAGE_W);
 
 
-          return (
-            <div
-              key={block.id}
-              onMouseDown={(e) => onBlockMouseDown(e, block)}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (e.shiftKey || e.metaKey || e.ctrlKey) {
-                  toggleSelectBlock(block.id);
-                } else {
-                  setActiveBlockId(block.id);
-                  if (selectedBlockIds.length > 0) clearSelection();
-                }
-              }}
-              onDoubleClick={(e) => {
-                if (block.type === 'text' || block.type === 'heading') {
+            return (
+              <div
+                key={block.id}
+                onMouseDown={(e) => onBlockMouseDown(e, block)}
+                onClick={(e) => {
                   e.stopPropagation();
-                  setInlineEditingId(block.id);
-                }
-              }}
-              onMouseEnter={() => setHoveredBlockId(block.id)}
-              onMouseLeave={() => setHoveredBlockId(null)}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape' && isEditing) {
-                  setInlineEditingId(null);
-                }
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setActiveBlockId(block.id);
-                }
-              }}
-              tabIndex={0}
-              role="button"
-              aria-label={`Bloco ${block.type}${(block as any).content ? `: ${(block as any).content.substring(0, 40)}` : ''}${isActive ? ' (selecionado)' : ''}`}
-              style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.zIndex + 1, cursor: isEditing ? 'text' : 'move', boxSizing: 'border-box', userSelect: isEditing ? 'text' : 'none', isolation: 'isolate', outline: isActive ? 'none' : undefined }}
-            >
-              <div style={{
-                position: 'absolute', inset: 0,
-                border: isActive ? '2px solid #3B82F6' : isSelected ? '2px solid #3B82F6' : outOfBounds ? '2px solid #F59E0B' : '2px solid transparent',
-                borderRadius: '6px', pointerEvents: 'none', zIndex: 2,
-                boxShadow: isActive ? '0 0 0 1px rgba(59,130,246,0.25)' : isSelected ? '0 0 0 1px rgba(96,165,250,0.2)' : outOfBounds ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
-              }} />
-
-              {outOfBounds && !isActive && (
-                <XStack position="absolute" top={-22} left={0} zIndex={25} bg="$warning" py={0} px={1} borderRadius={1} ai="center" gap={1} style={{ pointerEvents: 'none', whiteSpace: 'nowrap' }}>
-                  <Text fontSize={10} fontWeight="600" color="white">⚠️ Fora da página</Text>
-                </XStack>
-              )}
-
-              <div style={{ position: 'absolute', inset: isBg ? 0 : 2, borderRadius: isBg ? '0px' : '4px', overflow: 'hidden', zIndex: 1 }}>
-                {isBg && (
-                  <XStack position="absolute" top={8} left={8} zIndex={25} bg="$primary" py={1} px={2} borderRadius={4} ai="center" gap={4} style={{ pointerEvents: 'none', whiteSpace: 'nowrap' }}>
-                    <Text fontSize={9} fontWeight="600" color="white">✦ Plano de Fundo (Bloqueado)</Text>
-                  </XStack>
-                )}
-                <BlockContent
-                  block={block}
-                  onImageDrop={handleImageDrop}
-                  isInteracting={isInteracting}
-                  isEditing={isEditing}
-                  onEditComplete={(content) => {
-                    updateBlock(block.id, { content } as Partial<AnyBlock>);
+                  if (e.shiftKey || e.metaKey || e.ctrlKey) {
+                    toggleSelectBlock(block.id);
+                  } else {
+                    setActiveBlockId(block.id);
+                    if (selectedBlockIds.length > 0) clearSelection();
+                  }
+                }}
+                onDoubleClick={(e) => {
+                  if (block.type === 'text' || block.type === 'heading') {
+                    e.stopPropagation();
+                    setInlineEditingId(block.id);
+                  }
+                }}
+                onMouseEnter={() => setHoveredBlockId(block.id)}
+                onMouseLeave={() => setHoveredBlockId(null)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape' && isEditing) {
                     setInlineEditingId(null);
-                  }}
-                />
-                {(block.type === 'html' || block.type === 'video') && (
-                  <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'move', backgroundColor: 'transparent' }} />
+                  }
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setActiveBlockId(block.id);
+                  }
+                }}
+                tabIndex={0}
+                role="button"
+                aria-label={`Bloco ${block.type}${(block as any).content ? `: ${(block as any).content.substring(0, 40)}` : ''}${isActive ? ' (selecionado)' : ''}`}
+                style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.zIndex + 1, cursor: isEditing ? 'text' : 'move', boxSizing: 'border-box', userSelect: isEditing ? 'text' : 'none', isolation: 'isolate', outline: isActive ? 'none' : undefined }}
+              >
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  border: isActive ? '2px solid #3B82F6' : isSelected ? '2px solid #3B82F6' : outOfBounds ? '2px solid #F59E0B' : '2px solid transparent',
+                  borderRadius: '6px', pointerEvents: 'none', zIndex: 2,
+                  boxShadow: isActive ? '0 0 0 1px rgba(59,130,246,0.25)' : isSelected ? '0 0 0 1px rgba(96,165,250,0.2)' : outOfBounds ? '0 0 0 1px rgba(249,115,22,0.15)' : 'none',
+                }} />
+
+                {outOfBounds && !isActive && (
+                  <XStack position="absolute" top={-22} left={0} zIndex={25} bg="$warning" py={0} px={1} borderRadius={1} ai="center" gap={1} style={{ pointerEvents: 'none', whiteSpace: 'nowrap' }}>
+                    <Text fontSize={10} fontWeight="600" color="white">⚠️ Fora da página</Text>
+                  </XStack>
                 )}
-              </div>
 
-              {showToolbar && (
-                <XStack
-                  position="absolute" top={-34} right={0} zIndex={20}
-                  bg="white" borderWidth={1} borderColor="$border" borderRadius={1}
-                  style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}
-                  ai="center" gap={0}
-                >
+                <div style={{ position: 'absolute', inset: isBg ? 0 : 2, borderRadius: isBg ? '0px' : '4px', overflow: 'hidden', zIndex: 1 }}>
+                  {isBg && (
+                    <XStack position="absolute" top={8} left={8} zIndex={25} bg="$primary" py={1} px={2} borderRadius={4} ai="center" gap={4} style={{ pointerEvents: 'none', whiteSpace: 'nowrap' }}>
+                      <Text fontSize={9} fontWeight="600" color="white">✦ Plano de Fundo (Bloqueado)</Text>
+                    </XStack>
+                  )}
+                  <BlockContent
+                    block={block}
+                    onImageDrop={handleImageDrop}
+                    isInteracting={isInteracting}
+                    isEditing={isEditing}
+                    onEditComplete={(content) => {
+                      updateBlock(block.id, { content } as Partial<AnyBlock>);
+                      setInlineEditingId(null);
+                    }}
+                  />
+                  {(block.type === 'html' || block.type === 'video') && (
+                    <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'move', backgroundColor: 'transparent' }} />
+                  )}
+                </div>
+
+                {showToolbar && (
                   <XStack
-                    onPress={(e: any) => { e.stopPropagation(); duplicateBlock(block.id); }}
-                    role="button"
-                    aria-label="Duplicar bloco"
-                    tabIndex={0}
-                    onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); duplicateBlock(block.id); } }}
-                     px={1} py={1} cursor="pointer" hoverStyle={{ bg: '$secondary' }}
-                   >
-                     <Icon name="Copy" size={14} color="$textMuted" />
-                   </XStack>
-                   <XStack
-                     onPress={(e: any) => { e.stopPropagation(); removeBlock(block.id); }}
-                     role="button"
-                     aria-label="Excluir bloco"
-                     tabIndex={0}
-                     onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); removeBlock(block.id); } }}
-                     px={1} py={1} cursor="pointer" hoverStyle={{ bg: '$secondary' }}
+                    position="absolute" top={-34} right={0} zIndex={20}
+                    bg="white" borderWidth={1} borderColor="$border" borderRadius={1}
+                    style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}
+                    ai="center" gap={0}
                   >
-                    <Icon name="Trash2" size={14} color="$danger" />
+                    <XStack
+                      onPress={(e: any) => { e.stopPropagation(); duplicateBlock(block.id); }}
+                      role="button"
+                      aria-label="Duplicar bloco"
+                      tabIndex={0}
+                      onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); duplicateBlock(block.id); } }}
+                      px={1} py={1} cursor="pointer" hoverStyle={{ bg: '$secondary' }}
+                    >
+                      <Icon name="Copy" size={14} color="$textMuted" />
+                    </XStack>
+                    <XStack
+                      onPress={(e: any) => { e.stopPropagation(); removeBlock(block.id); }}
+                      role="button"
+                      aria-label="Excluir bloco"
+                      tabIndex={0}
+                      onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); removeBlock(block.id); } }}
+                      px={1} py={1} cursor="pointer" hoverStyle={{ bg: '$secondary' }}
+                    >
+                      <Icon name="Trash2" size={14} color="$danger" />
+                    </XStack>
                   </XStack>
-                </XStack>
-              )}
+                )}
 
-              {showToolbar && (
-                <XStack
-                  position="absolute" top={-34} left={0} zIndex={20}
-                  bg="white" borderWidth={1} borderColor="$border" borderRadius={1}
-                  style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.12)', cursor: 'grab' }}
-                  ai="center" gap={0}
-                >
-                  <XStack px={1} py={1} aria-label="Reordenar bloco">
-                    <Icon name="GripVertical" size={14} color="$textMuted" />
+                {showToolbar && (
+                  <XStack
+                    position="absolute" top={-34} left={0} zIndex={20}
+                    bg="white" borderWidth={1} borderColor="$border" borderRadius={1}
+                    style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.12)', cursor: 'grab' }}
+                    ai="center" gap={0}
+                  >
+                    <XStack px={1} py={1} aria-label="Reordenar bloco">
+                      <Icon name="GripVertical" size={14} color="$textMuted" />
+                    </XStack>
                   </XStack>
-                </XStack>
-              )}
+                )}
 
-              {(isActive || isSelected) && !isBg && HANDLES.map(({ id, cursor, style }) => (
-                <div
-                  key={id}
-                  data-handle={id}
-                  onMouseDown={(e) => onHandleMouseDown(e, block, id)}
-                  style={{ position: 'absolute', width: 10, height: 10, backgroundColor: 'white', border: isActive ? '2px solid #3B82F6' : '2px solid #3B82F6', borderRadius: '2px', cursor, zIndex: 30, ...style }}
-                />
-              ))}
-            </div>
-          );
-        });
-      })()}
+                {(isActive || isSelected) && !isBg && HANDLES.map(({ id, cursor, style }) => (
+                  <div
+                    key={id}
+                    data-handle={id}
+                    onMouseDown={(e) => onHandleMouseDown(e, block, id)}
+                    style={{ position: 'absolute', width: 10, height: 10, backgroundColor: 'white', border: isActive ? '2px solid #3B82F6' : '2px solid #3B82F6', borderRadius: '2px', cursor, zIndex: 30, ...style }}
+                  />
+                ))}
+              </div>
+            );
+          });
+        })()}
 
         {guides.v.map((x, i) => (
           <div key={`gv-${i}`} style={{ position: 'absolute', left: x, top: 0, width: 0, height: pageH, borderLeft: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
@@ -1460,5 +1443,22 @@ export const EditorCanvas: React.FC = () => {
         </div>
       )}
     </YStack>
+  );
+};
+style = {{ width: 20, height: 20, borderRadius: 10, border: c === '#000000' ? '2px solid #e2e8f0' : 'none', background: c, cursor: 'pointer' }}
+title = {`Cor ${c}`}
+            />
+          ))}
+<input
+  type="color"
+  onMouseDown={(e) => e.preventDefault()}
+  onChange={(e) => { handleFloatFormat('foreColor', e.target.value); }}
+  value="#3b82f6"
+  style={{ width: 24, height: 24, padding: 0, border: 'none', borderRadius: 4, cursor: 'pointer', background: 'none' }}
+  title="Escolher cor..."
+/>
+        </div >
+      )}
+    </YStack >
   );
 };
