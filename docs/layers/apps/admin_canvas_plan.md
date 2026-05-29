@@ -19,6 +19,23 @@ Projetar a arquitetura técnica, fluxo de dados e experiência do usuário (UX) 
 
 O editor visual é dividido em três regiões principais de controle:
 
+### Regras Técnicas de Blocos Interativos
+
+**Bloco HTML (iframe):**
+- Bloco HTML carrega códigos externos (Three.js, Canvas, etc.) rodando isolados em `<iframe>` com `srcDoc`.
+- **pointer-events Dinâmicos:** Durante drag/resize de qualquer bloco (`isInteracting === true`), o iframe de todos os blocos HTML recebe `pointerEvents: 'none'` para evitar que capture eventos de mouse.
+- **Escalabilidade 100%:** O `srcDoc` deve conter:
+  ```css
+  html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: auto; }
+  ```
+  Isso evita colapso vertical de canvas e gráficos 3D baseados em porcentagem.
+- **Overlay de Seleção:** Blocos interativos (`html`, `video`) possuem overlay transparente (`zIndex: 10`) sobre o conteúdo para capturar cliques e drag. A interação real (play em vídeo, girar cubo 3D) é feita apenas no modo **Preview**.
+
+**Exportação de Código (`getHtmlFromBlock`):**
+- Converte estado visual do editor em HTML de produção com estilos inline CSS.
+- Aplica parser de Markdown para `<strong>` e `<em>` semânticos.
+- O HTML exportado deve ser 100% autocontido, responsivo e semanticamente impecável.
+
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │  [TopBar] Nome da Aula, Status (Rascunho/Publicado), Botão Fechar      │
