@@ -1,10 +1,12 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-SESSAO CONCLUIDA — Certificado: preview/print A4 com presets, header colapsável, ajustes finos de layout.
+ATIVO — Diagnóstico e correção: certificado salvo não aparece no preview da config page.
 
 ## 🎯 Tarefa em Execução
-*Sessão encerrada. Último commit: `dac985e`.*
+Bug: Certificado com imagem não aparece no preview da config page após salvar no studio. Causa raiz: `CertificateMetaBlockSchema` com `id: z.string()` (obrigatório) mas o `__meta__` salvo no banco não possui `id`, fazendo `.catch([])` limpar todo o array. Fix: tornar `id` opcional.
+
+Último commit: `c25a094`.
 
 ## 🕹️ Documentos Carregados via MCP
 - `docs/FORBIDDEN_OPERATIONS.md` — Regras vinculantes
@@ -47,6 +49,7 @@ SESSAO CONCLUIDA — Certificado: preview/print A4 com presets, header colapsáv
 - Tudo encapsulado em `YStack position="relative"`
 
 ### Fixes aplicados
+- `CertificateMetaBlockSchema`: `id` mudou de `z.string()` (obrigatório) para `z.string().optional()` — dados salvos de `__meta__` não têm `id`, o que impedia o parse e acionava `.catch([])` limpando o array
 - `BlockSettings.tsx`: early return reestruturado (`if (!activeBlock) { if cert ... }`) elimina 116 erros TS
 - `BlockSettings.tsx`: `useEffect` reseta `collapsed = false` quando `activeBlockId` muda (cert mode)
 - `EditorCanvas.tsx`: removido `opacity: 0.35` em outOfBounds (confundia com imagem)
@@ -60,7 +63,7 @@ SESSAO CONCLUIDA — Certificado: preview/print A4 com presets, header colapsáv
 - `apps/admin/src/context/EditorContext.tsx` — certDesignWidth/Height/Chosen
 - `apps/admin/src/app/studio/[courseId]/page.tsx` — BlockSettings conditional render
 - `apps/admin/src/app/configuracoes/[courseId]/page.tsx` — dynamic certDesignWidth
-- `packages/types/src/certificate-block.ts` — CertificateMetaBlock interface
+- `packages/types/src/certificate-block.ts` — CertificateMetaBlock interface, CertificateMetaBlockSchema id optional
 - `docs/context_buffer.md` — this update
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
