@@ -1220,7 +1220,7 @@ export const EditorCanvas: React.FC = () => {
             const isHovered = hoveredBlockId === block.id;
             const showToolbar = isActive || isHovered;
             const isBg = !!((block as any).styles?.isBackground && isCertMode);
-            const layout = isBg ? { x: 0, y: 0, w: certDesignWidth, h: pageH, zIndex: -10 } : getLayout(block);
+            const layout = isBg ? { x: 0, y: 0, w: certDesignWidth, h: pageH, zIndex: 0 } : getLayout(block);
             const outOfBounds = isBg ? false : isOutOfBounds(block, isCertMode ? certDesignWidth : PAGE_W);
 
 
