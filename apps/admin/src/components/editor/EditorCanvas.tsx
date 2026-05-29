@@ -1445,20 +1445,3 @@ export const EditorCanvas: React.FC = () => {
     </YStack>
   );
 };
-style = {{ width: 20, height: 20, borderRadius: 10, border: c === '#000000' ? '2px solid #e2e8f0' : 'none', background: c, cursor: 'pointer' }}
-title = {`Cor ${c}`}
-            />
-          ))}
-<input
-  type="color"
-  onMouseDown={(e) => e.preventDefault()}
-  onChange={(e) => { handleFloatFormat('foreColor', e.target.value); }}
-  value="#3b82f6"
-  style={{ width: 24, height: 24, padding: 0, border: 'none', borderRadius: 4, cursor: 'pointer', background: 'none' }}
-  title="Escolher cor..."
-/>
-        </div >
-      )}
-    </YStack >
-  );
-};

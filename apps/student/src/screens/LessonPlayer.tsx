@@ -106,31 +106,6 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
     refreshActiveLesson();
   }, [activeLessonId]);
 
-  // Realtime subscription via LessonService
-  useEffect(() => {
-    if (!activeLessonId) return;
-
-    const unsubscribe = LessonService.subscribeToLesson(
-      activeLessonId,
-      (blocks, title) => {
-        setLessons((prev) =>
-          prev.map((les) => {
-            if (les.id === activeLessonId) {
-              return {
-                ...les,
-                blocks,
-                title: title || les.title,
-              };
-            }
-            return les;
-          }),
-        );
-      },
-    );
-
-    return unsubscribe;
-  }, [activeLessonId]);
-
   // Polling: checa version (1 int) a cada 30s
   useEffect(() => {
     if (!activeLessonId) return;
