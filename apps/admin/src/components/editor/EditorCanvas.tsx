@@ -413,6 +413,10 @@ function useViewportInteraction(scale: number) {
   const { blocks, activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent, viewportMode } = useEditor();
   const [isInteracting, setIsInteracting] = useState(false);
   const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
+  const blocksRef = useRef(blocks);
+  const viewportModeRef = useRef(viewportMode);
+  blocksRef.current = blocks;
+  viewportModeRef.current = viewportMode;
   const interactionRef = useRef<{
     mode: 'move' | 'resize';
     blockId: string;
@@ -471,7 +475,7 @@ function useViewportInteraction(scale: number) {
 
     const buildUpdate = (layout: Layout) => {
       const { currentLayouts } = interactionRef.current!;
-      return { layouts: { ...currentLayouts, [viewportMode]: layout } } as Partial<AnyBlock>;
+      return { layouts: { ...currentLayouts, [viewportModeRef.current]: layout } } as Partial<AnyBlock>;
     };
 
     const onMouseMove = (e: MouseEvent) => {
@@ -479,7 +483,7 @@ function useViewportInteraction(scale: number) {
       const newLayout = applyLayout(e);
       if (newLayout) {
         updateBlockSilent(interactionRef.current.blockId, buildUpdate(newLayout));
-        setGuides(computeBlockGuides(newLayout, interactionRef.current.blockId, blocks, viewportMode));
+        setGuides(computeBlockGuides(newLayout, interactionRef.current.blockId, blocksRef.current, viewportModeRef.current));
       }
     };
 
@@ -822,6 +826,10 @@ export const EditorCanvas: React.FC = () => {
   const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
   const [floatToolbar, setFloatToolbar] = useState<{ x: number; y: number } | null>(null);
   const floatToolbarRef = useRef<HTMLDivElement>(null);
+  const blocksRef = useRef(blocks);
+  const viewportModeRef = useRef(viewportMode);
+  blocksRef.current = blocks;
+  viewportModeRef.current = viewportMode;
 
   const handleFloatFormat = (command: string, value?: string) => {
     const sel = window.getSelection();
@@ -944,13 +952,13 @@ export const EditorCanvas: React.FC = () => {
         return { ...startLayout, x: startLayout.x + dx, y: startLayout.y + dy };
       }
       if (mode === 'resize' && handle) {
-          if (aspectRatio) {
+        const isCorner = handle.includes('e') && handle.includes('n') ||
+                         handle.includes('e') && handle.includes('s') ||
+                         handle.includes('w') && handle.includes('n') ||
+                         handle.includes('w') && handle.includes('s');
+        if (aspectRatio && isCorner) {
           const fixedX = handle.includes('w') ? startLayout.x + startLayout.w : startLayout.x;
           const fixedY = handle.includes('n') ? startLayout.y + startLayout.h : startLayout.y;
-          const isCorner = handle.includes('e') && handle.includes('n') ||
-                           handle.includes('e') && handle.includes('s') ||
-                           handle.includes('w') && handle.includes('n') ||
-                           handle.includes('w') && handle.includes('s');
           const rawDW = handle.includes('e') || handle.includes('w');
           const rawDH = handle.includes('s') || handle.includes('n');
           let dw = 0, dh = 0;
@@ -960,14 +968,8 @@ export const EditorCanvas: React.FC = () => {
           let nh = Math.abs(handle.includes('n') ? startLayout.h - dh : startLayout.h + dh);
           nw = Math.max(MIN_W, nw);
           nh = Math.max(MIN_H, nh);
-          if (isCorner) {
-            if (nw / nh > aspectRatio) nh = nw / aspectRatio;
-            else nw = nh * aspectRatio;
-          } else if (rawDW) {
-            nh = nw / aspectRatio;
-          } else {
-            nw = nh * aspectRatio;
-          }
+          if (nw / nh > aspectRatio) nh = nw / aspectRatio;
+          else nw = nh * aspectRatio;
           nw = Math.max(MIN_W, nw);
           nh = Math.max(MIN_H, nh);
           const x = handle.includes('w') ? fixedX - nw : startLayout.x + (startLayout.w - nw) / 2;
@@ -1013,11 +1015,11 @@ export const EditorCanvas: React.FC = () => {
               ? { ...entry.layout, x: Math.max(0, entry.layout.x + dx), y: Math.max(0, entry.layout.y + dy) }
               : applyResizeToEntry(entry, dx, dy, handle!);
             updateBlockSilent(id, {
-              layouts: { ...entry.layouts, [viewportMode]: newL },
+              layouts: { ...entry.layouts, [viewportModeRef.current]: newL },
             } as Partial<AnyBlock>);
           }
         }
-        setGuides(computeBlockGuides(layout, mainBlockId, blocks, viewportMode));
+        setGuides(computeBlockGuides(layout, mainBlockId, blocksRef.current, viewportModeRef.current));
       }
     };
 
