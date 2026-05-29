@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, use, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { YStack, XStack, Text, Button, Icon, Spinner, Theme, CertificateMiniature, CertificateBlockRenderer } from '@projeto/ui';
 import { useRouter } from 'next/navigation';
 import { BrandMark } from '../../../components/brand-mark';
@@ -36,8 +37,13 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const [saving, setSaving] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [printing, setPrinting] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const measureRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const before = () => setPrinting(true);
@@ -72,12 +78,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const previewScale = (containerSize.w && containerSize.h)
     ? Math.min(1, containerSize.w / certDesignWidth, containerSize.h / certDesignHeight)
     : 1;
-  const canvasWidth = Math.round(certDesignWidth * previewScale);
-  const canvasHeight = Math.round(certDesignHeight * previewScale);
   const previewReady = containerSize.w > 0 && containerSize.h > 0;
-  const effectiveScale = printing ? A4_PRINT_W / certDesignWidth : previewScale;
-  const effCanvasWidth = printing ? A4_PRINT_W : Math.round(certDesignWidth * previewScale);
-  const effCanvasHeight = printing ? A4_PRINT_H : Math.round(certDesignHeight * previewScale);
   const certificateBlocks = (course?.certificate_blocks || []).filter((b: any) => b.type !== '__meta__');
 
   useEffect(() => {
@@ -86,13 +87,13 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
     style.textContent = `@media print {
       @page { size: A4 landscape; margin: 0; }
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      body * { visibility: hidden !important; }
-      #certificate-print-root, #certificate-print-root * { visibility: visible !important; }
+      body > *:not(#certificate-modal-overlay) { display: none !important; }
+      #certificate-modal-overlay { position: fixed !important; inset: 0 !important; background: white !important; z-index: 9999999 !important; display: flex !important; align-items: center !important; justify-content: center !important; visibility: visible !important; }
+      #certificate-modal-card { max-width: none !important; max-height: none !important; width: 297mm !important; height: 210mm !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; visibility: visible !important; }
       #certificate-modal-header { display: none !important; }
-      #certificate-modal-overlay { position: fixed !important; inset: 0 !important; background: white !important; }
-      #certificate-modal-card { max-width: none !important; max-height: none !important; width: 100% !important; height: 100vh !important; border-radius: 0 !important; box-shadow: none !important; }
-      #certificate-print-root { display: flex !important; align-items: center; justify-content: center; width: 100%; height: 100vh; padding: 0 !important; margin: 0; background: white !important; }
-      #certificate-a4-canvas { width: 297mm !important; height: 210mm !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; page-break-inside: avoid !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      #certificate-print-root { display: flex !important; align-items: center !important; justify-content: center !important; width: 297mm !important; height: 210mm !important; padding: 0 !important; margin: 0 !important; background: white !important; visibility: visible !important; }
+      #certificate-print-root > div { width: 297mm !important; height: 210mm !important; position: relative !important; overflow: hidden !important; }
+      #certificate-a4-canvas { position: absolute !important; left: 0 !important; top: 0 !important; width: var(--cert-design-width) !important; height: var(--cert-design-height) !important; transform: scale(var(--cert-print-scale)) !important; transform-origin: top left !important; border: none !important; box-shadow: none !important; page-break-inside: avoid !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; visibility: visible !important; }
     }`;
     document.head.appendChild(style);
     return () => style.remove();
@@ -577,7 +578,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                     <Text fontSize={10} color="$textMuted" textAlign="center">Clique no preview para ampliar</Text>
                   </YStack>
                 )}
-                {previewOpen && (
+                {previewOpen && mounted && createPortal(
                   <YStack
                     id="certificate-modal-overlay"
                     position="fixed"
@@ -613,7 +614,8 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                           id="certificate-print-root"
                           ref={measureRef}
                           style={{
-                            flex: 1,
+                            width: '100%',
+                            height: '100%',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -624,51 +626,69 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                         >
                           {previewReady ? (
                             <div
-                              id="certificate-a4-canvas"
                               style={{
+                                width: Math.round(certDesignWidth * previewScale),
+                                height: Math.round(certDesignHeight * previewScale),
                                 position: 'relative',
-                                width: effCanvasWidth,
-                                height: effCanvasHeight,
                                 overflow: 'hidden',
-                                background: 'white',
-                                boxShadow: '0 10px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.05)',
-                              }}
+                                // @ts-ignore
+                                '--cert-design-width': `${certDesignWidth}px`,
+                                '--cert-design-height': `${certDesignHeight}px`,
+                                '--cert-print-scale': 1123 / certDesignWidth,
+                              } as React.CSSProperties}
                             >
-                              {certificateBlocks.map((block: any) => {
-                                const layout = block.layouts?.desktop || { x: 0, y: 0, w: 200, h: 100, zIndex: 0 };
-                                return (
-                                  <div
-                                    key={block.id}
-                                    style={{
-                                      position: 'absolute',
-                                      left: layout.x * effectiveScale,
-                                      top: layout.y * effectiveScale,
-                                      width: layout.w * effectiveScale,
-                                      height: layout.h * effectiveScale,
-                                      zIndex: layout.zIndex + 1,
-                                      overflow: 'hidden',
-                                    }}
-                                  >
-                                    {block.type === 'image' && block.url ? (
-                                      <img
-                                        src={block.url}
-                                        alt={block.alt || ''}
-                                        style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }}
-                                      />
-                                    ) : (
-                                      <CertificateBlockRenderer block={block} scale={effectiveScale} fillContainer />
-                                    )}
-                                  </div>
-                                );
-                              })}
+                              <div
+                                id="certificate-a4-canvas"
+                                style={{
+                                  position: 'absolute',
+                                  left: 0,
+                                  top: 0,
+                                  width: certDesignWidth,
+                                  height: certDesignHeight,
+                                  overflow: 'hidden',
+                                  background: 'white',
+                                  transform: `scale(${previewScale})`,
+                                  transformOrigin: 'top left',
+                                  boxShadow: '0 10px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.05)',
+                                }}
+                              >
+                                {certificateBlocks.map((block: any) => {
+                                  const layout = block.layouts?.desktop || { x: 0, y: 0, w: 200, h: 100, zIndex: 0 };
+                                  return (
+                                    <div
+                                      key={block.id}
+                                      style={{
+                                        position: 'absolute',
+                                        left: layout.x,
+                                        top: layout.y,
+                                        width: layout.w,
+                                        height: layout.h,
+                                        zIndex: layout.zIndex + 1,
+                                        overflow: 'hidden',
+                                      }}
+                                    >
+                                      {block.type === 'image' && block.url ? (
+                                        <img
+                                          src={block.url}
+                                          alt={block.alt || ''}
+                                          style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }}
+                                        />
+                                      ) : (
+                                        <CertificateBlockRenderer block={block} scale={1} fillContainer />
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
                           ) : (
-                            <div style={{ width: effCanvasWidth || certDesignWidth, height: effCanvasHeight || certDesignHeight }} />
+                            <div style={{ width: certDesignWidth, height: certDesignHeight }} />
                           )}
                         </div>
                       </YStack>
                     </YStack>
-                  </YStack>
+                  </YStack>,
+                  document.body
                 )}
 
                 <Button

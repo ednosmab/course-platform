@@ -1,70 +1,42 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-ATIVO — Diagnóstico e correção: certificado salvo não aparece no preview da config page.
+CONCLUÍDO — Correções no preview do certificado na config page e na visualização expandida/impressão do certificado.
 
 ## 🎯 Tarefa em Execução
-Bug: Certificado com imagem não aparece no preview da config page após salvar no studio. Causa raiz: `CertificateMetaBlockSchema` com `id: z.string()` (obrigatório) mas o `__meta__` salvo no banco não possui `id`, fazendo `.catch([])` limpar todo o array. Fix: tornar `id` opcional.
+Correção do modal de preview e fluxo de download/impressão:
+1. **Feedback Loop de Layout (Squeezed Canvas)**: Identificado que o container `#certificate-print-root` reduzia seu tamanho para abraçar o canvas, causando colapso na medição do `ResizeObserver`. Resolvido definindo `width: '100%'` e `height: '100%'` estáveis. ✅
+2. **Duas Páginas e Canvas Espremido na Impressão**: Identificado que elementos invisíveis (`visibility: hidden`) mantinham espaço de layout no DOM, gerando quebras de página e deslocamento. Resolvido movendo o modal de visualização para um **React Portal** anexado diretamente ao `document.body` e aplicando `body > *:not(#certificate-modal-overlay) { display: none !important; }` na impressão. ✅
+3. **Resolução de Escala e Atraso de Renderização do Print**:
+   - **Problema**: O uso de estado do React (`printing` no listener de `beforeprint`) gerava uma corrida assíncrona. Como o `window.print()` bloqueia a thread síncrona do navegador, a escala recalculada do React não se aplicava a tempo no DOM que o navegador capturava para impressão, fazendo o certificado aparecer pequeno e no canto superior esquerdo (com a escala de preview antiga de ~0.3).
+   - **Solução**: Substituímos toda a lógica de escala em React durante a impressão por **CSS Custom Variables** e **CSS `transform: scale` nativo**. Setamos as variáveis CSS no elemento pai (`--cert-design-width`, `--cert-design-height`, `--cert-print-scale`) no preview e as lemos no `@media print` síncrono.
+   - **Resultado**: Na hora de imprimir, o navegador redimensiona e escala simetricamente o certificado em tempo de renderização CSS nativo, preenchendo a folha A4 landscape em 100% sem atrasos de estado ou corridas assíncronas do React. ✅
+4. **Verificação de Compilação**: Executado `pnpm --filter admin run build` com sucesso (exit code 0). ✅
 
-Último commit: `c25a094`.
+Último commit: `14880c6`.
 
 ## 🕹️ Documentos Carregados via MCP
 - `docs/FORBIDDEN_OPERATIONS.md` — Regras vinculantes
 - `docs/DESDO.md` — Diretrizes de engenharia
 - `docs/context_buffer.md` — Estado da última execução
 - `docs/BACKLOG.md` — Prioridades do projeto
-- `docs/roadmaps/design-system-reforma.md` — Plano do DS
 
-## 🚀 Novidades desta sessão
+## 🚀 Melhorias do Preview (Config Page)
 
-### Certificado: Canvas A4 com presets fixos
-- Canvas usa **presets A4 fixos** (700/900/1100/1300px), sem drag-resize volátil
-- Altura sempre `largura / 1.414` (proporção A4 paisagem)
-- Blocos posicionados com layout absoluto (`position: absolute`, `layout.x/y/w/h` em pixels)
-- Imagem preenche 100% com `objectFit: fill`
-- `@media print` força A4 paisagem (297×210mm) com margem zero
-- CSS de print injetado via `useEffect` (exceção D-03)
-- `CertificateMetaBlock` type-only em `packages/types/src/certificate-block.ts`
-- `editor-modes.ts`: `A4_PRESETS`, `A4_RATIO`, `createCertificateModeConfig` com load/save/publish
-- `EditorContext.tsx`: `certDesignWidth`, `certDesignHeight`, `certDesignChosen`, `setCertDesignSize`
+### Proporção do Canvas
+- O canvas modal agora respeita estritamente o bloco de metadados (`__meta__`) do certificado.
+- A largura e a altura do canvas do modal escalam dinamicamente por uma lógica de proporção de visualização e são desenhadas nativamente em tamanho real, com o CSS scaling visualizando-as na tela.
 
-### Modo certificado isolado
-- `editor-modes.ts`: `CertificateCanvasPanel` com 4 presets A4
-- `BlockSettings.tsx`: renderiza `CertificateCanvasPanel` quando `!activeBlock && mode === 'certificate'`
-- `page.tsx`: `(activeBlockId || mode === 'certificate')` condiciona `BlockSettings`
-- Modo aula e certificado completamente isolados
-- Blocos incompatíveis filtrados no palette (só text/heading/image/divider)
+### Impressão Fiel
+- O uso de React Portal no `document.body` remove o modal da árvore profunda do Next.js.
+- Ao ocultar todos os filhos do body que não sejam o modal (`body > *:not(#certificate-modal-overlay) { display: none !important; }`), o browser renderiza exclusivamente o certificado, eliminando qualquer quebra de página (forçando exatamente 1 página) ou deslocamento lateral.
 
-### Preview e configurações
-- Config page: `certDesignWidth` dinâmico do `__meta__`, `previewScale = Math.min(1, measuredWidth / certDesignWidth)`
-- `CertificateBlockRenderer`: `fillContainer` para imagem, `scaleDim` para px
-- `useA4Scale.ts` mantido (`DESIGN_W = 1050`) para compat app aluno
-
-### EditorHeader colapsável
-- Clique em qualquer lugar do header recolhe/expande
-- Altura collapsed: `0` (antes 8), `overflow: hidden` removido
-- Botão flutuante `position: fixed; right: 50; zIndex: 9999` com `ChevronDown`
-- Botão com destaque suave: `bg #EFF6FF`, `borderColor $primary`, `opacity 0.55`, hover `opacity 1`
-- Ícone `ChevronUp` sutil (opacity 0.35) no header expandido como dica
-- Tudo encapsulado em `YStack position="relative"`
-
-### Fixes aplicados
-- `CertificateMetaBlockSchema`: `id` mudou de `z.string()` (obrigatório) para `z.string().optional()` — dados salvos de `__meta__` não têm `id`, o que impedia o parse e acionava `.catch([])` limpando o array
-- `BlockSettings.tsx`: early return reestruturado (`if (!activeBlock) { if cert ... }`) elimina 116 erros TS
-- `BlockSettings.tsx`: `useEffect` reseta `collapsed = false` quando `activeBlockId` muda (cert mode)
-- `EditorCanvas.tsx`: removido `opacity: 0.35` em outOfBounds (confundia com imagem)
-- `EditorCanvas.tsx`: removido tracejado A4 (redundante com borda amarela de overflow)
+## Pendências Resolvidas
+- [x] Garantir que o Ctrl+P exiba exatamente 1 página perfeitamente centralizada e proporcional.
 
 ## Arquivos modificados nesta sessão
-- `apps/admin/src/components/editor/BlockSettings.tsx` — CertificateCanvasPanel, collapsed fix, TS error fix
-- `apps/admin/src/components/editor/EditorCanvas.tsx` — A4 guide line, overflow, opacity removed
-- `apps/admin/src/components/editor/EditorHeader.tsx` — collapsible, floating button, ChevronUp hint
-- `apps/admin/src/context/editor-modes.ts` — A4_PRESETS, createCertificateModeConfig
-- `apps/admin/src/context/EditorContext.tsx` — certDesignWidth/Height/Chosen
-- `apps/admin/src/app/studio/[courseId]/page.tsx` — BlockSettings conditional render
-- `apps/admin/src/app/configuracoes/[courseId]/page.tsx` — dynamic certDesignWidth
-- `packages/types/src/certificate-block.ts` — CertificateMetaBlock interface, CertificateMetaBlockSchema id optional
-- `docs/context_buffer.md` — this update
+- `apps/admin/src/app/configuracoes/[courseId]/page.tsx` — Adicionado `createPortal`, montagem sob `document.body`, corrigido o loop de feedback de tamanho definindo `width`/`height` `100%` no canvas container, e implementadas variáveis de CSS nativas para o `@media print` resolver a escala síncrona.
+- `docs/context_buffer.md` — Este log.
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
-*Nenhum erro ativo.*
+*Nenhum erro ativo. Compilação bem-sucedida.*
