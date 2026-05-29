@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useState, useEffect, useCallback, useMemo } from 'react';
 import { AnyBlock } from '@projeto/types';
 import { LessonService, CourseService } from '@projeto/core';
 import type { EditorModeConfig, EditorBlockType } from './editor-modes';
@@ -543,48 +543,69 @@ export const EditorProvider: React.FC<{
   // Backward-compatible alias for components that reference publishLesson (EditorHeader)
   const publishLesson = saveContent;
 
+  const setActiveSide = useCallback((side: 'front' | 'back') => dispatch({ type: 'SET_ACTIVE_SIDE', payload: { side } }), []);
+
+  const contextValue = useMemo(() => ({
+    ...state,
+    addBlock,
+    removeBlock,
+    removeBlocks,
+    duplicateBlock,
+    updateBlock,
+    updateBlockSilent,
+    moveBlock,
+    setActiveBlockId,
+    setSelectedBlocks,
+    toggleSelectBlock,
+    clearSelection,
+    undo,
+    redo,
+    setBlocks,
+    reorderBlocks,
+    setPreviewMode,
+    setViewportMode,
+    canUndo,
+    canRedo,
+    saveStatus,
+    activeLessonId,
+    publishLesson,
+    saveContent,
+    courseId,
+    courseTitle,
+    moduleTitle,
+    lessonTitle: modeConfig.getTitle(lessonMeta || undefined),
+    mode,
+    allowedBlockTypes: modeConfig.allowedBlockTypes,
+    certDesignWidth,
+    certDesignHeight,
+    certDesignChosen,
+    setCertDesignSize,
+    certIsDoubleSided,
+    setCertIsDoubleSided,
+    setActiveSide,
+  }), [
+    state,
+    addBlock, removeBlock, removeBlocks, duplicateBlock,
+    updateBlock, updateBlockSilent, moveBlock,
+    setActiveBlockId, setSelectedBlocks, toggleSelectBlock, clearSelection,
+    undo, redo, setBlocks, reorderBlocks,
+    setPreviewMode, setViewportMode,
+    canUndo, canRedo,
+    saveStatus,
+    activeLessonId,
+    publishLesson, saveContent,
+    courseId, courseTitle, moduleTitle,
+    modeConfig,
+    lessonMeta,
+    mode,
+    certDesignWidth, certDesignHeight, certDesignChosen,
+    setCertDesignSize,
+    certIsDoubleSided, setCertIsDoubleSided,
+    setActiveSide,
+  ]);
+
   return (
-    <EditorContext.Provider
-      value={{
-        ...state,
-        addBlock,
-        removeBlock,
-        removeBlocks,
-        duplicateBlock,
-        updateBlock,
-        updateBlockSilent,
-        moveBlock,
-        setActiveBlockId,
-        setSelectedBlocks,
-        toggleSelectBlock,
-        clearSelection,
-        undo,
-        redo,
-        setBlocks,
-        reorderBlocks,
-        setPreviewMode,
-        setViewportMode,
-        canUndo,
-        canRedo,
-        saveStatus,
-        activeLessonId,
-        publishLesson,
-        saveContent,
-        courseId,
-        courseTitle,
-        moduleTitle,
-        lessonTitle: modeConfig.getTitle(lessonMeta || undefined),
-        mode,
-        allowedBlockTypes: modeConfig.allowedBlockTypes,
-        certDesignWidth,
-        certDesignHeight,
-        certDesignChosen,
-        setCertDesignSize,
-        certIsDoubleSided,
-        setCertIsDoubleSided,
-        setActiveSide: useCallback((side: 'front' | 'back') => dispatch({ type: 'SET_ACTIVE_SIDE', payload: { side } }), []),
-      }}
-    >
+    <EditorContext.Provider value={contextValue}>
       {children}
     </EditorContext.Provider>
   );
