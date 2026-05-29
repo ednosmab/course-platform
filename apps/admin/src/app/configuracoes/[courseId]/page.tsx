@@ -52,6 +52,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   }, [previewOpen]);
 
   const certDesignWidth = (course?.certificate_blocks || []).find((b: any) => b.type === '__meta__')?.designWidth ?? 1100;
+  const certDesignHeight = (course?.certificate_blocks || []).find((b: any) => b.type === '__meta__')?.designHeight ?? Math.round(1100 / 1.414);
   const previewScale = measuredWidth ? Math.min(1, measuredWidth / certDesignWidth) : 1;
   const previewContainerWidth = Math.min(measuredWidth, certDesignWidth);
   const previewReady = measuredWidth > 0;
@@ -547,6 +548,8 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                     <XStack cursor="pointer" onPress={() => setPreviewOpen(true)} hoverStyle={{ opacity: 0.85 }}>
                       <CertificateMiniature
                         blocks={certificateBlocks}
+                        designWidth={certDesignWidth}
+                        designHeight={certDesignHeight}
                       />
                     </XStack>
                     <Text fontSize={10} color="$textMuted" textAlign="center">Clique no preview para ampliar</Text>
@@ -604,9 +607,8 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                               id="certificate-a4-canvas"
                               style={{
                                 position: 'relative',
-                                width: '100%',
-                                maxWidth: previewContainerWidth,
-                                aspectRatio: '29.7 / 21',
+                                width: previewContainerWidth,
+                                height: Math.round(certDesignHeight * previewScale),
                                 overflow: 'hidden',
                                 background: 'white',
                                 boxShadow: '0 10px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.05)',
@@ -633,7 +635,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                               })}
                             </div>
                           ) : (
-                            <div style={{ width: '100%', aspectRatio: '29.7 / 21' }} />
+                            <div style={{ width: previewContainerWidth || certDesignWidth, height: certDesignHeight }} />
                           )}
                         </div>
                       </YStack>
