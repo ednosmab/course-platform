@@ -32,20 +32,33 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [printing, setPrinting] = useState(false);
   const measureRef = useRef<HTMLDivElement>(null);
-  const [measuredWidth, setMeasuredWidth] = useState(0);
+  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+
+  useEffect(() => {
+    const before = () => setPrinting(true);
+    const after = () => setPrinting(false);
+    window.addEventListener('beforeprint', before);
+    window.addEventListener('afterprint', after);
+    return () => {
+      window.removeEventListener('beforeprint', before);
+      window.removeEventListener('afterprint', after);
+    };
+  }, []);
 
   useEffect(() => {
     if (!previewOpen) {
-      setMeasuredWidth(0);
+      setContainerSize({ w: 0, h: 0 });
       return;
     }
     const el = measureRef.current;
     if (!el) return;
     const ro = new ResizeObserver(([entry]) => {
       const cw = entry.contentRect.width;
-      if (cw <= 0) return;
-      setMeasuredWidth(cw);
+      const ch = entry.contentRect.height;
+      if (cw <= 0 || ch <= 0) return;
+      setContainerSize({ w: cw, h: ch });
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -53,9 +66,15 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
 
   const certDesignWidth = (course?.certificate_blocks || []).find((b: any) => b.type === '__meta__')?.designWidth ?? 1100;
   const certDesignHeight = (course?.certificate_blocks || []).find((b: any) => b.type === '__meta__')?.designHeight ?? Math.round(1100 / 1.414);
-  const previewScale = measuredWidth ? Math.min(1, measuredWidth / certDesignWidth) : 1;
-  const previewContainerWidth = Math.min(measuredWidth, certDesignWidth);
-  const previewReady = measuredWidth > 0;
+  const previewScale = (containerSize.w && containerSize.h)
+    ? Math.min(1, containerSize.w / certDesignWidth, containerSize.h / certDesignHeight)
+    : 1;
+  const canvasWidth = Math.round(certDesignWidth * previewScale);
+  const canvasHeight = Math.round(certDesignHeight * previewScale);
+  const previewReady = containerSize.w > 0 && containerSize.h > 0;
+  const effectiveScale = printing ? 1 : previewScale;
+  const effCanvasWidth = Math.round(certDesignWidth * effectiveScale);
+  const effCanvasHeight = Math.round(certDesignHeight * effectiveScale);
   const certificateBlocks = (course?.certificate_blocks || []).filter((b: any) => b.type !== '__meta__');
 
   useEffect(() => {
@@ -572,9 +591,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                       overflow="hidden"
                       width="90vw"
                       height="85vh"
-                      maxWidth={1000}
-                      maxHeight={700}
-                      style={{ boxShadow: '0 10px 40px rgba(0,0,0,0.25)' }}
+                      style={{ maxWidth: 'min(90vw, 1300px)', maxHeight: 'min(85vh, 960px)', boxShadow: '0 10px 40px rgba(0,0,0,0.25)' }}
                       onPress={(e: any) => e.stopPropagation()}
                     >
                       <XStack id="certificate-modal-header" ai="center" jc="space-between" p={12} borderBottomWidth={1} borderBottomColor="$border">
@@ -597,7 +614,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            padding: 16,
+                            padding: 8,
                             overflow: 'hidden',
                             background: 'white',
                           }}
@@ -607,8 +624,8 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                               id="certificate-a4-canvas"
                               style={{
                                 position: 'relative',
-                                width: previewContainerWidth,
-                                height: Math.round(certDesignHeight * previewScale),
+                                width: effCanvasWidth,
+                                height: effCanvasHeight,
                                 overflow: 'hidden',
                                 background: 'white',
                                 boxShadow: '0 10px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.05)',
@@ -621,21 +638,21 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                                     key={block.id}
                                     style={{
                                       position: 'absolute',
-                                      left: layout.x * previewScale,
-                                      top: layout.y * previewScale,
-                                      width: layout.w * previewScale,
-                                      height: layout.h * previewScale,
+                                      left: layout.x * effectiveScale,
+                                      top: layout.y * effectiveScale,
+                                      width: layout.w * effectiveScale,
+                                      height: layout.h * effectiveScale,
                                       zIndex: layout.zIndex + 1,
                                       overflow: 'hidden',
                                     }}
                                   >
-                                    <CertificateBlockRenderer block={block} scale={previewScale} fillContainer />
+                                    <CertificateBlockRenderer block={block} scale={effectiveScale} fillContainer />
                                   </div>
                                 );
                               })}
                             </div>
                           ) : (
-                            <div style={{ width: previewContainerWidth || certDesignWidth, height: certDesignHeight }} />
+                            <div style={{ width: effCanvasWidth || certDesignWidth, height: effCanvasHeight || certDesignHeight }} />
                           )}
                         </div>
                       </YStack>
