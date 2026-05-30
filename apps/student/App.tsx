@@ -4,10 +4,12 @@ import { TamaguiProvider, config, Theme, Spinner, YStack } from '@projeto/ui';
 import { AuthService } from '@projeto/core';
 import { StudentDashboard } from './src/screens/StudentDashboard';
 import { LessonPlayer } from './src/screens/LessonPlayer';
+import { CourseLessons } from './src/screens/CourseLessons';
+import { Certificates } from './src/screens/Certificates';
 import { StudentLogin } from './src/screens/StudentLogin';
 
 export default function App() {
-  const [screen, setScreen] = useState<'loading' | 'login' | 'dashboard' | 'player'>('loading');
+  const [screen, setScreen] = useState<'loading' | 'login' | 'dashboard' | 'player' | 'courseLessons' | 'certificates'>('loading');
   const [courseId, setCourseId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,6 +35,19 @@ export default function App() {
 
   const handlePlay = (id: string) => {
     setCourseId(id);
+    setScreen('player');
+  };
+
+  const handleNavigateToCourseLessons = (id: string) => {
+    setCourseId(id);
+    setScreen('courseLessons');
+  };
+
+  const handleNavigateToCertificates = () => {
+    setScreen('certificates');
+  };
+
+  const handleSelectLesson = (lessonId: string) => {
     setScreen('player');
   };
 
@@ -74,12 +89,50 @@ export default function App() {
     );
   }
 
+  if (screen === 'courseLessons' && courseId) {
+    return (
+      <SafeAreaProvider>
+        <TamaguiProvider config={config} defaultTheme={null}>
+          <Theme name="cloudWhite">
+            <SafeAreaView style={{ flex: 1 }}>
+              <CourseLessons
+                courseId={courseId}
+                onSelectLesson={handleSelectLesson}
+                onBack={() => setScreen('dashboard')}
+                onViewCertificate={() => setScreen('certificates')}
+              />
+            </SafeAreaView>
+          </Theme>
+        </TamaguiProvider>
+      </SafeAreaProvider>
+    );
+  }
+
+  if (screen === 'certificates') {
+    return (
+      <SafeAreaProvider>
+        <TamaguiProvider config={config} defaultTheme={null}>
+          <Theme name="cloudWhite">
+            <SafeAreaView style={{ flex: 1 }}>
+              <Certificates onBack={() => setScreen('dashboard')} />
+            </SafeAreaView>
+          </Theme>
+        </TamaguiProvider>
+      </SafeAreaProvider>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <TamaguiProvider config={config} defaultTheme={null}>
         <Theme name="cloudWhite">
           <SafeAreaView style={{ flex: 1 }}>
-            <StudentDashboard onPlay={handlePlay} onLogout={() => setScreen('login')} />
+            <StudentDashboard
+              onPlay={handlePlay}
+              onNavigateToCourseLessons={handleNavigateToCourseLessons}
+              onNavigateToCertificates={handleNavigateToCertificates}
+              onLogout={() => setScreen('login')}
+            />
           </SafeAreaView>
         </Theme>
       </TamaguiProvider>

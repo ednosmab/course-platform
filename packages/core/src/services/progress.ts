@@ -73,6 +73,17 @@ export function createProgressService(
     },
 
     /**
+     * @description Retrieves progress records for a student across multiple lessons at once.
+     * Used by the CourseLessons screen to display completion status for all lessons in a course.
+     * @param userId - The UUID of the student
+     * @param lessonIds - Array of lesson UUIDs to fetch progress for
+     * @returns Array of progress records with lesson_id, completed, and percentage_watched
+     */
+    async getProgressByLessons(userId: string, lessonIds: string[]): Promise<any[]> {
+      return progressRepo.getProgressByLessons(userId, lessonIds);
+    },
+
+    /**
      * @description Immediately saves the current video progress (position and watch percentage)
      * and evaluates lesson completion. Used for critical progress checkpoints.
      * Business rule: Save is performed immediately without debouncing. Completion evaluation

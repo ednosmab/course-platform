@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, XStack, YStack, Text, Button, Card, Icon, BrandMark, Avatar, Spinner, ProgressBar, GridBackground, Input, Theme, useMedia } from '@projeto/ui';
-import { AuthService, CourseService } from '@projeto/core';
+import { AuthService, CourseService, ProgressService } from '@projeto/core';
 import { Course } from '@projeto/types';
 
 const navTabs = [
-  { label: 'Meu painel', active: true },
-  { label: 'Meus cursos', active: false },
-  { label: 'Explorar', active: false },
-  { label: 'Conquistas', active: false },
+  { label: 'Meu painel', active: true, action: 'dashboard' },
+  { label: 'Meus cursos', active: false, action: 'courses' },
+  { label: 'Explorar', active: false, action: 'explore' },
+  { label: 'Conquistas', active: false, action: 'certificates' },
 ];
 
 type StudentDashboardProps = {
   onPlay: (courseId: string) => void;
+  onNavigateToCourseLessons: (courseId: string) => void;
+  onNavigateToCertificates: () => void;
   onLogout: () => void;
 };
 
@@ -22,9 +24,11 @@ interface ActiveProgressState {
   moduleTitle: string;
   progress: number;
   remaining: string;
+  currentLessonId: string;
+  isCurrentLessonCompleted: boolean;
 }
 
-export function StudentDashboard({ onPlay, onLogout }: StudentDashboardProps) {
+export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigateToCertificates, onLogout }: StudentDashboardProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,9 +38,28 @@ export function StudentDashboard({ onPlay, onLogout }: StudentDashboardProps) {
     courseId: '',
     lessonTitle: 'Como conduzir a primeira call',
     moduleTitle: 'Módulo 3 · Aula 2 de 5',
-    progress: 64,
+    progress: 0,
     remaining: '8 min restantes',
+    currentLessonId: '',
+    isCurrentLessonCompleted: false,
   });
+
+  const handleTabAction = (action: string) => {
+    switch (action) {
+      case 'certificates':
+        onNavigateToCertificates();
+        break;
+      case 'courses':
+        // Poderia navegar para uma tela de cursos, por enquanto não faz nada
+        break;
+      case 'explore':
+        // Poderia navegar para uma tela de exploração
+        break;
+      default:
+        // Dashboard - já está na tela
+        break;
+    }
+  };
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -52,13 +75,55 @@ export function StudentDashboard({ onPlay, onLogout }: StudentDashboardProps) {
         setCourses(loadedCourses);
 
         if (loadedCourses.length > 0) {
+          const firstCourse = loadedCourses[0];
+
+          // Buscar estrutura do curso para obter aulas
+          const structure = await CourseService.getCourseStructure(firstCourse.id);
+          const allLessons = structure.modules.flatMap(mod => mod.lessons);
+
+          // Buscar progresso de todas as aulas
+          const lessonIds = allLessons.map(l => l.id);
+          const progressData = await ProgressService.getProgressByLessons(profile?.id || '', lessonIds);
+
+          // Encontrar a aula atual (primeira não concluída)
+          let currentLesson = allLessons[0];
+          let isCurrentLessonCompleted = false;
+
+          for (const lesson of allLessons) {
+            const progress = progressData.find(p => p.lesson_id === lesson.id);
+            if (!progress?.completed) {
+              currentLesson = lesson;
+              isCurrentLessonCompleted = false;
+              break;
+            }
+            // Se chegou aqui, esta aula está concluída
+            if (lesson.id === allLessons[allLessons.length - 1].id) {
+              // Todas as aulas foram concluídas
+              currentLesson = lesson;
+              isCurrentLessonCompleted = true;
+            }
+          }
+
+          // Calcular progresso geral
+          const completedCount = progressData.filter(p => p.completed).length;
+          const progressPercent = allLessons.length > 0
+            ? Math.round((completedCount / allLessons.length) * 100)
+            : 0;
+
+          // Encontrar módulo da aula atual
+          const currentModule = structure.modules.find(mod =>
+            mod.lessons.some(l => l.id === currentLesson.id)
+          );
+
           setActiveProgress({
-            courseTitle: loadedCourses[0].title,
-            courseId: loadedCourses[0].id,
-            lessonTitle: 'Introdução e Boas-Vindas',
-            moduleTitle: 'Módulo 1 · Aula 1 de 4',
-            progress: 0,
-            remaining: '5 min restantes',
+            courseTitle: firstCourse.title,
+            courseId: firstCourse.id,
+            lessonTitle: currentLesson.title,
+            moduleTitle: currentModule?.title || '',
+            progress: progressPercent,
+            remaining: `${allLessons.length - completedCount} aulas restantes`,
+            currentLessonId: currentLesson.id,
+            isCurrentLessonCompleted,
           });
         }
       } catch (err: any) {
@@ -119,22 +184,6 @@ export function StudentDashboard({ onPlay, onLogout }: StudentDashboardProps) {
                       >
                         <Icon name="Play" size={24} color="$primary" />
                       </XStack>
-                      <XStack
-                        position="absolute"
-                        top="$4"
-                        left="$4"
-                        bg="$white"
-                        px="$2.5"
-                        py="$1"
-                        br="$4"
-                        ai="center"
-                        gap="$1.5"
-                      >
-                        <YStack w={6} h={6} br={3} bg="$primary" />
-                        <Text fontSize={11} fontWeight="700" color="$text">
-                          Continue de onde parou
-                        </Text>
-                      </XStack>
                     </YStack>
 
                     {/* Meta info & content details */}
@@ -150,18 +199,37 @@ export function StudentDashboard({ onPlay, onLogout }: StudentDashboardProps) {
                       </Text>
 
                       <YStack mt="$2" gap="$2">
-                        <ProgressBar progress={activeProgress.progress} />
-                        <XStack jc="space-between">
-                          <Text variant="caption">{activeProgress.progress}% concluído</Text>
+                        <XStack ai="center" gap="$3">
+                          <YStack flex={1} h={8} bg="$secondary" borderRadius={999} overflow="hidden">
+                            <YStack h={8} bg="$primary" borderRadius={999} w={`${activeProgress.progress}%`} />
+                          </YStack>
+                          <Text fontSize={14} fontWeight="700" color="$primary" w={40} textAlign="right">
+                            {activeProgress.progress}%
+                          </Text>
                         </XStack>
+                        <Text variant="caption" color="$textMuted">
+                          {activeProgress.progress}% concluído
+                        </Text>
                       </YStack>
 
                       <XStack mt="$3" gap="$2" flexWrap="wrap">
-                        <Button onPress={() => onPlay(activeProgress.courseId)}>
-                          <Icon name="Play" size={16} color="$white" />
-                          <Text color="$white" fontWeight="700" ml="$2">Continuar aula</Text>
-                        </Button>
-                        <Button variant="ghost" border={1} borderColor="$border" onPress={() => onPlay(activeProgress.courseId)}>
+                        {activeProgress.progress === 0 ? (
+                          <Button onPress={() => onPlay(activeProgress.courseId)}>
+                            <Icon name="Play" size={16} color="$white" />
+                            <Text color="$white" fontWeight="700" ml="$2">Iniciar aula</Text>
+                          </Button>
+                        ) : activeProgress.isCurrentLessonCompleted ? (
+                          <Button onPress={() => onPlay(activeProgress.courseId)}>
+                            <Icon name="ChevronRight" size={16} color="$white" />
+                            <Text color="$white" fontWeight="700" ml="$2">Próxima aula</Text>
+                          </Button>
+                        ) : (
+                          <Button onPress={() => onPlay(activeProgress.courseId)}>
+                            <Icon name="Play" size={16} color="$white" />
+                            <Text color="$white" fontWeight="700" ml="$2">Continuar aula</Text>
+                          </Button>
+                        )}
+                        <Button variant="ghost" border={1} borderColor="$border" onPress={() => onNavigateToCourseLessons(activeProgress.courseId)}>
                           Ver curso
                         </Button>
                       </XStack>
@@ -244,9 +312,18 @@ export function StudentDashboard({ onPlay, onLogout }: StudentDashboardProps) {
                   </Card>
                 ) : (
                   <XStack flexWrap="wrap" gap="$4" jc="flex-start" w="100%">
-                    {courses.map((course) => {
-                      const progressPercent = course.id === activeProgress.courseId ? activeProgress.progress : 28;
-                      const nextLessonTitle = course.id === activeProgress.courseId ? activeProgress.lessonTitle : 'Escuta ativa na prática';
+                    {courses.map((course, idx) => {
+                      const isActive = course.id === activeProgress.courseId;
+                      const progressPercent = isActive ? activeProgress.progress : idx === 0 && courses.length > 0 ? activeProgress.progress : 0;
+                      const courseStatus = progressPercent === 0 ? 'not_started' : progressPercent >= 100 ? 'completed' : 'in_progress';
+
+                      const statusConfig = {
+                        not_started: { color: '$primary', label: 'Não iniciado', bg: '$primary' + '15' },
+                        in_progress: { color: '$warning', label: 'Em andamento', bg: '$warning' + '15' },
+                        completed: { color: '$success', label: 'Concluído', bg: '$success' + '15' },
+                      };
+
+                      const status = statusConfig[courseStatus];
 
                       return (
                         <Card
@@ -256,9 +333,6 @@ export function StudentDashboard({ onPlay, onLogout }: StudentDashboardProps) {
                           $sm={{ w: '100%' }}
                           p={0}
                           overflow="hidden"
-                          interactive
-                          pressStyle={{ scale: 0.98 }}
-                          onPress={() => onPlay(course.id)}
                           border={1}
                           borderColor="$border"
                         >
@@ -280,37 +354,81 @@ export function StudentDashboard({ onPlay, onLogout }: StudentDashboardProps) {
                             ) : (
                               <Icon name="Play" size={28} color="$white" />
                             )}
-                            <XStack position="absolute" top="$3" left="$3" bg="$white" px="$2" py="$0.5" br="$3">
-                              <Text fontSize={10} fontWeight="bold" color="$primary">
-                                {progressPercent}% concluído
-                              </Text>
-                            </XStack>
                           </YStack>
 
-                          <YStack p="$4" gap="$2" bg="$surface">
-                            <Text fontSize={14} fontWeight="bold" numberOfLines={2}>
-                              {course.title}
-                            </Text>
-                            <Text fontSize={11} color="$textMuted">
-                              por Rafa Lima
-                            </Text>
-
-                            <YStack mt="$2" gap="$2">
-                              <ProgressBar progress={progressPercent} />
+                          <YStack p="$4" gap="$3" bg="$surface">
+                            <YStack gap="$1">
+                              <Text fontSize={14} fontWeight="bold" numberOfLines={2}>
+                                {course.title}
+                              </Text>
+                              <Text fontSize={11} color="$textMuted">
+                                por Rafa Lima
+                              </Text>
                             </YStack>
 
-                            <XStack jc="space-between" ai="center" mt="$3" pt="$3" borderTopWidth={1} borderTopColor="$border">
-                              <YStack flex={1} pr="$2">
-                                <Text fontSize={9} color="$textMuted" textTransform="uppercase" fontWeight="700">
-                                  Próxima aula
-                                </Text>
-                                <Text fontSize={11} fontWeight="600" color="$text" numberOfLines={1}>
-                                  {nextLessonTitle}
-                                </Text>
+                            <XStack ai="center" gap="$2">
+                              <YStack flex={1} h={6} bg="$secondary" borderRadius={999} overflow="hidden">
+                                <YStack h={6} bg="$primary" borderRadius={999} w={`${progressPercent}%`} />
                               </YStack>
-                              <XStack p="$1.5" br="$3" bg="$primary" ai="center" jc="center">
-                                <Icon name="Play" size={12} color="$white" />
-                              </XStack>
+                              <Text fontSize={11} fontWeight="700" color="$text" w={36} textAlign="right">
+                                {progressPercent}%
+                              </Text>
+                            </XStack>
+
+                            {/* Status badge */}
+                            <XStack ai="center" gap="$2">
+                              <YStack w={8} h={8} br={4} bg={status.color} />
+                              <Text fontSize={11} fontWeight="600" color={status.color}>
+                                {status.label}
+                              </Text>
+                            </XStack>
+
+                            {/* Action buttons */}
+                            <XStack gap="$2" mt="$1">
+                              {courseStatus === 'not_started' && (
+                                <Button
+                                  flex={1}
+                                  size="sm"
+                                  onPress={() => onPlay(course.id)}
+                                >
+                                  <Icon name="Play" size={14} color="$white" />
+                                  <Text ml="$1" fontSize={12} fontWeight="600" color="$white">Iniciar aula</Text>
+                                </Button>
+                              )}
+                              {courseStatus === 'in_progress' && (
+                                <Button
+                                  flex={1}
+                                  size="sm"
+                                  onPress={() => onPlay(course.id)}
+                                >
+                                  <Icon name="Play" size={14} color="$white" />
+                                  <Text ml="$1" fontSize={12} fontWeight="600" color="$white">Continuar aula</Text>
+                                </Button>
+                              )}
+                              {courseStatus === 'completed' && (
+                                <Button
+                                  flex={1}
+                                  size="sm"
+                                  bg="$success"
+                                  onPress={() => onNavigateToCertificates()}
+                                >
+                                  <Icon name="Award" size={14} color="$white" />
+                                  <Text ml="$1" fontSize={12} fontWeight="600" color="$white">Ver certificado</Text>
+                                </Button>
+                              )}
+                              <Button
+                                flex={1}
+                                size="sm"
+                                variant="ghost"
+                                borderWidth={1}
+                                borderColor="$primary"
+                                bg="transparent"
+                                hoverStyle={{ bg: '$primary' + '10' }}
+                                onPress={() => onNavigateToCourseLessons(course.id)}
+                              >
+                                <Icon name="List" size={14} color="$primary" />
+                                <Text ml="$1" fontSize={12} fontWeight="600" color="$primary">Ver aulas</Text>
+                              </Button>
                             </XStack>
                           </YStack>
                         </Card>
@@ -467,6 +585,7 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
                 py="$1.5"
                 br="$2"
                 bg={tab.active ? '$secondary' : 'transparent'}
+                onPress={() => handleTabAction(tab.action)}
               >
                 <Text
                   fontSize={13}
@@ -587,6 +706,7 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
               bg={tab.active ? '$secondary' : 'transparent'}
               variant="ghost"
               size="$2"
+              onPress={() => handleTabAction(tab.action)}
             >
               <Text
                 fontSize={12}
