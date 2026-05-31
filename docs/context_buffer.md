@@ -1,10 +1,10 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-CONCLUÍDO — Implementação de 3 itens rápidos do backlog: Zod fix (heading/divider), ErrorBoundary, cursor resize.
+CONCLUÍDO — Bordas, sombras e border-radius removidos do preview desktop em EditorCanvas.tsx. Fundo branco agora preenche toda a tela. Canvas de edição mantido intacto.
 
 ## 🎯 Tarefa em Execução
-Implementar 3 itens rápidos do backlog (P2/P3).
+Remoção de bordas do preview desktop concluída. Aguardando próxima tarefa.
 
 ## 🕹️ Documentos Carregados via MCP
 - `docs/FORBIDDEN_OPERATIONS.md` — Regras vinculantes
@@ -22,9 +22,11 @@ Implementar 3 itens rápidos do backlog (P2/P3).
 - `desing/src/routes/aluno.certificados.tsx` — Design reference Certificates
 - `docs/adrs/ADR-005-preview-fidelity-law.md` — Lei de fidelidade do preview
 - `packages/ui/src/tokens/shadows.ts` — Shadow presets definidos mas não usados
+- `apps/admin/src/components/editor/EditorCanvas.tsx` — Preview canvas (bordas removidas)
 
 ## Arquivos modificados nesta sessão
 - `docs/BACKLOG.md` — 4 novos itens adicionados (P1: 2, P2: 2, P3: 1)
+- `apps/admin/src/components/editor/EditorCanvas.tsx` — Bordas, sombras e border-radius removidos do preview desktop
 - `docs/context_buffer.md` — Este log
 
 ## ✅ Resultado da Implementação

@@ -639,9 +639,8 @@ function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesign
       const sorted = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
       return (
         <div style={{
-          position: 'relative', width: pageW, minHeight: pageH,
-          backgroundColor: 'white', borderRadius: 8,
-          boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)',
+          position: 'relative', width: pageW, height: '100%',
+          backgroundColor: 'white',
           overflow: 'hidden',
         }}>
           {sorted.map((block) => {
@@ -663,7 +662,7 @@ function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesign
     const sortedBlocks = [...blocks].sort((a, b) => getLayout(a, viewportMode).zIndex - getLayout(b, viewportMode).zIndex);
     if (isDesktop) {
       return (
-        <div style={{ position: 'relative', width: PAGE_W, minHeight: pageH, backgroundColor: 'white', borderRadius: 8, boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)' }}>
+        <div style={{ position: 'relative', width: PAGE_W, height: '100%', backgroundColor: 'white' }}>
           {sortedBlocks.map((block) => {
             const layout = getLayout(block, viewportMode);
             return (
@@ -740,8 +739,8 @@ function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesign
         )}
         <Text fontSize={10} color="$textMuted" ml="$2">Ctrl + scroll para zoom</Text>
       </XStack>
-      <YStack flex={1} ai="center" p="$5" style={{ overflow: 'auto' }}>
-        <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top center', flexShrink: 0 }}>
+      <YStack flex={1} ai="center" p="$5" bg="white" style={{ overflow: 'auto' }}>
+        <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top center', flexShrink: 0, minHeight: '100%' }}>
           {content}
         </div>
       </YStack>
