@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ProgressService } from '@projeto/core';
+import { ProgressService, AuthService } from '@projeto/core';
 
 interface PendingProgress {
   lessonId: string;
@@ -12,8 +12,16 @@ interface PendingProgress {
 export function useMobileProgress() {
   const [isOffline, setIsOffline] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    const loadUser = async () => {
+      const session = await AuthService.getSession();
+      if (session?.id) {
+        setUserId(session.id);
+      }
+    };
+    loadUser();
     updatePendingCount();
   }, []);
 
@@ -32,6 +40,11 @@ export function useMobileProgress() {
   };
 
   const saveProgressMobile = async (lessonId: string, progressSec: number, durationSec: number) => {
+    if (!userId) {
+      console.warn('User not authenticated, skipping progress save');
+      return;
+    }
+
     const percentageWatched = Math.round((progressSec / durationSec) * 100);
 
     if (isOffline) {
@@ -56,7 +69,7 @@ export function useMobileProgress() {
       try {
         // Usa o debounce do core para economizar banda e persistir de forma inteligente
         ProgressService.saveProgressDebounced(
-          'student-user-uuid',
+          userId,
           lessonId,
           progressSec,
           percentageWatched
@@ -70,6 +83,11 @@ export function useMobileProgress() {
   };
 
   const syncPending = async () => {
+    if (!userId) {
+      console.warn('User not authenticated, skipping sync');
+      return;
+    }
+
     try {
       const stored = await AsyncStorage.getItem('outbox_progress');
       if (!stored) return;
@@ -81,7 +99,7 @@ export function useMobileProgress() {
         const percentageWatched = Math.round((item.progressSec / item.durationSec) * 100);
         // Na sincronização em background, persiste imediatamente sem debounce
         await ProgressService.saveProgressImmediate(
-          'student-user-uuid',
+          userId,
           item.lessonId,
           item.progressSec,
           percentageWatched

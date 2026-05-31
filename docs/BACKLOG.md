@@ -22,8 +22,8 @@
 
 ## 📌 P1 — Curto Prazo
 
-- **BUG: Student app — LessonPlayer crash** — `LessonService.subscribeToLesson()` chamado mas inexistente desde refactor `371640a`. Causa tela azul (crash não tratado). Implementar o método ou substituir por polling funcional.
-- **BUG: Student app — UUID hardcoded** — `'student-user-uuid'` usado em `useMobileProgress.ts:59,84` em vez do ID real da sessão. Progress tracking do aluno quebrado.
+- **BUG: Student app — LessonPlayer crash** — ✅ CORRIGIDO — Usa polling funcional (linhas 109-135) + refresh ao focar aba.
+- **BUG: Student app — UUID hardcoded** — ✅ CORRIGIDO — `useMobileProgress.ts` agora usa `AuthService.getSession()` para obter o ID real do usuário.
 
 ## 🗓️ P2 — Médio Prazo
 
