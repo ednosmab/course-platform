@@ -242,7 +242,7 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
         </XStack>
       </YStack>
 
-      <ScrollView flex={1} contentContainerStyle={{ padding: 24, gap: 24, paddingBottom: 48 }}>
+      <ScrollView flex={1} contentContainerStyle={{ padding: 24, gap: 24, paddingBottom: 32 }}>
         <YStack maxWidth={1400} w="100%" als="center" gap="$6">
 
           {/* Hero Section */}
@@ -374,8 +374,8 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
                   overflow="hidden"
                   br="$5"
                   elevation={hasCurrent ? 3 : 1}
-                  borderWidth={hasCurrent ? 2 : 1}
-                  borderColor={hasCurrent ? '$primary' : '$border'}
+                  borderWidth={hasCurrent ? 2 : 0}
+                  borderColor={hasCurrent ? '$primary' : 'transparent'}
                 >
                   <Button
                     variant="ghost"

@@ -141,7 +141,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
     <YStack flex={1} bg="$background">
       <TopBar userProfile={userProfile} onLogout={onLogout} />
       <ScrollView flex={1} contentContainerStyle={{ paddingBottom: 60 }}>
-        <YStack px="$4" pt="$6" gap="$6" maxWidth={1400} als="center" w="100%">
+        <YStack px="$6" pt="$10" gap="$6" maxWidth={1400} als="center" w="100%">
           {loading && (
             <Card ai="center" jc="center" p="$8" gap="$3">
               <Spinner size="large" color="$primary" />
@@ -162,7 +162,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
               <XStack gap="$6" $sm={{ fd: 'column' }} w="100%">
                 {/* Hero Box */}
                 <YStack flex={2} gap="$4">
-                  <Card p={0} overflow="hidden" br="$4" border={1} borderColor="$border" elevation={3}>
+                  <Card p={0} overflow="hidden" br="$4" elevation={3}>
                     {/* Cover Gradient/Visual Area */}
                     <YStack h={200} bg="$primary" position="relative" jc="center" ai="center">
                       <GridBackground position="absolute" top={0} left={0} right={0} bottom={0} opacity={0.2} />
@@ -239,7 +239,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
 
                 {/* Stats Panel */}
                 <YStack flex={1} gap="$4">
-                  <Card p="$5" gap="$3" border={1} borderColor="$border">
+                  <Card p="$5" gap="$3">
                     <XStack ai="center" gap="$3">
                       <YStack p="$2" br="$3" bg="$primary">
                         <Icon name="Sparkles" size={18} color="$white" />
@@ -251,17 +251,17 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                     </XStack>
 
                     <XStack gap="$2" mt="$2">
-                      <Card flex={1} p="$3" ai="center" jc="center" bg="$background" border={1} borderColor="$border">
+                      <Card flex={1} p="$3" ai="center" jc="center" bg="$background">
                         <Icon name="Flame" size={18} color="$warning" />
                         <Text variant="h3" fontWeight="bold" mt="$1">7</Text>
                         <Text fontSize={10} color="$textMuted" textAlign="center">dias seguidos</Text>
                       </Card>
-                      <Card flex={1} p="$3" ai="center" jc="center" bg="$background" border={1} borderColor="$border">
+                      <Card flex={1} p="$3" ai="center" jc="center" bg="$background">
                         <Icon name="Clock" size={18} color="$primary" />
                         <Text variant="h3" fontWeight="bold" mt="$1">3h42</Text>
                         <Text fontSize={10} color="$textMuted" textAlign="center">esta semana</Text>
                       </Card>
-                      <Card flex={1} p="$3" ai="center" jc="center" bg="$background" border={1} borderColor="$border">
+                      <Card flex={1} p="$3" ai="center" jc="center" bg="$background">
                         <Icon name="Trophy" size={18} color="$warning" />
                         <Text variant="h3" fontWeight="bold" mt="$1">12</Text>
                         <Text fontSize={10} color="$textMuted" textAlign="center">conquistas</Text>
@@ -270,7 +270,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                   </Card>
 
                   {/* Next Steps List */}
-                  <Card p="$5" gap="$3" border={1} borderColor="$border">
+                  <Card p="$5" gap="$3">
                     <XStack jc="space-between" ai="center">
                       <Text variant="h3" fontWeight="bold">Próximos passos</Text>
                       <Button variant="ghost" p={0} size="$2">
@@ -285,7 +285,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                         { title: 'Aula ao vivo com a Rafa', type: 'Ao vivo', time: 'Quinta, 19h', icon: 'Calendar' },
                       ].map((item, idx) => (
                         <XStack key={idx} ai="center" gap="$3">
-                          <YStack p="$2" br="$3" bg="$background" border={1} borderColor="$border">
+                          <YStack p="$2" br="$3" bg="$background">
                             <Icon name={item.icon} size={15} color="$text" />
                           </YStack>
                           <YStack flex={1}>
@@ -333,8 +333,6 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                           $sm={{ w: '100%' }}
                           p={0}
                           overflow="hidden"
-                          border={1}
-                          borderColor="$border"
                         >
                           <YStack h={110} bg="$primary" position="relative" jc="center" ai="center">
                             <GridBackground position="absolute" top={0} left={0} right={0} bottom={0} opacity={0.15} />
@@ -462,8 +460,6 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                         overflow="hidden"
                         interactive
                         pressStyle={{ scale: 0.98 }}
-                        border={1}
-                        borderColor="$border"
                       >
                         <YStack h={90} bg={item.bg} position="relative" jc="center" ai="center">
                           <GridBackground position="absolute" top={0} left={0} right={0} bottom={0} opacity={0.1} />
@@ -484,9 +480,9 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
 
                 {/* Right side: Community */}
                 <YStack flex={1} gap="$4">
-                  <Card p="$5" gap="$3" border={1} borderColor="$border">
+                  <Card p="$5" gap="$3">
                     <XStack ai="center" gap="$3">
-                      <YStack p="$2" br="$3" bg="$background" border={1} borderColor="$border">
+                      <YStack p="$2" br="$3" bg="$background">
                         <Icon name="MessageSquare" size={16} color="$text" />
                       </YStack>
                       <YStack>
@@ -502,7 +498,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                         { user: 'Júlia', letter: 'J', msg: 'Dica boa pra rapport: ouvir mais 🙂', when: 'há 3h' },
                       ].map((item, idx) => (
                         <XStack key={idx} gap="$3" ai="center" p="$2" br="$3" hoverStyle={{ bg: '$background' }}>
-                          <XStack w={32} h={32} br={16} bg="$background" border={1} borderColor="$border" ai="center" jc="center">
+                          <XStack w={32} h={32} br={16} bg="$background" ai="center" jc="center">
                             <Text fontWeight="bold" fontSize={11}>{item.letter}</Text>
                           </XStack>
                           <YStack flex={1}>
@@ -569,7 +565,7 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
       bg="$background"
       borderBottomWidth={1}
       borderBottomColor="$border"
-      px="$4"
+      px="$6"
       py="$3"
       elevation={2}
     >

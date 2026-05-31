@@ -63,20 +63,21 @@ export const StudentPreview: React.FC<StudentPreviewProps> = ({ blocks }) => {
     <YStack
       width="100%"
       onLayout={onLayout}
-      ai="center"
       overflow="hidden"
       height={pageH * scale}
       position="relative"
     >
+      {/* Left-aligned to match student app BlockRenderer behavior */}
       <div
         style={{
           position: 'absolute',
           top: 0,
-          left: '50%',
+          left: 0,
           width: designWidth,
           height: pageH,
-          transform: `translate(-50%, 0) scale(${scale})`,
-          transformOrigin: 'top center',
+          backgroundColor: 'white',
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
           overflow: 'visible',
         }}
       >

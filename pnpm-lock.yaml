@@ -87,6 +87,9 @@ importers:
       '@projeto/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@projeto/renderer':
+        specifier: workspace:*
+        version: link:../../packages/renderer
       '@projeto/types':
         specifier: workspace:*
         version: link:../../packages/types

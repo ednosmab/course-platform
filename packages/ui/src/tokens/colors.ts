@@ -21,9 +21,9 @@ export const color = {
   info: '#3B82F6',
 
   // Cloud White palette (converted from OKLCH to hex)
-  cwBackground: '#F7F8FC',
+  cwBackground: '#FFFFFF',
   cwForeground: '#282836',
-  cwSurface: '#F1F2F8',
+  cwSurface: '#F7F8FC',
   cwCard: '#FFFFFF',
   cwCardForeground: '#282836',
   cwPopover: '#FFFFFF',

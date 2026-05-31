@@ -1,7 +1,8 @@
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { YStack } from '@projeto/ui';
 import { AnyBlock } from '@projeto/types';
-import { blockToHtml, getBlockLayout, calcPageHeight, getDesignWidth } from '@projeto/core';
+import { getBlockLayout, calcPageHeight, getDesignWidth } from '@projeto/core';
+import { BlockRenderer as SharedBlockRenderer } from '@projeto/renderer';
 
 interface BlockRendererProps {
   blocks: AnyBlock[];
@@ -9,55 +10,23 @@ interface BlockRendererProps {
   savedPosition?: number;
 }
 
-function HtmlBlockFrame({ html }: { html: string }) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [height, setHeight] = useState(200);
-
-  useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-    const doc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!doc) return;
-    doc.open();
-    doc.write(html);
-    doc.close();
-    const checkHeight = () => {
-      const body = doc.body;
-      if (body) {
-        const h = Math.max(body.scrollHeight, 200);
-        setHeight(h);
-      }
-    };
-    checkHeight();
-    const timer = setTimeout(checkHeight, 500);
-    return () => clearTimeout(timer);
-  }, [html]);
-
-  return (
-    <iframe
-      ref={iframeRef}
-      style={{
-        width: '100%',
-        height,
-        border: 'none',
-        borderRadius: 8,
-        overflow: 'auto',
-      }}
-      sandbox="allow-scripts allow-same-origin"
-      title="html-block"
-    />
-  );
-}
-
+/**
+ * Student app block renderer that uses the shared BlockRenderer component.
+ * This ensures visual fidelity with the admin preview (ADR-005).
+ */
 export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks, onVideoProgress, savedPosition = 0 }) => {
   const [containerWidth, setContainerWidth] = useState(860);
 
+  // Design width: breakpoint reference (860 desktop, 720 tablet, 380 mobile)
   const designWidth = useMemo(() => getDesignWidth(containerWidth), [containerWidth]);
   const pageH = useMemo(() => calcPageHeight(blocks, containerWidth), [blocks, containerWidth]);
 
+  // Scale down only when container is narrower than design width; never scale up
   const scale = useMemo(() => {
     return Math.min(1, containerWidth / designWidth);
   }, [containerWidth, designWidth]);
+
+  const isMobile = useMemo(() => containerWidth <= 480, [containerWidth]);
 
   const onLayout = (e: any) => {
     const w = e.nativeEvent?.layout?.width;
@@ -72,43 +41,27 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks, onVideoPro
     <YStack
       width="100%"
       onLayout={onLayout}
-      ai="center"
       overflow="hidden"
       height={pageH * scale}
       position="relative"
+      bg="$cwBackground"
     >
+      {/* Left-aligned, white background — matches the editor PreviewCanvas exactly */}
       <div
         style={{
           position: 'absolute',
           top: 0,
-          left: '50%',
+          left: 0,
           width: designWidth,
           height: pageH,
-          transform: `translate(-50%, 0) scale(${scale})`,
-          transformOrigin: 'top center',
+          backgroundColor: 'white',
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
           overflow: 'visible',
         }}
       >
         {blocks.map(block => {
           const l = getBlockLayout(block, containerWidth);
-
-          if (block.type === 'html') {
-            return (
-              <div
-                key={block.id}
-                style={{
-                  position: 'absolute',
-                  left: l.x,
-                  top: l.y,
-                  width: l.w,
-                  height: l.h,
-                  zIndex: l.zIndex + 1,
-                }}
-              >
-                <HtmlBlockFrame html={(block as any).htmlContent || ''} />
-              </div>
-            );
-          }
 
           return (
             <div
@@ -122,8 +75,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks, onVideoPro
                 zIndex: l.zIndex + 1,
                 overflow: 'hidden',
               }}
-              dangerouslySetInnerHTML={{ __html: blockToHtml(block) }}
-            />
+            >
+              <SharedBlockRenderer block={block} isMobile={isMobile} />
+            </div>
           );
         })}
       </div>

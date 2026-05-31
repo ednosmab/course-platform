@@ -11,3 +11,6 @@ export function createRenderer(registry: Record<string, BlockPlugin>) {
     },
   };
 }
+
+export { BlockRenderer, FONT_DESKTOP, FONT_MOBILE } from './BlockRenderer';
+export type { BlockRendererProps } from './BlockRenderer';

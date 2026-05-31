@@ -126,7 +126,7 @@ export function Certificates({ onBack }: CertificatesProps) {
         bg="$background"
         borderBottomWidth={1}
         borderBottomColor="$border"
-        px="$4"
+        px="$6"
         py="$3"
       >
         <XStack ai="center" jc="space-between" maxWidth={1400} w="100%" als="center">
@@ -151,10 +151,10 @@ export function Certificates({ onBack }: CertificatesProps) {
         </XStack>
       </YStack>
 
-      <ScrollView flex={1} contentContainerStyle={{ padding: 16, gap: 20, paddingBottom: 40 }}>
+      <ScrollView flex={1} contentContainerStyle={{ padding: 24, gap: 20, paddingBottom: 32 }}>
         <YStack maxWidth={1400} w="100%" als="center" gap="$6">
           {/* Hero Section */}
-          <Card p={0} overflow="hidden" br="$4" border={1} borderColor="$border">
+          <Card p={0} overflow="hidden" br="$4">
             <YStack p="$5" gap="$4">
               <XStack ai="center" gap="$2">
                 <YStack px="$2" py="$1" br="$4" bg="$primary">
@@ -260,8 +260,6 @@ export function Certificates({ onBack }: CertificatesProps) {
                   p={0}
                   overflow="hidden"
                   br="$4"
-                  border={1}
-                  borderColor="$border"
                 >
                   {/* Certificate Preview */}
                   <YStack

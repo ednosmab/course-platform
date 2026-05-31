@@ -11,14 +11,16 @@ export const MOBILE_W = 380;
 export const TABLET_W = 720;
 
 /**
- * @description Reference width (in pixels) for the desktop breakpoint. Used by layout calculations and responsive design utilities for viewport widths > 768px.
+ * @description Reference width (in pixels) for the desktop breakpoint. Must match the editor's CANVAS_W (1100px) so that block coordinates saved by the editor are interpreted
+ * in the same coordinate space by the student app and all preview components.
  */
-export const DESKTOP_W = 860;
+export const DESKTOP_W = 1100;
 
 /**
- * @description Default page content width (in pixels) for the desktop layout. Represents the width of the main content area on the canvas when rendered in a desktop-sized container.
+ * @description Default page content width (in pixels) for the desktop layout. Mirrors DESKTOP_W and the editor's CANVAS_W to guarantee 1:1 visual fidelity between
+ * the editor, the student preview, and the student app.
  */
-export const PAGE_W = 860;
+export const PAGE_W = 1100;
 
 function parseMarkdownToHtml(text: string): string {
   if (!text) return '';
@@ -196,7 +198,7 @@ export function getBlockLayout(block: AnyBlock, containerWidth?: number) {
  *
  * @param containerWidth - The current container or viewport width in pixels.
  *
- * @returns The reference width constant: MOBILE_W (380) for widths ≤ 480px, TABLET_W (720) for widths ≤ 768px, or DESKTOP_W (860) for larger widths.
+ * @returns The reference width constant: MOBILE_W (380) for widths ≤ 480px, TABLET_W (720) for widths ≤ 768px, or DESKTOP_W (1100) for larger widths.
  */
 export function getDesignWidth(containerWidth: number): number {
   if (containerWidth <= 480) return MOBILE_W;

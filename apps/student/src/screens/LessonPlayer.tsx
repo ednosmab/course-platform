@@ -3,7 +3,6 @@ import { StatusBar } from 'react-native';
 import { YStack, XStack, Text, Button, ScrollView, Spinner, Icon } from '@projeto/ui';
 import { useMobileProgress } from '../hooks/useMobileProgress';
 import { BlockRenderer } from '../components/BlockRenderer';
-import { AnyBlock } from '@projeto/types';
 import { CourseService, LessonService } from '@projeto/core';
 
 type LessonPlayerProps = {
@@ -12,12 +11,10 @@ type LessonPlayerProps = {
 };
 
 export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
-  const { isOffline, setIsOffline, pendingCount, saveProgressMobile, syncPending } = useMobileProgress();
-  const [course, setCourse] = useState<any>(null);
+  const { saveProgressMobile } = useMobileProgress();
   const [lessons, setLessons] = useState<any[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [completions, setCompletions] = useState<Record<string, boolean>>({});
@@ -57,7 +54,6 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
       }
 
       const struct = await CourseService.getCourseStructure(targetCourseId);
-      setCourse(struct.course);
       const allLessons = struct.modules.flatMap(mod => mod.lessons);
       setLessons(allLessons);
       if (allLessons.length > 0) {
@@ -78,7 +74,6 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
   const refreshActiveLesson = async () => {
     if (!activeLessonId) return;
     try {
-      setRefreshing(true);
       setError(null);
 
       const lesson = await LessonService.getLesson(activeLessonId);
@@ -97,8 +92,6 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
     } catch (err) {
       console.error('Failed to reload active lesson blocks:', err);
       setError(getErrorMessage(err));
-    } finally {
-      setRefreshing(false);
     }
   };
 
@@ -173,32 +166,15 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
     }
   };
 
-  const handleManualComplete = () => {
-    if (!activeLessonId) return;
-    setCompletions((prev) => ({
-      ...prev,
-      [activeLessonId]: !prev[activeLessonId],
-    }));
-  };
-
-  const toggleNetwork = async () => {
-    const nextState = !isOffline;
-    setIsOffline(nextState);
-    if (!nextState) {
-      await syncPending();
-      await loadCourseData();
-    }
-  };
-
   if (error) {
     return (
-      <YStack flex={1} jc="center" ai="center" p="$6" bg="$gray1">
+      <YStack flex={1} jc="center" ai="center" p="$6" bg="$background">
         <StatusBar barStyle="light-content" />
         <Icon name="AlertCircle" size={48} color="$danger" />
         <Text color="$danger" fontSize={16} fontWeight="700" mt="$4" textAlign="center">
           Erro ao Conectar ao Supabase
         </Text>
-        <Text color="$gray4" fontSize={12} mt="$2" textAlign="center" lineHeight={18}>
+        <Text color="$textMuted" fontSize={12} mt="$2" textAlign="center" lineHeight={18}>
           {error}
         </Text>
         <Button variant="secondary" mt="$6" onPress={loadCourseData}>
@@ -210,10 +186,10 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
 
   if (loading || !activeLesson) {
     return (
-      <YStack flex={1} jc="center" ai="center" bg="$gray1">
+      <YStack flex={1} jc="center" ai="center" bg="$background">
         <StatusBar barStyle="light-content" />
         <Spinner size="large" color="$primary" />
-        <Text color="$gray4" mt="$4" fontSize={13} fontWeight="600">
+        <Text color="$textMuted" mt="$4" fontSize={13} fontWeight="600">
           Carregando plataforma de alunos real...
         </Text>
       </YStack>
@@ -224,7 +200,7 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
   const progressPercent = lessons.length > 0 ? Math.round((completedCount / lessons.length) * 100) : 0;
 
   return (
-    <YStack flex={1} bg="$gray1">
+    <YStack flex={1} bg="$background">
       <StatusBar barStyle="dark-content" />
 
       <XStack
@@ -234,64 +210,21 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
         px="$4"
         borderBottomWidth={1}
         bg="$background"
-        borderColor={isOffline ? '$danger' : '$success'}
+        borderBottomColor="$border"
       >
         <XStack ai="center" gap="$2">
           <Button variant="ghost" px="$2" py="$2" onPress={onBack}>
             <Icon name="ChevronLeft" size={20} color="$text" />
           </Button>
-          {isOffline ? (
-            <>
-              <Icon name="WifiOff" size={14} color="$danger" />
-              <Text color="$gray3" fontSize={11} fontWeight="600">Modo Offline</Text>
-            </>
-          ) : (
-            <>
-              <Icon name="Wifi" size={14} color="$success" />
-              <Text color="$gray3" fontSize={11} fontWeight="600">Modo Online Conectado</Text>
-            </>
-          )}
-        </XStack>
-
-        <XStack ai="center" gap="$2">
-          <Button
-            variant="ghost"
-            disabled={refreshing}
-            onPress={refreshActiveLesson}
-            px="$2"
-            py="$1"
-          >
-            {refreshing ? (
-              <Spinner size="small" color="$primary" />
-            ) : (
-              <Icon name="RefreshCw" size={12} color="$primary" />
-            )}
-            <Text color="$primary" fontSize={9} fontWeight="700" ml="$1">Sincronizar CMS</Text>
-          </Button>
-
-          <Button variant="secondary" px="$2" py="$1" onPress={toggleNetwork}>
-            <Text color="$gray3" fontSize={9} fontWeight="700">Alternar Rede</Text>
-          </Button>
         </XStack>
       </XStack>
 
-      <ScrollView flex={1} contentContainerStyle={{ padding: 16, gap: 20, paddingBottom: 40 }}>
-        <YStack
-          bg="$white"
-          borderRadius="$6"
-          borderWidth={1}
-          borderColor="$gray2"
-          p="$5"
-          gap="$4"
-        >
-          <Text variant="h3" color="$gray9" mb="$2">{activeLesson.title}</Text>
-
-          <BlockRenderer
-            blocks={activeLesson.blocks || []}
-            onVideoProgress={handleVideoProgress}
-            savedPosition={videoPositions[activeLessonId || ''] || 0}
-          />
-        </YStack>
+      <ScrollView flex={1} contentContainerStyle={{ paddingBottom: 40 }}>
+        <BlockRenderer
+          blocks={activeLesson.blocks || []}
+          onVideoProgress={handleVideoProgress}
+          savedPosition={videoPositions[activeLessonId || ''] || 0}
+        />
       </ScrollView>
     </YStack>
   );
