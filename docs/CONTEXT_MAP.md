@@ -108,8 +108,15 @@ Você deve consultar os arquivos abaixo via MCP *apenas quando* o usuário solic
   - `playwright.config.ts`
 
 ## ⚡ 10. Escalabilidade e Performance
-- **Escopo:** Suporte a 3k/10k/50k+ conexões simultâneas, cache, pool de conexões, rate limiting, CDN.
-- **Arquivos para ler se acionado:
-  - `docs/roadmaps/scalability-plan.md`
-  - `docs/skills/postgresql_performance.md`
-  - `docs/layers/infra/execution_plan.md`
+- **Escopo:** Suporte a 3k/10k/50k+ conexões simultâneas, cache, pool de conexões, rate limiting, CDN, multitenancy, observabilidade.
+- **Arquivos para ler se acionado:**
+  - `docs/roadmaps/scalability-plan.md` — Plano mestre de escalabilidade
+  - `docs/skills/postgresql_performance.md` — Performance PostgreSQL
+  - `docs/skills/redis_caching_strategy.md` — Cache Redis e Write-Behind
+  - `docs/skills/connection_pooling.md` — PgBouncer e Pooler
+  - `docs/skills/rate_limiting.md` — Rate limiting com Redis
+  - `docs/skills/multitenancy_rls.md` — Multitenancy com RLS
+  - `docs/skills/video_streaming_cdn.md` — CDN de vídeo (Bunny/Cloudflare)
+  - `docs/skills/edge_runtime_middleware.md` — Edge Runtime e Middleware
+  - `docs/skills/observability.md` — Logs, métricas e alertas
+  - `docs/layers/infra/execution_plan.md` — Plano de execução de infra

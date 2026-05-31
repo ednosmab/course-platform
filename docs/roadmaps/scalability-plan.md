@@ -1,83 +1,79 @@
-# Plano de Escalabilidade — 3k/10k+ Conexões Simultâneas
+# Plano de Escalabilidade — Unificado (3k → 50k+ Conexões Simultâneas)
+
+> **Status:** Documento de referência estratégica. Implementação condicionada ao aceite do cliente.
+> **Última atualização:** 2026-05-30
+
+---
 
 ## Objetivo
-Garantir que a plataforma sustainha **3.000 usuários simultâneos (média)** com picos de **10.000+** sem degradação de performance, com arquitetura preparada para escalar horizontalmente até **50.000+** no futuro.
+
+Garantir que a plataforma sustente **3.000 usuários simultâneos (média)** com picos de **10.000+** sem degradação de performance, com arquitetura preparada para escalar horizontalmente até **50.000+** no futuro.
 
 ---
 
-## 1. Camada de Banco de Dados (Supabase/PostgreSQL)
+## 1. Visão Geral da Arquitetura em Camadas
 
-### 1.1 Connection Pooling
-| Configuração | Valor |
-|---|---|
-| Pool size padrão | 15 conexões por instância |
-| Com PgBouncer (transaction mode) | 200+ conexões concorrentes |
-| Pool mode recomendado | **Transaction mode** (conexão é devolvida após cada transação) |
-
-### 1.2 RLS Performance
-- RLS adiciona overhead em cada query — **crítico para 10k usuários**
-- Diretrizes:
-  - Preferir `security_invoker = true` em views
-  - Evitar subqueries em RLS — usar `IN` com arrays ou joins simples
-  - Índices compostos nas colunas mais filtradas por RLS (ex: `(organization_id, user_id)`)
-  - Monitorar com `pg_stat_statements` queries lentas
-
-### 1.3 Índices Obrigatórios
-```sql
--- Exemplos de índices essenciais para escala
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_courses_org ON courses(organization_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_enrollments_user ON enrollments(user_id, course_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lessons_course ON lessons(course_id, module_id, sort_order);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_progress_user_lesson ON progress(user_id, lesson_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id, created_at DESC);
+```
+[Camada 1: Entrada]      → Vercel Edge (Wildcard + Domínios Customizados)
+         │
+[Camada 2: Aplicação]    → Next.js (CMS Admin) + Expo Web (App Aluno)
+         │
+[Camada 3: Cache]        → Vercel CDN (SWR) | Redis (Server) | localStorage | Cache Storage
+         │
+[Camada 4: Banco]        → Supabase Único (Pooler 6543 + RLS + Write-Behind via Redis)
+         │
+[Camada 5: Mídia]        → Bunny.net / Cloudflare Stream (HLS Adaptativo)
+         │
+[Camada 6: Observabilidade] → Logs Estruturados | Métricas P95 | Alertas
 ```
 
-### 1.4 Read Replicas (Futuro)
-- Para 50k+: usar read replicas do Supabase para queries de relatório e catálogo
-- Conexão separada para leitura (`SUPABASE_DB_URL_READER`)
-
 ---
 
-## 2. Camada de API (Next.js)
+## 2. Camada 1 — Entrada e Roteamento (Vercel Edge)
 
-### 2.1 Server Actions vs API Routes
-| Aspecto | Server Actions | API Routes |
-|---|---|---|
-| Latência | Menor (sem hop HTTP) | Maior |
-| Cache | Suporte nativo a `revalidate` | Via headers manuais |
-| Streaming | Suporte nativo | Suporte nativo |
-| **Recomendação** | **Server Actions para mutações CRUD** | **API Routes para webhooks/external calls** |
+| Requisito | Solução |
+|---|---|
+| Domínio CMS central | `suaplataforma.com` (login com `tenant_id`) |
+| Subdomínios aluno | `*.suaplataforma.com` (wildcard) |
+| Domínios customizados | Vercel intercepta `Host` header → mesmo app Expo |
+| Edge Functions | Autenticação JWT + rate limit checks |
 
-### 2.2 Edge Runtime
-- Usar **Edge Runtime** para:
-  - Autenticação JWT (verificação de token)
-  - Rate limiting checks
-  - Redirects e rewrites
-  - Geocidade (CDN edge)
-
-### 2.3 ISR para Catálogo
-- Páginas de catálogo de cursos: **Incremental Static Regeneration (ISR)**
-- `revalidate: 60` segundos para catálogo público
-- `revalidate: 300` para páginas de curso (conteúdo menos volátil)
-
-### 2.4 Response Caching
+**Resolução de tenant via middleware:**
 ```typescript
-// Cache headers para respostas GET públicas
-export async function GET() {
-  const data = await getPublicCourses();
-  return Response.json(data, {
-    headers: {
-      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
-    },
-  });
+// middleware.ts — resolve tenant a partir do Host
+export function middleware(request: NextRequest) {
+  const host = request.headers.get('host') ?? '';
+  const tenantSlug = host.split('.')[0];
+  // Anexa x-tenant-id ao request para downstream
 }
 ```
 
 ---
 
-## 3. Cache Distribuído (Redis)
+## 3. Camada 2 — Aplicação Monorepo
 
-### 3.1 O que cachear
+| App | Stack | Responsabilidade |
+|---|---|---|
+| `apps/admin` | Next.js (App Router) | CMS, gestão de cursos, fórum, relatórios |
+| `apps/student` | Expo Web (`npx expo export --platform web`) | Consumo de aulas, progresso, certificados |
+| `packages/core` | Serviços + Domínio | `ProgressService`, `CertificateService`, `CourseService` |
+| `packages/types` | Contratos + Zod | Validação de todos os payloads |
+| `packages/ui` | Tamagui | Design System cross-platform |
+
+---
+
+## 4. Camada 3 — Cache e Resiliência
+
+### 4.1 Cache Client-Side (Browser do Aluno)
+
+| Camada | Onde | TTL | Limite |
+|---|---|---|---|
+| SWR (Revalidate) | Conteúdo de aulas e fóruns | 30s stale-while-revalidate | Global |
+| localStorage | Textos e links do módulo atual (~2KB/aula) | Sessão | 5MB (exclusão automática do módulo anterior) |
+| Cache Storage API | Vídeos brutos (1-2 aulas) | Sessão | 500MB-1GB (realista por browser) |
+
+### 4.2 Cache Server-Side (Redis)
+
 | Dado | TTL | Estratégia |
 |---|---|---|
 | Catálogo de cursos públicos | 60s | Cache-aside |
@@ -85,97 +81,98 @@ export async function GET() {
 | Progresso do aluno (leitura) | 30s | Cache-aside |
 | Sessão JWT | Até expirar | Write-through |
 | Rate limit counters | 1s-60s | Sliding window |
+| Fila de progresso | até processar | Write-Behind |
 
-### 3.2 Rate Limiting com Redis
-```typescript
-// Sliding window log
-const key = `ratelimit:${userId}:${endpoint}`;
-const current = await redis.incr(key);
-if (current === 1) await redis.expire(key, 60);
-if (current > 100) throw new Error('rate_limit_exceeded');
+### 4.3 Write-Behind para Progresso
+
 ```
+Expo (Aluno) → POST /api/progress → Redis Queue → Cron (10s) → Supabase (bulk upsert)
+```
+
+**Fallback se Redis cair:** Gravar direto no Supabase com rate limit (máx 10 writes/s por usuário).
+
+Referência: [`docs/roadmaps/concentrador-de-dados.md`](./concentrador-de-dados.md)
 
 ---
 
-## 4. Conexões em Tempo Real (Supabase Realtime)
+## 5. Camada 4 — Banco de Dados (Supabase)
 
-### 4.1 Limites e Estratégia
-| Item | Limite Supabase Free/Pro | Estratégia para 10k |
+### 5.1 Modelagem Multitenant
+
+```sql
+-- Adicionar tenant_id em todas as tabelas de dados
+ALTER TABLE courses ADD COLUMN tenant_id uuid REFERENCES tenants(id);
+ALTER TABLE lessons ADD COLUMN tenant_id uuid REFERENCES tenants(id);
+ALTER TABLE student_progress ADD COLUMN tenant_id uuid REFERENCES tenants(id);
+-- ... demais tabelas
+```
+
+### 5.2 RLS Otimizado
+
+| Regra | Implementação |
+|---|---|
+| Filtrar por `tenant_id` | `WHERE tenant_id = current_setting('app.current_tenant')::uuid` |
+| Evitar subqueries | Usar `IN` com arrays ou joins simples |
+| Índices compostos | `(tenant_id, user_id)`, `(tenant_id, course_id)` |
+| security_invoker | Aplicar em views para herdar contexto do chamador |
+
+### 5.3 Connection Pooling
+
+| Porta | Modo | Quando usar |
 |---|---|---|
-| Conexões simultâneas | 500 (Pro) | **Não usar Realtime para todos** |
-| Canais por conexão | 10 | Agregar notificações por canal |
+| `5432` | Direta | Migrations, operações admin |
+| `6543` | Transaction (PgBouncer) | App do aluno, Edge Functions, writes de progresso |
 
-### 4.2 Fallback para Escala
-- **Nível 1 (3k usuários):** Realtime nativo para progresso de aula
-- **Nível 2 (10k usuários):** Realtime apenas para:
-  - Sincronização de progresso crítica (polling a cada 30s para o resto)
-  - Notificações push (via Edge Functions + FCM/APNs)
-- **Nível 3 (50k+):** Migrar para WebSocket próprio ou Socket.io + Redis adapter
+### 5.4 Índices Obrigatórios
 
----
-
-## 5. Video Streaming
-
-### 5.1 Arquitetura
-```mermaid
-graph LR
-    A[Aluno] --> B[CDN]
-    B --> C[Storage Provider]
-    C --> D[Transcoder]
-    
-    style B fill:#4F46E5,color:#fff
-    style C fill:#059669,color:#fff
+```sql
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_courses_tenant ON courses(tenant_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lessons_tenant ON lessons(tenant_id, module_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_progress_tenant_user ON student_progress(tenant_id, user_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_enrollments_tenant ON enrollments(tenant_id, user_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_tenant ON audit_logs(tenant_id, created_at DESC);
 ```
 
-### 5.2 Requisitos para 10k streams simultâneos
-- **CDN obrigatório:** Bunny Stream, Mux ou CloudFront
-- **URLs assinadas:** Expiração de 1h por sessão
-- **Adaptive Bitrate (ABR):** 480p, 720p, 1080p automático
-- **Cache de chunks:** CDN edge caching para chunks de vídeo
+### 5.5 Read Replicas (50k+)
+
+- Supabase Read Replicas para queries de relatório e catálogo
+- Conexão separada: `SUPABASE_DB_URL_READER`
 
 ---
 
-## 6. Mobile (Expo/React Native)
+## 6. Camada 5 — Mídia e Streaming
 
-### 6.1 Offline-First para Escala
-- Filas locais para ações offline (progresso, quizzes)
-- Sincronização batch a cada 30s (não em tempo real)
-- Cache de vídeos baixados com expiração
+| Provedor | Protocolo | Recurso |
+|---|---|---|
+| Bunny.net | HLS adaptativo (480p/720p/1080p) | CDN global, URLs assinadas (1h) |
+| Cloudflare Stream | HLS adaptativo | Alternativa, mesma latência |
+| Supabase Storage | Signed URLs | PDFs, thumbnails (não vídeos) |
 
-### 6.2 Backoff Exponencial
-```typescript
-async function syncProgress(attempt = 0): Promise<void> {
-  try {
-    await api.post('/progress', localQueue);
-    localQueue.clear();
-  } catch {
-    if (attempt > 5) return; // desiste após 5 tentativas
-    const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
-    setTimeout(() => syncProgress(attempt + 1), delay);
-  }
-}
-```
+**Cache de chunks:** CDN edge caching para reduzir latência em regiões com alta concentração de alunos.
 
 ---
 
-## 7. Observabilidade para Escala
+## 7. Camada 6 — Observabilidade
 
 ### 7.1 Métricas Essenciais
+
 | Métrica | Onde | Alerta em |
 |---|---|---|
 | P95 response time | API endpoints | > 500ms |
-| Conexões DB ativas | Supabase | > 80% pool |
+| Conexões DB ativas | Supabase Dashboard | > 80% pool |
 | Rate limit hits | Redis | > 1000/min |
 | Erros 5xx | API | > 1% |
 | Realtime conexões | Supabase | > 80% limite |
+| Fila de progresso (Redis) | `queue:progress` length | > 10.000 itens |
 
 ### 7.2 Logs Estruturados
+
 ```typescript
-// Formato obrigatório para todos os logs
 console.log(JSON.stringify({
   level: 'error',
-  service: 'admin',
-  operation: 'create_course',
+  service: 'student',
+  operation: 'sync_progress',
+  tenantId: tenant.id,
   userId: user.id,
   duration: Date.now() - start,
   error: err.message,
@@ -185,32 +182,58 @@ console.log(JSON.stringify({
 
 ---
 
-## 8. Plano de Execução (Tasks)
+## 8. Evolução por Fase (Com Custos Estimados)
 
-### Fase 1 — Fundação (Imediata)
+| Fase | Alunos Simultâneos | Ações | Custos Estimados |
+|---|---|---|---|
+| **1. MVP** | Até 3.000 | Supabase Pro, Redis Upstash free tier, Vercel Hobby | $25-50/mês |
+| **2. Tração** | 3.000 - 15.000 | Upgrade Supabase Compute Small/Medium, Redis Pro | $80-130/mês |
+| **3. Alta Escala** | 15.000 - 50.000 | Supabase Large, Read Replicas, WebSocket próprio | $345-505/mês |
+| **4. Massiva** | 50.000+ | Sharding por tenant, CDN multi-região, Auto-scaling | $500+/mês |
+
+---
+
+## 9. Plano de Execução (Tasks)
+
+### Fase 1 — Fundação (MVP)
 - [x] **SCL-01:** Configurar índices PostgreSQL para consultas frequentes
-- [ ] **SCL-02:** Implementar rate limiting com Redis ⏭️ *Pendente — cache em memória para rate limiting e dados de acesso frequente (catálogo, sessões). Sem ele não temos escalabilidade, mas pro MVP (~35%) não é necessário.*
+- [ ] **SCL-02:** Implementar rate limiting com Redis ⏭️ *Pendente — pro MVP (~35%) não é necessário*
 - [ ] **SCL-03:** Adicionar cache headers em todas as rotas GET públicas ⏭️ *Adiado — sem SSR/API pública no momento*
 - [ ] **SCL-04:** Configurar ISR para páginas de catálogo ⏭️ *Adiado — student é Expo, admin é CSR*
+- [ ] **SCL-17:** Adicionar `tenant_id` em todas as tabelas (multitenancy)
+- [ ] **SCL-18:** Middleware de resolução de tenant via hostname
 
-### Fase 2 — Otimização de Conexões (3k usuários)
-- [ ] **SCL-05:** Implementar connection pooling (PgBouncer)
-- [ ] **SCL-06:** Otimizar RLS policies (remover subqueries, adicionar índices)
+### Fase 2 — 3.000 Alunos
+- [ ] **SCL-05:** Implementar connection pooling (PgBouncer porta 6543)
+- [ ] **SCL-06:** Otimizar RLS policies (remover subqueries, índices compostos)
 - [ ] **SCL-07:** Estratégia de fallback Realtime-to-polling
 - [ ] **SCL-08:** Backoff exponencial no mobile
+- [ ] **SCL-19:** Write-Behind para progresso (Redis → bulk upsert)
+- [ ] **SCL-20:** Cache client-side (SWR + localStorage + Cache Storage)
 
-### Fase 3 — Alta Escala (10k+)
+### Fase 3 — 10.000+ Alunos
 - [ ] **SCL-09:** Migrar para Edge Runtime em rotas críticas
 - [ ] **SCL-10:** Implementar read replicas do PostgreSQL
 - [ ] **SCL-11:** WebSocket próprio para realtime (alternativa ao Supabase Realtime)
 - [ ] **SCL-12:** Cache distribuído com Redis Cluster
+- [ ] **SCL-21:** Observabilidade completa (métricas P95, alertas, logs estruturados)
 
-### Fase 4 — Escala Futura (50k+)
+### Fase 4 — 50.000+ Alunos
 - [ ] **SCL-13:** Auto-scaling de instâncias Next.js
-- [ ] **SCL-14:** Sharding de banco de dados por organização
+- [ ] **SCL-14:** Sharding de banco de dados por organização/tenant
 - [ ] **SCL-15:** CDN multi-região para vídeos
 - [ ] **SCL-16:** Service Workers para cache offline avançado
 
 ---
 
-> 📎 **Documento relacionado:** [`docs/roadmaps/concentrador-de-dados.md`](./concentrador-de-dados.md) — Arquitetura de Buffer de Gravação (Write-Behind Cache) para progresso de aulas usando Next.js + Redis + Supabase. Complementa SCL-08.
+## 10. Documentos Relacionados
+
+- [`docs/roadmaps/concentrador-de-dados.md`](./concentrador-de-dados.md) — Write-Behind Cache para progresso
+- [`docs/layers/core/offline-strategy.md`](../layers/core/offline-strategy.md) — Estratégia offline-first
+- [`docs/skills/optimistic_ui.md`](../skills/optimistic_ui.md) — Optimistic updates
+- [`docs/skills/postgresql_performance.md`](../skills/postgresql_performance.md) — Performance PostgreSQL
+- [`docs/skills/supabase_rls.md`](../skills/supabase_rls.md) — Segurança RLS
+
+---
+
+> ⚠️ **Nota:** Este plano é um documento de referência. A implementação será iniciada apenas após aceite do cliente e confirmação do orçamento para infraestrutura.

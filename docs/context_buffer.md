@@ -1,43 +1,43 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-CONCLUÍDO — Implementação das telas de Aulas do Aluno e Certificados no student app. UX refinada com botões contextuais e sem redundâncias.
+CONCLUÍDO — Criação de 7 skills para o plano de escalabilidade. Documentação pronta para implementação futura.
 
 ## 🎯 Tarefa em Execução
-Implementação concluída. Build passou sem erros. Todas as regras de UI validadas.
+Documentação de escalabilidade salva. Skills criadas e CONTEXT_MAP.md atualizado.
 
 ## 🕹️ Documentos Carregados via MCP
 - `docs/FORBIDDEN_OPERATIONS.md` — Regras vinculantes
 - `docs/DESDO.md` — Diretrizes de engenharia
 - `docs/context_buffer.md` — Estado da última execução
 - `docs/CONTEXT_MAP.md` — Mapeamento de camadas
-- `docs/layers/apps/mobile_player_plan.md` — Plano do reprodutor móvel
-- `packages/core/src/services/certificate.ts` — Serviço de certificados
-- `packages/core/src/services/course.ts` — Serviço de cursos
-- `packages/core/src/services/progress.ts` — Serviço de progresso
-- `packages/core/src/ports/IProgressRepository.ts` — Interface de progresso
-- `apps/student/src/screens/LessonPlayer.tsx` — Player atual
-- `apps/student/src/screens/StudentDashboard.tsx` — Dashboard atual
-- `apps/student/App.tsx` — Navegação principal
-- `desing/src/routes/aluno.curso.$courseId.aulas.tsx` — Design de aulas
-- `desing/src/routes/aluno.certificados.tsx` — Design de certificados
+- `docs/roadmaps/scalability-plan.md` — Plano de escalabilidade unificado
+- `docs/roadmaps/concentrador-de-dados.md` — Arquitetura Write-Behind
+- `docs/layers/core/offline-strategy.md` — Estratégia offline-first
+- `docs/skills/optimistic_ui.md` — Optimistic updates
+- `docs/skills/postgresql_performance.md` — Performance PostgreSQL
+- `docs/skills/supabase_rls.md` — Segurança RLS
+- `docs/layers/supabase/database_schema_plan.md` — Schema do banco
+
+## Arquivos criados nesta sessão
+- `docs/skills/redis_caching_strategy.md` — Cache Redis e Write-Behind
+- `docs/skills/connection_pooling.md` — PgBouncer e Pooler
+- `docs/skills/rate_limiting.md` — Rate limiting com Redis
+- `docs/skills/multitenancy_rls.md` — Multitenancy com RLS
+- `docs/skills/video_streaming_cdn.md` — CDN de vídeo (Bunny/Cloudflare)
+- `docs/skills/edge_runtime_middleware.md` — Edge Runtime e Middleware
+- `docs/skills/observability.md` — Logs, métricas e alertas
 
 ## Arquivos modificados nesta sessão
-- `apps/student/src/screens/CourseLessons.tsx` — Nova tela de aulas (criada)
-- `apps/student/src/screens/Certificates.tsx` — Nova tela de certificados (criada)
-- `apps/student/App.tsx` — Atualização de navegação
-- `apps/student/src/screens/StudentDashboard.tsx` — Refatoração completa de UX
-- `packages/core/src/services/progress.ts` — Adicionado método `getProgressByLessons`
-- `docs/BACKLOG.md` — Itens concluídos atualizados
+- `docs/roadmaps/scalability-plan.md` — Plano unificado e refatorado
+- `docs/CONTEXT_MAP.md` — Seção 10 atualizada com novas skills
 - `docs/context_buffer.md` — Este log
 
 ## ✅ Resultado da Implementação
-- **Build:** ✅ Passou sem erros
-- **Regras UI:** ✅ Todas validadas (NO_LUCIDE_DIRECT, NO_STYLESHEET, NO_HTML_TAGS, NO_HARDCODED_COLORS)
-- **Navegação:** ✅ Dashboard → CourseLessons → Player; Dashboard → Certificates
-- **Serviços:** ✅ Usando CertificateService, CourseService, ProgressService
-- **UX Botões:** ✅ Contextuais (Iniciar/Continuar/Próxima/Ver certificado)
-- **Redundância:** ✅ Eliminada (badge removido do thumbnail)
+- **Plano de Escalabilidade:** ✅ Unificado (3k → 50k+)
+- **Skills Criadas:** ✅ 7 novas skills
+- **CONTEXT_MAP:** ✅ Atualizado com referências
+- **Cobertura:** ✅ Redis, Pooler, Rate Limit, Multitenancy, CDN, Edge, Observabilidade
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
 *Nenhum erro ativo.*
