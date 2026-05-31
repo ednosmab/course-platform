@@ -5,6 +5,8 @@ import { QuizBlockSchema } from './quiz';
 import { ImageBlockSchema } from './image';
 import { HtmlBlockSchema } from './html';
 import { QuoteBlockSchema } from './quote';
+import { HeadingBlockSchema } from './heading';
+import { DividerBlockSchema } from './divider';
 import { CertificateBlockSchema } from './certificate-block';
 
 // 1. Profile Schema & Type
@@ -91,6 +93,8 @@ export const LessonSchema = z.object({
     ImageBlockSchema,
     HtmlBlockSchema,
     QuoteBlockSchema,
+    HeadingBlockSchema,
+    DividerBlockSchema,
   ])),
   version: z.number().int().positive().default(1),
   schema_version: z.number().int().positive().optional(),

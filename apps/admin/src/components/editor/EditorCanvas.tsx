@@ -896,7 +896,10 @@ export const EditorCanvas: React.FC = () => {
     e.preventDefault();
     e.stopPropagation();
     setIsInteracting(true);
-    document.body.style.cursor = `${handle}-resize`;
+    const style = document.createElement('style');
+    style.id = 'resize-cursor-override';
+    style.textContent = `* { cursor: ${handle}-resize !important }`;
+    document.head.appendChild(style);
 
     const resizeIds = selectedBlockIds.includes(block.id) && selectedBlockIds.length > 1
       ? selectedBlockIds.filter((id) => id !== block.id)
@@ -1026,7 +1029,8 @@ export const EditorCanvas: React.FC = () => {
         }
       }
       interactionRef.current = null;
-      document.body.style.cursor = '';
+      const cursorStyle = document.getElementById('resize-cursor-override');
+      if (cursorStyle) cursorStyle.remove();
       setIsInteracting(false);
       setGuides({ v: [], h: [], m: [] });
     };

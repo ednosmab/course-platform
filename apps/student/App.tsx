@@ -7,6 +7,7 @@ import { LessonPlayer } from './src/screens/LessonPlayer';
 import { CourseLessons } from './src/screens/CourseLessons';
 import { Certificates } from './src/screens/Certificates';
 import { StudentLogin } from './src/screens/StudentLogin';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
 
 export default function App() {
   const [screen, setScreen] = useState<'loading' | 'login' | 'dashboard' | 'player' | 'courseLessons' | 'certificates'>('loading');
@@ -75,67 +76,71 @@ export default function App() {
     );
   }
 
-  if (screen === 'player') {
-    return (
-      <SafeAreaProvider>
-        <TamaguiProvider config={config} defaultTheme={null}>
-          <Theme name="cloudWhite">
-            <SafeAreaView style={{ flex: 1 }}>
-              <LessonPlayer courseId={courseId} onBack={() => setScreen('dashboard')} />
-            </SafeAreaView>
-          </Theme>
-        </TamaguiProvider>
-      </SafeAreaProvider>
-    );
-  }
+  const renderScreen = () => {
+    if (screen === 'player') {
+      return (
+        <SafeAreaProvider>
+          <TamaguiProvider config={config} defaultTheme={null}>
+            <Theme name="cloudWhite">
+              <SafeAreaView style={{ flex: 1 }}>
+                <LessonPlayer courseId={courseId} onBack={() => setScreen('dashboard')} />
+              </SafeAreaView>
+            </Theme>
+          </TamaguiProvider>
+        </SafeAreaProvider>
+      );
+    }
 
-  if (screen === 'courseLessons' && courseId) {
+    if (screen === 'courseLessons' && courseId) {
+      return (
+        <SafeAreaProvider>
+          <TamaguiProvider config={config} defaultTheme={null}>
+            <Theme name="cloudWhite">
+              <SafeAreaView style={{ flex: 1 }}>
+                <CourseLessons
+                  courseId={courseId}
+                  onSelectLesson={handleSelectLesson}
+                  onBack={() => setScreen('dashboard')}
+                  onViewCertificate={() => setScreen('certificates')}
+                />
+              </SafeAreaView>
+            </Theme>
+          </TamaguiProvider>
+        </SafeAreaProvider>
+      );
+    }
+
+    if (screen === 'certificates') {
+      return (
+        <SafeAreaProvider>
+          <TamaguiProvider config={config} defaultTheme={null}>
+            <Theme name="cloudWhite">
+              <SafeAreaView style={{ flex: 1 }}>
+                <Certificates onBack={() => setScreen('dashboard')} />
+              </SafeAreaView>
+            </Theme>
+          </TamaguiProvider>
+        </SafeAreaProvider>
+      );
+    }
+
     return (
       <SafeAreaProvider>
         <TamaguiProvider config={config} defaultTheme={null}>
           <Theme name="cloudWhite">
             <SafeAreaView style={{ flex: 1 }}>
-              <CourseLessons
-                courseId={courseId}
-                onSelectLesson={handleSelectLesson}
-                onBack={() => setScreen('dashboard')}
-                onViewCertificate={() => setScreen('certificates')}
+              <StudentDashboard
+                onPlay={handlePlay}
+                onNavigateToCourseLessons={handleNavigateToCourseLessons}
+                onNavigateToCertificates={handleNavigateToCertificates}
+                onLogout={() => setScreen('login')}
               />
             </SafeAreaView>
           </Theme>
         </TamaguiProvider>
       </SafeAreaProvider>
     );
-  }
+  };
 
-  if (screen === 'certificates') {
-    return (
-      <SafeAreaProvider>
-        <TamaguiProvider config={config} defaultTheme={null}>
-          <Theme name="cloudWhite">
-            <SafeAreaView style={{ flex: 1 }}>
-              <Certificates onBack={() => setScreen('dashboard')} />
-            </SafeAreaView>
-          </Theme>
-        </TamaguiProvider>
-      </SafeAreaProvider>
-    );
-  }
-
-  return (
-    <SafeAreaProvider>
-      <TamaguiProvider config={config} defaultTheme={null}>
-        <Theme name="cloudWhite">
-          <SafeAreaView style={{ flex: 1 }}>
-            <StudentDashboard
-              onPlay={handlePlay}
-              onNavigateToCourseLessons={handleNavigateToCourseLessons}
-              onNavigateToCertificates={handleNavigateToCertificates}
-              onLogout={() => setScreen('login')}
-            />
-          </SafeAreaView>
-        </Theme>
-      </TamaguiProvider>
-    </SafeAreaProvider>
-  );
+  return <ErrorBoundary>{renderScreen()}</ErrorBoundary>;
 }
