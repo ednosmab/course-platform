@@ -28,3 +28,4 @@ export * from './blocks/TextBlock';
 export * from './blocks/QuoteBlock';
 export * from './components/Certificate';
 export * from './components/Login';
+export { color } from './tokens';

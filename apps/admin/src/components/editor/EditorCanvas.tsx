@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { YStack, XStack, Text, Icon, Spinner, Button, CertificateBlockRenderer } from '@projeto/ui';
+import { YStack, XStack, Text, Icon, Spinner, Button, CertificateBlockRenderer, color } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
 
@@ -67,10 +67,10 @@ function parseSimpleMarkdown(text: string): React.ReactNode[] {
         <blockquote
           key={lineIdx}
           style={{
-            borderLeft: '4px solid var(--accent-blue)',
+            borderLeft: `4px solid ${color.cwPrimary}`,
             paddingLeft: '12px', margin: '8px 0',
-            fontStyle: 'italic', color: 'var(--text-secondary)',
-            backgroundColor: 'var(--bg-canvas)',
+            fontStyle: 'italic', color: color.cwMutedForeground,
+            backgroundColor: color.cwSurface,
             padding: '6px 12px',
             borderRadius: '0 6px 6px 0',
           }}
@@ -197,7 +197,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
 
     const style: React.CSSProperties = {
       fontSize, fontFamily: styles.fontFamily as string || 'inherit',
-      color: styles.color as string || 'var(--text-primary)',
+      color: styles.color as string || color.cwForeground,
       backgroundColor: styles.backgroundColor as string || 'transparent',
       backgroundImage: styles.backgroundImage ? `url(${styles.backgroundImage})` : 'none',
       backgroundSize: 'cover', backgroundPosition: 'center',
@@ -218,7 +218,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
             cursor: 'text',
             outline: 'none',
             userSelect: 'text',
-            backgroundColor: 'white',
+            backgroundColor: color.cwBackground,
             border: '1px solid #3B82F6',
             borderRadius: '4px',
             padding: '8px',
@@ -292,7 +292,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
           ...headingStyle,
           cursor: 'text',
           outline: 'none',
-          backgroundColor: 'white',
+          backgroundColor: color.cwBackground,
           border: '1px solid #3B82F6',
           borderRadius: '4px',
           padding: '8px',
@@ -327,10 +327,10 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
       backgroundSize: 'cover' as const, backgroundPosition: 'center' as const,
       borderRadius: styles.backgroundColor || styles.backgroundImage ? '8px' : '0',
       padding: styles.backgroundColor || styles.backgroundImage ? '16px' : '0',
-      borderLeft: styles.backgroundColor || styles.backgroundImage ? 'none' : '4px solid var(--accent-blue)',
+      borderLeft: styles.backgroundColor || styles.backgroundImage ? 'none' : `4px solid ${color.cwPrimary}`,
       paddingLeft: styles.backgroundColor || styles.backgroundImage ? '16px' : '16px',
       height: '100%', overflow: 'auto' as const,
-      color: styles.color || 'var(--text-secondary)',
+      color: styles.color || color.cwMutedForeground,
       fontFamily: styles.fontFamily || 'inherit',
       textAlign: (styles.align || 'left') as React.CSSProperties['textAlign'],
     } satisfies React.CSSProperties;
@@ -368,13 +368,13 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     const fontSize = isMobile ? FONT_MOBILE[fs] : FONT_DESKTOP[fs];
 
     const cardStyle: React.CSSProperties = {
-      backgroundColor: styles.backgroundColor || 'var(--bg-canvas)',
+      backgroundColor: styles.backgroundColor || color.cwSurface,
       backgroundImage: styles.backgroundImage ? `url(${styles.backgroundImage})` : 'none',
       backgroundSize: 'cover', backgroundPosition: 'center',
       borderRadius: '8px', padding: '12px',
-      border: styles.backgroundColor || styles.backgroundImage ? 'none' : '1px solid var(--border-light)',
+      border: styles.backgroundColor || styles.backgroundImage ? 'none' : `1px solid ${color.cwBorder}`,
       height: '100%', overflow: 'auto',
-      color: styles.color || 'var(--text-primary)',
+      color: styles.color || color.cwForeground,
       fontFamily: styles.fontFamily || 'inherit',
     };
 
@@ -640,7 +640,7 @@ function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesign
       return (
         <div style={{
           position: 'relative', width: pageW, height: '100%',
-          backgroundColor: 'white',
+          backgroundColor: color.cwBackground,
           overflow: 'hidden',
         }}>
           {sorted.map((block) => {
@@ -662,7 +662,7 @@ function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesign
     const sortedBlocks = [...blocks].sort((a, b) => getLayout(a, viewportMode).zIndex - getLayout(b, viewportMode).zIndex);
     if (isDesktop) {
       return (
-        <div style={{ position: 'relative', width: PAGE_W, height: '100%', backgroundColor: 'white' }}>
+        <div style={{ position: 'relative', width: PAGE_W, height: '100%', backgroundColor: color.cwBackground }}>
           {sortedBlocks.map((block) => {
             const layout = getLayout(block, viewportMode);
             return (
@@ -676,7 +676,7 @@ function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesign
     }
 
     return (
-      <YStack w={isMobile ? MOBILE_W : TABLET_W} maxWidth={isMobile ? MOBILE_W : TABLET_W} bg="white" borderRadius={isMobile ? 36 : 12} style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} overflow="hidden" borderWidth={6} borderColor="$surface" maxHeight="80vh">
+      <YStack w={isMobile ? MOBILE_W : TABLET_W} maxWidth={isMobile ? MOBILE_W : TABLET_W} bg="$background" borderRadius={isMobile ? 36 : 12} style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} overflow="hidden" borderWidth={6} borderColor="$surface" maxHeight="80vh">
         {isMobile ? (
           <XStack bg="$surface" height={28} ai="center" jc="center" flexShrink={0}>
             <XStack w={60} height={6} borderRadius={3} bg="$gray6" />
@@ -739,7 +739,7 @@ function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesign
         )}
         <Text fontSize={10} color="$textMuted" ml="$2">Ctrl + scroll para zoom</Text>
       </XStack>
-      <YStack flex={1} ai="center" p="$5" bg="white" style={{ overflow: 'auto' }}>
+      <YStack flex={1} ai="center" p="$5" bg="$background" style={{ overflow: 'auto' }}>
         <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top center', flexShrink: 0, minHeight: '100%' }}>
           {content}
         </div>
@@ -753,7 +753,7 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
   const viewInteraction = useViewportInteraction(MOBILE_W / CANVAS_W);
   return (
     <YStack flex={1} ai="center" p="$5" overflowY="auto">
-      <YStack borderWidth={6} borderColor="$surface" borderRadius={36} overflow="hidden" style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.25)' }} bg="white" w={MOBILE_W} flexShrink={0}>
+      <YStack borderWidth={6} borderColor="$surface" borderRadius={36} overflow="hidden" style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.25)' }} bg="$background" w={MOBILE_W} flexShrink={0}>
         <XStack bg="$surface" height={28} ai="center" jc="center" flexShrink={0}>
           <XStack w={60} height={6} borderRadius={3} bg="$gray6" />
         </XStack>
@@ -783,7 +783,7 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
   const viewInteraction = useViewportInteraction(TABLET_W / CANVAS_W);
   return (
     <YStack flex={1} ai="center" p="$5" overflowY="auto">
-      <YStack borderWidth={6} borderColor="$surface" borderRadius={12} overflow="hidden" style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} bg="white" w={TABLET_W} flexShrink={0}>
+      <YStack borderWidth={6} borderColor="$surface" borderRadius={12} overflow="hidden" style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} bg="$background" w={TABLET_W} flexShrink={0}>
         <XStack bg="$surface" height={8} ai="center" jc="center" flexShrink={0}>
           <XStack w={8} h={8} borderRadius={4} bg="$background" borderWidth={1} borderColor="$gray7" />
         </XStack>
@@ -1185,7 +1185,7 @@ export const EditorCanvas: React.FC = () => {
       <div
         ref={pageRootRef}
         data-page-root
-        style={{ position: 'relative', width: isCertMode ? certDesignWidth : PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)', overflow: isCertMode ? 'hidden' : undefined }}
+        style={{ position: 'relative', width: isCertMode ? certDesignWidth : PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: color.cwBackground, borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)', overflow: isCertMode ? 'hidden' : undefined }}
         onMouseDown={(e) => {
           if ((e.target as HTMLElement).closest('[role="button"]')) return;
           if (inlineEditingId) return;

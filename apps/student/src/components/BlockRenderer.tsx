@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { YStack } from '@projeto/ui';
+import { YStack, color } from '@projeto/ui';
 import { AnyBlock } from '@projeto/types';
 import { getBlockLayout, calcPageHeight, getDesignWidth } from '@projeto/core';
 import { BlockRenderer as SharedBlockRenderer } from '@projeto/renderer';
@@ -44,7 +44,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks, onVideoPro
       overflow="hidden"
       height={pageH * scale}
       position="relative"
-      bg="$cwBackground"
+      bg="$background"
     >
       {/* Left-aligned, white background — matches the editor PreviewCanvas exactly */}
       <div
@@ -54,7 +54,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks, onVideoPro
           left: 0,
           width: designWidth,
           height: pageH,
-          backgroundColor: 'white',
+          backgroundColor: color.cwBackground,
           transform: `scale(${scale})`,
           transformOrigin: 'top left',
           overflow: 'visible',

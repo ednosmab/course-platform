@@ -1,19 +1,19 @@
 import React from 'react';
-import { YStack, XStack, Text } from '@projeto/ui';
+import { YStack, XStack, Text, color } from '@projeto/ui';
 import { AnyBlock } from '@projeto/types';
 
 /**
- * Design tokens — literal values used in place of CSS variables so that this
- * shared renderer works correctly in any host app (admin OR student) regardless
- * of whether those apps define CSS custom-properties.
+ * Design tokens derived from the UI package's color palette.
+ * Used for inline styles where Tamagui token props ($token) are not available.
+ * The source of truth is `@projeto/ui` — do NOT duplicate hex values here.
  */
 const COLORS = {
-  textPrimary:   '#1e293b',
-  textSecondary: '#4b5563',
-  textMuted:     '#94a3b8',
-  accentBlue:    '#3b82f6',
-  bgCanvas:      '#f8fafc',
-  borderLight:   '#e2e8f0',
+  textPrimary:   color.cwForeground,
+  textSecondary: color.cwMutedForeground,
+  textMuted:     color.cwMutedForeground,
+  accentBlue:    color.cwPrimary,
+  bgCanvas:      color.cwSurface,
+  borderLight:   color.cwBorder,
 };
 
 /**
