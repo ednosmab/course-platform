@@ -222,7 +222,7 @@ export function BlockRenderer({
     const fontSize = { 1: '32px', 2: '24px', 3: '20px' }[level];
     const headingStyle: React.CSSProperties = {
       fontSize, fontWeight: 700, lineHeight: 1.3, margin: 0, padding: 0,
-      textAlign: styles.align || 'left', color: styles.color || COLORS.textPrimary,
+      textAlign: (styles.align as React.CSSProperties['textAlign']) || 'left', color: styles.color || COLORS.textPrimary,
       fontFamily: styles.fontFamily || 'inherit', width: '100%', height: '100%',
     };
 
