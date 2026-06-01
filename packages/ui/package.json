@@ -28,15 +28,18 @@
     "@tamagui/config": "2.0.0-rc.42",
     "@tamagui/core": "2.0.0-rc.42",
     "@tamagui/font-inter": "2.0.0-rc.42",
+    "dompurify": "^3.2.4",
     "tamagui": "2.0.0-rc.42"
   },
   "devDependencies": {
     "@ladle/react": "^5.1.1",
     "@projeto/types": "workspace:*",
     "@tamagui/babel-plugin": "2.0.0-rc.42",
+    "@types/dompurify": "^3.2.0",
     "@types/react": "^19.2.14",
     "@types/react-native": "^0.73.0",
     "expo-av": "^15.0.2",
+    "jsdom": "^25.0.1",
     "lucide-react": "^0.378.0",
     "lucide-react-native": "^0.475.0",
     "react": "19.1.0",

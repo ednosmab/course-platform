@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { YStack, XStack, Text, Icon, Spinner, Button, CertificateBlockRenderer, color } from '@projeto/ui';
+import { YStack, XStack, Text, Icon, Spinner, Button, CertificateBlockRenderer, color, sanitizeHtml } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
 
@@ -235,8 +235,11 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     }
 
     let textElement: React.ReactNode;
-    if (/<[a-z][\s>]/i.test(block.content)) {
-      textElement = <div dangerouslySetInnerHTML={{ __html: block.content }} />;
+    // Match single- and multi-character HTML tags so sanitization covers
+    // `<img>`, `<script>`, `<a>`, etc. The previous regex only matched
+    // single-letter tags.
+    if (/<\w+[\s>\/]/i.test(block.content)) {
+      textElement = <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.content) }} />;
     } else {
       textElement = <>{parseSimpleMarkdown(block.content)}</>;
     }

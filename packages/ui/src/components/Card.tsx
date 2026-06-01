@@ -1,4 +1,5 @@
 import { styled, YStack } from 'tamagui';
+import { shadowPresets } from '../tokens';
 
 export const Card = styled(YStack, {
   name: 'Card',
@@ -10,14 +11,15 @@ export const Card = styled(YStack, {
   borderWidth: 1,
   borderColor: '$border',
   
-  // Sombra suave (compatível com Web e Native)
-  shadowColor: '$black',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.1,
-  shadowRadius: 10,
-  elevation: 4, // Necessário para Android
+  // Sombra semântica padrão (compatível com Web e Native)
+  ...shadowPresets.cwSoft,
   
   variants: {
+    elevated: {
+      true: {
+        ...shadowPresets.cwPop,
+      },
+    },
     interactive: {
       true: {
         cursor: 'pointer',

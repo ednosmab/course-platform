@@ -5,5 +5,8 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.{ts,tsx}'],
     globals: true,
+    environmentMatchGlobs: [
+      ['src/utils/sanitize.test.ts', 'jsdom'],
+    ],
   },
 });

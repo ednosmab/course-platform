@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, XStack, YStack, Text, Button, Card, Icon, BrandMark, Avatar, Spinner, ProgressBar, GridBackground, Input, Theme, useMedia } from '@projeto/ui';
+import { View } from 'react-native';
+import { ScrollView, XStack, YStack, Text, Button, Card, Icon, BrandMark, Avatar, Spinner, ProgressBar, GridBackground, Input, Theme, useMedia, shadowPresets } from '@projeto/ui';
 import { AuthService, CourseService, ProgressService } from '@projeto/core';
 import { Course } from '@projeto/types';
 
@@ -162,7 +163,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
               <XStack gap="$6" $sm={{ fd: 'column' }} w="100%">
                 {/* Hero Box */}
                 <YStack flex={2} gap="$4">
-                  <Card p={0} overflow="hidden" br="$4" elevation={3}>
+                  <Card p={0} overflow="hidden" br="$4" elevated>
                     {/* Cover Gradient/Visual Area */}
                     <YStack h={200} bg="$primary" position="relative" jc="center" ai="center">
                       <GridBackground position="absolute" top={0} left={0} right={0} bottom={0} opacity={0.2} />
@@ -173,11 +174,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                         bg="$white"
                         ai="center"
                         jc="center"
-                        shadowColor="$black"
-                        shadowOffset={{ width: 0, height: 4 }}
-                        shadowOpacity={0.2}
-                        shadowRadius={8}
-                        elevation={5}
+                        {...shadowPresets.cwPop}
                         pressStyle={{ scale: 0.95 }}
                         cursor="pointer"
                         onPress={() => onPlay(activeProgress.courseId)}
@@ -535,7 +532,7 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
   const media = useMedia();
   const [searchVal, setSearchVal] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<View>(null);
   const initials = userProfile?.full_name
     ? userProfile.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
     : '--';
@@ -567,7 +564,7 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
       borderBottomColor="$border"
       px="$6"
       py="$3"
-      elevation={2}
+      {...shadowPresets.cwSoft}
     >
       <XStack ai="center" jc="space-between" maxWidth={1400} w="100%" als="center">
         <XStack ai="center" gap="$6">
@@ -635,59 +632,61 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
             />
           </Button>
 
-          <ul ref={menuRef} style={{ listStyle: 'none', margin: 0, padding: 0, position: 'relative' }}>
-            <li>
-              <a
-                href="#"
-                onClick={(e) => { e.preventDefault(); setShowUserMenu(!showUserMenu); }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '6px 10px', borderRadius: 8,
-                  border: '1px solid #DEE1EB', background: '#F1F2F8',
-                  cursor: 'pointer', textDecoration: 'none', color: 'inherit',
-                  fontFamily: 'inherit', fontSize: 'inherit',
-                }}
-              >
-                <XStack w={24} h={24} br={12} bg="$secondary" ai="center" jc="center">
-                  <Text fontSize={10} fontWeight="bold" color="$text">{initials}</Text>
-                </XStack>
-                <Text fontSize={12} fontWeight="600" color="$text" $sm={{ display: 'none' }}>
-                  {firstName}
-                </Text>
-                <Icon name="ChevronDown" size={13} color="$textMuted" />
-              </a>
+          <YStack ref={menuRef} position="relative">
+            <XStack
+              ai="center"
+              gap="$2"
+              px="$2.5"
+              py="$1.5"
+              br="$3"
+              bg="$surface"
+              borderWidth={1}
+              borderColor="$border"
+              cursor="pointer"
+              hoverStyle={{ opacity: 0.85 }}
+              pressStyle={{ scale: 0.97 }}
+              onPress={() => setShowUserMenu(!showUserMenu)}
+            >
+              <XStack w={24} h={24} br={12} bg="$secondary" ai="center" jc="center">
+                <Text fontSize={10} fontWeight="bold" color="$text">{initials}</Text>
+              </XStack>
+              <Text fontSize={12} fontWeight="600" color="$text" $sm={{ display: 'none' }}>
+                {firstName}
+              </Text>
+              <Icon name="ChevronDown" size={13} color="$textMuted" />
+            </XStack>
 
-              {showUserMenu && (
-                <ul
-                  style={{
-                    position: 'absolute', top: '100%', right: 0, marginTop: 4,
-                    listStyle: 'none', margin: 0, padding: 8, minWidth: 180,
-                    borderRadius: 8, zIndex: 999,
-                    background: '#F1F2F8', border: '1px solid #DEE1EB',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                  }}
+            {showUserMenu && (
+              <YStack
+                position="absolute"
+                top="$5"
+                right={0}
+                bg="$popover"
+                borderWidth={1}
+                borderColor="$border"
+                br="$3"
+                p="$2"
+                minWidth={180}
+                zIndex={999}
+                {...shadowPresets.cwPop}
+              >
+                <XStack
+                  ai="center"
+                  gap="$2"
+                  px="$3"
+                  py="$2"
+                  br="$2"
+                  cursor="pointer"
+                  hoverStyle={{ bg: '$surface' }}
+                  pressStyle={{ bg: '$surface', opacity: 0.9 }}
+                  onPress={handleLogout}
                 >
-                  <li>
-                    <a
-                      href="#"
-                      onClick={(e) => { e.preventDefault(); handleLogout(); }}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 8,
-                        padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
-                        textDecoration: 'none', color: 'inherit',
-                        fontFamily: 'inherit', fontSize: 'inherit',
-                      }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F7F8FC'; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                    >
-                      <Icon name="LogOut" size={16} color="$textMuted" />
-                      <Text fontSize={14} color="$danger">Sair</Text>
-                    </a>
-                  </li>
-                </ul>
-              )}
-            </li>
-          </ul>
+                  <Icon name="LogOut" size={16} color="$textMuted" />
+                  <Text fontSize={14} color="$danger">Sair</Text>
+                </XStack>
+              </YStack>
+            )}
+          </YStack>
         </XStack>
       </XStack>
 

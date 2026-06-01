@@ -1,5 +1,5 @@
 import React from 'react';
-import { YStack, XStack, Text, color } from '@projeto/ui';
+import { YStack, XStack, Text, color, sanitizeHtml } from '@projeto/ui';
 import { AnyBlock } from '@projeto/types';
 
 /**
@@ -177,8 +177,15 @@ export function BlockRenderer({
     }
 
     let textElement: React.ReactNode;
-    if (/<[a-z][\s>]/i.test(block.content)) {
-      textElement = <div dangerouslySetInnerHTML={{ __html: block.content }} />;
+    // Detect any HTML tag (single- or multi-character name) so that the
+    // sanitized path is taken for `<img>`, `<script>`, `<a>`, etc. The
+    // previous `/<[a-z][\s>]/i` only matched single-letter tags, causing
+    // multi-letter tags to fall through to the markdown parser. The
+    // markdown path is also XSS-safe (it HTML-escapes its input), but it
+    // surprised teachers who used `<b>`, `<i>`, `<a>` and saw the raw
+    // markup rendered as text.
+    if (/<\w+[\s>\/]/i.test(block.content)) {
+      textElement = <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.content) }} />;
     } else {
       textElement = <>{parseSimpleMarkdown(block.content)}</>;
     }

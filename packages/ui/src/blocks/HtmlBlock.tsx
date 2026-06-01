@@ -2,6 +2,7 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { YStack, Text } from 'tamagui';
 import { HtmlBlock } from '@projeto/types';
+import { sanitizeHtml } from '../utils/sanitize';
 
 type Props = {
   block: HtmlBlock;
@@ -14,7 +15,7 @@ export const HtmlBlockRenderer: React.FC<Props> = ({ block }) => {
     return (
       <YStack my="$3" width="100%" color="$gray3">
         <YStack
-          dangerouslySetInnerHTML={{ __html: htmlContent }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }}
           width="100%"
         />
       </YStack>

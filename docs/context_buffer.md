@@ -1,109 +1,48 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-CONCLUÍDO — Alinhamento centralizado no preview do admin e na aula do student. Bordas pretas diagnósticas removidas definitivamente. Workflow do admin documentado com a regra do espaço de 1100px e a diferença entre editor (com delimitação) vs preview/student (sem delimitação, centralizado). Durante o diagnóstico foi identificado e corrigido que o `<div>` do student precisava de `boxSizing: 'border-box'` para alinhar com o reset do admin (1100px vs 1104px), mas a propriedade foi removida junto com a borda já que não é mais necessária.
+EM EXECUÇÃO — P0: Isolamento total do editor de certificado vs editor de curso. SDR-001 criado. 4 itens adicionados ao BACKLOG. Próximo: Fase 1 (testes RED).
 
 ## 🎯 Tarefa em Execução
-LessonPlayer limpo. Aguardando próxima tarefa.
+**P0 — Refactor: separar editor de certificado do editor de curso.**
+
+Sub-tarefas (4 fases):
+1. **Fase 0 (docs)**: ✅ SDR-001 + BACKLOG actualizado
+2. **Fase 1 (RED)**: Testes para `CertificateBlockRenderer`, `CertificateMiniature`, `CertificatePage`, E2E duplex print
+3. **Fase 2 (GREEN duplex)**: Reativar 2-canvas duplex em `CertificatePage` + `CertificatePrint.css`; passar `isDoubleSided` em `CertificateMiniature`; trocar div inline do `configuracoes/[id]/page.tsx` por `<CertificatePage>`
+4. **Fase 3 (GREEN extract)**: Criar `apps/admin/src/components/certificate-editor/{CertificateCanvas,CertificateEditor,CertificateBlockSettings}.tsx` + rota `/studio/[id]/certificate` + redirect 308 + remover `isCertMode` do `EditorCanvas.tsx`
+5. **Fase 4 (REFACTOR)**: Atualizar `docs/workflows/workflow_adm.md` + `apps/admin/AGENTS.md` (boundary rule) + verificações finais
 
 ## 🕹️ Documentos Carregados via MCP
-- `docs/FORBIDDEN_OPERATIONS.md` — Regras vinculantes
-- `docs/DESDO.md` — Diretrizes de engenharia
-- `docs/context_buffer.md` — Estado da última execução
-- `docs/CONTEXT_MAP.md` — Mapeamento de camadas
-- `docs/adrs/ADR-005-preview-fidelity-law.md` — Lei de fidelidade do preview
-- `packages/renderer/src/index.ts` — Índice do package renderer
-- `packages/renderer/src/BlockRenderer.tsx` — Renderer compartilhado (novo)
-- `apps/student/src/components/BlockRenderer.tsx` — Renderer do student (atualizado)
-- `apps/admin/src/components/editor/EditorCanvas.tsx` — Editor admin (referência)
+- `docs/FORBIDDEN_OPERATIONS.md` — F-01 (UI sem domínio), F-02 (Renderer stateless), F-06 (sem estado global no Renderer)
+- `docs/DESDO.md` — §5 (SDR para debugging longo), §7 (JSDoc obrigatório)
+- `docs/AGENTS.md` — Workflow 4-passos + DRY Tamagui + idioma inglês + Next.js 16 aviso
+- `docs/CONTEXT_MAP.md` — Layers 4 (apps) e 5 (core)
+- `docs/BACKLOG.md` — Status actualizado
+- `docs/sdr/SDR-001-certificate-editor-isolation.md` — **NOVO** — Decisão documentada
+- `docs/CONTEXT_HIERARCHY.md` — P0-P4 leitura preguiçosa
+- `apps/admin/src/components/editor/EditorCanvas.tsx` — Monolito identificado (1450 linhas, isCertMode em 618, 1141, 1285-1294)
+- `apps/admin/src/app/studio/[courseId]/page.tsx` — Redirect 308 a adicionar
+- `apps/admin/src/app/configuracoes/[courseId]/page.tsx` — Preview inline (linhas 663-758) e miniature sem isDoubleSided (609-613)
+- `apps/admin/src/context/editor-modes.ts` — EditorModeConfig (strategy pattern, sem alterações planejadas)
+- `apps/admin/src/context/EditorContext.tsx` — activeSide, certIsDoubleSided state (mantém)
+- `apps/admin/src/components/editor/BlockSettings.tsx` — Block settings da aula
+- `packages/ui/src/components/Certificate/CertificateBlockRenderer.tsx` — Single source of truth (fonte de render)
+- `packages/ui/src/components/Certificate/CertificateMiniature.tsx` — Prop isDoubleSided existe mas não é passada
+- `packages/ui/src/components/Certificate/CertificatePage.tsx` — Duplex 2-canvas perdido
+- `packages/ui/src/components/Certificate/CertificatePrint.css` — Regras @media print
+- `packages/types/src/certificate-block.ts` — Schemas Zod (mantidos intactos)
+- `apps/admin/AGENTS.md` — Receberá boundary rule em Fase 4
 
 ## Arquivos modificados nesta sessão
-- `packages/renderer/src/BlockRenderer.tsx` — Novo componente compartilhado
-- `packages/renderer/src/index.ts` — Exportações atualizadas
-- `apps/student/src/components/BlockRenderer.tsx` — Atualizado para usar renderer compartilhado
-- `packages/ui/src/tokens/colors.ts` — cwBackground e cwSurface atualizados
-- `apps/student/src/screens/StudentDashboard.tsx` — Margens atualizadas
-- `apps/student/src/screens/CourseLessons.tsx` — Margens atualizadas
-- `apps/student/src/screens/Certificates.tsx` — Margens atualizadas
+- `docs/sdr/SDR-001-certificate-editor-isolation.md` — **NOVO** — Decisão de arquitetura
+- `docs/BACKLOG.md` — 1 P0 + 3 P1 adicionados
 - `docs/context_buffer.md` — Este log
 
-## ✅ Resultado da Implementação
-1. **Renderer Compartilhado:** ✅ Criado em `packages/renderer/src/BlockRenderer.tsx`
-2. **Fidelidade ADR-005:** ✅ Student agora usa o mesmo renderer que o admin preview
-3. **Tipografia:** ✅ FONT_MOBILE e FONT_DESKTOP centralizados no package compartilhado
-4. **Background:** ✅ Branco (#FFFFFF) em todas as telas
-5. **Margens:** ✅ Alinhadas com design reference
-
-## Arquivos modificados nesta sessão
-- `packages/ui/src/tokens/colors.ts` — cwBackground: '#F7F8FC' → '#FFFFFF', cwSurface: '#F1F2F8' → '#F7F8FC'
-- `apps/student/src/screens/StudentDashboard.tsx` — px="$4" → "$6", pt="$6" → "$10"
-- `apps/student/src/screens/CourseLessons.tsx` — paddingBottom: 48 → 32
-- `apps/student/src/screens/Certificates.tsx` — padding: 16 → 24, paddingBottom: 40 → 32, header px="$4" → "$6"
-- `docs/context_buffer.md` — Este log
-
-## ✅ Resultado da Implementação
-1. **Background:** ✅ Alterado de #F7F8FC (cinza) para #FFFFFF (branco)
-2. **Surface:** ✅ Alterado de #F1F2F8 para #F7F8FC (tonalidade suave)
-3. **Dashboard:** ✅ px="$6" (24px), pt="$10" (40px) - matches design
-4. **CourseLessons:** ✅ paddingBottom: 32px - matches design
-5. **Certificates:** ✅ padding: 24px, paddingBottom: 32px, header px="$6" - matches design
-
-## 🕹️ Documentos Carregados via MCP
-- `docs/FORBIDDEN_OPERATIONS.md` — Regras vinculantes
-- `docs/DESDO.md` — Diretrizes de engenharia
-- `docs/context_buffer.md` — Estado da última execução
-- `docs/CONTEXT_MAP.md` — Mapeamento de camadas
-- `docs/BACKLOG.md` — Backlog actualizado
-- `apps/student/src/screens/StudentDashboard.tsx` — Dashboard com TopBar HTML
-- `apps/student/src/screens/CourseLessons.tsx` — CourseLessons sem sidebar
-- `apps/student/src/screens/Certificates.tsx` — Certificates com dashed border errado
-- `apps/student/src/screens/LessonPlayer.tsx` — Player com tokens legados
-- `apps/student/App.tsx` — Navegação principal
-- `desing/src/routes/aluno.tsx` — Design reference Dashboard
-- `desing/src/routes/aluno.curso.$courseId.aulas.tsx` — Design reference CourseLessons
-- `desing/src/routes/aluno.certificados.tsx` — Design reference Certificates
-- `docs/adrs/ADR-005-preview-fidelity-law.md` — Lei de fidelidade do preview
-- `packages/ui/src/tokens/shadows.ts` — Shadow presets definidos mas não usados
-- `apps/admin/src/components/editor/EditorCanvas.tsx` — Preview canvas (bordas removidas)
-
-## Arquivos modificados nesta sessão
-- `docs/BACKLOG.md` — 4 novos itens adicionados (P1: 2, P2: 2, P3: 1)
-- `apps/admin/src/components/editor/EditorCanvas.tsx` — Bordas, sombras e border-radius removidos do preview desktop
-- `docs/context_buffer.md` — Este log
-
-## ✅ Resultado da Implementação
-1. **Backlog:** ✅ Actualizado com itens de layout do student app
-2. **Preview Desktop:** ✅ Bordas, sombras, border-radius removidos
-3. **Fundo Branco:** ✅ Agora preenche toda a tela
-4. **Canvas de Edição:** ✅ Mantido com estilo original
-
-## 🕹️ Documentos Carregados via MCP
-- `docs/FORBIDDEN_OPERATIONS.md` — Regras vinculantes
-- `docs/DESDO.md` — Diretrizes de engenharia
-- `docs/context_buffer.md` — Estado da última execução
-- `docs/CONTEXT_MAP.md` — Mapeamento de camadas
-- `docs/BACKLOG.md` — Backlog actualizado
-- `apps/student/src/screens/StudentDashboard.tsx` — Dashboard com TopBar HTML
-- `apps/student/src/screens/CourseLessons.tsx` — CourseLessons sem sidebar
-- `apps/student/src/screens/Certificates.tsx` — Certificates com dashed border errado
-- `apps/student/src/screens/LessonPlayer.tsx` — Player com tokens legados
-- `apps/student/App.tsx` — Navegação principal
-- `desing/src/routes/aluno.tsx` — Design reference Dashboard
-- `desing/src/routes/aluno.curso.$courseId.aulas.tsx` — Design reference CourseLessons
-- `desing/src/routes/aluno.certificados.tsx` — Design reference Certificates
-- `docs/adrs/ADR-005-preview-fidelity-law.md` — Lei de fidelidade do preview
-- `packages/ui/src/tokens/shadows.ts` — Shadow presets definidos mas não usados
-- `apps/admin/src/components/editor/EditorCanvas.tsx` — Preview canvas (bordas removidas)
-
-## Arquivos modificados nesta sessão
-- `docs/BACKLOG.md` — 4 novos itens adicionados (P1: 2, P2: 2, P3: 1)
-- `apps/admin/src/components/editor/EditorCanvas.tsx` — Bordas, sombras e border-radius removidos do preview desktop
-- `docs/context_buffer.md` — Este log
-
-## ✅ Resultado da Implementação
-1. **Zod fix** ✅ — `HeadingBlockSchema` e `DividerBlockSchema` adicionados ao `LessonSchema` em `packages/types/src/database.ts`
-2. **ErrorBoundary** ✅ — Componente criado em `apps/student/src/components/ErrorBoundary.tsx` e aplicado no `App.tsx`
-3. **Cursor resize** ✅ — Migrado de `document.body.style.cursor` para injeção de `<style id="resize-cursor-override">` com `!important` em `EditorCanvas.tsx`
+## ✅ Resultado da Fase 0
+1. **SDR-001** ✅ — Documenta causa raiz (acoplamento via `mode` prop) e solução (rota dedicada + boundary rule)
+2. **BACKLOG** ✅ — Itens adicionados em P0 (refactor) e P1 (3 bugs)
+3. **Context buffer** ✅ — Limpo e actualizado para nova task
 
 ## ⚠️ Impedimentos & Logs de Erro Recentes
-- `apps/student` — 3 testes pré-existentes quebrados em `useMobileProgress.test.ts` (mock do AuthService) — não relacionados às alterações.
+- *Nenhum erro ativo.*
