@@ -739,8 +739,8 @@ function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesign
         )}
         <Text fontSize={10} color="$textMuted" ml="$2">Ctrl + scroll para zoom</Text>
       </XStack>
-      <YStack flex={1} ai="flex-start" bg="$background" style={{ overflow: 'auto' }}>
-        <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top left', flexShrink: 0, minHeight: '100%' }}>
+      <YStack flex={1} ai="center" bg="$background" style={{ overflow: 'auto' }}>
+        <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top center', flexShrink: 0, minHeight: '100%' }}>
           {content}
         </div>
       </YStack>

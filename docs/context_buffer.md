@@ -1,7 +1,7 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-CONCLUÍDO — Hardcodes removidos do LessonPlayer. Cores legadas ($gray*) substituídas por tokens temáticos. Bordas e border-radius removidos do content wrapper.
+CONCLUÍDO — Alinhamento centralizado no preview do admin e na aula do student. Bordas pretas diagnósticas removidas definitivamente. Workflow do admin documentado com a regra do espaço de 1100px e a diferença entre editor (com delimitação) vs preview/student (sem delimitação, centralizado). Durante o diagnóstico foi identificado e corrigido que o `<div>` do student precisava de `boxSizing: 'border-box'` para alinhar com o reset do admin (1100px vs 1104px), mas a propriedade foi removida junto com a borda já que não é mais necessária.
 
 ## 🎯 Tarefa em Execução
 LessonPlayer limpo. Aguardando próxima tarefa.

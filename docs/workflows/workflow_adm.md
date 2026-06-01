@@ -29,6 +29,23 @@ Este documento descreve o funcionamento da plataforma **Admin CMS** (`apps/admin
 - O preview do editor é **exatamente** o que o aluno vê — sem diferenças visuais.
 - Qualquer desvio entre preview e tela real do aluno é considerado bug crítico.
 
+### Espaço de Design e Delimitação Visual
+
+O conteúdo das aulas é desenhado em um espaço de coordenadas de **1100px de largura** (constante `DESKTOP_W` em `@projeto/core` e `PAGE_W` no editor). Esse é o **mesmo espaço** usado pelo preview e pelo app do aluno, garantindo fidelidade 1:1.
+
+| Ambiente | Delimitador visual do espaço de 1100px | Alinhamento do conteúdo |
+|----------|----------------------------------------|------------------------|
+| **Editor** (modo edição) | Sim — borda/sombra visível contornando a área de 1100px (desktop) ou moldura de celular (mobile/tablet) | Centralizado, com delimitação clara para o admin |
+| **Preview** (modo visualização) | Não — apenas a área de conteúdo, sem moldura | Centralizado, sem delimitação (a tela real do aluno não tem moldura) |
+| **App do Aluno** | Não | Centralizado, sem delimitação |
+
+**Por que o editor tem borda e o preview/student não?**
+- O editor precisa mostrar ao admin **onde estão os limites do espaço de 1100px** para que o posicionamento de blocos tenha significado visual.
+- O preview e a tela do aluno mostram o **resultado final**: uma página limpa, sem marcadores de desenvolvimento.
+- Manter a borda no preview ou no app do aluno causaria estranhamento visual, pois o aluno final não tem por que ver uma moldura de "área de edição".
+
+> Se o conteúdo parecer "encostado à esquerda" no preview, é porque o contêiner do preview é maior que 1100px — o conteúdo está **centralizado** dentro do espaço disponível, mas a `border` que delimitava o espaço de design só existe no editor.
+
 ---
 
 ## 📱 3. Visualizando no Mobile

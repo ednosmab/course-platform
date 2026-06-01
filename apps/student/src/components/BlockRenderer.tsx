@@ -51,12 +51,12 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks, onVideoPro
         style={{
           position: 'absolute',
           top: 0,
-          left: 0,
+          left: '50%',
           width: designWidth,
           height: pageH,
           backgroundColor: color.cwBackground,
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
+          transform: `translateX(-50%) scale(${scale})`,
+          transformOrigin: 'top center',
           overflow: 'visible',
         }}
       >
