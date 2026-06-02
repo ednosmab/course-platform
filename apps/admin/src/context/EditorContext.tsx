@@ -19,7 +19,7 @@ interface EditorState {
 }
 
 type EditorAction =
-  | { type: 'ADD_BLOCK'; payload: { type: EditorBlockType } }
+  | { type: 'ADD_BLOCK'; payload: { type: EditorBlockType; position?: { x: number; y: number } } }
   | { type: 'REMOVE_BLOCK'; payload: { id: string } }
   | { type: 'REMOVE_BLOCKS'; payload: { ids: string[] } }
   | { type: 'UPDATE_BLOCK'; payload: { id: string; updates: Partial<AnyBlock> } }
@@ -73,6 +73,8 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       const lastBlock = state.blocks[state.blocks.length - 1];
       const lastL = lastBlock?.layouts?.desktop;
       const defaultY = lastBlock ? (lastL?.y ?? 40) + (lastL?.h ?? 120) + 20 : 40;
+      const posX = action.payload.position?.x ?? 40;
+      const posY = action.payload.position?.y ?? defaultY;
 
       const maxZ = state.blocks.reduce((max, b) => {
         const z = b.layouts?.desktop?.zIndex ?? 0;
@@ -86,7 +88,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           type: 'text',
           content: 'Clique aqui para editar este texto...',
           styles: { align: 'left', fontSize: 'medium' },
-          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 80, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 80, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 80, zIndex: nextZ } },
+          layouts: { desktop: { x: posX, y: posY, w: 600, h: 80, zIndex: nextZ }, tablet: { x: posX, y: posY, w: 600, h: 80, zIndex: nextZ }, mobile: { x: posX, y: posY, w: 600, h: 80, zIndex: nextZ } },
         };
       } else if (action.payload.type === 'video') {
         newBlock = {
@@ -94,7 +96,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           type: 'video',
           url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
           provider: 'youtube',
-          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 340, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 340, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 340, zIndex: nextZ } },
+          layouts: { desktop: { x: posX, y: posY, w: 600, h: 340, zIndex: nextZ }, tablet: { x: posX, y: posY, w: 600, h: 340, zIndex: nextZ }, mobile: { x: posX, y: posY, w: 600, h: 340, zIndex: nextZ } },
         };
       } else if (action.payload.type === 'image') {
         newBlock = {
@@ -103,7 +105,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           url: '',
           alt: 'Nova imagem',
           styles: { align: 'center' },
-          layouts: { desktop: { x: 40, y: defaultY, w: 500, h: 300, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 500, h: 300, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 500, h: 300, zIndex: nextZ } },
+          layouts: { desktop: { x: posX, y: posY, w: 500, h: 300, zIndex: nextZ }, tablet: { x: posX, y: posY, w: 500, h: 300, zIndex: nextZ }, mobile: { x: posX, y: posY, w: 500, h: 300, zIndex: nextZ } },
         };
       } else if (action.payload.type === 'quote') {
         newBlock = {
@@ -112,14 +114,14 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           content: 'Digite sua citação aqui...',
           author: 'Autor da citação',
           styles: { align: 'left', fontSize: 'medium' },
-          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 100, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 100, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 100, zIndex: nextZ } },
+          layouts: { desktop: { x: posX, y: posY, w: 600, h: 100, zIndex: nextZ }, tablet: { x: posX, y: posY, w: 600, h: 100, zIndex: nextZ }, mobile: { x: posX, y: posY, w: 600, h: 100, zIndex: nextZ } },
         };
       } else if (action.payload.type === 'html') {
         newBlock = {
           id,
           type: 'html',
           htmlContent: '<div style="padding: 20px; background: #f0f0f0;">\n  <h2>Código Customizado</h2>\n</div>',
-          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 120, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 120, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 120, zIndex: nextZ } },
+          layouts: { desktop: { x: posX, y: posY, w: 600, h: 120, zIndex: nextZ }, tablet: { x: posX, y: posY, w: 600, h: 120, zIndex: nextZ }, mobile: { x: posX, y: posY, w: 600, h: 120, zIndex: nextZ } },
         };
       } else if (action.payload.type === 'heading') {
         newBlock = {
@@ -128,21 +130,21 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           content: 'Título',
           level: 2,
           styles: { align: 'left' },
-          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 60, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 60, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 60, zIndex: nextZ } },
+          layouts: { desktop: { x: posX, y: posY, w: 600, h: 60, zIndex: nextZ }, tablet: { x: posX, y: posY, w: 600, h: 60, zIndex: nextZ }, mobile: { x: posX, y: posY, w: 600, h: 60, zIndex: nextZ } },
         };
       } else if (action.payload.type === 'divider') {
         newBlock = {
           id,
           type: 'divider',
           styles: { thickness: 1, style: 'solid' },
-          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 40, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 40, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 40, zIndex: nextZ } },
+          layouts: { desktop: { x: posX, y: posY, w: 600, h: 40, zIndex: nextZ }, tablet: { x: posX, y: posY, w: 600, h: 40, zIndex: nextZ }, mobile: { x: posX, y: posY, w: 600, h: 40, zIndex: nextZ } },
         };
       } else {
         newBlock = {
           id,
           type: 'quiz',
           question: 'Digite sua pergunta de quiz aqui...',
-          layouts: { desktop: { x: 40, y: defaultY, w: 600, h: 280, zIndex: nextZ }, tablet: { x: 40, y: defaultY, w: 600, h: 280, zIndex: nextZ }, mobile: { x: 40, y: defaultY, w: 600, h: 280, zIndex: nextZ } },
+          layouts: { desktop: { x: posX, y: posY, w: 600, h: 280, zIndex: nextZ }, tablet: { x: posX, y: posY, w: 600, h: 280, zIndex: nextZ }, mobile: { x: posX, y: posY, w: 600, h: 280, zIndex: nextZ } },
           options: [
             { id: crypto.randomUUID(), text: 'Opção A', isCorrect: true, feedback: 'Excelente!' },
             { id: crypto.randomUUID(), text: 'Opção B', isCorrect: false, feedback: 'Tente novamente.' },
@@ -390,7 +392,18 @@ export const EditorProvider: React.FC<{
   const [moduleTitle, setModuleTitle] = useState('');
   const [certIsDoubleSided, setCertIsDoubleSided] = useState(false);
 
-  const addBlock = useCallback((type: EditorBlockType) => dispatch({ type: 'ADD_BLOCK', payload: { type } }), []);
+  const addBlock = useCallback((type: EditorBlockType) => {
+    // Em modo certificado, novos blocos entram no canto superior-esquerdo
+    // com offset incremental (ciclo 0..80px) para o admin ver e reposicionar
+    // manualmente. Padrão Figma/Canva — evita stacking invisível abaixo
+    // da página (que tem overflow:hidden) sem lógica de smart-fit.
+    if (mode === 'certificate') {
+      const offset = (state.blocks.length % 5) * 20;
+      dispatch({ type: 'ADD_BLOCK', payload: { type, position: { x: 40 + offset, y: 40 + offset } } });
+      return;
+    }
+    dispatch({ type: 'ADD_BLOCK', payload: { type } });
+  }, [mode, state.blocks.length]);
   const removeBlock = useCallback((id: string) => dispatch({ type: 'REMOVE_BLOCK', payload: { id } }), []);
   const removeBlocks = useCallback((ids: string[]) => dispatch({ type: 'REMOVE_BLOCKS', payload: { ids } }), []);
   const duplicateBlock = useCallback((id: string) => dispatch({ type: 'DUPLICATE_BLOCK', payload: { id } }), []);

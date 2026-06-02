@@ -455,9 +455,13 @@ const ViewChildren: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 /**
  * Painel de propriedades do bloco activo.
  *
- * Aceita dois slots opcionais para conteúdo exclusivo do editor de
+ * Aceita três slots opcionais para conteúdo exclusivo do editor de
  * certificado (boundary rule SDR-001):
  * - `propsHeader` — renderizado no topo da tab "Propriedades"
+ * - `imageSettingsSlot` — renderizado dentro do ramo de blocos de
+ *   imagem, logo após o select de objectFit. O editor de certificado
+ *   passa `<CertificateImageSettings />` (isBackground + objectFit
+ *   default 'cover'); o editor de aula ignora-o.
  * - `propsFooter` — renderizado no rodapé da tab "Propriedades"
  *
  * O editor de aula passa sem slots; o `CertificateEditor` passa os
@@ -466,8 +470,10 @@ const ViewChildren: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 export const BlockSettings: React.FC<{
   propsHeader?: React.ReactNode;
   propsFooter?: React.ReactNode;
-}> = ({ propsHeader, propsFooter }) => {
-  const { blocks, activeBlockId, updateBlock, removeBlock, courseId } = useEditor();
+  imageSettingsSlot?: React.ReactNode;
+}> = ({ propsHeader, propsFooter, imageSettingsSlot }) => {
+  const { blocks, activeBlockId, updateBlock, removeBlock, courseId, mode } = useEditor();
+  const isCertMode = mode === 'certificate';
   const [activeTab, setActiveTab] = useState<'props' | 'html'>('props');
   const [collapsed, setCollapsed] = useState(false);
   const [bgProcessing, setBgProcessing] = useState(false);
@@ -840,10 +846,11 @@ export const BlockSettings: React.FC<{
             />
           </YStack>
 
-          {/* Opções de Ajuste de Imagem. As opções exclusivas de certificado
-              (Imagem de Fundo) vivem em `CertificateImageSettings` — ver SDR-001. */}
+          {/* Opções de Ajuste de Imagem + slot para extras específicos
+              do editor de certificado (`CertificateImageSettings`).
+              Ver boundary rule SDR-001. */}
           {activeBlock.type === 'image' && (
-            <YStack mt="$2">
+            <YStack mt="$2" gap="$2">
               <Text fontSize={11} fontWeight="500">Ajuste de Imagem (Fit)</Text>
               <select
                 value={activeBlock.styles?.objectFit || 'contain'}
@@ -854,6 +861,7 @@ export const BlockSettings: React.FC<{
                 <option value="contain">Conter Proporção (Contain)</option>
                 <option value="fill">Preencher/Esticar (Fill)</option>
               </select>
+              {imageSettingsSlot}
             </YStack>
           )}
 
@@ -947,13 +955,17 @@ export const BlockSettings: React.FC<{
             </YStack>
           ) : null}
 
-          <ImageUploadBlock blockId={activeBlock.id} courseId={courseId} onUpload={(url) => updateBlock(activeBlock.id, { url })} />
+          {!isCertMode && (
+            <>
+              <ImageUploadBlock blockId={activeBlock.id} courseId={courseId} onUpload={(url) => updateBlock(activeBlock.id, { url })} />
 
-          <YStack onPress={() => setShowBgEditor(!showBgEditor)} role="button" tabIndex={0} borderRadius="$3" borderWidth={1} borderColor={showBgEditor ? '$primary' : '$border'} paddingVertical="$2" paddingHorizontal="$3" backgroundColor={showBgEditor ? '$primary' : '$background'} hoverStyle={{ backgroundColor: showBgEditor ? '$primary' : '$backgroundHover' }} cursor="pointer">
-            <Text fontSize={12} fontWeight="600" color={showBgEditor ? 'white' : '$text'}>{showBgEditor ? 'Fechar' : '✦ Remover Fundo'}</Text>
-          </YStack>
+              <YStack onPress={() => setShowBgEditor(!showBgEditor)} role="button" tabIndex={0} borderRadius="$3" borderWidth={1} borderColor={showBgEditor ? '$primary' : '$border'} paddingVertical="$2" paddingHorizontal="$3" backgroundColor={showBgEditor ? '$primary' : '$background'} hoverStyle={{ backgroundColor: showBgEditor ? '$primary' : '$backgroundHover' }} cursor="pointer">
+                <Text fontSize={12} fontWeight="600" color={showBgEditor ? 'white' : '$text'}>{showBgEditor ? 'Fechar' : '✦ Remover Fundo'}</Text>
+              </YStack>
+            </>
+          )}
 
-          {showBgEditor && (
+          {!isCertMode && showBgEditor && (
             <YStack gap="$2" p="$2" bg="$background" borderRadius="$3" borderWidth={1} borderColor="$border">
               <Text fontSize={11} fontWeight="500">Remoção de Fundo</Text>
               <XStack gap="$2" flexWrap="wrap">
