@@ -119,20 +119,27 @@ Disponível ao selecionar um bloco de imagem no Studio.
 ### Personalização
 1. Nas configurações do curso, ative **"Emitir certificado"**.
 2. Clique em **"Personalizar no Studio"** para abrir o editor de certificado.
-3. Adicione blocos (texto, imagem, heading, divider) posicionando-os livremente.
-4. Configure o tamanho do certificado (presets A4: 700/900/1100/1300px de largura).
-5. Para certificados **frente e verso**, ative "Dupla Face" e atribua cada bloco ao lado desejado.
+3. O editor de certificado abre numa **rota dedicada** (`/studio/[courseId]/certificate`) — fisicamente isolada do editor de aula (SDR-001). A antiga query `?mode=certificate` é redirecionada (HTTP 308) automaticamente.
+4. Adicione blocos (texto, imagem, heading, divider) posicionando-os livremente.
+5. Configure o tamanho do certificado (presets A4: 700/900/1100/1300px de largura).
+6. Para certificados **frente e verso**, ative "Dupla Face" e atribua cada bloco ao lado desejado.
 
 ### Preview
 - Na página de configurações, clique na miniatura do certificado para abrir o preview ampliado.
-- No modal, use os botões **Frente / Verso** para visualizar cada lado.
+- O modal mostra **frente e verso lado a lado** (quando duplex), alinhado com a impressão.
 - O preview respeita fielmente as dimensões e posições definidas no Studio.
+- O `CertificatePage` usa o hook `useA4Scale` (em `@projeto/ui`) que escala automaticamente para caber tanto em largura quanto em altura limitada.
 
 ### Impressão (Ctrl+P)
 - Clique no ícone de download/impressão no modal de preview.
 - O certificado é impresso em **A4 paisagem**, ocupando 100% da folha.
-- Certificados duplex geram **2 páginas** (frente e verso) automaticamente.
+- Certificados duplex geram **2 páginas** (frente e verso) automaticamente, com `page-break-after: always` entre elas.
 - A impressão é fiel ao preview, sem cortes ou escalas incorretas.
+
+### Isolamento do editor de certificado (SDR-001)
+- O editor de certificado é uma **rota dedicada** (`/studio/[courseId]/certificate`) com entry component próprio (`CertificateEditor` em `apps/admin/src/components/certificate-editor/`).
+- Mudanças no editor de aula **não podem** quebrar o editor de certificado (e vice-versa).
+- A única partilha permitida é via `CertificateBlockRenderer` (em `packages/ui/src/components/Certificate/`) — o renderizador puro dos blocos de certificado.
 
 ---
 

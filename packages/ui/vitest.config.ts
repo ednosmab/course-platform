@@ -5,8 +5,10 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.{ts,tsx}'],
     globals: true,
+    setupFiles: ['./src/test-setup.ts'],
     environmentMatchGlobs: [
       ['src/utils/sanitize.test.ts', 'jsdom'],
+      ['src/components/Certificate/**/*.test.tsx', 'jsdom'],
     ],
   },
 });

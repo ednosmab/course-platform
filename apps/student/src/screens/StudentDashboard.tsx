@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import { View, Image } from 'react-native';
 import { ScrollView, XStack, YStack, Text, Button, Card, Icon, BrandMark, Avatar, Spinner, ProgressBar, GridBackground, Input, Theme, useMedia, shadowPresets } from '@projeto/ui';
+import flexedLogo from '../../assets/flexed-logo.png';
 import { AuthService, CourseService, ProgressService } from '@projeto/core';
 import { Course } from '@projeto/types';
 
@@ -142,7 +143,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
     <YStack flex={1} bg="$background">
       <TopBar userProfile={userProfile} onLogout={onLogout} />
       <ScrollView flex={1} contentContainerStyle={{ paddingBottom: 60 }}>
-        <YStack px="$6" pt="$10" gap="$6" maxWidth={1400} als="center" w="100%">
+        <YStack px="$6" pt="$12" pb="$4" gap="$6" maxWidth={1400} als="center" w="100%">
           {loading && (
             <Card ai="center" jc="center" p="$8" gap="$3">
               <Spinner size="large" color="$primary" />
@@ -238,9 +239,12 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                 <YStack flex={1} gap="$4">
                   <Card p="$5" gap="$3">
                     <XStack ai="center" gap="$3">
-                      <YStack p="$2" br="$3" bg="$primary">
-                        <Icon name="Sparkles" size={18} color="$white" />
-                      </YStack>
+                      <Image
+                        source={flexedLogo}
+                        style={{ width: 36, height: 36 }}
+                        resizeMode="contain"
+                        accessibilityLabel="FLEXED"
+                      />
                       <YStack>
                         <Text variant="caption">Oi, {userProfile?.full_name || 'estudante'} 👋</Text>
                         <Text variant="h3" fontWeight="bold">Bora manter o ritmo?</Text>

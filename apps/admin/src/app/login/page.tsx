@@ -1,11 +1,13 @@
 'use client';
 
 import React, { Suspense } from 'react';
+import Image from 'next/image';
 import { YStack, XStack, Text, Icon, Theme } from '@projeto/ui';
 import { LoginForm } from '@projeto/ui';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AuthService } from '@projeto/core';
 import { BrandMark } from '../../components/brand-mark';
+import flexedLogo from '../../assets/flexed-logo.png';
 
 function LoginPageContent() {
   const router = useRouter();
@@ -24,8 +26,9 @@ function LoginPageContent() {
         router.push(redirectTo);
       }
       return { success: true, role };
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Erro inesperado. Tente novamente.' };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erro inesperado. Tente novamente.';
+      return { success: false, error: message };
     }
   };
 
@@ -46,11 +49,14 @@ function LoginPageContent() {
         <YStack style={{ position: 'absolute', bottom: -120, left: -60, width: 448, height: 448, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.3), transparent 60%)', filter: 'blur(48px)' }} />
 
         <XStack ai="center" gap="$2" style={{ position: 'relative', zIndex: 10 }}>
-          <XStack w={36} h={36} br="$3" ai="center" jc="center" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}>
-            <Icon name="Sparkles" size={16} color="$white" />
-          </XStack>
+          <Image
+            src={flexedLogo}
+            alt="FLEXED"
+            priority
+            style={{ height: 44, width: 'auto', objectFit: 'contain' }}
+          />
           <Text fontFamily="$display" fontSize={20} fontWeight="600" letterSpacing={-0.5} color="$white">
-            Mosaico<span style={{ opacity: 0.7 }}>.</span>
+            FLEXED<span style={{ opacity: 0.7 }}>.</span>
           </Text>
         </XStack>
 
@@ -91,7 +97,7 @@ function LoginPageContent() {
               <XStack key={i} w={28} h={28} br={14} style={{ border: '2px solid rgba(255,255,255,0.4)', background: bg, marginLeft: i > 0 ? -8 : 0 }} />
             ))}
           </XStack>
-          <Text fontSize={12} color="rgba(255,255,255,0.7)">+2.300 criadores já usam a Mosaico</Text>
+          <Text fontSize={12} color="rgba(255,255,255,0.7)">+2.300 criadores já usam a FLEXED</Text>
         </XStack>
       </YStack>
 

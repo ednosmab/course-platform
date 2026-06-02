@@ -72,7 +72,7 @@ export const interFont = createFont({
 });
 
 export const spaceGroteskFont = createFont({
-  family: 'Space Grotesk',
+  family: 'Montserrat',
   size: {
     1: 12,
     2: 14,
@@ -100,6 +100,8 @@ export const spaceGroteskFont = createFont({
     5: '500',
     6: '600',
     7: '700',
+    8: '800',
+    9: '900',
   },
   letterSpacing: {
     4: 0,

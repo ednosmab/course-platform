@@ -359,6 +359,59 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
             </XStack>
           </XStack>
 
+          {/* Atividades extras (Workbook PDF, Quiz relâmpago, Comunidade, Mentoria ao vivo) */}
+          <YStack gap="$3">
+            <XStack ai="center" jc="space-between">
+              <YStack>
+                <Text fontSize={15} fontWeight="700" color="$text">
+                  Atividades extras
+                </Text>
+                <Text fontSize={12} color="$textMuted">
+                  Materiais de apoio para aprofundar o conteúdo deste curso.
+                </Text>
+              </YStack>
+            </XStack>
+
+            <XStack
+              flexWrap="wrap"
+              gap="$3"
+              $md={{ fd: 'row' }}
+            >
+              <ExtraCard
+                icon="FileDown"
+                iconBg="$successSurface"
+                iconColor="$success"
+                title="Workbook PDF"
+                subtitle="Apostila completa com exercícios"
+                badge="12 páginas"
+              />
+              <ExtraCard
+                icon="Zap"
+                iconBg="$accent"
+                iconColor="$primary"
+                title="Quiz relâmpago"
+                subtitle="5 perguntas para fixar o conteúdo"
+                badge="3 min"
+              />
+              <ExtraCard
+                icon="Users"
+                iconBg="$successSurface"
+                iconColor="$success"
+                title="Comunidade"
+                subtitle="Tire dúvidas com outros alunos"
+                badge="47 ativos"
+              />
+              <ExtraCard
+                icon="Video"
+                iconBg="$accent"
+                iconColor="$primary"
+                title="Mentoria ao vivo"
+                subtitle="Sessões semanais com o professor"
+                badge="Quintas 20h"
+              />
+            </XStack>
+          </YStack>
+
           {/* Modules List */}
           <YStack gap="$4">
             {filteredModules.map((mod, idx) => {
@@ -536,5 +589,65 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
         </YStack>
       </ScrollView>
     </YStack>
+  );
+}
+
+interface ExtraCardProps {
+  icon: 'FileDown' | 'Zap' | 'Users' | 'Video';
+  iconBg: string;
+  iconColor: string;
+  title: string;
+  subtitle: string;
+  badge: string;
+}
+
+/**
+ * Card reutilizável para a secção "Atividades extras" da tela de aulas.
+ * Apresenta um recurso complementar do curso (workbook, quiz, comunidade, mentoria)
+ * com ícone, título, descrição curta e badge de metadados.
+ */
+function ExtraCard({ icon, iconBg, iconColor, title, subtitle, badge }: ExtraCardProps) {
+  return (
+    <Card
+      flex={1}
+      minWidth={220}
+      p="$4"
+      gap="$3"
+      interactive
+      bg="$card"
+      borderWidth={1}
+      borderColor="$border"
+    >
+      <XStack ai="center" jc="space-between">
+        <YStack
+          w={36}
+          h={36}
+          br="$3"
+          bg={iconBg}
+          ai="center"
+          jc="center"
+        >
+          <Icon name={icon} size={18} color={iconColor} />
+        </YStack>
+        <XStack
+          px="$2"
+          py="$0.5"
+          br="$2"
+          bg="$secondary"
+        >
+          <Text fontSize={10} fontWeight="600" color="$textMuted">
+            {badge}
+          </Text>
+        </XStack>
+      </XStack>
+      <YStack gap="$0.5">
+        <Text fontSize={13} fontWeight="700" color="$text" numberOfLines={1}>
+          {title}
+        </Text>
+        <Text fontSize={11} color="$textMuted" numberOfLines={2}>
+          {subtitle}
+        </Text>
+      </YStack>
+    </Card>
   );
 }

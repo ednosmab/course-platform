@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { YStack, XStack, Text, Icon, Theme, Button, Spinner } from '@projeto/ui';
+import { YStack, XStack, Text, Icon, Theme, Button, Card, Spinner, ProgressBar, Input, color } from '@projeto/ui';
+
+const BRAND_GRADIENT = `linear-gradient(135deg, ${color.cwGradientFrom}, ${color.cwGradientTo})`;
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BrandMark } from '../components/brand-mark';
@@ -17,6 +19,7 @@ export default function Dashboard() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLUListElement>(null);
   const [userProfile, setUserProfile] = useState<{ full_name: string; email: string } | null>(null);
+  const [initialTimestamp] = useState(() => Date.now());
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -61,7 +64,22 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchCourses();
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const data = await CourseService.getAllCourses();
+        if (!cancelled) setCourses(data);
+      } catch (err) {
+        console.error('Failed to fetch courses:', err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleCreate = async () => {
@@ -98,7 +116,29 @@ export default function Dashboard() {
     }
   };
 
-  const filteredCourses = filter === 0 ? courses : filter === 1 ? courses.filter((c: any) => c.is_published) : courses.filter((c: any) => !c.is_published);
+  const filteredCourses = filter === 0 ? courses : filter === 1 ? courses.filter((course) => course.is_published) : courses.filter((course) => !course.is_published);
+  const firstName = displayName.split(' ')[0] || 'Usuário';
+  const publishedCourses = courses.filter((course) => course.is_published).length;
+  const draftCourses = courses.length - publishedCourses;
+  const publishedPercent = courses.length > 0 ? Math.round((publishedCourses / courses.length) * 100) : 0;
+  const updatedThisWeek = courses.filter((course) => {
+    const value = course.updated_at || course.created_at;
+    if (!value) return false;
+    const updatedAt = new Date(value).getTime();
+    return Number.isFinite(updatedAt) && initialTimestamp - updatedAt <= 7 * 24 * 60 * 60 * 1000;
+  }).length;
+  const formatDate = (value?: string | Date | null) => {
+    if (!value) return 'Sem data';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Sem data';
+    return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(date);
+  };
+  const dashboardStats = [
+    { icon: 'BookOpen', label: 'Cursos ativos', value: String(courses.length), trend: `${publishedCourses} publicados` },
+    { icon: 'Users', label: 'Alunos', value: '--', trend: 'Conecte matrículas' },
+    { icon: 'PlayCircle', label: 'Cursos publicados', value: String(publishedCourses), trend: `${draftCourses} rascunhos` },
+    { icon: 'TrendingUp', label: 'Publicação', value: `${publishedPercent}%`, trend: `${updatedThisWeek} atualizados` },
+  ];
 
   return (
     <Theme name="cloudWhite">
@@ -123,8 +163,18 @@ export default function Dashboard() {
           </XStack>
           <XStack ai="center" gap={12}>
             <XStack position="relative" style={{ display: 'none' }} $sm={{ display: 'flex' }}>
-              <Icon name="Search" size={16} color="$textMuted" style={{ position: 'absolute', left: 12, top: 10 }} />
-              <input placeholder="Buscar cursos, aulas, alunos…" style={{ height: 36, width: 288, borderRadius: 8, border: '1px solid #DEE1EB', backgroundColor: '#F1F2F8', paddingLeft: 40, paddingRight: 12, fontSize: 14, outline: 'none', color: '#282836' }} />
+              <Icon name="Search" size={16} color="$textMuted" style={{ position: 'absolute', left: 12, top: 10, pointerEvents: 'none' }} />
+              <Input
+                placeholder="Buscar cursos, aulas, alunos…"
+                w={288}
+                h={36}
+                br="$3"
+                borderColor="$border"
+                backgroundColor="$background"
+                paddingLeft={40}
+                fontSize="$3"
+                color="$text"
+              />
             </XStack>
             <XStack position="relative" p={8} borderRadius={6} cursor="pointer">
               <Icon name="Bell" size={16} color="$textMuted" />
@@ -187,30 +237,43 @@ export default function Dashboard() {
         <main style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 24px', width: '100%' }}>
           {/* Hero */}
           <YStack position="relative" overflow="hidden" borderRadius={16} borderWidth={1} borderColor="$border" backgroundColor="$card" p={32}>
-            <div style={{ position: 'absolute', right: -64, top: -64, width: 256, height: 256, borderRadius: '50%', opacity: 0.6, filter: 'blur(64px)', background: 'linear-gradient(135deg, #E0F2FE, #EDE9FE)' }} />
+            <div style={{ position: 'absolute', right: -64, top: -64, width: 256, height: 256, borderRadius: '50%', opacity: 0.6, filter: 'blur(64px)', background: BRAND_GRADIENT }} />
             <YStack position="relative" gap={24} $md={{ fd: 'row', ai: 'flex-end', jc: 'space-between' }}>
               <YStack maxWidth={576}>
                 <XStack ai="center" gap={6} px={10} py={4} borderRadius={9999} borderWidth={1} borderColor="$border" backgroundColor="$background" alignSelf="flex-start">
-                  <XStack w={6} h={6} borderRadius={3} bg="#22C55E" />
+                  <XStack w={6} h={6} borderRadius={3} bg="$success" />
                   <Text fontSize={12} color="$textMuted">Tudo certo por aqui</Text>
                 </XStack>
-                <Text fontFamily="$display" fontSize={36} fontWeight="$6" letterSpacing={-1} mt={16} $md={{ fontSize: 40 }}>
-                  Oi, Maria 👋 vamos montar uma aula nova?
+                <Text fontFamily="$display" fontSize={36} fontWeight="$6" mt={16} style={{ lineHeight: 1.12 }} $md={{ fontSize: 40 }}>
+                  Oi, {firstName}, vamos montar uma aula nova?
                 </Text>
                 <Text mt={8} color="$textMuted" fontSize={15}>
                   Arraste blocos, escreva clicando direto no texto e publique quando quiser. Sem formulário, sem drama.
                 </Text>
               </YStack>
               <XStack gap={8}>
-                <XStack px={16} py={10} borderRadius={8} borderWidth={1} borderColor="$border" backgroundColor="$card" cursor="pointer">
+                <Button variant="ghost" borderWidth={1} borderColor="$border" bg="$card" px={16} py={10}>
                   <Text fontSize={14}>Importar conteúdo</Text>
-                </XStack>
-                <XStack onPress={() => setShowCreateModal(true)} px={16} py={10} borderRadius={8} ai="center" gap={6} cursor="pointer" style={{ background: 'linear-gradient(135deg, #5B8DEF, #6E5AE8)' }}>
+                </Button>
+                <Button onPress={() => setShowCreateModal(true)} px={16} py={10} ai="center" gap={6} style={{ background: BRAND_GRADIENT }}>
                   <Icon name="Plus" size={16} color="$white" />
                   <Text fontSize={14} color="$white" fontWeight="500">Novo curso</Text>
-                </XStack>
+                </Button>
               </XStack>
             </YStack>
+
+            <XStack position="relative" mt={32} gap={12} flexWrap="wrap">
+              {dashboardStats.map((stat) => (
+                <Card key={stat.label} flex={1} minWidth={220} p={16} bg="$background" br="$4">
+                  <XStack ai="center" jc="space-between">
+                    <Icon name={stat.icon} size={16} color="$textMuted" />
+                    <Text fontSize={11} color={stat.value === '--' ? '$textMuted' : '$success'}>{stat.trend}</Text>
+                  </XStack>
+                  <Text mt={12} fontFamily="$display" fontSize={28} fontWeight="$6">{stat.value}</Text>
+                  <Text fontSize={12} color="$textMuted">{stat.label}</Text>
+                </Card>
+              ))}
+            </XStack>
           </YStack>
 
           {/* Courses */}
@@ -238,27 +301,56 @@ export default function Dashboard() {
               <YStack ai="center" jc="center" py={64} gap={8}>
                 <Icon name="BookOpen" size={48} color="$textMuted" />
                 <Text color="$textMuted" fontSize={16}>Nenhum curso encontrado</Text>
-                <Text color="$textMuted" fontSize={14}>Clique em "Novo curso" para começar.</Text>
+                <Text color="$textMuted" fontSize={14}>Clique em &quot;Novo curso&quot; para começar.</Text>
               </YStack>
             ) : (
               <XStack flexWrap="wrap" gap={16}>
-                {filteredCourses.map((c: any) => (
+                {filteredCourses.map((c) => {
+                  const readiness = c.is_published ? 100 : 45;
+                  return (
                   <YStack key={c.id} flex={1} minWidth={320} maxWidth="calc(33.33% - 12px)">
                     <Link href={`/configuracoes/${c.id}`} style={{ textDecoration: 'none' }}>
-                      <YStack overflow="hidden" borderRadius={16} borderWidth={1} borderColor="$border" backgroundColor="$card" cursor="pointer" hoverStyle={{ y: -2 }}>
+                      <Card p={0} overflow="hidden" br="$4" cursor="pointer" interactive>
                         <YStack height={128} position="relative" style={{ background: c.thumbnail_url ? `url(${c.thumbnail_url}) center/cover no-repeat` : 'linear-gradient(135deg, #3B82F6, #7C3AED)' }}>
                           <YStack position="absolute" inset={0} opacity={c.thumbnail_url ? 0 : 0.3} style={{ backgroundImage: c.thumbnail_url ? undefined : 'linear-gradient(to right, rgba(204, 208, 220, 0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(204, 208, 220, 0.35) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+                          {/* Grid pattern overlay (matches design bg-grid) — only visible when no thumbnail */}
+
                           <XStack position="absolute" left={16} top={16}>
-                            <XStack borderRadius={9999} px={8} py={2} style={{ backdropFilter: 'blur(8px)', backgroundColor: c.is_published ? 'rgba(34, 197, 94, 0.2)' : 'rgba(247, 248, 252, 0.7)' }}>
-                              <Text fontSize={11} fontWeight="500" color={c.is_published ? '$successForeground' : '$text'}>{c.is_published ? 'Publicado' : 'Rascunho'}</Text>
+                            <XStack borderRadius={9999} px={8} py={2} style={{ backdropFilter: 'blur(8px)', backgroundColor: c.is_published ? '$successSurface' : '$surface' }}>
+                              <Text fontSize={11} fontWeight="500" color={c.is_published ? '$success' : '$text'}>{c.is_published ? 'Publicado' : 'Rascunho'}</Text>
                             </XStack>
                           </XStack>
                         </YStack>
                         <YStack p={20}>
-                          <Text fontFamily="$display" fontSize={16} fontWeight="$6" style={{ lineHeight: 1.3 }}>{c.title}</Text>
+                          <XStack ai="flex-start" jc="space-between" gap={8}>
+                            <Text flex={1} fontFamily="$display" fontSize={16} fontWeight="$6" style={{ lineHeight: 1.3 }}>{c.title}</Text>
+                            <XStack
+                              p={4}
+                              br="$2"
+                              hoverStyle={{ bg: '$secondary' }}
+                              onPress={(event) => {
+                                event.stopPropagation?.();
+                                event.preventDefault?.();
+                              }}
+                            >
+                              <Icon name="MoreHorizontal" size={16} color="$textMuted" />
+                            </XStack>
+                          </XStack>
                           {c.description && <Text fontSize={13} color="$textMuted" mt={4} numberOfLines={2}>{c.description}</Text>}
+                          <XStack mt={8} ai="center" gap={10}>
+                            <Text fontSize={12} color="$textMuted">Atualizado em {formatDate(c.updated_at || c.created_at)}</Text>
+                            <Text fontSize={12} color="$textMuted">•</Text>
+                            <Text fontSize={12} color="$textMuted">{c.is_published ? 'No ar' : 'Em edição'}</Text>
+                          </XStack>
+                          <YStack mt={16} gap={6}>
+                            <XStack ai="center" jc="space-between">
+                              <Text fontSize={11} color="$textMuted">{c.is_published ? 'Publicado' : 'Pronto para publicar'}</Text>
+                              <Text fontSize={11} color="$textMuted">{readiness}%</Text>
+                            </XStack>
+                            <ProgressBar progress={readiness} height={6} />
+                          </YStack>
                         </YStack>
-                      </YStack>
+                      </Card>
                     </Link>
                     <XStack jc="flex-end" mt={4} gap={8}>
                       <Text onPress={() => handleDelete(c.id)} fontSize={12} color="$danger" style={{ cursor: 'pointer' }}>
@@ -266,7 +358,8 @@ export default function Dashboard() {
                       </Text>
                     </XStack>
                   </YStack>
-                ))}
+                  );
+                })}
               </XStack>
             )}
           </YStack>
@@ -284,23 +377,43 @@ export default function Dashboard() {
               </XStack>
               <YStack gap={8}>
                 <Text fontSize={14} fontWeight="500">Título</Text>
-                <input
+                <Input
                   value={formTitle}
-                  onChange={(e) => setFormTitle(e.target.value)}
+                  onChangeText={setFormTitle}
                   placeholder="Ex: Desenvolvimento Web Full Stack"
-                  style={{ height: 40, borderRadius: 8, border: '1px solid #DEE1EB', padding: '0 12px', fontSize: 14, outline: 'none', color: '#282836' }}
+                  h={40}
+                  br="$3"
+                  borderColor="$border"
                   autoFocus
                 />
               </YStack>
               <YStack gap={8}>
                 <Text fontSize={14} fontWeight="500">Descrição</Text>
-                <textarea
-                  value={formDescription}
-                  onChange={(e) => setFormDescription(e.target.value)}
-                  placeholder="Descreva o curso em poucas palavras..."
-                  rows={3}
-                  style={{ borderRadius: 8, border: '1px solid #DEE1EB', padding: 12, fontSize: 14, outline: 'none', color: '#282836', resize: 'vertical' }}
-                />
+                <YStack
+                  borderWidth={1}
+                  borderColor="$border"
+                  borderRadius="$3"
+                  bg="$background"
+                  p="$3"
+                  focusStyle={{ borderColor: '$primary' }}
+                >
+                  <textarea
+                    value={formDescription}
+                    onChange={(e) => setFormDescription(e.target.value)}
+                    placeholder="Descreva o curso em poucas palavras..."
+                    rows={3}
+                    style={{
+                      border: 'none',
+                      outline: 'none',
+                      resize: 'vertical',
+                      fontSize: 14,
+                      fontFamily: 'inherit',
+                      color: 'inherit',
+                      background: 'transparent',
+                      width: '100%',
+                    }}
+                  />
+                </YStack>
               </YStack>
               <YStack gap={8}>
                 <Text fontSize={14} fontWeight="500">Thumbnail (1280×720px, máx 2MB)</Text>

@@ -28,7 +28,9 @@
     "@tamagui/config": "2.0.0-rc.42",
     "@tamagui/core": "2.0.0-rc.42",
     "@tamagui/font-inter": "2.0.0-rc.42",
+    "@tamagui/image": "2.0.0-rc.42",
     "dompurify": "^3.2.4",
+    "expo-asset": "^56.0.15",
     "tamagui": "2.0.0-rc.42"
   },
   "devDependencies": {
@@ -37,6 +39,7 @@
     "@tamagui/babel-plugin": "2.0.0-rc.42",
     "@types/dompurify": "^3.2.0",
     "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "@types/react-native": "^0.73.0",
     "expo-av": "^15.0.2",
     "jsdom": "^25.0.1",

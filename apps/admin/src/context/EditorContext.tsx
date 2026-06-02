@@ -15,6 +15,7 @@ interface EditorState {
   previewMode: boolean;
   viewportMode: 'desktop' | 'tablet' | 'mobile';
   activeSide: 'front' | 'back';
+  inlineEditingId: string | null;
 }
 
 type EditorAction =
@@ -35,7 +36,8 @@ type EditorAction =
   | { type: 'CLEAR_SELECTION' }
   | { type: 'SET_PREVIEW_MODE'; payload: { active: boolean } }
   | { type: 'SET_VIEWPORT_MODE'; payload: { mode: 'desktop' | 'tablet' | 'mobile' } }
-  | { type: 'SET_ACTIVE_SIDE'; payload: { side: 'front' | 'back' } };
+  | { type: 'SET_ACTIVE_SIDE'; payload: { side: 'front' | 'back' } }
+  | { type: 'SET_INLINE_EDITING'; payload: { id: string | null } };
 
 const initialState: EditorState = {
   blocks: [],
@@ -46,6 +48,7 @@ const initialState: EditorState = {
   previewMode: false,
   viewportMode: 'desktop',
   activeSide: 'front',
+  inlineEditingId: null,
 };
 
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
@@ -315,6 +318,14 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       };
     }
 
+    case 'SET_INLINE_EDITING': {
+      return {
+        ...state,
+        inlineEditingId: action.payload.id,
+        activeBlockId: action.payload.id,
+      };
+    }
+
     default:
       return state;
   }
@@ -357,6 +368,7 @@ interface EditorContextType extends EditorState {
   certIsDoubleSided: boolean;
   setCertIsDoubleSided: (val: boolean) => void;
   setActiveSide: (side: 'front' | 'back') => void;
+  setInlineEditingId: (id: string | null) => void;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
@@ -544,6 +556,7 @@ export const EditorProvider: React.FC<{
   const publishLesson = saveContent;
 
   const setActiveSide = useCallback((side: 'front' | 'back') => dispatch({ type: 'SET_ACTIVE_SIDE', payload: { side } }), []);
+  const setInlineEditingId = useCallback((id: string | null) => dispatch({ type: 'SET_INLINE_EDITING', payload: { id } }), []);
 
   const contextValue = useMemo(() => ({
     ...state,
@@ -583,6 +596,7 @@ export const EditorProvider: React.FC<{
     certIsDoubleSided,
     setCertIsDoubleSided,
     setActiveSide,
+    setInlineEditingId,
   }), [
     state,
     addBlock, removeBlock, removeBlocks, duplicateBlock,
@@ -602,6 +616,7 @@ export const EditorProvider: React.FC<{
     setCertDesignSize,
     certIsDoubleSided, setCertIsDoubleSided,
     setActiveSide,
+    setInlineEditingId,
   ]);
 
   return (

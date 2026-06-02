@@ -42,11 +42,26 @@ function renderCanvas(
   );
 }
 
+/**
+ * Printable A4 certificate page.
+ *
+ * Single-side: renders one A4 canvas.
+ * Double-side: renders the front canvas followed by the back canvas, with
+ * a `page-break-after: always` on the front so the browser emits a separate
+ * physical page for the back during `window.print()`. CSS rules in
+ * CertificatePrint.css hide everything outside `#certificate-print-root` in
+ * print mode.
+ *
+ * @param blocks Certificate blocks (excluding the `__meta__` block).
+ * @param isDoubleSided Whether the certificate has a back side.
+ */
 export const CertificatePage: React.FC<CertificatePageProps> = ({
   blocks,
   isDoubleSided = false,
 }) => {
-  const { containerRef, a4Width, scale, ready } = useA4Scale();
+  const { containerRef, a4Width, scale, ready } = useA4Scale({
+    pages: isDoubleSided ? 2 : 1,
+  });
 
   if (!ready || a4Width <= 0) {
     return (
@@ -60,8 +75,12 @@ export const CertificatePage: React.FC<CertificatePageProps> = ({
     );
   }
 
-  const frontBlocks = isDoubleSided ? blocks.filter((b) => (b as any).styles?.side !== 'back') : blocks;
-  const backBlocks = isDoubleSided ? blocks.filter((b) => (b as any).styles?.side === 'back') : [];
+  const frontBlocks = isDoubleSided
+    ? blocks.filter((b) => (b as any).styles?.side !== 'back')
+    : blocks;
+  const backBlocks = isDoubleSided
+    ? blocks.filter((b) => (b as any).styles?.side === 'back')
+    : [];
 
   return (
     <div
@@ -69,16 +88,19 @@ export const CertificatePage: React.FC<CertificatePageProps> = ({
       ref={containerRef}
       style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, overflow: 'hidden', background: 'var(--bg)' }}
     >
-      {/* Frente */}
-      {renderCanvas(frontBlocks, scale, isDoubleSided ? { pageBreakAfter: 'always', breakAfter: 'page' } : undefined)}
+      {/* Front */}
+      {renderCanvas(
+        frontBlocks,
+        scale,
+        isDoubleSided ? { pageBreakAfter: 'always', breakAfter: 'page' } : undefined,
+      )}
 
-      {/* Verso (apenas se dupla face e existir conteúdo) */}
+      {/* Back (only if duplex and there is content) */}
       {isDoubleSided && backBlocks.length > 0 && (
-        <div style={{ marginTop: 48, '@media print': { marginTop: 0 } } as any}>
+        <div style={{ marginTop: 48 }}>
           {renderCanvas(backBlocks, scale)}
         </div>
       )}
     </div>
   );
 };
-

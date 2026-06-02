@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Space_Grotesk, DM_Sans } from "next/font/google";
+import { Geist, Geist_Mono, DM_Sans } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -10,11 +10,6 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-display",
   subsets: ["latin"],
 });
 
@@ -34,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${dmSans.variable}`} suppressHydrationWarning>
+    <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <Providers>
           {children}

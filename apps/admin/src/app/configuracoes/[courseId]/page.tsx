@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, use, useRef } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { createPortal } from 'react-dom';
-import { YStack, XStack, Text, Button, Icon, Spinner, Theme, CertificateMiniature, CertificateBlockRenderer } from '@projeto/ui';
+import { YStack, XStack, Text, Button, Icon, Spinner, Theme, CertificateMiniature, CertificatePage } from '@projeto/ui';
 import { useRouter } from 'next/navigation';
 import { BrandMark } from '../../../components/brand-mark';
 import { CourseService, StorageService } from '@projeto/core';
@@ -38,9 +38,6 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const [previewOpen, setPreviewOpen] = useState(false);
   const [printing, setPrinting] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [previewSide, setPreviewSide] = useState<'front' | 'back'>('front');
-  const measureRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
 
   useEffect(() => {
     setMounted(true);
@@ -57,31 +54,10 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
     };
   }, []);
 
-  useEffect(() => {
-    if (!previewOpen) {
-      setContainerSize({ w: 0, h: 0 });
-      return;
-    }
-    const el = measureRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => {
-      const cw = entry.contentRect.width;
-      const ch = entry.contentRect.height;
-      if (cw <= 0 || ch <= 0) return;
-      setContainerSize({ w: cw, h: ch });
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [previewOpen]);
-
   const certMeta = (course?.certificate_blocks || []).find((b: any) => b.type === '__meta__') as any;
   const certDesignWidth = certMeta?.designWidth ?? 1100;
   const certDesignHeight = certMeta?.designHeight ?? Math.round(1100 / 1.414);
   const certIsDoubleSided = !!certMeta?.isDoubleSided;
-  const previewScale = (containerSize.w && containerSize.h)
-    ? Math.min(1, containerSize.w / certDesignWidth, containerSize.h / certDesignHeight)
-    : 1;
-  const previewReady = containerSize.w > 0 && containerSize.h > 0;
   const certificateBlocks = (course?.certificate_blocks || []).filter((b: any) => b.type !== '__meta__');
 
   useEffect(() => {
@@ -610,6 +586,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                         blocks={certificateBlocks}
                         designWidth={certDesignWidth}
                         designHeight={certDesignHeight}
+                        isDoubleSided={certIsDoubleSided}
                       />
                     </XStack>
                     <Text fontSize={10} color="$textMuted" textAlign="center">Clique no preview para ampliar</Text>
@@ -639,16 +616,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                         <XStack ai="center" gap={12}>
                           <Text fontSize={14} fontWeight="600">Preview do Certificado</Text>
                           {certIsDoubleSided && (
-                            <XStack ai="center" bg="$background" p={2} borderRadius={6} borderWidth={1} borderColor="$border" gap={2}>
-                              <button
-                                onClick={() => setPreviewSide('front')}
-                                style={{ padding: '3px 10px', borderRadius: 4, border: 'none', background: previewSide === 'front' ? '#3b82f6' : 'transparent', color: previewSide === 'front' ? 'white' : 'inherit', fontWeight: 600, fontSize: 11, cursor: 'pointer' }}
-                              >Frente</button>
-                              <button
-                                onClick={() => setPreviewSide('back')}
-                                style={{ padding: '3px 10px', borderRadius: 4, border: 'none', background: previewSide === 'back' ? '#3b82f6' : 'transparent', color: previewSide === 'back' ? 'white' : 'inherit', fontWeight: 600, fontSize: 11, cursor: 'pointer' }}
-                              >Verso</button>
-                            </XStack>
+                            <Text fontSize={11} color="$textMuted">(frente e verso — imprime 2 páginas A4)</Text>
                           )}
                         </XStack>
                         <XStack ai="center" gap={8}>
@@ -661,96 +629,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                         </XStack>
                       </XStack>
                       <YStack f={1} bg="white" style={{ overflow: 'hidden' }}>
-                        <div
-                          id="certificate-print-root"
-                          ref={measureRef}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: 8,
-                            overflow: 'hidden',
-                            background: 'white',
-                          }}
-                        >
-                          {previewReady ? (
-                            <div
-                              style={{
-                                width: Math.round(certDesignWidth * previewScale),
-                                height: Math.round(certDesignHeight * previewScale),
-                                position: 'relative',
-                                overflow: 'hidden',
-                                // @ts-ignore
-                                '--cert-design-width': `${certDesignWidth}px`,
-                                '--cert-design-height': `${certDesignHeight}px`,
-                                '--cert-print-scale': 1123 / certDesignWidth,
-                              } as React.CSSProperties}
-                            >
-                              <div
-                                id="certificate-a4-canvas"
-                                style={{
-                                  position: 'absolute',
-                                  left: 0,
-                                  top: 0,
-                                  width: certDesignWidth,
-                                  height: certDesignHeight,
-                                  overflow: 'hidden',
-                                  background: 'white',
-                                  transform: `scale(${previewScale})`,
-                                  transformOrigin: 'top left',
-                                  boxShadow: '0 10px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.05)',
-                                }}
-                              >
-                                {(() => {
-                                  const visibleBlocks = certIsDoubleSided
-                                    ? certificateBlocks.filter((b: any) => (b.styles?.side || 'front') === previewSide)
-                                    : certificateBlocks;
-                                  const sorted = [...visibleBlocks].sort((a: any, b: any) => {
-                                    const aBg = a.styles?.isBackground ? 1 : 0;
-                                    const bBg = b.styles?.isBackground ? 1 : 0;
-                                    if (aBg !== bBg) return aBg - bBg;
-                                    return (a.layouts?.desktop?.zIndex ?? 0) - (b.layouts?.desktop?.zIndex ?? 0);
-                                  });
-                                  return sorted.map((block: any) => {
-                                    const isBg = !!block.styles?.isBackground;
-                                    const layout = isBg
-                                      ? { x: 0, y: 0, w: certDesignWidth, h: certDesignHeight, zIndex: -10 }
-                                      : (block.layouts?.desktop || { x: 0, y: 0, w: 200, h: 100, zIndex: 0 });
-                                    return (
-                                      <div
-                                        key={block.id}
-                                        style={{
-                                          position: 'absolute',
-                                          left: layout.x,
-                                          top: layout.y,
-                                          width: layout.w,
-                                          height: layout.h,
-                                          zIndex: layout.zIndex + 1,
-                                          overflow: 'hidden',
-                                          borderRadius: isBg ? '0px' : '6px',
-                                        }}
-                                      >
-                                        {block.type === 'image' && block.url ? (
-                                          <img
-                                            src={block.url}
-                                            alt={block.alt || ''}
-                                            style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, display: 'block' }}
-                                          />
-                                        ) : (
-                                          <CertificateBlockRenderer block={block} scale={1} fillContainer />
-                                        )}
-                                      </div>
-                                    );
-                                  });
-                                })()}
-                              </div>
-                            </div>
-                          ) : (
-                            <div style={{ width: certDesignWidth, height: certDesignHeight }} />
-                          )}
-                        </div>
+                        <CertificatePage blocks={certificateBlocks} isDoubleSided={certIsDoubleSided} />
                       </YStack>
                     </YStack>
                   </YStack>,
@@ -759,7 +638,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
 
                 <XStack gap={8} w="100%">
                   <Button
-                    onPress={() => router.push(`/studio/${courseId}?mode=certificate`)}
+                    onPress={() => router.push(`/studio/${courseId}/certificate`)}
                     backgroundColor="$primary"
                     hoverStyle={{ opacity: 0.9 }}
                     flex={1}
@@ -773,15 +652,15 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                   {certificateBlocks.length > 0 && (
                     <Button
                       onPress={handleDeleteCertificate}
-                      backgroundColor="#ffe4e6"
-                      hoverStyle={{ backgroundColor: "#fecdd3" }}
+                      backgroundColor="$dangerSurface"
+                      hoverStyle={{ backgroundColor: '$danger' }}
                       borderWidth={1}
-                      borderColor="#fecdd3"
+                      borderColor="$danger"
                       px="$3"
                     >
                       <XStack ai="center" gap={6}>
-                        <Icon name="Trash2" size={14} color="#b91c1c" />
-                        <Text color="#b91c1c" fontSize={12} fontWeight="600">Excluir</Text>
+                        <Icon name="Trash2" size={14} color="$danger" />
+                        <Text color="$danger" fontSize={12} fontWeight="600">Excluir</Text>
                       </XStack>
                     </Button>
                   )}

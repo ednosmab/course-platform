@@ -4,14 +4,20 @@ import React, { use, useMemo } from 'react';
 import { YStack, XStack, Text, Button, Icon } from '@projeto/ui';
 import { useRouter } from 'next/navigation';
 import { EditorProvider, useEditor } from '../../../context/EditorContext';
-import { createLessonModeConfig, createCertificateModeConfig } from '../../../context/editor-modes';
+import { createLessonModeConfig } from '../../../context/editor-modes';
 import { EditorHeader } from '../../../components/editor/EditorHeader';
 import { BlockPalette } from '../../../components/editor/BlockPalette';
 import { EditorCanvas } from '../../../components/editor/EditorCanvas';
 import { BlockSettings } from '../../../components/editor/BlockSettings';
 
+/**
+ * Página do editor de aula. O editor de certificado foi extraído para
+ * `apps/admin/src/app/studio/[courseId]/certificate/page.tsx` (SDR-001).
+ * A query legacy `?mode=certificate` é redirecionada via 308 em
+ * `next.config.ts`, por isso esta página só lida com o modo de aula.
+ */
 function StudioEditorLayout({ courseId }: { courseId: string }) {
-  const { previewMode, activeBlockId, mode } = useEditor();
+  const { previewMode, activeBlockId } = useEditor();
 
   return (
     <YStack f={1} h="100vh" w="100vw" overflow="hidden">
@@ -19,7 +25,7 @@ function StudioEditorLayout({ courseId }: { courseId: string }) {
       <XStack f={1} overflow="hidden" w="100%">
         {!previewMode && <BlockPalette />}
         <EditorCanvas />
-        {!previewMode && (activeBlockId || mode === 'certificate') && <BlockSettings />}
+        {!previewMode && activeBlockId && <BlockSettings />}
       </XStack>
     </YStack>
   );
@@ -54,21 +60,12 @@ export default function StudioPage({
   searchParams,
 }: {
   params: Promise<{ courseId: string }>;
-  searchParams: Promise<{ lessonId?: string; mode?: string }>;
+  searchParams: Promise<{ lessonId?: string }>;
 }) {
   const { courseId } = use(params);
-  const { lessonId, mode } = use(searchParams);
+  const { lessonId } = use(searchParams);
 
   const lessonConfig = useMemo(() => createLessonModeConfig(), []);
-  const certConfig = useMemo(() => createCertificateModeConfig(), []);
-
-  if (mode === 'certificate') {
-    return (
-      <EditorProvider courseId={courseId} mode="certificate" modeConfig={certConfig}>
-        <StudioEditorLayout courseId={courseId} />
-      </EditorProvider>
-    );
-  }
 
   if (lessonId) {
     return (

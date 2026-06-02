@@ -5,7 +5,6 @@ import { YStack, XStack, Text, Button, Icon, Spinner } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
 import { StorageService } from '@projeto/core';
-import { A4_PRESETS, A4_RATIO } from '../../context/editor-modes';
 import ImageCropOverlay from './ImageCropOverlay';
 
 function parseMarkdownToHtml(text: string): string {
@@ -434,70 +433,41 @@ function removeBackgroundFromImage(img: HTMLImageElement, tolerance: number, edg
   return c.toDataURL('image/png');
 }
 
-const A4_PRESET_NAMES: Record<number, string> = {};
-A4_PRESETS.forEach(p => { A4_PRESET_NAMES[p.width] = p.label; });
+/**
+ * Helper que filtra strings de whitespace-only e valores nulos/bool
+ * dos children antes de renderizar. Necessário porque o dev-mode do
+ * Tamagui emite `console.error("Unexpected text node: .")` quando
+ * encontra strings de whitespace entre children de componentes
+ * (e.g. `"\n  "` entre dois `<Text>` num mesmo `<YStack>`).
+ *
+ * Mantém o código JSX formatado e legível (sem encolher tudo para
+ * uma linha) sem disparar o warning em desenvolvimento.
+ */
+const ViewChildren: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const cleaned = React.Children.toArray(children).filter((c) => {
+    if (c == null || typeof c === 'boolean') return false;
+    if (typeof c === 'string' && /^\s*$/.test(c)) return false;
+    return true;
+  });
+  return <>{cleaned}</>;
+};
 
-const CertificateCanvasPanel: React.FC<{
-  designWidth: number;
-  designHeight: number;
-  onSelectPreset: (w: number, h: number) => void;
-  onToggleCollapse?: () => void;
-}> = ({ designWidth, designHeight, onSelectPreset, onToggleCollapse }) => (
-  <YStack w={320} minWidth={320} h="100%" borderLeftWidth={1} borderLeftColor="$border" bg="$background">
-    <YStack px="$5" pt="$4" pb="$3" borderBottomWidth={1} borderBottomColor="$border" flexShrink={0}>
-      <XStack ai="center" jc="space-between">
-        <Text fontSize={11} fontWeight="700" textTransform="uppercase" color="$textSecondary" letterSpacing={0.5}>Certificado</Text>
-        {onToggleCollapse && (
-          <XStack
-            w={26} h={26} ai="center" jc="center"
-            borderWidth={1} borderColor="$border" borderRadius="$3" bg="$background"
-            cursor="pointer" role="button" tabIndex={0}
-            aria-label="Recolher painel"
-            onPress={onToggleCollapse}
-            onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggleCollapse(); } }}
-            hoverStyle={{ borderColor: '$primary' }}
-          >
-            <Icon name="ChevronRight" size={14} />
-          </XStack>
-        )}
-      </XStack>
-    </YStack>
-    <YStack p="$4" gap="$3" overflowY="auto" flex={1}>
-      <Text fontSize={11} fontWeight="600">Tamanho do Canvas</Text>
-      <Text fontSize={10} color="$textMuted">Dimensões em proporção A4 paisagem (297×210mm)</Text>
-      <XStack flexWrap="wrap" gap="$2">
-        {A4_PRESETS.map((p) => {
-          const active = designWidth === p.width;
-          const h = Math.round(p.width / A4_RATIO);
-          return (
-            <XStack
-              key={p.width}
-              onPress={() => onSelectPreset(p.width, h)}
-              px="$3" py="$2"
-              borderRadius="$3"
-              borderWidth={active ? 2 : 1}
-              borderColor={active ? '$primary' : '$border'}
-              bg={active ? 'rgba(59,130,246,0.06)' : '$background'}
-              cursor="pointer"
-              hoverStyle={{ borderColor: '$primary', bg: 'rgba(59,130,246,0.03)' }}
-              ai="center" gap="$2"
-            >
-              <Text fontSize={13} fontWeight={active ? '700' : '500'} color={active ? '$primary' : '$text'}>{p.label}</Text>
-              <Text fontSize={10} color="$textMuted">{p.width}×{h}</Text>
-            </XStack>
-          );
-        })}
-      </XStack>
-      <XStack ai="center" gap="$2" pt="$2" borderTopWidth={1} borderTopColor="$border">
-        <Text fontSize={11} color="$textMuted">Atual:</Text>
-        <Text fontSize={11} fontWeight="600">{designWidth} × {designHeight}</Text>
-      </XStack>
-    </YStack>
-  </YStack>
-);
-
-export const BlockSettings: React.FC = () => {
-  const { blocks, activeBlockId, updateBlock, removeBlock, courseId, mode, certDesignWidth, certDesignHeight, setCertDesignSize, certIsDoubleSided, setCertIsDoubleSided } = useEditor();
+/**
+ * Painel de propriedades do bloco activo.
+ *
+ * Aceita dois slots opcionais para conteúdo exclusivo do editor de
+ * certificado (boundary rule SDR-001):
+ * - `propsHeader` — renderizado no topo da tab "Propriedades"
+ * - `propsFooter` — renderizado no rodapé da tab "Propriedades"
+ *
+ * O editor de aula passa sem slots; o `CertificateEditor` passa os
+ * componentes extraídos em `apps/admin/src/components/certificate-editor/`.
+ */
+export const BlockSettings: React.FC<{
+  propsHeader?: React.ReactNode;
+  propsFooter?: React.ReactNode;
+}> = ({ propsHeader, propsFooter }) => {
+  const { blocks, activeBlockId, updateBlock, removeBlock, courseId } = useEditor();
   const [activeTab, setActiveTab] = useState<'props' | 'html'>('props');
   const [collapsed, setCollapsed] = useState(false);
   const [bgProcessing, setBgProcessing] = useState(false);
@@ -539,16 +509,6 @@ export const BlockSettings: React.FC = () => {
   }
 
   if (!activeBlock) {
-    if (mode === 'certificate') {
-      return (
-        <CertificateCanvasPanel
-          designWidth={certDesignWidth}
-          designHeight={certDesignHeight}
-          onSelectPreset={(w, h) => setCertDesignSize(w, h)}
-          onToggleCollapse={() => setCollapsed(true)}
-        />
-      );
-    }
     return null;
   }
 
@@ -564,6 +524,7 @@ export const BlockSettings: React.FC = () => {
   };
 
   return (
+    <ViewChildren>
     <YStack w={320} minWidth={320} h="100%" overflowY="auto" borderLeftWidth={1} borderLeftColor="$border" bg="$background">
       <YStack px="$5" pt="$4" borderBottomWidth={1} borderBottomColor="$border" flexShrink={0}>
         <XStack ai="center" jc="space-between" mb="$3">
@@ -642,51 +603,10 @@ export const BlockSettings: React.FC = () => {
       {activeTab === 'props' && (
       <YStack p="$4" overflowY="auto" flex={1}>
 
-      {mode === 'certificate' && (
-        <YStack pb="$3" mb="$3" borderBottomWidth={1} borderBottomColor="$border" gap="$3">
-          <YStack gap="$1.5">
-            <Text fontSize={11} fontWeight="600">Tamanho do Certificado</Text>
-            <XStack flexWrap="wrap" gap="$2">
-              {A4_PRESETS.map((p) => {
-                const active = certDesignWidth === p.width;
-                const h = Math.round(p.width / A4_RATIO);
-                return (
-                  <XStack
-                    key={p.width}
-                    onPress={() => setCertDesignSize(p.width, h)}
-                    px="$2" py="$1"
-                    borderRadius="$2"
-                    borderWidth={active ? 2 : 1}
-                    borderColor={active ? '$primary' : '$border'}
-                    bg={active ? 'rgba(59,130,246,0.06)' : '$background'}
-                    cursor="pointer"
-                    hoverStyle={{ borderColor: '$primary' }}
-                    ai="center" gap="$1"
-                  >
-                    <Text fontSize={11} fontWeight={active ? '700' : '500'} color={active ? '$primary' : '$text'}>{p.label}</Text>
-                    <Text fontSize={9} color="$textMuted">{p.width}×{h}</Text>
-                  </XStack>
-                );
-              })}
-            </XStack>
-          </YStack>
-
-          <XStack ai="center" jc="space-between" pt="$2" borderTopWidth={1} borderTopColor="$border">
-            <YStack gap={2}>
-              <Text fontSize={11} fontWeight="600">Frente e Verso (Dupla Face)</Text>
-              <Text fontSize={9} color="$textMuted">Habilita uma segunda página no verso</Text>
-            </YStack>
-            <input
-              type="checkbox"
-              checked={certIsDoubleSided}
-              onChange={(e) => setCertIsDoubleSided(e.target.checked)}
-              style={{ cursor: 'pointer', width: 16, height: 16 }}
-            />
-          </XStack>
-        </YStack>
-      )}
+      {propsHeader}
 
       {activeBlock.type === 'text' && (
+        <ViewChildren>
         <YStack gap="$2">
           <YStack>
             <Text fontSize={11} fontWeight="500">Conteúdo do Texto</Text>
@@ -756,9 +676,11 @@ export const BlockSettings: React.FC = () => {
           <TypographyAndBackgroundControls block={activeBlock} updateBlock={updateBlock} />
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
         </YStack>
+        </ViewChildren>
       )}
 
       {activeBlock.type === 'video' && (
+        <ViewChildren>
         <YStack gap="$2">
           <YStack>
             <Text fontSize={11} fontWeight="500">Provedor de Vídeo</Text>
@@ -793,9 +715,11 @@ export const BlockSettings: React.FC = () => {
 
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
         </YStack>
+        </ViewChildren>
       )}
 
       {activeBlock.type === 'quiz' && (
+        <ViewChildren>
         <YStack gap="$2">
           <YStack>
             <Text fontSize={11} fontWeight="500">Pergunta</Text>
@@ -888,9 +812,11 @@ export const BlockSettings: React.FC = () => {
           <TypographyAndBackgroundControls block={activeBlock} updateBlock={updateBlock} />
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
         </YStack>
+        </ViewChildren>
       )}
 
       {activeBlock.type === 'image' && (
+        <ViewChildren>
         <YStack gap="$2">
           <YStack>
             <Text fontSize={11} fontWeight="500">URL da Imagem</Text>
@@ -914,45 +840,9 @@ export const BlockSettings: React.FC = () => {
             />
           </YStack>
 
-          {/* Opções exclusivas para imagem no modo certificado */}
-          {activeBlock.type === 'image' && mode === 'certificate' && (
-            <YStack gap="$2" pt="$2" mt="$2" borderTopWidth={1} borderTopColor="$border">
-              <XStack ai="center" jc="space-between">
-                <Text fontSize={11} fontWeight="600">Imagem de Fundo</Text>
-                <input
-                  type="checkbox"
-                  checked={!!activeBlock.styles?.isBackground}
-                  onChange={(e) => {
-                    const isBg = e.target.checked;
-                    updateBlock(activeBlock.id, {
-                      styles: {
-                        ...activeBlock.styles,
-                        isBackground: isBg,
-                        objectFit: isBg ? 'cover' : (activeBlock.styles?.objectFit || 'contain')
-                      }
-                    });
-                  }}
-                  style={{ cursor: 'pointer', width: 16, height: 16 }}
-                />
-              </XStack>
-              
-              <YStack mt="$1">
-                <Text fontSize={11} fontWeight="500">Ajuste de Imagem (Fit)</Text>
-                <select
-                  value={activeBlock.styles?.objectFit || 'cover'}
-                  onChange={(e) => updateBlock(activeBlock.id, { styles: { ...activeBlock.styles, objectFit: e.target.value as 'cover' | 'contain' | 'fill' } })}
-                  style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 8px', fontSize: 12, outline: 'none', background: 'white', width: '100%' }}
-                >
-                  <option value="cover">Cortar para Caber (Cover)</option>
-                  <option value="contain">Conter Proporção (Contain)</option>
-                  <option value="fill">Preencher/Esticar (Fill)</option>
-                </select>
-              </YStack>
-            </YStack>
-          )}
-
-          {/* Opções de Ajuste de Imagem padrão (fora do modo certificado) */}
-          {activeBlock.type === 'image' && mode !== 'certificate' && (
+          {/* Opções de Ajuste de Imagem. As opções exclusivas de certificado
+              (Imagem de Fundo) vivem em `CertificateImageSettings` — ver SDR-001. */}
+          {activeBlock.type === 'image' && (
             <YStack mt="$2">
               <Text fontSize={11} fontWeight="500">Ajuste de Imagem (Fit)</Text>
               <select
@@ -1127,9 +1017,11 @@ export const BlockSettings: React.FC = () => {
 
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
         </YStack>
+        </ViewChildren>
       )}
 
       {activeBlock.type === 'html' && (
+        <ViewChildren>
         <YStack gap="$2">
           <YStack>
             <Text fontSize={11} fontWeight="500">Código HTML</Text>
@@ -1152,9 +1044,11 @@ export const BlockSettings: React.FC = () => {
 
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
         </YStack>
+        </ViewChildren>
       )}
 
       {activeBlock.type === 'heading' && (
+        <ViewChildren>
         <YStack gap="$2">
           <YStack>
             <Text fontSize={11} fontWeight="500">Conteúdo do Título</Text>
@@ -1201,9 +1095,11 @@ export const BlockSettings: React.FC = () => {
             </XStack>
           </YStack>
         </YStack>
+        </ViewChildren>
       )}
 
       {activeBlock.type === 'divider' && (
+        <ViewChildren>
         <YStack gap="$2">
           <YStack>
             <Text fontSize={11} fontWeight="500">Espessura</Text>
@@ -1243,9 +1139,11 @@ export const BlockSettings: React.FC = () => {
             />
           </YStack>
         </YStack>
+        </ViewChildren>
       )}
 
       {activeBlock.type === 'quote' && (
+        <ViewChildren>
         <YStack gap="$2">
           <YStack>
             <Text fontSize={11} fontWeight="500">Conteúdo da Citação</Text>
@@ -1317,22 +1215,11 @@ export const BlockSettings: React.FC = () => {
           <TypographyAndBackgroundControls block={activeBlock} updateBlock={updateBlock} />
           <DimensionControls block={activeBlock} updateBlock={updateBlock} />
 
-          {/* Opção para mover lado do bloco se for dupla face */}
-          {mode === 'certificate' && certIsDoubleSided && (
-            <YStack gap="$1.5" pt="$3" mt="$3" borderTopWidth={1} borderTopColor="$border">
-              <Text fontSize={11} fontWeight="600">Lado do Certificado</Text>
-              <Text fontSize={9} color="$textMuted" mb="$1">Escolha em qual lado exibir este elemento</Text>
-              <select
-                value={(activeBlock as any).styles?.side || 'front'}
-                onChange={(e) => updateBlock(activeBlock.id, { styles: { ...(activeBlock as any).styles, side: e.target.value as 'front' | 'back' } })}
-                style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 8px', fontSize: 12, outline: 'none', background: 'white', width: '100%' }}
-              >
-                <option value="front">Frente do Certificado</option>
-                <option value="back">Verso do Certificado</option>
-              </select>
-            </YStack>
-          )}
+          {/* Slot para selector de lado (frente/verso) — exclusivo do
+              editor de certificado, boundary rule SDR-001. */}
+          {propsFooter}
         </YStack>
+        </ViewChildren>
       )}
       </YStack>
       )}
@@ -1351,5 +1238,6 @@ export const BlockSettings: React.FC = () => {
         />
       )}
     </YStack>
+    </ViewChildren>
   );
 };
