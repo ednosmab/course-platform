@@ -934,13 +934,13 @@ export const EditorCanvas: React.FC = () => {
         return { ...startLayout, x: startLayout.x + dx, y: startLayout.y + dy };
       }
       if (mode === 'resize' && handle) {
-        if (aspectRatio) {
+        const isCorner = handle.includes('e') && handle.includes('n') ||
+          handle.includes('e') && handle.includes('s') ||
+          handle.includes('w') && handle.includes('n') ||
+          handle.includes('w') && handle.includes('s');
+        if (aspectRatio && isCorner) {
           const fixedX = handle.includes('w') ? startLayout.x + startLayout.w : startLayout.x;
           const fixedY = handle.includes('n') ? startLayout.y + startLayout.h : startLayout.y;
-          const isCorner = handle.includes('e') && handle.includes('n') ||
-            handle.includes('e') && handle.includes('s') ||
-            handle.includes('w') && handle.includes('n') ||
-            handle.includes('w') && handle.includes('s');
           const rawDW = handle.includes('e') || handle.includes('w');
           const rawDH = handle.includes('s') || handle.includes('n');
           let dw = 0, dh = 0;
@@ -950,14 +950,8 @@ export const EditorCanvas: React.FC = () => {
           let nh = Math.abs(handle.includes('n') ? startLayout.h - dh : startLayout.h + dh);
           nw = Math.max(MIN_W, nw);
           nh = Math.max(MIN_H, nh);
-          if (isCorner) {
-            if (nw / nh > aspectRatio) nh = nw / aspectRatio;
-            else nw = nh * aspectRatio;
-          } else if (rawDW) {
-            nh = nw / aspectRatio;
-          } else {
-            nw = nh * aspectRatio;
-          }
+          if (nw / nh > aspectRatio) nh = nw / aspectRatio;
+          else nw = nh * aspectRatio;
           nw = Math.max(MIN_W, nw);
           nh = Math.max(MIN_H, nh);
           const x = handle.includes('w') ? fixedX - nw : fixedX;
