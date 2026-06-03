@@ -470,7 +470,7 @@ export const CertificateCanvas: React.FC<{
                     borderRadius: '6px', pointerEvents: 'none', zIndex: 2,
                     boxShadow: isActive ? '0 0 0 1px rgba(59,130,246,0.25)' : isSelected ? '0 0 0 1px rgba(96,165,250,0.2)' : 'none',
                   }} />
-                  <CertificateBlockRenderer block={block as any} scale={1} fillContainer />
+                  <CertificateBlockRenderer block={block as any} scale={1} fillContainer isEditor />
                   {showToolbar && (
                     <XStack
                       position="absolute" top={-34} right={0} zIndex={20}

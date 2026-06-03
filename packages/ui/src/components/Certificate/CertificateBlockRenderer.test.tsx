@@ -94,6 +94,26 @@ describe('CertificateBlockRenderer', () => {
     expect(container.querySelector('img')).toBeNull();
   });
 
+  it('shows a drag-image placeholder in the editor when an image block has no url', () => {
+    const block: CertificateBlock = {
+      id: 'i3',
+      type: 'image',
+      url: '',
+      layouts: { desktop: { x: 0, y: 0, w: 200, h: 200, zIndex: 0 } },
+    } as any;
+
+    flushSync(() => {
+      root.render(
+        <TamaguiProvider config={tamaguiConfig} defaultTheme="cloudWhite">
+          <CertificateBlockRenderer block={block} scale={1} fillContainer isEditor />
+        </TamaguiProvider>,
+      );
+    });
+    expect(container.textContent).toContain('Arraste uma imagem aqui');
+    expect(container.textContent).toContain('ou cole a URL no painel');
+    expect(container.querySelector('img')).toBeNull();
+  });
+
   it('renders a divider block without crashing', () => {
     const block: CertificateBlock = {
       id: 'd1',
