@@ -9,12 +9,13 @@ import { PositionPanel } from './PositionPanel';
 
 interface EditorHeaderProps {
   courseId?: string;
+  saveActionLabel?: string;
 }
 
-export const EditorHeader: React.FC<EditorHeaderProps> = ({ courseId }) => {
+export const EditorHeader: React.FC<EditorHeaderProps> = ({ courseId, saveActionLabel }) => {
   const { t } = useTranslation('editor');
   const router = useRouter();
-  const { canUndo, canRedo, undo, redo, saveStatus, previewMode, setPreviewMode, viewportMode, setViewportMode, publishLesson, courseTitle, moduleTitle, lessonTitle, mode } = useEditor();
+  const { canUndo, canRedo, undo, redo, saveStatus, previewMode, setPreviewMode, viewportMode, setViewportMode, publishLesson, courseTitle, moduleTitle, lessonTitle } = useEditor();
   const [published, setPublished] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [isPositionPanelOpen, setIsPositionPanelOpen] = useState(false);
@@ -176,18 +177,10 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({ courseId }) => {
                 borderWidth={1} borderColor="$border"
                 onPress={(e: any) => { e.stopPropagation(); handlePublish(); }}
               >
-                {mode === 'certificate' ? (
-                  published ? (
-                    <><Icon name="CheckCircle2" size={15} /><Text>{t('common:saved')}</Text></>
-                  ) : (
-                    <Text>{t('common:save')}</Text>
-                  )
+                {published ? (
+                  <><Icon name="CheckCircle2" size={15} /><Text>{saveActionLabel ? t('common:saved') : t('published')}</Text></>
                 ) : (
-                  published ? (
-                    <><Icon name="CheckCircle2" size={15} /><Text>{t('published')}</Text></>
-                  ) : (
-                    <Text>{t('publish')}</Text>
-                  )
+                  <Text>{saveActionLabel || t('publish')}</Text>
                 )}
               </Button>
               {publishError && (

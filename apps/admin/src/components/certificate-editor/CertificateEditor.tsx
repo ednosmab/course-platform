@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { YStack, XStack, Text, Icon, Button } from '@projeto/ui';
-import { useRouter } from 'next/navigation';
+import { YStack, XStack } from '@projeto/ui';
 import { EditorProvider, useEditor } from '../../context/EditorContext';
 import { createCertificateModeConfig } from '../../context/editor-modes';
-import { EditorHeader } from '../editor/EditorHeader';
+import { CertificateEditorHeader } from './CertificateEditorHeader';
 import { CertificatePalette } from './CertificatePalette';
 import { CertificateCanvas } from './CertificateCanvas';
 import { BlockSettings } from '../editor/BlockSettings';
@@ -21,67 +20,35 @@ import { CertificateBlockSideSelector } from './CertificateBlockSideSelector';
  * depende do toggle `previewMode`) — esta é a regra de boundary do
  * SDR-001.
  */
-function CertificateEditorLayout({ courseId }: { courseId: string }) {
-  const router = useRouter();
+function CertificateEditorLayout() {
   const { blocks, activeBlockId, activeSide, certIsDoubleSided, certDesignWidth, certDesignHeight, setCertDesignSize } = useEditor();
   const [canvasPanelCollapsed, setCanvasPanelCollapsed] = useState(false);
 
   return (
-    <YStack f={1} h="100vh" w="100vw" overflow="hidden">
-      <XStack
-        ai="center"
-        jc="space-between"
-        px="$3"
-        py="$2"
-        bg="$background"
-        borderBottomWidth={1}
-        borderBottomColor="$border"
-        gap="$2"
-      >
-        <XStack ai="center" gap="$2">
-          <Icon name="Award" size={16} color="$primary" />
-          <Text fontSize={13} fontWeight="600">Editor de Certificado</Text>
-          <Text fontSize={11} color="$textMuted">— isolamento SDR-001</Text>
-        </XStack>
-        <Button
-          variant="ghost"
-          borderWidth={1}
-          borderColor="$border"
-          onPress={() => router.push(`/configuracoes/${courseId}`)}
-          px="$3"
-        >
-          <XStack ai="center" gap="$1.5">
-            <Icon name="ArrowLeft" size={12} color="$textMuted" />
-            <Text fontSize={12} color="$textMuted">Voltar às Configurações</Text>
-          </XStack>
-        </Button>
-      </XStack>
-
-      <XStack f={1} overflow="hidden" w="100%">
-        <CertificatePalette />
-        <CertificateCanvas
-          blocks={blocks}
+    <XStack f={1} overflow="hidden" w="100%">
+      <CertificatePalette />
+      <CertificateCanvas
+        blocks={blocks}
+        designWidth={certDesignWidth}
+        designHeight={certDesignHeight}
+        activeSide={activeSide}
+        isDoubleSided={certIsDoubleSided}
+      />
+      {activeBlockId ? (
+        <BlockSettings
+          propsHeader={<CertificateCertSettings />}
+          propsFooter={<CertificateBlockSideSelector />}
+          imageSettingsSlot={<CertificateImageSettings />}
+        />
+      ) : !canvasPanelCollapsed ? (
+        <CertificateCanvasPanel
           designWidth={certDesignWidth}
           designHeight={certDesignHeight}
-          activeSide={activeSide}
-          isDoubleSided={certIsDoubleSided}
+          onSelectPreset={setCertDesignSize}
+          onToggleCollapse={() => setCanvasPanelCollapsed(true)}
         />
-        {activeBlockId ? (
-          <BlockSettings
-            propsHeader={<CertificateCertSettings />}
-            propsFooter={<CertificateBlockSideSelector />}
-            imageSettingsSlot={<CertificateImageSettings />}
-          />
-        ) : !canvasPanelCollapsed ? (
-          <CertificateCanvasPanel
-            designWidth={certDesignWidth}
-            designHeight={certDesignHeight}
-            onSelectPreset={setCertDesignSize}
-            onToggleCollapse={() => setCanvasPanelCollapsed(true)}
-          />
-        ) : null}
-      </XStack>
-    </YStack>
+      ) : null}
+    </XStack>
   );
 }
 
@@ -100,8 +67,10 @@ export const CertificateEditor: React.FC<{ courseId: string }> = ({ courseId }) 
 
   return (
     <EditorProvider courseId={courseId} mode="certificate" modeConfig={certConfig}>
-      <EditorHeader courseId={courseId} />
-      <CertificateEditorLayout courseId={courseId} />
+      <YStack f={1} h="100vh" w="100vw" overflow="hidden">
+        <CertificateEditorHeader courseId={courseId} />
+        <CertificateEditorLayout />
+      </YStack>
     </EditorProvider>
   );
 };

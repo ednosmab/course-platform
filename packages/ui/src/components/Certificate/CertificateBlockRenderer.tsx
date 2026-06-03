@@ -65,14 +65,6 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale, fillCo
         block.styles?.flipV ? `scaleY(-1)` : '',
       ].filter(Boolean).join(' ');
 
-      console.log('[CertificateBlockRenderer] Rendering image:', {
-        id: block.id,
-        url: block.url,
-        isBackground: !!block.styles?.isBackground,
-        fillContainer,
-        styles: block.styles
-      });
-
       if (block.styles?.isBackground) {
         return (
           <img

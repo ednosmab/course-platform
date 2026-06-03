@@ -134,3 +134,43 @@ Plano Fase 5A refinado: 5 commits TDD, **28 novos testes (total 45)**. Prioridad
 - Eliminar prop `mode` do `EditorProvider`
 - Limpar 3 branches de init do `EditorContext`
 - Corrigir bug: `EditorCanvas` renderiza cert com `BlockContent` (latente na linha 1282)
+
+---
+
+## 🔧 Sessão: Cert Editor UX bug fixes (header refactor + marquee + side toggle + overlay)
+
+**Trigger:** Relatos do usuário sobre UX inconsistente entre o cert editor e o lesson editor.
+
+### Bugs reportados & fixes aplicados
+
+1. **Header custom pequeno (Award icon + título + Voltar)** — substituído pelo `EditorHeader` partilhado para consistência visual.
+   - `EditorHeader.tsx`: adicionado `saveActionLabel?` prop; removido `mode` do destructure; removido `mode === 'certificate'` branch do save button.
+   - `CertificateEditorHeader.tsx` (NOVO): wrapper fino `<EditorHeader courseId={courseId} saveActionLabel="Salvar" />` — segue SDR-001.
+   - `CertificateEditor.tsx`: removido header custom; trocado `EditorHeader` directo por `<CertificateEditorHeader>`; restaurado wrapper `YStack f={1} h="100vh" w="100vw" overflow="hidden"` que tinha sido perdido na remoção (causava área branca abaixo do canvas).
+
+2. **Marquee bloqueado por background block** — `onBlockMouseDown` agora retorna early para `isBackground` ANTES de `e.stopPropagation()`, deixando o click borbulhar para `pageRootRef` e iniciar o marquee.
+
+3. **Seleção perdida ao arrastar multi-seleccionados** — `onBlockMouseDown` e `onHandleMouseDown` só chamam `setActiveBlockId(block.id)` quando o bloco NÃO está em multi-seleccção (`selectedBlockIds.length > 1`).
+
+4. **Sem toggle Frente/Verso visível** — adicionado controlo segmentado no toolbar do `CertificateCanvas` (visível só se `isDoubleSided=true`), wired ao `setActiveSide` do context.
+
+5. **Marquee dropa primeiro bloco** — substituído `clearSelection() + forEach(toggleSelectBlock)` por `setActiveBlockId(selected[0]) + setSelectedBlocks(selected)`. O reducer `TOGGLE_SELECT_BLOCK` side-effecta `activeBlockId`, causando o bug; `SET_SELECTED_BLOCKS` só toca `selectedBlockIds`.
+
+6. **Não dá para iniciar marquee no padding ao redor do certificado** — adicionado overlay invisível `data-testid="canvas-overlay"` com `position: absolute; inset: 0; zIndex: 0` e `onMouseDown` que computa coords via `pageRootRef.current.getBoundingClientRect()`. YStack do canvas com `position: 'relative'` e `canvasRef` wrapper com `position: 'relative'; zIndex: 1`.
+
+### Tests added
+- `CertificateCanvas.test.tsx`: +3 testes no describe `canvas overlay (padding around the cert)` (total **35/35 passam**, antes eram 32).
+  - zIndex 0 + position absolute
+  - mousedown no overlay → `setActiveBlockId(null)` + `clearSelection()` + (após mousemove/mouseup) `setSelectedBlocks(['b1'])`
+  - mousedown no overlay com rect menor → só `near` é seleccionado (AABB filtering)
+
+### Validação
+- `pnpm vitest run` em `apps/admin` → **52/52 passam** (CertificateCanvas 35 + CertificateEditor boundary 7 + CertificatePalette 8 + arch/coupling 1 + api/health 1)
+- `tsc --noEmit` em `apps/admin` → **0 erros**
+- `pnpm build` em `apps/admin` → **8 rotas, 9.2s**
+- **Sem commits** (G-01 — aguardando autorização do usuário)
+
+### Decisões
+- `EditorHeader` é 100% mode-agnostic; o label "Salvar" cert-specific vive em `CertificateEditorHeader` (SDR-001).
+- Guard defensivo no overlay: `if (pageRootRef.current.contains(e.target as Node)) return;` — não testável em JSDOM (event bubbling ignora zIndex), mas é belt-and-suspenders contra violações de stacking.
+- Coordenadas do marquee divididas por `zoom` para ficarem em design space.
