@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { YStack, XStack, Text, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
+import { BlockBtn } from './BlockBtn';
 
 export const BlockPalette: React.FC = () => {
   const { addBlock, allowedBlockTypes } = useEditor();
@@ -78,39 +79,3 @@ export const BlockPalette: React.FC = () => {
     </YStack>
   );
 };
-
-function BlockBtn({ icon, label, collapsed, onClick }: {
-  icon: string;
-  label: string;
-  collapsed: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <YStack
-      onPress={onClick}
-      cursor="pointer"
-      role="button"
-      tabIndex={0}
-      aria-label={`Adicionar bloco ${label}`}
-      onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
-      p="$2"
-      ai="center"
-      jc="center"
-      gap="$1"
-      borderRadius="$2"
-      borderWidth={1} borderColor="$border"
-      bg="$background"
-      hoverStyle={{ y: -1, borderColor: '$primary' }}
-      flexShrink={0}
-      w={collapsed ? '100%' : 92}
-    >
-      <XStack
-        w={28} h={28}
-        ai="center" jc="center"
-      >
-        <Icon name={icon} size={14} color="$secondaryForeground" />
-      </XStack>
-      {!collapsed && <Text fontSize={12} fontWeight="500">{label}</Text>}
-    </YStack>
-  );
-}
