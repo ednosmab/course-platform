@@ -54,7 +54,10 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale, fillCo
     }
 
     case 'image': {
-      if (!block.url) return null;
+      if (!block.url) {
+        console.warn('[CertificateBlockRenderer] Image block has no URL:', block);
+        return null;
+      }
 
       const imgTransform = [
         block.styles?.rotate ? `rotate(${block.styles.rotate}deg)` : '',
@@ -62,12 +65,36 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale, fillCo
         block.styles?.flipV ? `scaleY(-1)` : '',
       ].filter(Boolean).join(' ');
 
+      console.log('[CertificateBlockRenderer] Rendering image:', {
+        id: block.id,
+        url: block.url,
+        isBackground: !!block.styles?.isBackground,
+        fillContainer,
+        styles: block.styles
+      });
+
+      if (block.styles?.isBackground) {
+        return (
+          <img
+            src={block.url}
+            alt=""
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: block.styles?.objectFit || 'cover',
+              display: 'block',
+              transform: imgTransform,
+            }}
+          />
+        );
+      }
+
       if (fillContainer) {
         return (
           <img
             src={block.url}
             alt={block.alt || ''}
-            style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, borderRadius: block.styles?.isBackground ? '0px' : '6px', display: 'block', transform: imgTransform }}
+            style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || 'fill') as any, borderRadius: '6px', display: 'block', transform: imgTransform }}
           />
         );
       }
@@ -76,7 +103,7 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale, fillCo
       const layoutW = block.layouts?.desktop?.w;
       const rawWidth = block.styles?.width || (layoutW ? `${Math.round((layoutW / 1100) * 100)}%` : '80%');
       const rawHeight = block.styles?.height;
-      const br = block.styles?.isBackground ? 0 : Math.round(4 * scale);
+      const br = Math.round(4 * scale);
 
       const scaleDim = (val: string | undefined, fallback: string): string => {
         if (!val) return fallback;
@@ -97,7 +124,7 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale, fillCo
           <img
             src={block.url}
             alt={block.alt || ''}
-            style={{ width: w, height: h, borderRadius: br, objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'contain')) as any, transform: imgTransform }}
+            style={{ width: w, height: h, borderRadius: br, objectFit: (block.styles?.objectFit || 'contain') as any, transform: imgTransform }}
           />
         </XStack>
       );

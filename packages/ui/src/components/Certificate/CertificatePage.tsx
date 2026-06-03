@@ -1,5 +1,4 @@
 import React from 'react';
-import { YStack } from 'tamagui';
 import { CertificateBlock } from '@projeto/types';
 import { useA4Scale, DESIGN_W, DESIGN_H } from './useA4Scale';
 import { CertificateBlockRenderer } from './CertificateBlockRenderer';
@@ -13,6 +12,13 @@ export interface CertificatePageProps {
    * side at full scale (used by the configuracoes preview modal toggle).
    */
   side?: 'front' | 'back' | 'all';
+  /**
+   * Number of visible pages for scale computation. When a CSS rule hides
+   * one canvas on screen (via data-preview-side), pass 1 so useA4Scale
+   * computes a larger scale for the visible canvas. At print time this
+   * should be the actual page count (1 or 2).
+   */
+  visiblePages?: number;
 }
 
 /**
@@ -35,47 +41,72 @@ function renderCanvas(
   scale: number,
   extraStyle?: React.CSSProperties,
 ) {
-  const canvasW = scale * DESIGN_W;
-  const canvasH = scale * DESIGN_H;
   const sortedBlocks = sortBlocks(blocks);
 
   return (
     <div
-      id="certificate-a4-canvas"
+      className="certificate-canvas-wrapper"
       style={{
+        width: DESIGN_W * scale,
+        height: DESIGN_H * scale,
         position: 'relative',
-        width: canvasW,
-        height: canvasH,
-        background: 'white',
-        borderRadius: Math.round(8 * scale),
-        overflow: 'hidden',
-        boxShadow: '0 10px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.05)',
         ...extraStyle,
       }}
     >
-      {sortedBlocks.map((block: any) => {
-        const isBg = !!block.styles?.isBackground;
-        const layout = isBg
-          ? { x: 0, y: 0, w: DESIGN_W, h: DESIGN_H, zIndex: 0 }
-          : (block.layouts?.desktop || { x: 0, y: 0, w: 200, h: 100, zIndex: 0 });
-        return (
-          <div
-            key={block.id}
-            style={{
-              position: 'absolute',
-              left: layout.x * scale,
-              top: layout.y * scale,
-              width: layout.w * scale,
-              height: layout.h * scale,
-              zIndex: (layout.zIndex ?? 0) + 1,
-              overflow: 'hidden',
-              borderRadius: isBg ? 0 : 6 * scale,
-            }}
-          >
-            <CertificateBlockRenderer block={block} scale={scale} fillContainer />
-          </div>
-        );
-      })}
+      <div
+        className="certificate-a4-canvas"
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: DESIGN_W,
+          height: DESIGN_H,
+          background: 'white',
+          borderRadius: 8,
+          overflow: 'hidden',
+          boxShadow: '0 10px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.05)',
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+        }}
+      >
+        {sortedBlocks.map((block: any) => {
+          const isBg = !!block.styles?.isBackground;
+          if (isBg) {
+            return (
+              <div
+                key={block.id}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+              >
+                <CertificateBlockRenderer block={block} scale={1} fillContainer />
+              </div>
+            );
+          }
+
+          const layout = block.layouts?.desktop || { x: 0, y: 0, w: 200, h: 100, zIndex: 0 };
+          return (
+            <div
+              key={block.id}
+              style={{
+                position: 'absolute',
+                left: layout.x,
+                top: layout.y,
+                width: layout.w,
+                height: layout.h,
+                zIndex: (layout.zIndex ?? 0) + 1,
+                overflow: 'hidden',
+                borderRadius: 6,
+              }}
+            >
+              <CertificateBlockRenderer block={block} scale={1} fillContainer />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -101,9 +132,12 @@ export const CertificatePage: React.FC<CertificatePageProps> = ({
   blocks,
   isDoubleSided = false,
   side = 'all',
+  visiblePages,
 }) => {
+  const totalPages = isDoubleSided ? 2 : 1;
+  const pagesForScale = visiblePages ?? totalPages;
   const { containerRef, a4Width, scale, ready } = useA4Scale({
-    pages: side === 'all' ? (isDoubleSided ? 2 : 1) : 1,
+    pages: pagesForScale,
   });
 
   if (!ready || a4Width <= 0) {
@@ -113,32 +147,23 @@ export const CertificatePage: React.FC<CertificatePageProps> = ({
         ref={containerRef}
         style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
-        <div id="certificate-a4-canvas" style={{ width: 0, height: 0 }} />
+        <div className="certificate-a4-canvas" style={{ width: 0, height: 0 }} />
       </div>
     );
   }
 
-  // Single-side mode (toggle no modal): filtra antes e ignora isDoubleSided
-  if (side !== 'all') {
-    const sideBlocks = blocks.filter((b) => ((b as any).styles?.side || 'front') === side);
-    return (
-      <div
-        id="certificate-print-root"
-        ref={containerRef}
-        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflow: 'hidden', background: 'var(--bg)' }}
-      >
-        {renderCanvas(sideBlocks, scale)}
-      </div>
-    );
-  }
-
-  // All-sides mode (impressão / preview sem toggle)
+  // All-sides mode: always render both canvases so the DOM is complete for
+  // print. The `side` prop is NOT used to filter blocks here — instead, the
+  // parent page applies a CSS class (`data-preview-side`) that hides the
+  // non-selected canvas on screen via @media screen. At print time, both
+  // canvases are visible and each gets its own A4 page via page-break-after.
   const frontBlocks = isDoubleSided
     ? blocks.filter((b) => (b as any).styles?.side !== 'back')
     : blocks;
   const backBlocks = isDoubleSided
     ? blocks.filter((b) => (b as any).styles?.side === 'back')
     : [];
+
 
   return (
     <div

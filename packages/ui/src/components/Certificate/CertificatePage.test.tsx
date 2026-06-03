@@ -114,7 +114,7 @@ describe('CertificatePage', () => {
 
   it('renders a single A4 canvas when isDoubleSided is false', async () => {
     await renderPage({ blocks: [frontBlock], isDoubleSided: false });
-    const canvases = container.querySelectorAll('#certificate-a4-canvas');
+    const canvases = container.querySelectorAll('.certificate-a4-canvas');
     expect(canvases.length).toBe(1);
     expect(container.textContent).toContain('FRENTE');
     expect(container.textContent).not.toContain('VERSO');
@@ -122,7 +122,7 @@ describe('CertificatePage', () => {
 
   it('renders TWO A4 canvases when isDoubleSided is true (regression for ed231f7)', async () => {
     await renderPage({ blocks: [frontBlock, backBlock], isDoubleSided: true });
-    const canvases = container.querySelectorAll('#certificate-a4-canvas');
+    const canvases = container.querySelectorAll('.certificate-a4-canvas');
     expect(canvases.length).toBe(2);
     expect(container.textContent).toContain('FRENTE');
     expect(container.textContent).toContain('VERSO');
@@ -130,7 +130,7 @@ describe('CertificatePage', () => {
 
   it('the first A4 canvas has page-break-after so the browser starts a new page', async () => {
     await renderPage({ blocks: [frontBlock, backBlock], isDoubleSided: true });
-    const canvases = Array.from(container.querySelectorAll('#certificate-a4-canvas'));
+    const canvases = Array.from(container.querySelectorAll('.certificate-canvas-wrapper'));
     expect(canvases.length).toBeGreaterThanOrEqual(1);
     const firstCanvas = canvases[0] as HTMLElement;
     const style = (firstCanvas.getAttribute('style') || '').toLowerCase();
@@ -139,7 +139,7 @@ describe('CertificatePage', () => {
 
   it('the back page is omitted entirely when there are no back blocks (regression for empty back page)', async () => {
     await renderPage({ blocks: [frontBlock], isDoubleSided: true });
-    const canvases = container.querySelectorAll('#certificate-a4-canvas');
+    const canvases = container.querySelectorAll('.certificate-a4-canvas');
     expect(canvases.length).toBe(1);
     expect(container.textContent).toContain('FRENTE');
     expect(container.textContent).not.toContain('VERSO');
@@ -164,7 +164,7 @@ describe('CertificatePage', () => {
       await Promise.resolve();
     });
     flushSync(() => {});
-    const shortCanvases = shortContainer.querySelectorAll('#certificate-a4-canvas');
+    const shortCanvases = shortContainer.querySelectorAll('.certificate-a4-canvas');
     expect(shortCanvases.length).toBe(2);
     // jsdom has 0x0 layout, so we can only assert the canvases were rendered
     // (i.e. the hook did not crash with a negative or NaN scale).

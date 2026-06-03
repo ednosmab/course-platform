@@ -38,7 +38,3 @@ test-results-ladle/
 playwright-report/
 tests/ladle-vrt/test-results/
 
-# Temporary screenshots/uploads from chat
-image*.png
-logo-flexed.jpeg
-logo-flexed.png

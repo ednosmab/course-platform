@@ -36,22 +36,10 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [printing, setPrinting] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const before = () => setPrinting(true);
-    const after = () => setPrinting(false);
-    window.addEventListener('beforeprint', before);
-    window.addEventListener('afterprint', after);
-    return () => {
-      window.removeEventListener('beforeprint', before);
-      window.removeEventListener('afterprint', after);
-    };
   }, []);
 
   const certMeta = (course?.certificate_blocks || []).find((b: any) => b.type === '__meta__') as any;
@@ -60,23 +48,159 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const certIsDoubleSided = !!certMeta?.isDoubleSided;
   const certificateBlocks = (course?.certificate_blocks || []).filter((b: any) => b.type !== '__meta__');
 
+  // Toggle frente/verso do modal de preview (só usado se isDoubleSided)
+  const [previewSide, setPreviewSide] = useState<'front' | 'back'>('front');
+
+  // Print via iframe isolado — evita race conditions do @media print no DOM da app.
+  const handlePrint = () => {
+    const overlayEl = document.getElementById('certificate-modal-overlay');
+    if (!overlayEl) return;
+
+    const overlayHTML = overlayEl.outerHTML;
+    const printScale = 1122.5 / certDesignWidth;
+
+    const printStyles = `
+      <style>
+        @page { size: A4 landscape; margin: 0; }
+        html, body { margin: 0; padding: 0; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        body * { visibility: hidden !important; }
+        #certificate-modal-overlay,
+        #certificate-modal-overlay * { visibility: visible !important; }
+        #certificate-modal-overlay { position: static !important; inset: auto !important; display: block !important; background: white !important; }
+        #certificate-modal-card { max-width: none !important; max-height: none !important; width: 297mm !important; height: auto !important; border-radius: 0 !important; box-shadow: none !important; overflow: visible !important; background: transparent !important; margin: 0 !important; padding: 0 !important; }
+        #certificate-modal-header { display: none !important; }
+        #certificate-print-root { display: block !important; width: 297mm !important; height: auto !important; padding: 0 !important; margin: 0 !important; background: white !important; }
+        #certificate-print-root > div { width: 297mm !important; height: 210mm !important; position: relative !important; overflow: hidden !important; display: block !important; margin: 0 !important; page-break-inside: avoid !important; }
+        #certificate-print-root > div:first-child { page-break-after: always !important; }
+        .certificate-a4-canvas { position: absolute !important; left: 0 !important; top: 0 !important; width: var(--cert-design-width) !important; height: var(--cert-design-height) !important; transform: scale(var(--cert-print-scale)) !important; transform-origin: top left !important; box-shadow: none !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      </style>
+    `;
+
+    const srcdoc = `<!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          ${printStyles}
+          <style>
+            :root {
+              --cert-design-width: ${certDesignWidth}px;
+              --cert-design-height: ${certDesignHeight}px;
+              --cert-print-scale: ${printScale};
+            }
+          </style>
+        </head>
+        <body>${overlayHTML}</body>
+      </html>
+    `;
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.srcdoc = srcdoc;
+
+    iframe.onload = () => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch (e) {
+        console.error('Print failed:', e);
+      } finally {
+        setTimeout(() => iframe.remove(), 1000);
+      }
+    };
+
+    document.body.appendChild(iframe);
+  };
+
   useEffect(() => {
     const style = document.createElement('style');
     style.id = 'certificate-print-styles';
-    style.textContent = `@media print {
-      @page { size: A4 landscape; margin: 0; }
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      body > *:not(#certificate-modal-overlay) { display: none !important; }
-      #certificate-modal-overlay { position: fixed !important; inset: 0 !important; background: white !important; z-index: 9999999 !important; display: flex !important; align-items: center !important; justify-content: center !important; visibility: visible !important; }
-      #certificate-modal-card { max-width: none !important; max-height: none !important; width: 297mm !important; height: 210mm !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; visibility: visible !important; }
-      #certificate-modal-header { display: none !important; }
-      #certificate-print-root { display: flex !important; align-items: center !important; justify-content: center !important; width: 297mm !important; height: 210mm !important; padding: 0 !important; margin: 0 !important; background: white !important; visibility: visible !important; }
-      #certificate-print-root > div { width: 297mm !important; height: 210mm !important; position: relative !important; overflow: hidden !important; }
-      #certificate-a4-canvas { position: absolute !important; left: 0 !important; top: 0 !important; width: var(--cert-design-width) !important; height: var(--cert-design-height) !important; transform: scale(var(--cert-print-scale)) !important; transform-origin: top left !important; border: none !important; box-shadow: none !important; page-break-inside: avoid !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; visibility: visible !important; }
-    }`;
+    style.textContent = `
+      /* Screen: hide the non-selected side based on data-preview-side */
+      @media screen {
+        #certificate-modal-card[data-preview-side="front"] #certificate-print-root > div:nth-child(2) {
+          display: none !important;
+        }
+        #certificate-modal-card[data-preview-side="back"] #certificate-print-root > div:first-child {
+          display: none !important;
+        }
+      }
+
+      @media print {
+        @page { size: A4 landscape; margin: 0; }
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+        /* Hide everything except the certificate modal */
+        body * { visibility: hidden !important; }
+        #certificate-modal-overlay,
+        #certificate-modal-overlay * {
+          visibility: visible !important;
+        }
+
+        #certificate-modal-overlay {
+          position: static !important; inset: auto !important;
+          background: white !important; display: block !important;
+        }
+
+        #certificate-modal-card {
+          max-width: none !important; max-height: none !important;
+          width: 297mm !important; height: auto !important;
+          border-radius: 0 !important; box-shadow: none !important;
+          overflow: visible !important; background: transparent !important;
+          margin: 0 !important; padding: 0 !important;
+        }
+
+        #certificate-modal-header { display: none !important; }
+
+        #certificate-print-root {
+          display: block !important;
+          width: 297mm !important; height: auto !important;
+          padding: 0 !important; margin: 0 !important;
+          background: white !important;
+        }
+
+        #certificate-print-root > div {
+          width: 297mm !important; height: 210mm !important;
+          position: relative !important; overflow: hidden !important;
+          display: block !important; margin: 0 !important;
+          page-break-inside: avoid !important;
+        }
+        #certificate-print-root > div:first-child {
+          page-break-after: always !important;
+        }
+
+        .certificate-a4-canvas {
+          position: absolute !important; left: 0 !important; top: 0 !important;
+          width: var(--cert-design-width) !important;
+          height: var(--cert-design-height) !important;
+          transform: scale(var(--cert-print-scale)) !important;
+          transform-origin: top left !important;
+          box-shadow: none !important; max-width: none !important;
+          max-height: none !important; border-radius: 0 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+    `;
     document.head.appendChild(style);
-    return () => style.remove();
-  }, []);
+
+    const root = document.documentElement;
+    root.style.setProperty('--cert-design-width', `${certDesignWidth}px`);
+    root.style.setProperty('--cert-design-height', `${certDesignHeight}px`);
+    root.style.setProperty('--cert-print-scale', (1122.5 / certDesignWidth).toString());
+
+    return () => {
+      style.remove();
+      root.style.removeProperty('--cert-design-width');
+      root.style.removeProperty('--cert-design-height');
+      root.style.removeProperty('--cert-print-scale');
+    };
+  }, [certDesignWidth, certDesignHeight]);
 
   const flashHighlight = (id: string) => {
     setHighlightedId(id);
@@ -604,23 +728,43 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                   >
                     <YStack
                       id="certificate-modal-card"
+                      data-preview-side={certIsDoubleSided ? previewSide : undefined}
                       bg="white"
                       borderRadius={12}
                       overflow="hidden"
-                      width="90vw"
-                      height="85vh"
-                      style={{ maxWidth: 'min(90vw, 1300px)', maxHeight: 'min(85vh, 960px)', boxShadow: '0 10px 40px rgba(0,0,0,0.25)' }}
+                      width="95vw"
+                      height="92vh"
+                      style={{
+                        maxWidth: 'min(95vw, 1500px)',
+                        maxHeight: 'min(92vh, 1100px)',
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.25)',
+                      } as React.CSSProperties}
                       onPress={(e: any) => e.stopPropagation()}
                     >
                       <XStack id="certificate-modal-header" ai="center" jc="space-between" p={12} borderBottomWidth={1} borderBottomColor="$border">
                         <XStack ai="center" gap={12}>
                           <Text fontSize={14} fontWeight="600">Preview do Certificado</Text>
                           {certIsDoubleSided && (
-                            <Text fontSize={11} color="$textMuted">(frente e verso — imprime 2 páginas A4)</Text>
+                            <XStack ml="$2" bg="$background" borderRadius="$2" p="$0.5" gap="$0.5" borderWidth={1} borderColor="$border">
+                              <Button
+                                variant={previewSide === 'front' ? 'primary' : 'ghost'}
+                                onPress={() => setPreviewSide('front')}
+                                px="$3"
+                              >
+                                <Text fontSize={11} color={previewSide === 'front' ? 'white' : '$textMuted'}>Frente</Text>
+                              </Button>
+                              <Button
+                                variant={previewSide === 'back' ? 'primary' : 'ghost'}
+                                onPress={() => setPreviewSide('back')}
+                                px="$3"
+                              >
+                                <Text fontSize={11} color={previewSide === 'back' ? 'white' : '$textMuted'}>Verso</Text>
+                              </Button>
+                            </XStack>
                           )}
                         </XStack>
                         <XStack ai="center" gap={8}>
-                          <Button variant="ghost" borderWidth={1} borderColor="$border" onPress={() => window.print()}>
+                          <Button variant="ghost" borderWidth={1} borderColor="$border" onPress={handlePrint}>
                             <Icon name="Download" size={14} color="$textMuted" />
                           </Button>
                           <Button variant="ghost" onPress={() => setPreviewOpen(false)} px="$2">
@@ -629,7 +773,12 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                         </XStack>
                       </XStack>
                       <YStack f={1} bg="white" style={{ overflow: 'hidden' }}>
-                        <CertificatePage blocks={certificateBlocks} isDoubleSided={certIsDoubleSided} />
+                        <CertificatePage
+                          blocks={certificateBlocks}
+                          isDoubleSided={certIsDoubleSided}
+                          side={previewSide}
+                          visiblePages={1}
+                        />
                       </YStack>
                     </YStack>
                   </YStack>,

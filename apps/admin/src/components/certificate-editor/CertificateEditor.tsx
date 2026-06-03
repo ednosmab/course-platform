@@ -64,6 +64,7 @@ function CertificateEditorLayout({ courseId }: { courseId: string }) {
           <BlockSettings
             propsHeader={<CertificateCertSettings />}
             propsFooter={<CertificateBlockSideSelector />}
+            imageSettingsSlot={<CertificateImageSettings />}
           />
         ) : !canvasPanelCollapsed ? (
           <CertificateCanvasPanel
@@ -73,7 +74,6 @@ function CertificateEditorLayout({ courseId }: { courseId: string }) {
             onToggleCollapse={() => setCanvasPanelCollapsed(true)}
           />
         ) : null}
-        {activeBlockId && <CertificateImageSettings />}
       </XStack>
     </YStack>
   );
