@@ -49,6 +49,7 @@
 - **BUG: Editor canvas de certificado usa renderer errado** — `EditorCanvas.tsx:1285-1294` renderiza blocos do certificado com `BlockContent` (renderer de aula) em vez de `CertificateBlockRenderer`. Corrigido em P0 (extrair `CertificateCanvas`).
 - ~~**BUG: Zod schema — `LessonSchema.blocks` missing `heading` e `divider`**~~ — ✅ Concluído (verificado em `packages/types/src/database.ts:96-97`).
 - ~~**Chore: Student app — sanitização XSS**~~ — ✅ Concluído (ver `Fix: XSS sanitization` no Done).
+- **BUG: Drag-and-drop de imagem para dentro do placeholder não funciona** — Reportado em 2026-06-03. O placeholder dashed "Arraste uma imagem aqui / ou cole a URL no painel →" aparece (commit `59b9098` adicionou ao cert editor; já existia no lesson editor em `EditorCanvas.tsx:273`), mas o evento `onDrop`/`onDragOver` não está a ser accionado quando o utilizador arrasta um ficheiro de imagem do desktop para dentro do box. **Afecta ambos os modos** (lesson em `EditorCanvas.tsx` e cert em `CertificateBlockRenderer.tsx`). Hipóteses: (1) algum elemento pai está a cancelar o drag com `pointer-events` ou `onDragOver` que chama `e.preventDefault()` mas o `onDrop` não propaga; (2) o placeholder está a renderizar `<svg>` inline em vez de um drop zone real; (3) no cert editor, `CertificateCanvas` não passa `onImageDrop` para o renderer (só tem `CertificateImageSettings` no painel lateral). Investigar causa raiz em ambos os canvases, adicionar teste E2E (Playwright) que arrasta um ficheiro real e verifica `block.url` actualizado, e implementar fix.
 
 ## 🗓️ P2 — Médio Prazo
 
