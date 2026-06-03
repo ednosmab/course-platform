@@ -50,7 +50,84 @@ Cada passo deve ser precedido de testes (TDD) que documentem o comportamento act
 
 ---
 
-## 🧪 Resultado das Fases (2026-06-02)
+## 🔍 Revisão Exaustiva (Fase 5A — 2026-06-03)
+
+Leitura real do código revelou dados mais precisos:
+
+### Inventário Exacto de Branches `isCertMode`
+
+| Ficheiro | Branches Reais | Earlier Estimate |
+|---|---|---|
+| `EditorCanvas.tsx` (1447 linhas) | **13** (linhas 621, 639, 1138, 1139, 1141, 1158, 1185×2, 1197, 1207, 1222, 1224, 1357) | ~15 |
+| `BlockSettings.tsx` (1255 linhas) | **3** (linhas 476, 958, 968) — só image block | ~5 |
+| `EditorContext.tsx` (646 linhas) | **5** (linhas 400, 440, 462, 467, 485) | ~5 |
+| `EditorHeader.tsx` (209 linhas) | **1** (linha 179) | ~1 |
+| `BlockPalette.tsx` | **0** (usa `allowedBlockTypes` data-driven) | — |
+| **Total** | **22** | ~26 |
+
+### Bug Crítico Encontrado
+`EditorCanvas.tsx:1282` renderiza blocos do certificado com `BlockContent` (inline lesson renderer, linhas 185-538, 350 linhas privadas) em vez de `CertificateBlockRenderer` (de `packages/ui`). Isto viola a boundary rule do SDR-001. Não foi corrigido em Fase 3 porque o refactor foi adiado.
+
+### Complexidade do `EditorCanvas` (1447 linhas)
+```
+ 8-16: Constantes (CANVAS_W, PAGE_W, MOBILE_W, TABLET_W, A4_RATIO)
+18-21: isOutOfBounds()
+23-58: parseSimpleMarkdown() — privado, lesson-only
+90-109: getLayout() — partilhável
+111-169: computeBlockGuides() — partilhável
+171-180: HANDLES — partilhável
+185-538: BlockContent — privado, lesson-only, 8 tipos de bloco
+540-580: renderViewportBlocks() — helper partilhável
+613-751: PreviewCanvas() — branches cert/lesson/mobile/tablet/desktop
+754-782: MobileViewport() — lesson-only
+784-812: TableViewport() — lesson-only
+814-1447: EditorCanvas (export) — drag/resize/marquee/inline-edit
+```
+
+### Estrutura do `BlockSettings` (1255 linhas)
+- Tabs "Propriedades" / "HTML Fonte" — partilhável (lesson usa ambas, cert só Properties)
+- 8 branches por tipo de bloco (text/video/image/heading/quote/divider/html/quiz)
+- `isCertMode` só afecta image block (esconde `ImageUploadBlock` + "Remover Fundo")
+
+### Plano Fase 5A (28 novos testes, 45 total, ~10h)
+
+#### Fase 5A.1: CertificatePalette (7 testes, ~2h)
+- Novo componente `CertificatePalette.tsx` + `certificate-block-types.ts`
+- Extrair `BlockBtn` partilhado de `BlockPalette.tsx` para `components/editor/BlockBtn.tsx`
+- Testes: boundary (4 tipos cert, excluir quiz/video/html/quote), section title, toggle, addBlock dispatch, single-source-of-truth (7)
+
+#### Fase 5A.2: CertificateCanvas (11 testes, ~3.5h)
+- Novo componente `CertificateCanvas.tsx` — render com `CertificateBlockRenderer` (NUNCA `BlockContent`)
+- Propriedades: `isDoubleSided`, `blocks`, `designWidth`, `designHeight`, `activeSide`
+- Sem viewport toggles, sem inline-edit, sem marquee, sem drag/resize
+- Testes: duplex (1/2 canvases), aspect ratio A4, offset rule, overflow hidden, usa CertificateBlockRenderer (11)
+
+#### Fase 5A.3: CertificateEditor refactor (7 testes, ~1.5h)
+- Trocar imports: `BlockPalette` → `CertificatePalette`, `EditorCanvas` → `CertificateCanvas`
+- 3 testes estáticos de boundary (grep no source: não importa BlockPalette/EditorCanvas)
+- 4 testes de composição (Provider + slots + navegação)
+
+#### Fase 5A.4: EditorCanvas cleanup (~2h)
+- Remover 13 branches `isCertMode` do `EditorCanvas.tsx`
+- Reduzir de 1447 para ~1100 linhas (só lesson)
+- Validar com `grep "isCertMode" EditorCanvas.tsx` = 0
+
+#### Fase 5A.5: EditorContext mínimo (3 testes, ~45min)
+- Testar `addBlock` offset em cert mode
+- Testar `addBlock` position em lesson mode
+- Testar `entityId` cert = `courseId`, lesson = `activeLessonId`
+
+### Adiado para Fase 5B
+- Extrair `useViewportInteraction` para ficheiro próprio (requer mock infrastructure)
+- Eliminar prop `mode` do `EditorProvider` (requer estratégia de modeConfig)
+- Limpar 3 branches de init do `EditorContext` (init flow complexo)
+- Corrigir bug "EditorCanvas renderiza cert com BlockContent" (corrigido implicitamente pelo CertificateCanvas)
+- `editor-modes.test.ts` (4 testes — contract tests do core package)
+- `EditorHeader.test.tsx` (3 testes — i18n + auth, flaky sem infra)
+
+---
+
+## 🧪 Resultado das Fases (2026-06-02 e 2026-06-03)
 
 | Fase | Status | Evidência |
 |------|--------|-----------|
@@ -59,4 +136,5 @@ Cada passo deve ser precedido de testes (TDD) que documentem o comportamento act
 | 2 (GREEN duplex) | ✅ | 42/42 testes packages/ui passam. `useA4Scale` altura-aware. `configuracoes/[id]` usa `<CertificatePage>` (~140 linhas removidas). |
 | 3 (extract) | ✅ | Rota dedicada + entry component + redirect 308. `pnpm run build` lista 8 rotas. 0 erros TypeScript. |
 | 4 (refactor) | ✅ | `workflow_adm.md` actualizado. Boundary rule em `apps/admin/AGENTS.md`. Esta nota de decisão. |
+| 5A (isolation plan) | 📋 **Plan** | 28 novos testes TDD, 5 commits, ~10h. Ver secção "🔍 Revisão Exaustiva" acima para detalhes. |
 

@@ -1,7 +1,7 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## Status Atual
-CONCLUÍDA — Sessão SDR-001 (cert-editor boundary + iframe print fix). **Concluído**: (1) F-01 boundary fix em `BlockSettings.tsx`. (2) Warning Tamagui silenciado. (3) Bug de impressão resolvido por completo com isolamento via `<iframe srcdoc>`. (4) Build fix para `BrandMark.tsx` via aliases em `next.config.ts`. 2 commits realizados: `c921da5` (cert-editor fixes) e `8c26b04` (print iframe srcdoc). **Validação**: 44/44 testes passam, tsc 0 erros, build admin compila (8 rotas, 11.6s).
+REVISÃO CONCLUÍDA — Plano Fase 5A definido. **Inventário do código real**: 13 branches `isCertMode` em `EditorCanvas.tsx` (1447 linhas), 3 em `BlockSettings.tsx`, 5 em `EditorContext.tsx`. **Bug crítico encontrado**: `EditorCanvas.tsx:1282` renderiza blocos do certificado com `BlockContent` (lesson renderer) em vez de `CertificateBlockRenderer`. **Plano**: 28 novos testes TDD (total 45), 5 commits, ~10h de trabalho. Fase 5B (hook, mode, init flow) adiada para depois.
 
 ## 🎯 Tarefas Concluídas
 
@@ -96,6 +96,20 @@ CONCLUÍDA — Sessão SDR-001 (cert-editor boundary + iframe print fix). **Conc
 - **Imagens Supabase no iframe**: validação concluída — bucket `certificate-images` é público, URLs `/object/public/` sem TTL. Risco mitigado. (Ver secção "Validação de Segurança" acima e SDR-002.)
 - `apps/student` tsc: erro `Maximum call stack size exceeded` pré-existente (não introduzido nesta sessão).
 
+## 🎯 Tarefa em Execução
+**Revisão exaustiva do isolamento cert-editor + plano Fase 5A (SDR-001).**
+
+Inventário real via leitura do código:
+- `EditorCanvas.tsx`: **1447 linhas**, **13 branches `isCertMode`** (não 15 como estimado antes)
+- `BlockSettings.tsx`: 1255 linhas, **3 branches** `isCertMode` (só image block)
+- `EditorContext.tsx`: 646 linhas, **5 branches** `mode === 'certificate'`
+- `EditorHeader.tsx`: 209 linhas, **1 branch**
+- `BlockContent` (linhas 185-538 do EditorCanvas) é **privado** e renderiza 8 tipos de bloco da lesson
+- **Bug crítico encontrado**: `EditorCanvas.tsx:1282` renderiza blocos do certificado com `BlockContent` (lesson renderer) em vez de `CertificateBlockRenderer`. Isto viola o SDR-001.
+- `BlockPalette` é mode-aware via `allowedBlockTypes` (funciona, sem branches)
+
+Plano Fase 5A refinado: 5 commits TDD, **28 novos testes (total 45)**. Prioridade: CertificatePalette (7 testes) → CertificateCanvas (11 testes) → CertificateEditor refactor (7 testes) → EditorCanvas cleanup (13 branches removidos) → EditorContext mínimo (3 testes). Fase 5B (useViewportInteraction, mode prop, init flow) adiada.
+
 ## 🛠️ Decisões Arquitecturais
 - **SDR-002 (iframe print isolation)**: ver `docs/sdr/SDR-002-iframe-print-isolation.md`
 - **Aliases em `next.config.ts`** em vez de modificar `BrandMark.tsx` — solução permanente para conflito de edição concorrente
@@ -110,4 +124,13 @@ CONCLUÍDA — Sessão SDR-001 (cert-editor boundary + iframe print fix). **Conc
 - **Conclusão**: risco de auth/TTL zero na config actual. Mitigação documentada em SDR-002 para referência futura.
 
 ## Próximos Passos
-- P1 (roadmap SDR-001): extrair `useViewportInteraction`, criar `CertificateCanvas.tsx`/`CertificateBlockSettings.tsx`, remover `isCertMode` branches
+### Opções para avançar:
+1. **A) Começar pela Fase 5A.1 (CertificatePalette)** — 7 testes TDD, ~2h, baixo risco
+2. **B) Criar branch dedicado `feat/cert-editor-isolation`** antes de começar a implementar
+3. **C) Rever alguma secção específica** (testes estáticos de boundary, decisão de adiar Fase 5B)
+
+### Fase 5B (adiada):
+- Extrair `useViewportInteraction` para ficheiro próprio
+- Eliminar prop `mode` do `EditorProvider`
+- Limpar 3 branches de init do `EditorContext`
+- Corrigir bug: `EditorCanvas` renderiza cert com `BlockContent` (latente na linha 1282)

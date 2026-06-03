@@ -8,7 +8,21 @@
 
 ## 🏆 P0 — Imediato (Sprint Atual)
 
-- **Refactor: separar editor de certificado do editor de curso** — `EditorCanvas.tsx` (1450 linhas) trata os dois modos via `if (isCertMode)`. Promover certificado a rota dedicada `/studio/[id]/certificate` com `CertificateCanvas` próprio. Boundary rule: compartilham apenas `CertificateBlockRenderer` e contratos Zod. Ver `docs/sdr/SDR-001-certificate-editor-isolation.md`.
+### ⏳ **Refactor: Fase 5A — Isolamento definitivo do editor de certificado**
+**Contexto**: SDR-001. Inventário real: 13 branches `isCertMode` em `EditorCanvas.tsx`, 3 em `BlockSettings.tsx`, 5 em `EditorContext.tsx`, 1 em `EditorHeader.tsx`. Bug crítico: `EditorCanvas.tsx:1282` renderiza cert com `BlockContent` (lesson) em vez de `CertificateBlockRenderer`. Plano: 28 novos testes TDD (total 45), 5 commits, ~10h.
+
+**Sub-itens (TDD estrito, por ordem)**:
+- [ ] **5A.1: CertificatePalette** — 7 testes, ~2h (novo componente + extrair BlockBtn)
+- [ ] **5A.2: CertificateCanvas** — 11 testes, ~3.5h (render com CertificateBlockRenderer, duplex, offset)
+- [ ] **5A.3: CertificateEditor refactor** — 7 testes, ~1.5h (compor novos componentes, 3 testes estáticos boundary)
+- [ ] **5A.4: EditorCanvas cleanup** — remover 13 branches `isCertMode` (~2h)
+- [ ] **5A.5: EditorContext testes mínimos** — 3 testes (~45min)
+
+**Adiado para Fase 5B**:
+- Extrair `useViewportInteraction` para ficheiro dedicado
+- Eliminar prop `mode` do `EditorProvider`
+- Limpar 3 branches de init do `EditorContext`
+- Corrigir bug: cert render com `BlockContent`
 
 ## ✅ Done
 
