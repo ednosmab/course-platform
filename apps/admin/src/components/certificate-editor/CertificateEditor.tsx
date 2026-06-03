@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import { EditorProvider, useEditor } from '../../context/EditorContext';
 import { createCertificateModeConfig } from '../../context/editor-modes';
 import { EditorHeader } from '../editor/EditorHeader';
-import { BlockPalette } from '../editor/BlockPalette';
-import { EditorCanvas } from '../editor/EditorCanvas';
+import { CertificatePalette } from './CertificatePalette';
+import { CertificateCanvas } from './CertificateCanvas';
 import { BlockSettings } from '../editor/BlockSettings';
 import { CertificateCanvasPanel } from './CertificateCanvasPanel';
 import { CertificateCertSettings } from './CertificateCertSettings';
@@ -23,7 +23,7 @@ import { CertificateBlockSideSelector } from './CertificateBlockSideSelector';
  */
 function CertificateEditorLayout({ courseId }: { courseId: string }) {
   const router = useRouter();
-  const { activeBlockId, certDesignWidth, certDesignHeight, setCertDesignSize } = useEditor();
+  const { blocks, activeBlockId, activeSide, certIsDoubleSided, certDesignWidth, certDesignHeight, setCertDesignSize } = useEditor();
   const [canvasPanelCollapsed, setCanvasPanelCollapsed] = useState(false);
 
   return (
@@ -58,8 +58,14 @@ function CertificateEditorLayout({ courseId }: { courseId: string }) {
       </XStack>
 
       <XStack f={1} overflow="hidden" w="100%">
-        <BlockPalette />
-        <EditorCanvas />
+        <CertificatePalette />
+        <CertificateCanvas
+          blocks={blocks}
+          designWidth={certDesignWidth}
+          designHeight={certDesignHeight}
+          activeSide={activeSide}
+          isDoubleSided={certIsDoubleSided}
+        />
         {activeBlockId ? (
           <BlockSettings
             propsHeader={<CertificateCertSettings />}
