@@ -22,6 +22,9 @@
 - **Refactor: Student app — TopBar HTML→Tamagui + tokens** — `<ul>/<li>/<a>` migrados para `YStack/XStack` com tokens (`$border`, `$surface`, `$popover`). `useRef<HTMLDivElement>` → `useRef<View>`. `onMouseEnter/Leave` → `hoverStyle/pressStyle`. Dropdown usa `shadowPresets.cwPop`.
 - **Refactor: Shadow presets activos no design system** — `Card` agora consome `shadowPresets.cwSoft` como base + variant `elevated` (`cwPop`). Exports de `shadowPresets` adicionados ao `@projeto/ui`. `elevation={N}` ad-hoc substituídos por `shadowPresets.cwSoft` (TopBar) e `elevated` (hero cards) em todo o student app.
 - **Fix: XSS sanitization no BlockRenderer (S-01)** — Adicionado `dompurify` + `sanitizeHtml()` em `packages/ui/src/utils/sanitize.ts` com guard `typeof window` (cross-platform Web + Native). 3 sítios `dangerouslySetInnerHTML` corrigidos: `packages/renderer/src/BlockRenderer.tsx`, `apps/admin/src/components/editor/EditorCanvas.tsx`, `packages/ui/src/blocks/HtmlBlock.tsx`. Bug pré-existente no regex de detecção `/<[a-z][\s>]/i` corrigido para `/<\w+[\s>\/]/i` (multi-char tags). 20 testes unitários + 8 testes de integração cobrindo `<script>`, `<img onerror>`, `<iframe>`, `<svg onload>`, `javascript:`, `data:`, `vbscript:`, event handlers, meta refresh, etc.
+- **BUG: Impressão duplex só mostra 1 face** — Resolvido via iframe srcdoc (SDR-002) + `side='all'` + CSS `@media screen` toggle. Ambos os canvases renderizados sempre quando `isDoubleSided`.
+- **BUG: `CertificateMiniature` perdeu prop `isDoubleSided`** — Resolvido pela arquitectura `CertificatePage` com `side='all'`. Miniature reactivado com duplex.
+- **Validação: iframe print + Supabase Storage** — Bucket `certificate-images` confirmado público; URLs `/object/public/` funcionam em iframe com `srcdoc` sem auth (SDR-002). Risco mitigado.
 
 ## 📌 P1 — Curto Prazo
 
@@ -30,8 +33,6 @@
 - ~~**BUG: Student app — TopBar HTML tags e cores hardcoded**~~ — ✅ Concluído.
 - ~~**BUG: Student app — Shadow presets não usados**~~ — ✅ Concluído.
 - **BUG: Editor canvas de certificado usa renderer errado** — `EditorCanvas.tsx:1285-1294` renderiza blocos do certificado com `BlockContent` (renderer de aula) em vez de `CertificateBlockRenderer`. Corrigido em P0 (extrair `CertificateCanvas`).
-- **BUG: Impressão duplex só mostra 1 face** — `configuracoes/[id]/page.tsx` perdeu o loop de 2 canvases no commit `ed231f7`. Restaurar em `CertificatePage.tsx` + ajustar `CertificatePrint.css` para 2 páginas A4 com `page-break-after: always`.
-- **BUG: `CertificateMiniature` perdeu prop `isDoubleSided`** — `configuracoes/[id]/page.tsx:609` removeu a prop na chamada. Componente ainda aceita, só precisa passar.
 - ~~**BUG: Zod schema — `LessonSchema.blocks` missing `heading` e `divider`**~~ — ✅ Concluído (verificado em `packages/types/src/database.ts:96-97`).
 - ~~**Chore: Student app — sanitização XSS**~~ — ✅ Concluído (ver `Fix: XSS sanitization` no Done).
 
