@@ -111,6 +111,63 @@ Estado actual esperado (2026-06-03): **59/59 admin + 46/46 ui** + tsc 0 erros.
 
 ---
 
+## 📘 Lesson Editor — Drag-and-Drop de Imagem
+
+> Procedimento complementar ao fluxo de certificado. Cobre a funcionalidade
+> de **arrastar uma imagem directamente para um bloco de imagem no editor de
+> aula** (desktop, tablet e mobile).
+
+### Pré-requisitos
+- Curso com pelo menos uma aula que tenha um bloco de imagem **sem URL**
+  (vazio, a mostrar o placeholder "Arraste uma imagem aqui").
+- Editor aberto em `/studio/[courseId]?lessonId=[lessonId]`.
+
+### Happy Path (Desktop)
+
+1. Abrir a aula no editor.
+2. Confirmar que o bloco de imagem mostra o placeholder tracejado.
+3. Arrastar um ficheiro PNG/JPEG/WebP ≤ 5MB do sistema de ficheiros para
+   cima do bloco.
+4. O `<img>` deve aparecer com `src` igual a um `data:image/...` (o editor
+   faz FileReader → DataURL e persiste no `block.url`).
+5. Aguardar ~10s (debounce do auto-save) e recarregar a página com F5.
+6. O bloco deve continuar a mostrar a imagem.
+
+### Cenário Tablet
+
+7. Clicar no botão de viewport **Tablet** no header do editor (ícone de
+   tablet, ao lado do toggle de monitor).
+8. O canvas deve estreitar para 650px.
+9. Repetir passos 3-6 — o drop deve funcionar com o mesmo `data-block-id`
+   no outer div do bloco.
+
+### Cenário Mobile
+
+10. Clicar no botão de viewport **Mobile** no header.
+11. O canvas deve estreitar para 390px.
+12. Repetir passos 3-6 — o drop deve funcionar.
+
+### Cenários de Borda
+
+- **Ficheiro > 5MB:** sem drop, sem mudança de estado.
+- **Ficheiro não-imagem (PDF, ZIP):** sem drop, sem mudança de estado.
+- **Drop em bloco de texto/vídeo/heading:** sem mudança de estado (o
+  handler outer faz early-return se `block.type !== 'image'`).
+
+### Validação Automatizada
+
+Coberto por `tests/e2e/admin-image-drop.spec.ts` (3 cenários —
+desktop/tablet/mobile). O helper `loginAsAdmin` em
+`tests/e2e/utils/auth.ts` é reutilizado.
+
+### Histórico
+
+| Data | Executor | Viewport | Resultado | Notas |
+|---|---|---|---|---|
+| 2026-06-03 | Edson (admin) | desktop | ✅ Pass | Drag-and-drop no editor de aula funciona; validação manual confirmou persistência após F5 |
+
+---
+
 ## 🪪 Histórico de Execuções
 
 | Data | Executor | Curso | Resultado | Notas |
