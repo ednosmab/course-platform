@@ -14,6 +14,16 @@
 **Sessão de governança + pipeline de merge concluídos.** Regra 9+10 do AGENTS.md activas; DT-01..DT-04 em vigor. Branch `feat/dsv2-reform` deletada (conteúdo já em develop). Pipeline de merge Caminho C executado com sucesso. Nova secção "POLÍTICA DE BRANCHES E PIPELINE DE MERGE" formalizada em AGENTS.md.
 
 ## 🎯 Tarefa em Execução
+**Side-quest (tooling):** Reescrita de `opencode.json` para orquestração 3-fases de modelos.
+- `plan` (built-in) → `opencode/minimax-m3-free` (Planner)
+- `build` (built-in) → `opencode/deepseek-v4-flash-free` (Executor)
+- `review` (NOVO primary) → `opencode/minimax-m3-free` (Reviewer, `edit:deny` + bash agressivo)
+- `default_agent: "plan"` (Planner-first)
+- Dead config removido: `agent.inference` e `agent.profile` (não reconhecidos pelo schema oficial)
+- Sem `git commit` (G-01). Aguarda restart manual do opencode para carregar o novo config.
+
+> Item BACKLOG em curso **inalterado**: 5A.4 (pendente commit G-01) e 5A.5 (próximo).
+
 **5A.4 CONCLUÍDO** (código escrito, testes verdes, **pendente commit/G-01**).
 EditorCanvas agora é **lesson-only**:
 - 13 branches `isCertMode` removidas
@@ -40,7 +50,19 @@ EditorCanvas agora é **lesson-only**:
 - `feat/dsv2-reform` — branch local deletada
 - Merge `feat/dnd-e2e-coverage` → `develop` (commit `c166872`), fast-forward de `feat/cert-editor-isolation` para `c166872`
 - **Troca do modelo padrão:** `opencode.json`, `docs/AGENTS.md` (secção 🧬 MODELO PREFERIDO) e `.opencode/agents/document-loader.md` — `deepseek-v4-flash-free` → `minimax-m3-free`. Pendente commit (G-01).
+- **Orquestração 3-fases no opencode.json** (side-quest tooling, sem commit G-01): `plan`/`build`/`review` com 3 modelos (minimax / deepseek / minimax). `default_agent: "plan"`. Removidos dead config `agent.inference` e `agent.profile`. 4/4 `jq` validations passam. Working tree: +1 modified (`opencode.json`, 28+/6-). **Requer restart manual do opencode** (config não é hot-reloaded).
 - **5A.4 — EditorCanvas lesson-only cleanup:** `EditorCanvas.tsx` (13 branches `isCertMode` removidas, import de `CertificateBlockRenderer`/`Button` removidos, `isBg` dead code removido, `PreviewCanvas` reescrita sem `mode`/`certDesign*`, destructure de `useEditor` sem campos cert) + novo `EditorCanvas.boundary.test.ts` (4 testes estáticos do contract). Pendente commit (G-01).
+
+## ✅ Validação opencode.json 3-fases (2026-06-04)
+- `jq '.default_agent'` → `"plan"` ✓
+- `jq '.agent | keys'` → `["build","document-loader","plan","review"]` ✓
+- `jq '.agent.build.model'` → `"opencode/deepseek-v4-flash-free"` ✓
+- `jq '.agent.review.permission.edit'` → `"deny"` ✓
+- `jq '.agent.review.model'` → `"opencode/minimax-m3-free"` ✓
+- `jq '.agent.plan.model'` → `"opencode/minimax-m3-free"` ✓
+- Bash rules do `review`: 9 padrões `allow` + `*: ask` (inserção ordenada) ✓
+- Working tree: 1 modified (`opencode.json`, +28/-6)
+- **Aguarda restart manual do opencode** (config não é hot-reloaded — `customize-opencode` skill).
 
 ## ✅ Validação pós-merge
 - Working tree limpo

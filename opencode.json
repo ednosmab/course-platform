@@ -1,13 +1,34 @@
 {
-  "$schema": "https://opencode.ai",
+  "$schema": "https://opencode.ai/config.json",
   "model": "opencode/minimax-m3-free",
+  "default_agent": "plan",
+
   "agent": {
-    "profile": {
-      "model_tier": "medium",
-      "identity_file": "./docs/AGENTS.md"
+    "plan": {
+      "model": "opencode/minimax-m3-free"
     },
-    "inference": {
-      "temperature": 0.5
+    "build": {
+      "model": "opencode/deepseek-v4-flash-free"
+    },
+    "review": {
+      "description": "Reviewer agent. Audits code produced by build. May run pnpm test/lint/verify and read-only git commands, but never edits production code.",
+      "mode": "primary",
+      "model": "opencode/minimax-m3-free",
+      "permission": {
+        "edit": "deny",
+        "bash": {
+          "pnpm run test": "allow",
+          "pnpm run lint": "allow",
+          "pnpm run verify": "allow",
+          "pnpm run verify:ui": "allow",
+          "pnpm ls *": "allow",
+          "git status": "allow",
+          "git diff": "allow",
+          "git log *": "allow",
+          "git show *": "allow",
+          "*": "ask"
+        }
+      }
     },
     "document-loader": {
       "description": "Reads and summarizes the project documents relevant to the current task layer (P0-P3). Use before any code change.",
@@ -18,6 +39,7 @@
       }
     }
   },
+
   "instructions": [
     "./docs/AGENTS.md",
     "./docs/CONTEXT_MAP.md",
