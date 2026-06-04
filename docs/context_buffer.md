@@ -1,9 +1,9 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## 📋 Quick Board (snapshot kanban — 2026-06-04)
-- 🔴 **Em curso:** 5A.5 — EditorContext testes (3 testes, ~45min)
+- 🔴 **Em curso:** 5A.7 — `git add` + commit 5A.5 (pendente autorização G-01)
 - 🟡 **Parado:** 5A.1 → 5A.2 → 5A.3 (sprint à parte) [REVISIT: 2026-06-25]
-- ⏭️ **Próximo:** 5A.6 — `git add` + commit 5A.4 (pendente autorização G-01)
+- ⏭️ **Próximo:** telas/links pendentes → depois P0 "MVP Coverage & Audit" (vivo, tiered, sister P0 scalability)
 - ⏸️ **Bloqueado / P1 paralelas:** build fix `@tamagui/constants` (due 2026-06-10), renderer test (due 2026-06-15)
 
 > **Fonte canónica:** `docs/BACKLOG.md` (P0/P1/P2/P3 com Status, Due, Owner).
@@ -14,30 +14,26 @@
 **Sessão de governança + pipeline de merge concluídos.** Regra 9+10 do AGENTS.md activas; DT-01..DT-04 em vigor. Branch `feat/dsv2-reform` deletada (conteúdo já em develop). Pipeline de merge Caminho C executado com sucesso. Nova secção "POLÍTICA DE BRANCHES E PIPELINE DE MERGE" formalizada em AGENTS.md.
 
 ## 🎯 Tarefa em Execução
-**Side-quest (tooling):** Reescrita de `opencode.json` para orquestração 3-fases de modelos.
-- `plan` (built-in) → `opencode/minimax-m3-free` (Planner)
-- `build` (built-in) → `opencode/deepseek-v4-flash-free` (Executor)
-- `review` (NOVO primary) → `opencode/minimax-m3-free` (Reviewer, `edit:deny` + bash agressivo)
-- `default_agent: "plan"` (Planner-first)
-- Dead config removido: `agent.inference` e `agent.profile` (não reconhecidos pelo schema oficial)
-- Sem `git commit` (G-01). Aguarda restart manual do opencode para carregar o novo config.
+**5A.5 CONCLUÍDO** (código escrito, testes verdes, **pendente commit/G-01**).
+EditorContext contract fixado com 6 testes (reducer puro, sem React, sem jsdom overhead):
+- 2 contract tests (UNDO no-op em historyIndex 0; UNDO após ADD_BLOCK reverte)
+- 1 contract test (REMOVE_BLOCK limpa activeBlockId + selectedBlockIds)
+- 1 bug-hunt (ADD_BLOCK tipo desconhecido → fallback quiz)
+- 1 bug-hunt (ADD_BLOCK injecta styles.side do activeSide)
+- 1 bug-hunt (UPDATE_BLOCK cresce history em exactamente 1)
+- Refactor mínimo: export de `EditorState`, `EditorAction`, `initialState`, `editorReducer` (necessário para teste directo)
+- 2 refactors do BACKLOG desbloqueados: "Eliminar prop mode" e "Limpar 3 branches de init"
+- Bugs reais do Provider (auto-save timer 2s, entityId vazio) ficam para o P0 (testes de integração com render real)
 
-> Item BACKLOG em curso **inalterado**: 5A.4 (pendente commit G-01) e 5A.5 (próximo).
-
-**5A.4 CONCLUÍDO** (código escrito, testes verdes, **pendente commit/G-01**).
-EditorCanvas agora é **lesson-only**:
-- 13 branches `isCertMode` removidas
-- `PreviewCanvas` e o render principal já não conhecem `mode`/`certDesign*`/`certIsDoubleSided`
-- `CertificateBlockRenderer` removido dos imports do EditorCanvas
-- `Button` removido dos imports (era só usado no toggle double-sided)
-- Variável `isBg` (cert-only) removida — dead code
-- Novo ficheiro: `EditorCanvas.boundary.test.ts` (4 testes) — alinha com `CertificateEditor.boundary.test.ts` (7 testes, já existente)
-- TDD estrito: RED (4 falhas) → GREEN (4/4 boundary + 4/4 regression passam) → REFACTOR (limpeza de imports e dead code)
+**5A.4 CONCLUÍDO** (commit `043d601`):
+EditorCanvas agora é **lesson-only** — 13 branches `isCertMode` removidas, `CertificateBlockRenderer`/`Button` removidos, `isBg` dead code removido. Boundary test estático (4 testes) alinha com `CertificateEditor.boundary.test.ts`.
 
 **Sub-itens 5A.1-5A.3 rebaixados** para sprint à parte [REVISIT: 2026-06-25].
 
+**Próxima direcção estratégica (acordada):** 5A.5 → telas/links pendentes → P0 "MVP Coverage & Audit" (vivo, tiered, com sister P0 para scalability).
+
 ## 🌿 Estado de Branches (2026-06-04)
-- `feat/cert-editor-isolation` (HEAD `7e244eb`) — sincronizada com develop, **5A.4 código pronto, pendente commit**
+- `feat/cert-editor-isolation` (HEAD `043d601`) — sincronizada com develop, **5A.4 commitado, 5A.5 código pronto pendente commit**
 - `develop` (`c166872`) — contém merge de `feat/dnd-e2e-coverage` via `--no-ff`
 - `feat/dnd-e2e-coverage` (`f0f928e`) — preservada, conteúdo já em develop
 - `feat/dsv2-reform` — **deletada** (0 commits únicos vs develop, risco zero). Recriar quando houver item P0/P1 do DSv2.
@@ -52,6 +48,7 @@ EditorCanvas agora é **lesson-only**:
 - **Troca do modelo padrão:** `opencode.json`, `docs/AGENTS.md` (secção 🧬 MODELO PREFERIDO) e `.opencode/agents/document-loader.md` — `deepseek-v4-flash-free` → `minimax-m3-free`. Pendente commit (G-01).
 - **Orquestração 3-fases no opencode.json** (side-quest tooling, **commit `e5e33ea`**): `plan`/`build`/`review` com 3 modelos (minimax / deepseek / minimax). `default_agent: "plan"`. Removidos dead config `agent.inference` e `agent.profile`. 4/4 `jq` validations passam. **Requer restart manual do opencode** (config não é hot-reloaded).
 - **5A.4 — EditorCanvas lesson-only cleanup:** `EditorCanvas.tsx` (13 branches `isCertMode` removidas, import de `CertificateBlockRenderer`/`Button` removidos, `isBg` dead code removido, `PreviewCanvas` reescrita sem `mode`/`certDesign*`, destructure de `useEditor` sem campos cert) + novo `EditorCanvas.boundary.test.ts` (4 testes estáticos do contract). Pendente commit (G-01).
+- **5A.5 — EditorContext contract tests:** `EditorContext.tsx` (export de `EditorState`/`EditorAction`/`initialState`/`editorReducer` para testabilidade) + novo `EditorContext.test.tsx` (6 testes do reducer puro: 3 contract + 3 bug-hunt). 88/88 admin tests passam. Pendente commit (G-01).
 
 ## ✅ Validação opencode.json 3-fases (2026-06-04)
 - `jq '.default_agent'` → `"plan"` ✓
@@ -81,9 +78,17 @@ EditorCanvas agora é **lesson-only**:
 - `test:react-consistency`: OK
 - Working tree: 1 modified (`EditorCanvas.tsx`) + 1 untracked (`EditorCanvas.boundary.test.ts`)
 
+## ✅ Validação 5A.5 (2026-06-04)
+- TDD: 6/6 testes pass-through (contract fixado sem RED visível — lógica trivial já implementada)
+- Admin tests: 88/88 passam (5.45s) — inclui 6 EditorContext + 82 anteriores
+- UI tests: 57/57 passam — sem regressão
+- Refactor mínimo: 4 symbols exportados em EditorContext.tsx (não-breaking)
+- Working tree: 1 modified (`EditorContext.tsx`) + 1 untracked (`EditorContext.test.tsx`)
+
 ## 📌 Próximos Passos
-- **5A.6 (PENDENTE G-01):** `git add` + `git commit` das alterações 5A.4 (1 modified + 1 untracked)
-- **5A.5:** EditorContext testes mínimos (3 testes, ~45min)
+- **5A.7 (PENDENTE G-01):** `git add` + `git commit` das alterações 5A.5 (1 modified + 1 untracked)
+- **telas/links pendentes** (próxima fase de trabalho, items P0/P1 do BACKLOG)
+- **P0 "MVP Coverage & Audit"** (a construir DEPOIS das telas/links, para evitar refactor)
 - Sprint à parte [REVISIT: 2026-06-25]: 5A.1 → 5A.2 → 5A.3
 - P1 paralelas: build fix (due 2026-06-10), renderer test (due 2026-06-15)
 - P1 paralelas: build fix (due 2026-06-10), renderer test (due 2026-06-15)

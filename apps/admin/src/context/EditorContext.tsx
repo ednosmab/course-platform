@@ -6,7 +6,7 @@ import { LessonService, CourseService } from '@projeto/core';
 import type { EditorModeConfig, EditorBlockType } from './editor-modes';
 import { DEFAULT_CERT_WIDTH, DEFAULT_CERT_HEIGHT } from './editor-modes';
 
-interface EditorState {
+export interface EditorState {
   blocks: AnyBlock[];
   activeBlockId: string | null;
   selectedBlockIds: string[];
@@ -18,7 +18,7 @@ interface EditorState {
   inlineEditingId: string | null;
 }
 
-type EditorAction =
+export type EditorAction =
   | { type: 'ADD_BLOCK'; payload: { type: EditorBlockType; position?: { x: number; y: number } } }
   | { type: 'REMOVE_BLOCK'; payload: { id: string } }
   | { type: 'REMOVE_BLOCKS'; payload: { ids: string[] } }
@@ -39,7 +39,7 @@ type EditorAction =
   | { type: 'SET_ACTIVE_SIDE'; payload: { side: 'front' | 'back' } }
   | { type: 'SET_INLINE_EDITING'; payload: { id: string | null } };
 
-const initialState: EditorState = {
+export const initialState: EditorState = {
   blocks: [],
   activeBlockId: null,
   selectedBlockIds: [],
@@ -51,7 +51,7 @@ const initialState: EditorState = {
   inlineEditingId: null,
 };
 
-function editorReducer(state: EditorState, action: EditorAction): EditorState {
+export function editorReducer(state: EditorState, action: EditorAction): EditorState {
   const updateHistory = (newBlocks: AnyBlock[], nextActiveId: string | null = state.activeBlockId, nextSelected: string[] = state.selectedBlockIds): EditorState => {
     const nextHistory = state.history.slice(0, state.historyIndex + 1);
     nextHistory.push(newBlocks);
