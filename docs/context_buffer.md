@@ -1,10 +1,10 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## 📋 Quick Board (snapshot kanban — 2026-06-04)
-- 🔴 **Em curso:** 5A.7 — `git add` + commit 5A.5 (pendente autorização G-01)
+- 🔴 **Em curso:** nenhum — fila livre, sessão concluída em 5A.5
 - 🟡 **Parado:** 5A.1 → 5A.2 → 5A.3 (sprint à parte) [REVISIT: 2026-06-25]
-- ⏭️ **Próximo:** telas/links pendentes → depois P0 "MVP Coverage & Audit" (vivo, tiered, sister P0 scalability)
-- ⏸️ **Bloqueado / P1 paralelas:** build fix `@tamagui/constants` (due 2026-06-10), renderer test (due 2026-06-15)
+- ⏭️ **Próximo (decisão estratégica):** P0 "MVP Coverage & Audit" **NÃO está bloqueado** — Tier A (baseline) e Tier B (gaps) podem arrancar AGORA. P1 datados (build fix due 2026-06-10, renderer test due 2026-06-15) têm prioridade por SLA.
+- ⏸️ **P1 datadas a atacar primeiro:** build fix `@tamagui/constants` (due 2026-06-10), renderer test (due 2026-06-15)
 
 > **Fonte canónica:** `docs/BACKLOG.md` (P0/P1/P2/P3 com Status, Due, Owner).
 
