@@ -41,5 +41,6 @@
 - [Link ADR-NNN] — decisão e justificação
 
 ## 9. Próxima Sessão
-- **Primeira tarefa (P0):** [item]
+- **Primeira tarefa (P0 — obrigatório, ver AGENTS.md regra 9):** [item]
 - **Branch:** `feat/...`
+- **Pipeline de merge (Caminho C):** ver `docs/runbooks/merge-dnd-to-develop.md` se a feature estiver pronta
