@@ -244,7 +244,18 @@ export default function Dashboard() {
                   <XStack w={6} h={6} borderRadius={3} bg="$success" />
                   <Text fontSize={12} color="$textMuted">Tudo certo por aqui</Text>
                 </XStack>
-                <Text fontFamily="$display" fontSize={36} fontWeight="$6" mt={16} lineHeight={lineHeightHeading} $md={{ fontSize: 40 }}>
+                {/*
+                  The `as never` cast is required because Tamagui's `lineHeight`
+                  prop typing only accepts the `lineHeight` token map (in px) or
+                  the literal `"unset"`. Strings with a unitless multiplier
+                  (e.g. `"1.12"`) are valid CSS but lie outside the type
+                  allowlist. We intentionally bypass the type check here so
+                  the value reaches `dangerousStyleValue` as a string and is
+                  emitted verbatim by Tamagui (which would otherwise coerce
+                  numeric values to px via `lineHeight` not being in the
+                  `unitlessNumbers` allowlist of @tamagui/react-native-web-internals).
+                */}
+                <Text fontFamily="$display" fontSize={36} fontWeight="$6" mt={16} lineHeight={lineHeightHeading as never} $md={{ fontSize: 40 }}>
                   Oi, {firstName}, vamos montar uma aula nova?
                 </Text>
                 <Text mt={8} color="$textMuted" fontSize={15}>
@@ -323,7 +334,7 @@ export default function Dashboard() {
                         </YStack>
                         <YStack p={20}>
                           <XStack ai="flex-start" jc="space-between" gap={8}>
-                            <Text flex={1} fontFamily="$display" fontSize={16} fontWeight="$6" lineHeight={lineHeightCardTitle}>{c.title}</Text>
+                            <Text flex={1} fontFamily="$display" fontSize={16} fontWeight="$6" lineHeight={lineHeightCardTitle as never}>{c.title}</Text>
                             <XStack
                               p={4}
                               br="$2"

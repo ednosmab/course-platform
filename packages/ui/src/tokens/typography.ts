@@ -148,15 +148,18 @@ export const dmSansFont = createFont({
 /**
  * Unitless line-height multipliers for the admin dashboard.
  *
- * Why these live here (and not inside `style={{ lineHeight: <number> }}`):
- * Tamagui's inline-style engine treats numeric values in `style` objects as
- * pixel values, so `style={{ lineHeight: 1.12 }}` is emitted as
- * `line-height: 1.12px` and collapses the line box. Passing the multiplier
- * via the `lineHeight` prop (or via a `createTokens` namespace) preserves the
- * unitless value, so the browser interprets it as a multiplier per CSS spec.
+ * IMPORTANT: these are **strings**, not numbers. Tamagui (via the
+ * `react-native-web-internals` `dangerousStyleValue` helper) coerces any
+ * numeric value passed to the `lineHeight` prop to px, because `lineHeight`
+ * is missing from its `unitlessNumbers` allowlist. A number would be emitted
+ * as `1.12px`, collapsing the line box to 1.12px and breaking the layout
+ * (see image8.png — the hero heading overlapped the sticky brandmark).
+ * A string bypasses the numeric branch and is passed through verbatim, so
+ * the browser interprets it as a CSS-spec unitless multiplier.
  *
  * @see apps/admin/src/app/page.tsx (heading + course card title)
- * @see image8.png vs image9.png (devtools evidence)
+ * @see image8.png (bug) vs image9.png (fix with `line-height: 40px`)
+ * @see node_modules/@tamagui/react-native-web-internals/.../dangerousStyleValue.cjs
  */
-export const lineHeightHeading = 1.12;
-export const lineHeightCardTitle = 1.3;
+export const lineHeightHeading = '1.12' as const;
+export const lineHeightCardTitle = '1.3' as const;
