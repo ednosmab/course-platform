@@ -4,7 +4,7 @@
   "agent": {
     "profile": {
       "model_tier": "medium",
-      "identity_file": "./AGENTS.md"
+      "identity_file": "./docs/AGENTS.md"
     },
     "inference": {
       "temperature": 0.5
@@ -19,13 +19,14 @@
     }
   },
   "instructions": [
-    "./AGENTS.md",
+    "./docs/AGENTS.md",
     "./docs/CONTEXT_MAP.md",
     "./docs/context_buffer.md",
     "./docs/FORBIDDEN_OPERATIONS.md",
     "./docs/DESDO.md",
     "./docs/Requisitos_plataforma.md",
-    "./cognition/context/CONTEXT_HIERARCHY.md"
+    "./cognition/context/CONTEXT_HIERARCHY.md",
+    "./docs/session-template.md"
   ],
   "skills": {
     "paths": [".opencode/skills"]
