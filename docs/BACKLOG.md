@@ -87,6 +87,8 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 |---|---|---|---|---|
 | Testes E2E Playwright para drag-and-drop de imagem | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
 | Student app — ErrorBoundary | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
+| Fix build admin — `@tamagui/constants` missing como dependência explícita | 🟠 Alto | Backlog | 2026-06-10 | Agente 2 |
+| Fix renderer test — `BlockRenderer.test.tsx` syntax error (XSS test) | 🟡 Médio | Backlog | 2026-06-15 | Agente 1 |
 
 ---
 
