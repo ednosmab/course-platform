@@ -1,27 +1,5 @@
 import { test, expect } from '@playwright/test';
-
-const FAKE_USER_ID = '00000000-0000-0000-0000-000000000001';
-
-const MOCK_AUTH_USER = {
-  id: FAKE_USER_ID,
-  aud: 'authenticated',
-  role: 'authenticated',
-  email: 'admin@admin.com',
-  email_confirmed_at: new Date().toISOString(),
-  phone: '',
-  confirmed_at: new Date().toISOString(),
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-};
-
-const MOCK_TOKEN_RESPONSE = {
-  access_token: 'fake-access-token',
-  token_type: 'bearer',
-  expires_in: 3600,
-  expires_at: Math.floor(Date.now() / 1000) + 3600,
-  refresh_token: 'fake-refresh-token',
-  user: MOCK_AUTH_USER,
-};
+import { loginAsAdmin } from './utils/auth';
 
 test.describe('Admin Auth - Login e Redirecionamento', () => {
   test.beforeEach(async ({ page }) => {
@@ -36,37 +14,6 @@ test.describe('Admin Auth - Login e Redirecionamento', () => {
   });
 
   test('Deve logar como admin e redirecionar para dashboard', async ({ page }) => {
-    // Mock Supabase Auth: signInWithPassword (POST /auth/v1/token)
-    await page.route('**/auth/v1/token*', async route => {
-      if (route.request().method() === 'POST') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify(MOCK_TOKEN_RESPONSE),
-        });
-      } else {
-        await route.fulfill({ status: 405 });
-      }
-    });
-
-    // Mock Supabase Auth: getUser (GET /auth/v1/user)
-    await page.route('**/auth/v1/user*', async route => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(MOCK_AUTH_USER),
-      });
-    });
-
-    // Mock profiles query — role = admin
-    await page.route('**/rest/v1/profiles*', async route => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ role: 'admin' }),
-      });
-    });
-
     // Mock courses list (dashboard carrega após redirect)
     await page.route('**/rest/v1/courses*', async route => {
       await route.fulfill({
@@ -76,16 +23,7 @@ test.describe('Admin Auth - Login e Redirecionamento', () => {
       });
     });
 
-    await page.goto('/login');
-    await page.waitForLoadState('networkidle');
-
-    // Preencher formulário de login
-    await page.locator('input[type="email"]').fill('admin@admin.com');
-    await page.locator('input[type="password"]').fill('123456');
-    await page.locator('button').filter({ hasText: 'Entrar' }).click();
-
-    // Aguardar redirect para dashboard
-    await page.waitForURL('/', { timeout: 15000 });
+    await loginAsAdmin(page);
 
     // Verificar que o dashboard carregou
     await expect(page.locator('text=Novo curso').first()).toBeVisible({ timeout: 10000 });
@@ -93,26 +31,34 @@ test.describe('Admin Auth - Login e Redirecionamento', () => {
   });
 
   test('Deve logar como aluno e redirecionar para app do aluno', async ({ page }) => {
-    // Mock Supabase Auth: signInWithPassword
+    // Mock Supabase Auth: signInWithPassword (precisa de mocks diferentes do helper admin)
     await page.route('**/auth/v1/token*', async route => {
       if (route.request().method() === 'POST') {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify(MOCK_TOKEN_RESPONSE),
+          body: JSON.stringify({
+            access_token: 'fake-access-token',
+            token_type: 'bearer',
+            expires_in: 3600,
+            expires_at: Math.floor(Date.now() / 1000) + 3600,
+            refresh_token: 'fake-refresh-token',
+            user: {
+              id: '00000000-0000-0000-0000-000000000001',
+              aud: 'authenticated',
+              role: 'authenticated',
+              email: 'aluno@aluno.com',
+              email_confirmed_at: new Date().toISOString(),
+              phone: '',
+              confirmed_at: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          }),
         });
       } else {
         await route.fulfill({ status: 405 });
       }
-    });
-
-    // Mock Supabase Auth: getUser
-    await page.route('**/auth/v1/user*', async route => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(MOCK_AUTH_USER),
-      });
     });
 
     // Mock profiles query — role = student
