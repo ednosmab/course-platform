@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { YStack, XStack, Text, Icon, CertificateBlockRenderer } from '@projeto/ui';
 import type { AnyBlock } from '@projeto/types';
 import { useEditor } from '../../context/EditorContext';
-import { StorageService } from '@projeto/core';
+import { uploadCertificateImageToBlock, alertForUploadResult } from './uploadCertificateImageToBlock';
 
 type HandleDir = 'n' | 's' | 'e' | 'w' | 'nw' | 'ne' | 'sw' | 'se';
 
@@ -88,11 +88,8 @@ export const CertificateCanvas: React.FC<{
 
   const handleImageDrop = useCallback(async (file: File) => {
     if (!courseId || !activeBlockId) return;
-    if (file.size > 5 * 1024 * 1024) { alert('Arquivo muito grande. Máximo: 5MB.'); return; }
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { alert('Formato não suportado. Use JPEG, PNG ou WebP.'); return; }
-    const url = await StorageService.uploadCertificateImage(file, courseId, activeBlockId);
-    if (url) updateBlock(activeBlockId, { url });
-    else alert('Erro ao enviar imagem.');
+    const result = await uploadCertificateImageToBlock(file, courseId, activeBlockId, updateBlock);
+    alertForUploadResult(result);
   }, [courseId, activeBlockId, updateBlock]);
 
   const zoomLabel = `${Math.round(zoom * 100)}%`;

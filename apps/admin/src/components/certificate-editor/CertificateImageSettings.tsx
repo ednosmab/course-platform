@@ -2,8 +2,8 @@
 
 import React, { useRef, useState } from 'react';
 import { YStack, XStack, Text, Button, Icon } from '@projeto/ui';
-import { StorageService } from '@projeto/core';
 import { useEditor } from '../../context/EditorContext';
+import { uploadCertificateImageToBlock, alertForUploadResult } from './uploadCertificateImageToBlock';
 import type { ImageBlock } from '@projeto/types';
 
 /**
@@ -28,16 +28,12 @@ export const CertificateImageSettings: React.FC = () => {
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !courseId) return;
-    if (file.size > 5 * 1024 * 1024) { alert('Arquivo muito grande. Máximo: 5MB.'); return; }
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { alert('Formato não suportado. Use JPEG, PNG ou WebP.'); return; }
+    if (!file) return;
     setUploading(true);
-    try {
-      const url = await StorageService.uploadCertificateImage(file, courseId, imageBlock.id);
-      if (url) updateBlock(imageBlock.id, { url });
-      else alert('Erro ao enviar imagem.');
-    } catch { alert('Erro ao enviar imagem.'); }
-    finally { setUploading(false); if (inputRef.current) inputRef.current.value = ''; }
+    const result = await uploadCertificateImageToBlock(file, courseId, imageBlock.id, updateBlock);
+    alertForUploadResult(result);
+    setUploading(false);
+    if (inputRef.current) inputRef.current.value = '';
   };
 
   return (
