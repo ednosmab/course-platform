@@ -65,8 +65,9 @@ export async function loginAsAdmin(page: Page): Promise<void> {
   });
 
   await page.goto('/login');
+  await page.waitForLoadState('networkidle');
   await page.locator('input[type="email"]').fill('admin@admin.com');
   await page.locator('input[type="password"]').fill('123456');
-  await page.locator('button').filter({ hasText: 'Entrar' }).click();
+  await page.getByRole('button', { name: 'Entrar' }).click();
   await page.waitForURL('/', { timeout: 15000 });
 }

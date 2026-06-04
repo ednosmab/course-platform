@@ -85,7 +85,7 @@ test.describe('Admin Auth - Login e Redirecionamento', () => {
     // Preencher formulário de login
     await page.locator('input[type="email"]').fill('aluno@aluno.com');
     await page.locator('input[type="password"]').fill('123456');
-    await page.locator('button').filter({ hasText: 'Entrar' }).click();
+    await page.getByRole('button', { name: 'Entrar' }).click();
 
     // Aguardar redirect para student app (localhost:8081)
     await page.waitForURL(/http:\/\/localhost:8081/, { timeout: 15000 });
