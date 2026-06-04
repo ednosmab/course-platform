@@ -7,6 +7,7 @@ type Props = {
   scale: number;
   fillContainer?: boolean;
   isEditor?: boolean;
+  onImageDrop?: (file: File) => void;
 };
 
 function fmtSize(px: number, scale: number): number {
@@ -20,7 +21,7 @@ const FONT_SIZE: Record<string, number> = {
   xlarge: 32,
 };
 
-export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale, fillContainer, isEditor }) => {
+export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale, fillContainer, isEditor, onImageDrop }) => {
   switch (block.type) {
     case 'heading': {
       const lvl = block.level || 2;
@@ -57,11 +58,23 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale, fillCo
     case 'image': {
       if (!block.url) {
         if (isEditor) {
+          const dropHandlers = onImageDrop
+            ? {
+                onDrop: (e: React.DragEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const file = e.dataTransfer.files[0];
+                  if (file && file.type.startsWith('image/')) onImageDrop(file);
+                },
+                onDragOver: (e: React.DragEvent) => e.preventDefault(),
+              }
+            : {};
           return (
             <YStack
               w="100%" h="100%"
               borderWidth={2} borderColor="$info" borderRadius="$3" borderStyle="dashed"
               ai="center" jc="center" gap="$2" bg="#eff6ff"
+              {...dropHandlers}
             >
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="1.5">
                 <rect x="3" y="3" width="18" height="18" rx="2" />

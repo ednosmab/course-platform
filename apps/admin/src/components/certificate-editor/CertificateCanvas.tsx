@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { YStack, XStack, Text, Icon, CertificateBlockRenderer } from '@projeto/ui';
 import type { AnyBlock } from '@projeto/types';
 import { useEditor } from '../../context/EditorContext';
+import { StorageService } from '@projeto/core';
 
 type HandleDir = 'n' | 's' | 'e' | 'w' | 'nw' | 'ne' | 'sw' | 'se';
 
@@ -58,7 +59,7 @@ export const CertificateCanvas: React.FC<{
   activeSide = 'front',
   isDoubleSided = false,
 }) => {
-  const { setActiveBlockId, activeBlockId, selectedBlockIds, toggleSelectBlock, setSelectedBlocks, clearSelection, updateBlock, updateBlockSilent, duplicateBlock, removeBlock, removeBlocks, setActiveSide } = useEditor();
+  const { setActiveBlockId, activeBlockId, selectedBlockIds, toggleSelectBlock, setSelectedBlocks, clearSelection, updateBlock, updateBlockSilent, duplicateBlock, removeBlock, removeBlocks, setActiveSide, courseId } = useEditor();
   const [zoom, setZoom] = useState(1);
   const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
   const [clipboardBlockId, setClipboardBlockId] = useState<string | null>(null);
@@ -84,6 +85,15 @@ export const CertificateCanvas: React.FC<{
   filteredBlocksRef.current = filteredBlocks;
   const marqueeRectRef = useRef(marqueeRect);
   marqueeRectRef.current = marqueeRect;
+
+  const handleImageDrop = useCallback(async (file: File) => {
+    if (!courseId || !activeBlockId) return;
+    if (file.size > 5 * 1024 * 1024) { alert('Arquivo muito grande. Máximo: 5MB.'); return; }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { alert('Formato não suportado. Use JPEG, PNG ou WebP.'); return; }
+    const url = await StorageService.uploadCertificateImage(file, courseId, activeBlockId);
+    if (url) updateBlock(activeBlockId, { url });
+    else alert('Erro ao enviar imagem.');
+  }, [courseId, activeBlockId, updateBlock]);
 
   const zoomLabel = `${Math.round(zoom * 100)}%`;
   const zoomIn = () => setZoom((z) => Math.min(3, z + 0.1));
@@ -470,7 +480,7 @@ export const CertificateCanvas: React.FC<{
                     borderRadius: '6px', pointerEvents: 'none', zIndex: 2,
                     boxShadow: isActive ? '0 0 0 1px rgba(59,130,246,0.25)' : isSelected ? '0 0 0 1px rgba(96,165,250,0.2)' : 'none',
                   }} />
-                  <CertificateBlockRenderer block={block as any} scale={1} fillContainer isEditor />
+                  <CertificateBlockRenderer block={block as any} scale={1} fillContainer isEditor onImageDrop={handleImageDrop} />
                   {showToolbar && (
                     <XStack
                       position="absolute" top={-34} right={0} zIndex={20}

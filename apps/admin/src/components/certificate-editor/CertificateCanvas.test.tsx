@@ -6,6 +6,7 @@ import type { AnyBlock } from '@projeto/types';
 const mockSetActiveBlockId = vi.fn();
 let mockActiveBlockIdVal: string | null = null;
 let mockSelectedBlockIdsVal: string[] = [];
+let mockCourseIdVal = 'course-1';
 
 const mockDuplicateBlock = vi.fn();
 const mockRemoveBlock = vi.fn();
@@ -14,13 +15,20 @@ const mockToggleSelectBlock = vi.fn();
 const mockSetSelectedBlocks = vi.fn();
 const mockClearSelection = vi.fn();
 const mockSetActiveSide = vi.fn();
+const mockUpdateBlock = vi.fn();
+const mockOnImageDropCapture = vi.fn();
+
+const { mockUploadCertificateImage } = vi.hoisted(() => ({
+  mockUploadCertificateImage: vi.fn(async () => 'https://supabase.example/cert-images/uploaded.png'),
+}));
 
 vi.mock('../../context/EditorContext', () => ({
   useEditor: () => ({
     setActiveBlockId: mockSetActiveBlockId,
     activeBlockId: mockActiveBlockIdVal,
     selectedBlockIds: mockSelectedBlockIdsVal,
-    updateBlock: vi.fn(),
+    courseId: mockCourseIdVal,
+    updateBlock: mockUpdateBlock,
     updateBlockSilent: vi.fn(),
     duplicateBlock: mockDuplicateBlock,
     removeBlock: mockRemoveBlock,
@@ -30,6 +38,12 @@ vi.mock('../../context/EditorContext', () => ({
     clearSelection: mockClearSelection,
     setActiveSide: mockSetActiveSide,
   }),
+}));
+
+vi.mock('@projeto/core', () => ({
+  StorageService: {
+    uploadCertificateImage: mockUploadCertificateImage,
+  },
 }));
 
 vi.mock('@projeto/ui', () => ({
@@ -51,11 +65,16 @@ vi.mock('@projeto/ui', () => ({
   },
   Text: ({ children }: any) => <span data-testid="Text">{children}</span>,
   Icon: ({ name }: any) => <span data-testid={`icon-${name}`} />,
-  CertificateBlockRenderer: ({ block }: any) => (
-    <div data-testid={`cert-block-${block.id}`} data-type={block.type}>
-      {block.content || block.type}
-    </div>
-  ),
+  CertificateBlockRenderer: ({ block, onImageDrop }: any) => {
+    if (onImageDrop && block.type === 'image' && !block.url) {
+      mockOnImageDropCapture(onImageDrop);
+    }
+    return (
+      <div data-testid={`cert-block-${block.id}`} data-type={block.type}>
+        {block.content || block.type}
+      </div>
+    );
+  },
 }));
 
 import { CertificateCanvas } from './CertificateCanvas';
@@ -401,6 +420,102 @@ describe('CertificateCanvas', () => {
       fireEvent.mouseMove(window, { clientX: 400, clientY: 300 });
       fireEvent.mouseUp(window);
       expect(mockSetSelectedBlocks).toHaveBeenCalledWith(['near']);
+    });
+  });
+
+  describe('image block drop upload (onImageDrop wiring)', () => {
+    function makeImageBlock(overrides: Partial<AnyBlock> = {}): AnyBlock {
+      return {
+        type: 'image',
+        url: '',
+        layouts: { desktop: { x: 40, y: 40, w: 200, h: 200, zIndex: 0 } },
+        ...overrides,
+      } as AnyBlock;
+    }
+
+    it('passes onImageDrop to the CertificateBlockRenderer for image blocks', () => {
+      const blocks = [makeImageBlock({ id: 'img-1' })];
+      render(<CertificateCanvas blocks={blocks} />);
+      expect(mockOnImageDropCapture).toHaveBeenCalledTimes(1);
+      expect(typeof mockOnImageDropCapture.mock.calls[0][0]).toBe('function');
+    });
+
+    it('does not pass onImageDrop when there is no image block (text block only)', () => {
+      const blocks = [makeBlock({ id: 't-1', type: 'text' })];
+      render(<CertificateCanvas blocks={blocks} />);
+      expect(mockOnImageDropCapture).not.toHaveBeenCalled();
+    });
+
+    it('uploads the dropped file via StorageService and updates the active image block with the returned URL', async () => {
+      mockActiveBlockIdVal = 'img-1';
+      const blocks = [makeImageBlock({ id: 'img-1' })];
+      render(<CertificateCanvas blocks={blocks} />);
+
+      const onImageDrop = mockOnImageDropCapture.mock.calls[0][0] as (file: File) => Promise<void>;
+      const file = new File(['fake-png-bytes'], 'logo.png', { type: 'image/png' });
+      await onImageDrop(file);
+
+      expect(mockUploadCertificateImage).toHaveBeenCalledWith(file, 'course-1', 'img-1');
+      expect(mockUpdateBlock).toHaveBeenCalledWith('img-1', { url: 'https://supabase.example/cert-images/uploaded.png' });
+    });
+
+    it('does nothing when the upload returns no URL (defensive: shows alert but does not throw)', async () => {
+      mockUploadCertificateImage.mockResolvedValueOnce(null as any);
+      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+      mockActiveBlockIdVal = 'img-2';
+      const blocks = [makeImageBlock({ id: 'img-2' })];
+      render(<CertificateCanvas blocks={blocks} />);
+
+      const onImageDrop = mockOnImageDropCapture.mock.calls[0][0] as (file: File) => Promise<void>;
+      const file = new File(['x'], 'logo.png', { type: 'image/png' });
+      await onImageDrop(file);
+
+      expect(mockUpdateBlock).not.toHaveBeenCalled();
+      expect(alertSpy).toHaveBeenCalledWith('Erro ao enviar imagem.');
+      alertSpy.mockRestore();
+    });
+
+    it('rejects files larger than 5MB before calling StorageService', async () => {
+      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+      mockActiveBlockIdVal = 'img-3';
+      const blocks = [makeImageBlock({ id: 'img-3' })];
+      render(<CertificateCanvas blocks={blocks} />);
+
+      const onImageDrop = mockOnImageDropCapture.mock.calls[0][0] as (file: File) => Promise<void>;
+      const big = new File([new Uint8Array(6 * 1024 * 1024)], 'big.png', { type: 'image/png' });
+      await onImageDrop(big);
+
+      expect(mockUploadCertificateImage).not.toHaveBeenCalled();
+      expect(alertSpy).toHaveBeenCalledWith('Arquivo muito grande. Máximo: 5MB.');
+      alertSpy.mockRestore();
+    });
+
+    it('rejects unsupported MIME types before calling StorageService', async () => {
+      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+      mockActiveBlockIdVal = 'img-4';
+      const blocks = [makeImageBlock({ id: 'img-4' })];
+      render(<CertificateCanvas blocks={blocks} />);
+
+      const onImageDrop = mockOnImageDropCapture.mock.calls[0][0] as (file: File) => Promise<void>;
+      const pdf = new File(['%PDF-1.4'], 'doc.pdf', { type: 'application/pdf' });
+      await onImageDrop(pdf);
+
+      expect(mockUploadCertificateImage).not.toHaveBeenCalled();
+      expect(alertSpy).toHaveBeenCalledWith('Formato não suportado. Use JPEG, PNG ou WebP.');
+      alertSpy.mockRestore();
+    });
+
+    it('is a no-op when there is no active image block selected', async () => {
+      mockActiveBlockIdVal = null;
+      const blocks = [makeImageBlock({ id: 'img-5' })];
+      render(<CertificateCanvas blocks={blocks} />);
+
+      const onImageDrop = mockOnImageDropCapture.mock.calls[0][0] as (file: File) => Promise<void>;
+      const file = new File(['x'], 'logo.png', { type: 'image/png' });
+      await onImageDrop(file);
+
+      expect(mockUploadCertificateImage).not.toHaveBeenCalled();
+      expect(mockUpdateBlock).not.toHaveBeenCalled();
     });
   });
 

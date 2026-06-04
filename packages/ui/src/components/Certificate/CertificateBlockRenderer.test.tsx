@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import React from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { flushSync } from 'react-dom';
@@ -112,6 +112,86 @@ describe('CertificateBlockRenderer', () => {
     expect(container.textContent).toContain('Arraste uma imagem aqui');
     expect(container.textContent).toContain('ou cole a URL no painel');
     expect(container.querySelector('img')).toBeNull();
+  });
+
+  it('calls onImageDrop with the dropped file when the placeholder receives a drop event', () => {
+    const onImageDrop = vi.fn();
+    const block: CertificateBlock = {
+      id: 'i4',
+      type: 'image',
+      url: '',
+      layouts: { desktop: { x: 0, y: 0, w: 200, h: 200, zIndex: 0 } },
+    } as any;
+
+    flushSync(() => {
+      root.render(
+        <TamaguiProvider config={tamaguiConfig} defaultTheme="cloudWhite">
+          <CertificateBlockRenderer block={block} scale={1} fillContainer isEditor onImageDrop={onImageDrop} />
+        </TamaguiProvider>,
+      );
+    });
+    const textEl = Array.from(container.querySelectorAll('*')).find(
+      (el) => el.textContent === 'Arraste uma imagem aqui',
+    );
+    const placeholder = textEl?.parentElement as HTMLElement | undefined;
+    expect(placeholder).toBeTruthy();
+    const file = new File(['png-bytes'], 'seal.png', { type: 'image/png' });
+    const event = new Event('drop', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'dataTransfer', { value: { files: [file] } });
+    placeholder!.dispatchEvent(event);
+    expect(onImageDrop).toHaveBeenCalledTimes(1);
+    expect(onImageDrop).toHaveBeenCalledWith(file);
+  });
+
+  it('calls preventDefault on dragover so the browser allows the drop', () => {
+    const onImageDrop = vi.fn();
+    const block: CertificateBlock = {
+      id: 'i5',
+      type: 'image',
+      url: '',
+      layouts: { desktop: { x: 0, y: 0, w: 200, h: 200, zIndex: 0 } },
+    } as any;
+
+    flushSync(() => {
+      root.render(
+        <TamaguiProvider config={tamaguiConfig} defaultTheme="cloudWhite">
+          <CertificateBlockRenderer block={block} scale={1} fillContainer isEditor onImageDrop={onImageDrop} />
+        </TamaguiProvider>,
+      );
+    });
+    const textEl = Array.from(container.querySelectorAll('*')).find(
+      (el) => el.textContent === 'Arraste uma imagem aqui',
+    );
+    const placeholder = textEl?.parentElement as HTMLElement | undefined;
+    expect(placeholder).toBeTruthy();
+    const event = new Event('dragover', { bubbles: true, cancelable: true });
+    placeholder!.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('does not wire onDrop on the placeholder when onImageDrop is not provided (preview safety)', () => {
+    const block: CertificateBlock = {
+      id: 'i6',
+      type: 'image',
+      url: '',
+      layouts: { desktop: { x: 0, y: 0, w: 200, h: 200, zIndex: 0 } },
+    } as any;
+
+    flushSync(() => {
+      root.render(
+        <TamaguiProvider config={tamaguiConfig} defaultTheme="cloudWhite">
+          <CertificateBlockRenderer block={block} scale={1} fillContainer isEditor />
+        </TamaguiProvider>,
+      );
+    });
+    const textEl = Array.from(container.querySelectorAll('*')).find(
+      (el) => el.textContent === 'Arraste uma imagem aqui',
+    );
+    const placeholder = textEl?.parentElement as HTMLElement | undefined;
+    expect(placeholder).toBeTruthy();
+    const event = new Event('dragover', { bubbles: true, cancelable: true });
+    placeholder!.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it('renders a divider block without crashing', () => {
