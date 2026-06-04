@@ -44,3 +44,18 @@
 - **Primeira tarefa (P0 — obrigatório, ver AGENTS.md regra 9):** [item]
 - **Branch:** `feat/...`
 - **Pipeline de merge (Caminho C):** ver `docs/runbooks/merge-dnd-to-develop.md` se a feature estiver pronta
+
+---
+
+## 🚦 Quick Board (apresentar no início de cada sessão)
+
+> ⚠️ **Obrigatório** (AGENTS.md regra 11): a IA DEVE apresentar este bloco na PRIMEIRA resposta de cada sessão, antes de qualquer acção.
+
+```
+🔴 Em curso:    [item P0 em desenvolvimento]
+🟡 Parado:      [items pausados com [REVISIT: YYYY-MM-DD]]
+⏭️ Próximo:     [próximo item da fila]
+⏸️ P1 paralelas: [dívidas com due date próximas]
+```
+
+Fonte: `docs/context_buffer.md` → secção `## 📋 Quick Board`.

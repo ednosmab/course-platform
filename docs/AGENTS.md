@@ -54,6 +54,7 @@ Escreva códigos extremamente declarativos, simples e fáceis de ler. Evite otim
 9. **PRIORIDADE DE ENTRADA DE SESSÃO:** Ao iniciar qualquer nova sessão, a PRIMEIRA tarefa a ser atacada é o item P0 activo no `docs/BACKLOG.md`. Itens P1/P2 só podem ser iniciados após (a) concluir o P0, ou (b) registar adiamento datado (ver DT-01 em FORBIDDEN_OPERATIONS). A IA NÃO DEVE iniciar tarefa de prioridade inferior sem antes mostrar a justificação de adiamento.
 
 10. **INVARIANTE DE FIM DE SESSÃO:** Nenhuma sessão pode ser declarada "concluída" sem antes executar o ritual de fim de sessão: working tree limpo (zero modificações + zero untracked não relacionados à tarefa), buffer podado (≤ 50 linhas activas), backlog actualizado, testes verdes (`tsc --noEmit`, `pnpm run test`, `pnpm run build`). Ver template detalhado em `docs/session-template.md` e política DT-02 em FORBIDDEN_OPERATIONS.
+11. **QUICK BOARD DE AVISO (LEMBRETES PERMANENTES):** Ao iniciar QUALQUER sessão, a IA DEVE apresentar ao usuário o **Quick Board** do `docs/context_buffer.md` (secção `## 📋 Quick Board`) antes da primeira resposta operacional. O Quick Board lista: tarefa em curso, parado, próximo, dívidas P1 com due date. Este lembrete NÃO substitui a leitura completa dos P0 — é apenas um aviso de contexto. A omissão do Quick Board na primeira resposta é violação desta regra.
 
 ---
 
