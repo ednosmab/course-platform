@@ -5,6 +5,9 @@ import { QuizBlockSchema } from './quiz';
 import { ImageBlockSchema } from './image';
 import { HtmlBlockSchema } from './html';
 import { QuoteBlockSchema } from './quote';
+import { HeadingBlockSchema } from './heading';
+import { DividerBlockSchema } from './divider';
+import { CertificateBlockSchema } from './certificate-block';
 
 // 1. Profile Schema & Type
 export const ProfileSchema = z.object({
@@ -36,9 +39,11 @@ export const CourseSchema = z.object({
   description: z.string().nullable().optional(),
   thumbnail_url: z.string().nullable().optional(),
   is_published: z.boolean(),
+  certificate_blocks: z.array(CertificateBlockSchema).catch([]).nullable().optional(),
+  certificate_enabled: z.boolean().optional().default(false),
   created_at: z.string().or(z.date()),
   updated_at: z.string().or(z.date()),
-}).strict();
+}).passthrough();
 
 export type Course = z.infer<typeof CourseSchema>;
 
@@ -88,8 +93,11 @@ export const LessonSchema = z.object({
     ImageBlockSchema,
     HtmlBlockSchema,
     QuoteBlockSchema,
+    HeadingBlockSchema,
+    DividerBlockSchema,
   ])),
-  schema_version: z.number().int().positive().default(1),
+  version: z.number().int().positive().default(1),
+  schema_version: z.number().int().positive().optional(),
   is_published: z.boolean(),
   created_at: z.string().or(z.date()),
   updated_at: z.string().or(z.date()),
@@ -107,6 +115,7 @@ export const StudentProgressSchema = z.object({
   completed: z.boolean().default(false),
   completed_at: z.string().or(z.date()).nullable().optional(),
   updated_at: z.string().or(z.date()),
+  tests_completed: z.record(z.string(), z.number()).optional().default({}),
 }).strict();
 
 export type StudentProgress = z.infer<typeof StudentProgressSchema>;

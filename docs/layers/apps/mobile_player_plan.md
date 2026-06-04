@@ -1,7 +1,7 @@
 # Plano do Reprodutor de Aulas Móvel (Aluno Mobile)
 
 ## 🎯 Objetivo
-Projetar o motor de renderização nativo e a experiência de reprodução do aluno no aplicativo mobile (`apps/aluno-mobile`), garantindo compatibilidade cross-platform (iOS/Android), performance fluida de reprodução de vídeo nativo (Expo AV) e suporte a sincronização offline-first.
+Projetar o motor de renderização nativo e a experiência de reprodução do aluno no aplicativo mobile (`apps/student`), garantindo compatibilidade cross-platform (iOS/Android), performance fluida de reprodução de vídeo nativo (Expo AV) e suporte a sincronização offline-first.
 
 ---
 

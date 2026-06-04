@@ -12,6 +12,18 @@ Entregar uma interface que se adapta perfeitamente a diferentes tamanhos de tela
    - **Mouse:** Adicione feedbacks de cursor e hovers apenas para dispositivos que suportam ponteiro.
 5. **Adaptação de Conteúdo:** Oculte ou mova elementos secundários em telas pequenas para manter o foco no conteúdo principal da aula.
 
+## 🖥️ Viewports do Editor CMS (Admin)
+
+### Modo Edição Desktop (Canvas Livre)
+- **Delimitador de Página:** Card branco centralizado com `PAGE_W = 1100px`.
+- **Centralização:** Usar `margin: 0 auto` — proibido `alignItems: 'center'` no container pai, que causa perda do lado esquerdo em notebooks com tela menor que 1100px.
+- Se a janela for menor que 1100px, o card encosta na borda esquerda (`x = 0`) permitindo scroll horizontal normal.
+
+### Modo Mobile e Preview (Reflow Responsivo)
+- **Delimitador de Viewport:** Largura padrão simulada de `MOBILE_W = 390px`.
+- **Reflow Proporcional:** `groupBlocksByRow` agrupa blocos na mesma linha horizontal (colisão de Y) e distribui no mobile com `flex-wrap` e larguras flexíveis proporcionais às originais do desktop.
+- **Scroll Vertical:** Preview **não possui `max-height`** — conteúdo se estende naturalmente com scroll ilimitado, igual à tela real do dispositivo.
+
 ## 📂 Onde Aplicar
 - `packages/ui/`
 - Componentes de layout em `apps/`.

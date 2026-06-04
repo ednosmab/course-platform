@@ -73,17 +73,17 @@ export type ButtonProps = React.ComponentProps<typeof ButtonFrame> & {
   textProps?: React.ComponentProps<typeof Text>;
 };
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+export const Button = React.forwardRef<React.ComponentRef<typeof ButtonFrame>, ButtonProps>(
   ({ children, textProps, ...props }, ref) => {
     return (
-      <ButtonFrame ref={ref as any} {...props}>
+      <ButtonFrame ref={ref} {...(props as any)}>
         {typeof children === 'string' ? (
           <Text
             fontFamily="$body"
             fontSize="$3"
             fontWeight="$6"
             color={props.variant === 'ghost' ? '$text' : '$white'}
-            {...textProps}
+            {...(textProps as any)}
           >
             {children}
           </Text>

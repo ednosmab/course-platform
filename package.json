@@ -2,13 +2,34 @@
   "name": "plataforma-cursos-cms",
   "version": "1.0.0",
   "scripts": {
+    "build:verify": "pnpm --filter student run build:web && pnpm --filter admin run build",
+    "test": "pnpm -r --if-present run test",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:vrt:ladle": "playwright test --config playwright.ladle.config.ts",
+    "test:vrt": "playwright test --config playwright.ladle.config.ts",
+    "test:react-consistency": "bash scripts/check-react-consistency.sh",
+    "test:env-vars": "bash scripts/check-test-env-vars.sh",
+    "verify:ui": "npx tsx scripts/verify-ui-rules.ts",
+    "verify:all": "pnpm run test:react-consistency && pnpm run test:env-vars && pnpm run verify:ui && pnpm run test"
   },
   "engines": {
     "node": ">=20.0.0"
   },
+  "pnpm": {
+    "overrides": {
+      "react": "19.1.0",
+      "react-dom": "19.1.0",
+      "react-native": "0.81.5",
+      "@types/react": "19.1.17",
+      "@types/react-dom": "19.2.3"
+    }
+  },
   "devDependencies": {
-    "@playwright/test": "^1.60.0"
+    "@playwright/test": "^1.60.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "jsdom": "^29.1.1",
+    "tsx": "^4.22.3"
   }
 }

@@ -1,102 +1,217 @@
-# Workflow de Desenvolvimento do Admin CMS
+# 🖥️ Admin CMS — Guia de Usabilidade
 
-Este documento descreve as regras absolutas de arquitetura, layout, comportamento de eventos e renderização do subsistema **Admin CMS** (`apps/admin-web`). Toda e qualquer modificação ou adição de código efetuada por desenvolvedores humanos ou agentes de IA deve respeitar rigorosamente as diretrizes aqui consolidadas.
-
----
-
-## 🏛️ 1. A Lei Absoluta do Preview (ADR-005)
-
-> **TUDO O QUE FOR APRESENTADO NO PREVIEW SERÁ O RESULTADO FINAL DA TELA DO USUÁRIO.**
-
-1. **Renderer Único:** O componente `MobileCanvas` (localizado em [EditorCanvas.tsx](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/apps/admin-web/src/components/editor/EditorCanvas.tsx)) é o único mecanismo oficial de renderização responsiva do sistema. Ele é compartilhado entre o **Preview Canvas**, o **Mobile Viewport** do admin e a **Tela do Aluno** no portal móvel.
-2. **Fidelidade Total:** Nenhuma diferença visual ou estrutural entre o preview e a tela final do aluno é tolerada. Qualquer desvio é classificado como bug crítico.
+Este documento descreve o funcionamento da plataforma **Admin CMS** (`apps/admin`) do ponto de vista do usuário administrador. Use este guia para entender como cada funcionalidade se comporta e como o admin interage com o sistema.
 
 ---
 
-## 📐 2. Viewports, Grid e Responsividade
+## 🔐 1. Login e Redirecionamento
 
-O CMS opera com dois layouts fundamentais de tela:
+### Credenciais de Desenvolvimento
 
-### A. Modo de Edição Desktop (Canvas Livre)
-- **Delimitador de Página:** Um card branco centralizado de largura fixa (`PAGE_W = 1100px`).
-- **Alinhamento do Card:** É proibido centralizar o card do editor usando flexbox (`alignItems: 'center'`) no container pai, pois isso causa perda visual do lado esquerdo do card em telas de notebooks comuns.
-- **Regra de Centralização:** O card de 1100px deve ser centralizado através de margem automática:
-  ```css
-  margin: 0 auto;
-  ```
-  Isso garante que se a janela do navegador for menor que 1100px, o card encoste na esquerda (`x = 0`) permitindo fazer scroll horizontal normal, sem truncar nem cortar o conteúdo.
+| Perfil | Email | Senha |
+|--------|-------|-------|
+| Admin | `admin@admin.com` | `123456` |
+| Aluno | `aluno@aluno.com` | `123456` |
 
-### B. Modo Mobile e Preview (Reflow Responsivo)
-- **Delimitador de Viewport:** A largura padrão do dispositivo móvel simulado é de `390px` (`MOBILE_W`).
-- **Reflow Proporcional (`groupBlocksByRow`):** O sistema agrupa dinamicamente os blocos que residem na mesma linha horizontal (com base em colisão de intervalos Y) e os distribui no mobile usando `flex-wrap` e larguras flexíveis proporcionais baseadas nas larguras originais de cada bloco no desktop.
-- **Scroll e Altura Vertical:**
-  - O frame de preview **não possui limitação de altura vertical** (`max-height` é proibido).
-  - O conteúdo deve se estender naturalmente para baixo, com scroll ilimitado para garantir que todo o texto e elementos fiquem visíveis exatamente como na tela real do dispositivo móvel do aluno.
+### Fluxo
+1. Acesse `/login` e faça login com email e senha.
+2. O sistema redireciona automaticamente:
+   - **Admin / Professor** → Dashboard do admin (`/`)
+   - **Aluno** → App mobile do aluno
+3. Usuário não autenticado é redirecionado para `/login`.
 
 ---
 
-## ⚡ 3. Interação com Elementos HTML Livre / Iframes
+## 🎯 2. Regra de Ouro do Preview
 
-O bloco HTML carrega códigos externos (incluindo renderizadores 3D, Three.js, Canvas, etc.) que rodam isolados em um `<iframe>` com `srcDoc`. Para evitar bugs de arrasto e redimensionamento, as seguintes regras são aplicadas:
+> **TUDO O QUE FOR APRESENTADO NO PREVIEW SERÁ O RESULTADO FINAL DA TELA DO ALUNO.**
 
-1. **pointer-events Dinâmicos:**
-   - Durante a movimentação ou redimensionamento de qualquer bloco (`isInteracting === true`), o iframe de todos os blocos HTML deve receber `pointerEvents: 'none'`.
-   - Isso impede que o iframe capture os eventos de movimento do mouse, garantindo que a lógica de drag-and-drop no documento principal do editor funcione de maneira 100% fluida e sem travamentos.
-2. **Escalabilidade 100% no Iframe:**
-   - O modelo HTML injetado (`srcDoc`) do bloco HTML deve conter estilos globais de preenchimento completo:
-     ```css
-     html, body {
-       width: 100%;
-       height: 100%;
-       margin: 0;
-       padding: 0;
-       overflow: auto;
-     }
-     ```
-   - Isso evita o colapso vertical de canvas e gráficos 3D baseados em porcentagem, garantindo que o conteúdo interno redimensione instantaneamente junto com as alças de redimensionamento do bloco pai.
-3. **Overlay de Seleção no Editor:**
-   - No editor desktop, blocos interativos (como `html` e `video`) possuem um `div` de overlay transparente posicionado sobre o conteúdo (`zIndex: 10`).
-   - Este overlay captura os cliques e cliques de arraste originais no editor para permitir seleção fácil e drag-and-drop fluido. A interação com o conteúdo interno (como dar play em vídeos ou girar um cubo 3D) deve ser efetuada no modo **Preview**.
+- O preview do editor é **exatamente** o que o aluno vê — sem diferenças visuais.
+- Qualquer desvio entre preview e tela real do aluno é considerado bug crítico.
 
----
+### Espaço de Design e Delimitação Visual
 
-## 📝 4. Tipografia Responsiva e Formatação Semântica (HTML5)
+O conteúdo das aulas é desenhado em um espaço de coordenadas de **1100px de largura** (constante `DESKTOP_W` em `@projeto/core` e `PAGE_W` no editor). Esse é o **mesmo espaço** usado pelo preview e pelo app do aluno, garantindo fidelidade 1:1.
 
-### A. Tipografia Responsiva Padrão Comercial
-O tamanho das fontes de texto e perguntas varia dinamicamente de acordo com a viewport para respeitar os padrões comerciais de design de mercado:
+| Ambiente | Delimitador visual do espaço de 1100px | Alinhamento do conteúdo |
+|----------|----------------------------------------|------------------------|
+| **Editor** (modo edição) | Sim — borda/sombra visível contornando a área de 1100px (desktop) ou moldura de celular (mobile/tablet) | Centralizado, com delimitação clara para o admin |
+| **Preview** (modo visualização) | Não — apenas a área de conteúdo, sem moldura | Centralizado, sem delimitação (a tela real do aluno não tem moldura) |
+| **App do Aluno** | Não | Centralizado, sem delimitação |
 
-| Tamanho | Desktop | Mobile / Preview | Peso da Fonte |
-| :--- | :--- | :--- | :--- |
-| `small` | `13px` | `12px` | `400` |
-| `medium` | `16px` | `15px` | `400` |
-| `large` | `24px` | `19px` | `600` |
-| `xlarge` | `32px` | `24px` | `700` |
+**Por que o editor tem borda e o preview/student não?**
+- O editor precisa mostrar ao admin **onde estão os limites do espaço de 1100px** para que o posicionamento de blocos tenha significado visual.
+- O preview e a tela do aluno mostram o **resultado final**: uma página limpa, sem marcadores de desenvolvimento.
+- Manter a borda no preview ou no app do aluno causaria estranhamento visual, pois o aluno final não tem por que ver uma moldura de "área de edição".
 
-### B. Formatação Semântica HTML5 e Markdown Inline
-1. **Tags Semânticas Reais:** O painel de propriedades ativa negrito e itálico usando as tags semânticas HTML5 **`<strong>`** e **`<em>`** (evitando apenas estilização de fonte puramente via CSS) para garantir acessibilidade e SEO impecáveis.
-2. **Ênfase Inline via Markdown:** O editor e o visualizador contam com um parser simples que converte na hora a notação de escrita de Markdown em tags semânticas:
-   - `***texto***` ou `___texto___` ou `**_texto_**` ou `_**texto**_` $\rightarrow$ `<strong><em>texto</em></strong>` (Negrito + Itálico combinados)
-   - `**texto**` ou `__texto__` $\rightarrow$ `<strong>texto</strong>` (Negrito)
-   - `*texto*` ou `_texto_` $\rightarrow$ `<em>texto</em>` (Itálico)
-   - `> citação` (no início da linha) $\rightarrow$ `<blockquote style="...">citação</blockquote>` (Bloco de Citação renderizado com borda azul à esquerda e estilo itálico, aplicável dentro de blocos de **Texto** e **Quiz**).
-3. **Bloco de Citação Standalone (`quote`):**
-   - Bloco independente que permite definir o conteúdo da citação, o autor/fonte (exibido como `— Autor`) e controle completo de cores, alinhamentos, tipografia premium, imagem de fundo ou cor de fundo customizados.
-   - Quando estilizado com fundo, exibe aspas serifadas ornamentais no topo para estética premium. Sem fundo, exibe uma borda lateral vertical azul clássica.
-4. **Estilos de Card:** Blocos com cor ou imagem de fundo definidas recebem automaticamente preenchimento interno dinâmico (`padding: 16px`) e cantos levemente arredondados (`borderRadius: 8px`) para garantir a estética premium e evitar que textos toquem nas bordas do fundo.
+> Se o conteúdo parecer "encostado à esquerda" no preview, é porque o contêiner do preview é maior que 1100px — o conteúdo está **centralizado** dentro do espaço disponível, mas a `border` que delimitava o espaço de design só existe no editor.
 
 ---
 
-## 💾 5. Fidelidade na Exportação de Código (HTML Fonte)
+## 📱 3. Visualizando no Mobile
 
-A função `getHtmlFromBlock` é responsável por traduzir o estado visual do editor em código de produção limpo e utilizável. Ela deve:
-- Converter todas as estilizações de cores, fundos, imagens e fontes do painel em estilos em linha CSS válidos (`style="..."`).
-- Aplicar o parser de Markdown para converter as marcações do usuário em elementos semânticos reais (`<strong>` e `<em>`) na string final exportada.
-- O HTML exportado deve ser 100% autocontido, responsivo e semanticamente impecável.
+No canto superior do editor há um seletor de viewport:
+- **Desktop:** Canvas livre de 1100px com blocos posicionados absolutamente.
+- **Tablet / Mobile:** Simula a tela do dispositivo. Os blocos são reorganizados em layout fluido (reflow responsivo).
+- O preview mobile não tem limite de altura — role para ver todo o conteúdo.
 
 ---
 
-## ⚡ 6. Sincronização em Tempo Real (Supabase Realtime)
+## 📝 4. Tipografia e Formatação
 
-1. **Autosave do CMS:** O editor do CMS possui um mecanismo de Autosave que monitora as alterações nos blocos e faz a persistência de forma transparente com um debounce de `1.5s` na tabela `lessons` do Supabase.
-2. **Atualização Reativa do Usuário:** O aplicativo do aluno (`aluno-mobile`) utiliza **Supabase Realtime Channels** para se inscrever na aula ativa.
-3. **Fidelidade Instantânea:** Quando o administrador atualiza ou publica um bloco no CMS, a alteração é gravada no banco de dados e enviada imediatamente via WebSockets para todos os alunos que estão visualizando a aula ativa, atualizando os blocos na tela do dispositivo em tempo real sem necessidade de recarregar o aplicativo.
+### Tamanhos de Fonte
+
+| Tamanho | Desktop | Mobile |
+|---------|---------|--------|
+| `small` | 13px | 12px |
+| `medium` | 16px | 15px |
+| `large` | 24px | 19px |
+| `xlarge` | 32px | 24px |
+
+### Formatação Inline (Markdown)
+
+Dentro dos blocos de **Texto** e **Citação**, você pode usar:
+
+| Digite | Resultado |
+|--------|-----------|
+| `**texto**` ou `__texto__` | **negrito** |
+| `*texto*` ou `_texto_` | *itálico* |
+| `***texto***` | ***negrito + itálico*** |
+| `> texto` (início da linha) | Citação com borda azul |
+
+### Bloco de Citação (`quote`)
+
+Bloco independente com:
+- Conteúdo da citação + autor/fonte (exibido como `— Autor`)
+- Controle de cor, alinhamento, tipografia, fundo
+- Com fundo: exibe aspas ornamentais no topo
+- Sem fundo: borda lateral azul clássica
+
+---
+
+## 🖌️ 5. Editor de Imagem
+
+Disponível ao selecionar um bloco de imagem no Studio.
+
+### Rotacionar
+- **↺ 90°** — rotaciona 90° anti-horário
+- **↻ 90°** — rotaciona 90° horário
+- Cliques sucessivos acumulam (90° → 180° → 270° → 0°)
+
+### Espelhar
+- **H** — espelha horizontalmente (efeito flip horizontal)
+- **V** — espelha verticalmente (efeito flip vertical)
+- Os botões alternam entre ligado/desligado a cada clique
+
+### Cortar (Crop)
+1. Clique em **Cortar** para abrir o modal de corte.
+2. Arraste sobre a imagem para selecionar a área desejada.
+3. Ajuste a seleção usando os **8 handles** (cantos e bordas).
+4. Confirme com **"Aplicar Corte"**.
+5. Uma nova imagem é gerada e a URL do bloco é atualizada.
+
+> As transformações (rotate/flip) são aplicadas via CSS — não alteram a imagem original. O crop gera uma nova imagem no storage.
+
+---
+
+## 🎓 6. Certificado do Curso
+
+### Personalização
+1. Nas configurações do curso, ative **"Emitir certificado"**.
+2. Clique em **"Personalizar no Studio"** para abrir o editor de certificado.
+3. O editor de certificado abre numa **rota dedicada** (`/studio/[courseId]/certificate`) — fisicamente isolada do editor de aula (SDR-001). A antiga query `?mode=certificate` é redirecionada (HTTP 308) automaticamente.
+4. Adicione blocos (texto, imagem, heading, divider) posicionando-os livremente.
+5. Configure o tamanho do certificado (presets A4: 700/900/1100/1300px de largura).
+6. Para certificados **frente e verso**, ative "Dupla Face" e atribua cada bloco ao lado desejado.
+
+### Preview
+- Na página de configurações, clique na miniatura do certificado para abrir o preview ampliado.
+- O modal mostra **frente e verso lado a lado** (quando duplex), alinhado com a impressão.
+- O preview respeita fielmente as dimensões e posições definidas no Studio.
+- O `CertificatePage` usa o hook `useA4Scale` (em `@projeto/ui`) que escala automaticamente para caber tanto em largura quanto em altura limitada.
+
+### Impressão (Ctrl+P)
+- Clique no ícone de download/impressão no modal de preview.
+- O certificado é impresso em **A4 paisagem**, ocupando 100% da folha.
+- Certificados duplex geram **2 páginas** (frente e verso) automaticamente, com `page-break-after: always` entre elas.
+- A impressão é fiel ao preview, sem cortes ou escalas incorretas.
+
+### Isolamento do editor de certificado (SDR-001)
+- O editor de certificado é uma **rota dedicada** (`/studio/[courseId]/certificate`) com entry component próprio (`CertificateEditor` em `apps/admin/src/components/certificate-editor/`).
+- Mudanças no editor de aula **não podem** quebrar o editor de certificado (e vice-versa).
+- A única partilha permitida é via `CertificateBlockRenderer` (em `packages/ui/src/components/Certificate/`) — o renderizador puro dos blocos de certificado.
+
+### Validação manual end-to-end
+- Para o procedimento completo de teste manual (happy path, bordas, regressões), ver [`docs/manual-tests/certificate-end-to-end.md`](../manual-tests/certificate-end-to-end.md).
+
+---
+
+## 📦 7. Blocos do Editor
+
+| Bloco | Descrição |
+|-------|-----------|
+| **Texto** | Parágrafo com formatação Markdown (negrito, itálico, citação inline) |
+| **Título** | Heading H1/H2/H3 com alinhamento |
+| **Imagem** | Upload ou URL, com ajuste de fit (cover/contain/fill), rotate, flip e crop |
+| **Vídeo** | Incorpora vídeo (YouTube, Vimeo, etc.) via URL |
+| **Quiz** | Pergunta de múltipla escolha com opções e feedback |
+| **HTML** | Código HTML livre para conteúdo avançado (3D, canvas, etc.) |
+| **Divisor** | Linha horizontal personalizável (espessura, estilo, cor) |
+| **Citação** | Bloco de citação com autor, fundo e formatação premium |
+
+### Como usar
+1. Abra o Studio de uma aula.
+2. No painel esquerdo (Paleta), clique no bloco desejado ou arraste para o canvas.
+3. Selecione o bloco no canvas para abrir suas propriedades no painel direito.
+4. Ajuste posição, tamanho, conteúdo e estilo conforme necessário.
+
+---
+
+## 🚦 8. Publicar Aulas e Cursos
+
+### Auto-Save
+- Toda alteração no editor é salva automaticamente como **rascunho** (não público).
+- O salvamento é automático — não precisa clicar em salvar.
+
+### Publicar uma Aula
+1. O curso pai precisa estar publicado primeiro.
+2. Clique no botão **"Publicar"** no header do editor.
+3. Se o curso não estiver publicado, o sistema exibe: *"O curso precisa estar publicado antes de publicar aulas."*
+4. Aulas publicadas ficam visíveis para os alunos.
+
+### Publicar um Curso
+- No painel **Configurações do Curso**, use o toggle de publicação.
+- Alterar o status do curso **não** afeta automaticamente o status das aulas individuais.
+
+| Ação | Resultado |
+|------|-----------|
+| Auto-save (digitar no editor) | Salva como rascunho |
+| Clicar em "Publicar" | Aula fica visível para alunos |
+| Toggle "Publicado" no curso | Controla visibilidade do curso |
+
+---
+
+## 🖼️ 9. Thumbnail do Curso
+
+### Especificações
+
+| Atributo | Valor |
+|----------|-------|
+| Resolução | **1280×720px** (16:9) |
+| Formato | JPEG ou **WebP** |
+| Tamanho máx. | **2MB** |
+
+### Como fazer upload
+1. Nas configurações do curso, clique na área de thumbnail.
+2. Selecione um arquivo do computador.
+3. O preview é exibido antes de salvar.
+4. O upload ocorre ao clicar em **"Salvar Alterações"**.
+5. Cursos sem thumbnail exibem um gradiente padrão.
+
+---
+
+## ⚡ 10. Sincronização em Tempo Real
+
+- Quando o admin publica ou altera uma aula, a atualização chega **instantaneamente** aos alunos conectados.
+- O aluno vê a alteração na tela sem precisar recarregar o aplicativo.
+- Isso funciona via WebSockets (Supabase Realtime Channels).

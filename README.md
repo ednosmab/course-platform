@@ -30,8 +30,8 @@ O projeto adota uma arquitetura de **Monorepo Híbrido** e modular, garantindo r
 
 ```text
 ├── apps/
-│   ├── admin-web/          # Estúdio do Administrador (Next.js App Router)
-│   └── aluno-mobile/       # Aplicativo do Aluno (Expo Router Nativo)
+│   ├── admin/          # Estúdio do Administrador (Next.js App Router)
+│   └── student/       # Aplicativo do Aluno (Expo Router Nativo)
 ├── packages/
 │   ├── types/              # Contratos globais, regras de negócio e Schemas Zod
 │   └── ui/                 # Design System, configurações do Tamagui e componentes base

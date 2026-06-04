@@ -1,15 +1,15 @@
 import { z } from 'zod';
-import { BlockLayoutSchema } from './layout';
+import { BlockLayoutsSchema } from './layout';
 
 export const QuizOptionSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   text: z.string(),
   isCorrect: z.boolean(),
   feedback: z.string().optional(),
-}).strict();
+});
 
 export const QuizBlockSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   type: z.literal('quiz'),
   question: z.string(),
   options: z.array(QuizOptionSchema).min(2),
@@ -19,8 +19,8 @@ export const QuizBlockSchema = z.object({
     fontSize: z.enum(['small', 'medium', 'large', 'xlarge']).optional(),
     width: z.string().optional(),
     height: z.string().optional(),
-  }).strict().optional(),
-  layout: BlockLayoutSchema,
+  }).optional(),
+  layouts: BlockLayoutsSchema,
 }).strict();
 
 export type QuizOption = z.infer<typeof QuizOptionSchema>;

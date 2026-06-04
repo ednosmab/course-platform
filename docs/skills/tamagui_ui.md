@@ -10,6 +10,8 @@ Criar uma base visual consistente, performática e cross-platform (Web & Mobile)
    - Use o helper `styled` do Tamagui para criar variantes reutilizáveis.
 4. **Responsividade:** Utilize a sintaxe de array/objeto do Tamagui para breakpoints (ex: `width={{ lg: 500, sm: '100%' }}`).
 5. **Acessibilidade:** Garanta que todos os componentes interativos possuam estados de `hover`, `press` e `focus` bem definidos visualmente.
+6. **Resolução de Tokens `$token`:** Tokens `$color`, `$size`, `$space` etc. resolvem **apenas** em props de componentes Tamagui (`YStack`, `XStack`, `Text`, `Button`, etc.) e em `hoverStyle`/`pressStyle`. Em `<div style={{}}>` nativo, `boxShadow` inline ou strings CSS concatenadas, usar valores hex explícitos ou constantes — o Token Resolver do Tamagui não processa objetos `style` de elementos HTML nativos.
+7. **EXCEÇÃO — Print CSS para Certificados:** `@page { size: A4 landscape; }` e regras `@media print` não possuem API equivalente em React/Tamagui. É permitido um arquivo `.css` minimalista exclusivamente para print de certificados, limitado a `@page`, `@media print` e `print-color-adjust`. Esta é a **única** exceção à regra de zero CSS. O arquivo deve ser nomeado `CertificatePrint.css` e mantido em `packages/ui/src/components/Certificate/`.
 
 ## 🧱 Estrutura de Componentes
 - **Atômicos:** Botões, Inputs, Cards (Puros Tamagui).
@@ -18,5 +20,5 @@ Criar uma base visual consistente, performática e cross-platform (Web & Mobile)
 
 ## 📂 Onde Aplicar
 - `packages/ui/src/`
-- `apps/admin-web/components/`
-- `apps/aluno-mobile/components/`
+- `apps/admin/components/`
+- `apps/student/components/`

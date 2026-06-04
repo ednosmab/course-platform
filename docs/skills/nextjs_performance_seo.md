@@ -16,5 +16,5 @@ Garantir que a aplicação web (Admin e futura vitrine) carregue de forma instan
 - **Estrutura Semântica:** O Canvas do CMS deve gerar HTML limpo e semântico (`<article>`, `<section>`, `<h1>`, `<h2>`), não apenas uma div infinita de React Native components renderizados na Web.
 
 ## 📂 Onde Aplicar
-- `apps/admin-web/`
+- `apps/admin/`
 - Renderização de blocos do CMS na web.

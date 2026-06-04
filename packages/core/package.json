@@ -16,9 +16,16 @@
     "@supabase/supabase-js": "^2.43.4",
     "zod": "^3.23.8"
   },
+  "peerDependencies": {
+    "i18next": "^26.2.0",
+    "react": "^19.0.0",
+    "react-i18next": "^17.0.8"
+  },
   "devDependencies": {
-    "typescript": "^5.4.5",
+    "@types/i18next": "^13.0.0",
     "@types/node": "^20.12.12",
+    "@types/react": "^19.2.15",
+    "typescript": "^5.4.5",
     "vitest": "^1.6.0"
   }
 }

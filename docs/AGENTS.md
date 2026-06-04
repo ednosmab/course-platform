@@ -2,13 +2,34 @@
 
 ## 📐 ARQUITETURA E PADRÕES DO REPOSITÓRIO (OBRIGATÓRIO)
 - **Monorepo Híbrido:** Next.js (App Router), Expo (Router), Supabase e TypeScript.
+- **Idioma Único:** Todo código fonte deve ser escrito em **inglês** — nomes de arquivos, variáveis, constantes, funções, componentes, props, tipos, interfaces, enums, tabelas, colunas e mensagens de commit. Nomes em português são proibidos.
 - **Princípio DRY de Estilização:** É PROIBIDO usar Tailwind, Sass ou CSS inline. Toda e qualquer estilização visual deve ser feita exclusivamente via **Tamagui** no diretório `packages/ui`.
 - **Propriedades Dinâmicas:** Os blocos do CMS precisam aceitar modificações dinâmicas enviadas do banco do Supabase através de propriedades (`props`) injetadas diretamente nos componentes base do Tamagui.
 - **Banco de Dados:** Tabelas de dados flexíveis do CMS devem usar o tipo `JSONB` no Supabase para armazenar a árvore de componentes da aula.
 - **Validação:** Todas as entradas de dados e contratos de API devem usar **Zod** para validação em tempo de execução.
 - **Registros de Arquitetura (ADRs):** Toda decisão arquitetural de alto impacto está documentada na pasta `docs/adrs/`. É OBRIGATÓRIO ler e respeitar os ADRs existentes. Caso uma nova biblioteca estrutural precise ser adicionada, você deve primeiro sugerir a criação de um novo arquivo ADR para aprovação do usuário.
 - **Plano de Desenvolvimento (SDP):** O cronograma detalhado de 8 semanas, o fluxo de trabalho da esteira MCP e a matriz de responsabilidades estão documentados em `docs/roadmaps/sdp.md`. É OBRIGATÓRIO ler e seguir este plano.
+- **Regras Vinculantes (FORBIDDEN_OPERATIONS):** O arquivo `docs/FORBIDDEN_OPERATIONS.md` contém **regras absolutas** que a IA DEVE ler e seguir em toda sessão. Qualquer violação deve ser reportada e corrigida imediatamente.
+- **Configuração de Ambiente de Teste:** A flag `E2E_BYPASS_AUTH` é EXCLUSIVA do `playwright.config.ts` (sete via `webServer.env`). É TERMINANTEMENTE PROIBIDO propagá-la para `.env*`, `next.config.*`, `vercel.json`, `wrangler.toml`, `netlify.toml` ou qualquer config de deploy. O script `scripts/check-test-env-vars.sh` (integrado em `pnpm run verify` e nos workflows CI/CD) valida este contrato. Ver `docs/skills/e2e_testing.md` e regra ENV-01 em FORBIDDEN_OPERATIONS.
+- **Diretrizes de Engenharia (DESDO):** O arquivo `docs/DESDO.md` consolida as regras de governança, mitigações operacionais e padrões arquiteturais (SOLID, TDD, segurança, documentação) que devem ser observados em toda geração de código ou alteração de estado no projeto.
 
+
+---
+
+## 🎨 GOVERNANÇA DO DESIGN SYSTEM (OBRIGATÓRIO)
+
+- **Ícones:** É PROIBIDO importar diretamente de `lucide-react` ou `lucide-react-native`. Use exclusivamente `<Icon name="IconName" />` de `@projeto/ui`.
+- **Estilização:** Zero `<div>`, `<span>`, `<button>`, `<p>`, `<h1-6>` nos componentes — use `YStack`, `XStack`, `Text`, `Button` de `@projeto/ui`.
+- **Cores Hardcoded:** Proibido usar valores hex/rgb nos apps. Use tokens `$color` do Tamagui.
+- **StyleSheet.create():** Proibido no student app. Use Tamagui stylying.
+- **Verificação:** Execute `pnpm run verify:ui` para validar as regras acima.
+- **Ladle:** Mantenha stories atualizadas em `packages/ui/src/**/*.stories.tsx`. Execute `pnpm --filter @projeto/ui ladle:build` para verificar.
+
+---
+
+## 📖 CÓDIGO DECLARATIVO E LEGÍVEL (REGRA ABSOLUTA)
+
+Escreva códigos extremamente declarativos, simples e fáceis de ler. Evite otimizações prematuras ou sintaxes excessivamente complexas. Prefira legibilidade à concisão. Código deve ser autoexplicativo para um desenvolvedor pleno — se precisar de um comentário para explicar o fluxo, o código provavelmente está complexo demais.
 
 ---
 
@@ -16,9 +37,9 @@
 
 1. **NUNCA FAÇA COMMIT SEM PERMISSÃO:** É ESTREITAMENTE PROIBIDO executar comandos de `git commit` ou `git push` de forma automatizada. Você deve SEMPRE solicitar que o usuário teste as alterações localmente primeiro. Apenas após a confirmação visual e autorização explícita do usuário você poderá avançar ou sugerir o commit.
 2. **COMMITS CURTOS EM INGLÊS:** Quando um commit for autorizado, a mensagem de commit gerada ou sugerida DEVE ser escrita em inglês. Ela deve ser altamente concisa, resumida e seguir rigorosamente a especificação do Conventional Commits (ex: `feat: add text block schema`, `chore: update database rules`). Evite explicações longas ou genéricas no título do commit.
-3. **BOOTSTRAP E SETUP PROATIVO:** Ao receber guias de início rápido (Quick Starts) ou iniciar a fase estrutural (Semanas 1-8), o agente DEVE sempre validar e instalar dependências (pnpm), limpar cache se necessário, testar a instalação e criar fisicamente a estrutura de pastas base do monorepo (scaffolding) seguindo o padrão: `apps/admin-web`, `apps/aluno-mobile`, `packages/types`, `packages/ui`, `supabase/migrations` antes de começar a codificar, explicando a ação ao usuário. Não pule esta etapa, mesmo que não seja solicitada explicitamente.
+3. **BOOTSTRAP E SETUP PROATIVO:** Ao receber guias de início rápido (Quick Starts) ou iniciar a fase estrutural (Semanas 1-8), o agente DEVE sempre validar e instalar dependências (pnpm), limpar cache se necessário, testar a instalação e criar fisicamente a estrutura de pastas base do monorepo (scaffolding) seguindo o padrão: `apps/admin`, `apps/student`, `packages/types`, `packages/ui`, `supabase/migrations` antes de começar a codificar, explicando a ação ao usuário. Não pule esta etapa, mesmo que não seja solicitada explicitamente.
 4. **REFINAMENTO CONTÍNUO (LEAN FLOW):** Ao identificar código repetido, desorganizado, mal nomeado ou que viola as regras de arquitetura (DRY, KISS, SOLID), você TEM A OBRIGAÇÃO de executar refatoração imediatamente. Documente o processo e as melhorias realizadas no `docs/context_buffer.md` na seção `## 🛠️ Refatorações Aplicadas` antes de solicitar feedback do usuário.
-5. **TESTES AUTOMATIZADOS (FIRST RUN):** Ao concluir a implementação de uma nova feature ou fix, você DEVE gerar automaticamente os testes unitários correspondentes e executá-los usando o comando configurado (`pnpm run test`). O resultado do teste deve ser documentado no buffer antes da entrega final.
+5. **TDD ESTRITO — TEST-FIRST (RED-GREEN-REFACTOR):** Você DEVE seguir o ciclo TDD estrito. Primeiro escreva o teste (RED), depois a implementação mínima (GREEN), depois refatore (REFACTOR). Só após GREEN você pode enviar o código. Consulte `docs/skills/tdd_workflow.md` para o protocolo completo. Execute `pnpm run test` a cada ciclo e documente o resultado no buffer.
 6. **VALIDAÇÃO DE SEGURANÇA (SECURITY BY DEFAULT):** Antes de implementar qualquer funcionalidade que envolva dados do usuário (inputs, uploads, formulários) ou renderização de HTML gerado por CMS, você DEVE verificar o `docs/skills/security_xss_prevention.md`. Aplique as defesas necessárias (sanitização, escape ou uso de componentes seguros) automaticamente e documente a validação no buffer.
 7. **TESTE DE INTEGRIDADE POST-COMMIT (POST-MORTEM):** Após realizar qualquer commit (e apenas após ser autorizado pelo usuário), você DEVE executar imediatamente um diagnóstico completo do sistema para garantir que a alteração não quebrou outras partes do projeto. Você DEVE utilizar as seguintes ferramentas e comandos na ordem exata:
 
@@ -28,6 +49,11 @@
 
    c. **Teste de Integridade do Monorepo:** Execute `pnpm run test:e2e` para garantir que os fluxos críticos de UI continuam funcionando. Documente qualquer falha encontrada na seção `## ⚠️ Impedimentos & Logs de Erro Recentes` do `docs/context_buffer.md`, incluindo o stack trace completo.
    d. **Correção Automática de Erros Críticos:** Se qualquer um dos comandos acima falhar, você DEVE executar as correções sugeridas pelo próprio terminal e repetir os testes até que todos passem, documentando cada tentativa no buffer, antes de prosseguir para a próxima tarefa.
+8. **CHECKLIST DE AMBIENTE PRÉ-DEPLOY:** Antes de commitar qualquer alteração em configs de deploy, secrets ou env vars, execute `bash scripts/check-test-env-vars.sh` e confirme que passa. Qualquer flag de teste (E2E_*, MOCK_*, BYPASS_*) tem de estar contida em `playwright.config.ts` e em mais nenhum outro lado. Ver regra ENV-01 em FORBIDDEN_OPERATIONS.
+
+9. **PRIORIDADE DE ENTRADA DE SESSÃO:** Ao iniciar qualquer nova sessão, a PRIMEIRA tarefa a ser atacada é o item P0 activo no `docs/BACKLOG.md`. Itens P1/P2 só podem ser iniciados após (a) concluir o P0, ou (b) registar adiamento datado (ver DT-01 em FORBIDDEN_OPERATIONS). A IA NÃO DEVE iniciar tarefa de prioridade inferior sem antes mostrar a justificação de adiamento.
+
+10. **INVARIANTE DE FIM DE SESSÃO:** Nenhuma sessão pode ser declarada "concluída" sem antes executar o ritual de fim de sessão: working tree limpo (zero modificações + zero untracked não relacionados à tarefa), buffer podado (≤ 50 linhas activas), backlog actualizado, testes verdes (`tsc --noEmit`, `pnpm run test`, `pnpm run build`). Ver template detalhado em `docs/session-template.md` e política DT-02 em FORBIDDEN_OPERATIONS.
 
 ---
 
@@ -49,6 +75,11 @@ Em reconhecimento ao desempenho excepcional, os 3 papéis foram consolidados em 
   - Documenta decisões, planos e governança (`docs/`)
 - **Regra:** Sempre que identificar código frágil, ausência de tratamento de erro, falta de tipos ou violação de boas práticas, DEVE refatorar imediatamente.
 
+### 📋 GESTÃO DE STATUS DO BACKLOG (OBRIGATÓRIO)
+- Ao iniciar a implementação de qualquer item no `docs/BACKLOG.md`, marque-o como `em andamento`.
+- Ao concluir, substitua `[ ]` por `[x]`.
+- Se precisar pausar (bloqueio externo, dependência, decisão pendente), registre o motivo e marque como `pausado`.
+
 ### ⏳ Diretriz de Leitura Preguiçosa Otimizada (Lazy Loading)
 - Você está PROIBIDO de realizar buscas globais (globbing) ou ler múltiplos arquivos da pasta `docs/` de forma simultânea no início do chat.
 - Sempre que o usuário solicitar uma tarefa, analise o escopo e use o arquivo `docs/CONTEXT_MAP.md` para identificar os caminhos exatos dos arquivos de plano e skill necessários.
@@ -57,17 +88,21 @@ Em reconhecimento ao desempenho excepcional, os 3 papéis foram consolidados em 
 
 ## 🤖 ALGORITMO OBRIGATÓRIO DE GESTÃO DE CONTEXTO (WORKFLOW ATIVO)
 
-Sempre que o usuário enviar uma nova mensagem ou comando, você DEVE executar rigorosamente os 4 passos abaixo na ordem exata, usando suas ferramentas MCP:
+> ⚠️ **REGRRA ABSOLUTA:** Toda task de implementação, refatoração ou correção DEVE começar pelo carregamento dos documentos. Nenhuma linha de código pode ser escrita antes da leitura completa dos P0 + P2 da camada.
+
+Sempre que o usuário enviar uma nova mensagem ou comando, você DEVE executar rigorosamente os 4 passos abaixo na ordem exata, usando suas ferramentas MCP. O skill `document-loader` (ativado automaticamente) contém o checklist completo, e o subagent `document-loader` pode ser usado via `task` para leitura em lote.
 
 ### 🔄 PASSO 1: DIAGNÓSTICO E LEITURA PREGUIÇOSA (LAZY LOADING)
 - Use o MCP para ler `docs/CONTEXT_MAP.md` e localize a pasta da camada da tarefa.
 - Use o MCP para ler `docs/context_buffer.md` para extrair o estado da última execução.
-- Use o MCP para ler a Skill e o Plano de Execução específicos da camada afetada.
+- **Leia TODOS os P0 obrigatórios** (já injetados como system prompt pelo `opencode.json`): AGENTS.md, FORBIDDEN_OPERATIONS.md, DESDO.md, Requisitos_plataforma.md, CONTEXT_HIERARCHY.md
+- Use o MCP para ler a Skill e o Plano de Execução específicos da camada afetada (P2).
+- **Registre no buffer quais documentos foram lidos** na seção `## 🕹️ Documentos Carregados via MCP`.
 
 ### 📝 PASSO 2: ATUALIZAÇÃO DA MEMÓRIA RAM (BEFORE-CODE)
 - Antes de modificar qualquer código fonte, reescreva o `docs/context_buffer.md`.
 - Atualize o campo `## 🎯 Tarefa em Execução` com o objetivo imediato do turno.
-- Atualize `## 🕹️ Camada Ativa e Documentos Carregados via MCP` com os arquivos que usará.
+- Atualize `## 🕹️ Documentos Carregados via MCP` com os arquivos que usará.
 
 ### 💻 PASSO 3: EXECUÇÃO CIRÚRGICA
 - Escreva ou altere o código estritamente dentro da pasta permitida ao seu Agente.
@@ -78,6 +113,8 @@ Sempre que o usuário enviar uma nova mensagem ou comando, você DEVE executar r
 ### 🧹 PASSO 4: CONSOLIDAÇÃO E PURGA (AFTER-CODE)
 - Assim que o código compilar com sucesso, marque `[x]` na tarefa correspondente do plano.
 - Limpe a seção de `⚠️ Impedimentos` do buffer inserindo: "*Nenhum erro ativo.*"
+- Execute o checklist de conformidade (ver `document-loader` skill): JSDoc, idioma inglês, tokens de cor, testes, build.
+- Execute o ritual de fim de sessão conforme item 10 das REGRAS CRUCIAIS DE WORKFLOW E GIT: working tree limpo, buffer ≤ 50 linhas, backlog actualizado, testes verdes.
 - Termine sua resposta exibindo o estado atual resumido do buffer e o consumo estimado da sessão.
 
 ### 📜 Protocolo de Registro Histórico de Longo Prazo

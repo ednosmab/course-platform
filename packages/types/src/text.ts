@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { BlockLayoutSchema } from './layout';
+import { BlockLayoutsSchema } from './layout';
 
 export const TextBlockSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   type: z.literal('text'),
   content: z.string(),
   styles: z.object({
@@ -11,8 +11,8 @@ export const TextBlockSchema = z.object({
     fontSize: z.enum(['small', 'medium', 'large', 'xlarge']).optional(),
     width: z.string().optional(),
     height: z.string().optional(),
-  }).strict().optional(),
-  layout: BlockLayoutSchema,
+  }).optional(),
+  layouts: BlockLayoutsSchema,
 }).strict();
 
 export type TextBlock = z.infer<typeof TextBlockSchema>;

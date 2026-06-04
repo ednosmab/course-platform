@@ -5,7 +5,7 @@ Manter a sanidade, segurança e manutenibilidade do código-fonte através de re
 
 ## 🛡️ Higiene de Código e Segurança
 1. **Segredos e Credenciais:** NUNCA versione chaves API, certificados `.pem` ou o arquivo `.env`. Certifique-se de que o `.gitignore` os bloqueia.
-2. **Organização de Assets:** Centralize imagens e logotipos em diretórios únicos (ex: `apps/admin-web/public/assets`). Não duplique ícones.
+2. **Organização de Assets:** Centralize imagens e logotipos em diretórios únicos (ex: `apps/admin/public/assets`). Não duplique ícones.
 3. **Código Morto:** Substituiu um componente local por um do Design System? Apague o antigo IMEDIATAMENTE.
 4. **Documentação:** Mantenha os históricos limpos e nomes de diretórios semânticos (ex: `docs/skills/` em vez de `docs/misc/`).
 
