@@ -14,6 +14,17 @@
 
 ## 🏆 P0 — Sprint Actual (≤ 7 dias)
 
+### 🚦 Definir critério de push para origin (desbloqueia G-01)
+
+| Campo | Valor |
+|---|---|
+| **Status** | Backlog |
+| **Severidade** | 🟠 Alto |
+| **Owner** | unassigned |
+| **Due** | Antes do MVP |
+| **Criado** | 2026-06-04 |
+| **Descrição** | Push para `origin` está bloqueado até que o critério objectivo de "MVP concluído" seja definido. Decisão do usuário (2026-06-04): "Definir mais tarde". Candidatos: P0 vazio + build verde + testes 100% + lint 0 erros + dívidas P1 resolvidas. Detalhes em `docs/runbooks/push-strategy.md`. |
+
 ### ⏳ Fase 5A — Isolamento definitivo do editor de certificado
 
 | Campo | Valor |

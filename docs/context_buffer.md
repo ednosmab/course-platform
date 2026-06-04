@@ -8,6 +8,8 @@
 
 > **Fonte canónica:** `docs/BACKLOG.md` (P0/P1/P2/P3 com Status, Due, Owner).
 
+> 🚦 **Push para origin BLOQUEADO** — apenas quando o critério de MVP for definido (ver `docs/runbooks/push-strategy.md` e entrada P0 no BACKLOG). Até lá, trabalho permanece local em `feat/cert-editor-isolation`.
+
 ## Status Atual
 **Sessão de governança + pipeline de merge concluídos.** Regra 9+10 do AGENTS.md activas; DT-01..DT-04 em vigor. Branch `feat/dsv2-reform` deletada (conteúdo já em develop). Pipeline de merge Caminho C executado com sucesso. Nova secção "POLÍTICA DE BRANCHES E PIPELINE DE MERGE" formalizada em AGENTS.md.
 
