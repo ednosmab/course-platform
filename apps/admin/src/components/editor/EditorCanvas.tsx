@@ -531,6 +531,18 @@ function renderViewportBlocks(args: {
             data-block-id={block.id}
             onMouseDown={(e) => args.onBlockMouseDown(e, block)}
             onClick={(e) => { e.stopPropagation(); args.setActiveBlockId(block.id); }}
+            onDrop={(e) => {
+              if (block.type !== 'image') return;
+              e.preventDefault();
+              e.stopPropagation();
+              const file = e.dataTransfer.files[0];
+              if (file && file.type.startsWith('image/') && args.onImageDrop) {
+                args.onImageDrop(block.id, file);
+              }
+            }}
+            onDragOver={(e) => {
+              if (block.type === 'image') e.preventDefault();
+            }}
             style={{ position: 'absolute', left: layout.x * scale, top: layout.y * scale, width: layout.w * scale, height: layout.h * scale, zIndex: layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none', isolation: 'isolate' }}
           >
             <div style={{ position: 'absolute', inset: 0, border: isActive ? '2px solid #3B82F6' : '2px solid transparent', borderRadius: '6px', pointerEvents: 'none', zIndex: 2 }} />
