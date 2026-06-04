@@ -141,6 +141,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({ courseId, saveAction
                 bg={viewportMode === id ? '$secondary' : 'transparent'}
                 cursor="pointer"
                 hoverStyle={{ bg: viewportMode === id ? '$secondary' : '$muted' }}
+                data-testid={`viewport-${id}`}
               >
                 <Icon name={icon} size={16} color={viewportMode === id ? '$text' : '$textMuted'} />
               </XStack>

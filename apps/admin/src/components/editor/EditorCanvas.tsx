@@ -1240,6 +1240,7 @@ export const EditorCanvas: React.FC = () => {
             return (
               <div
                 key={block.id}
+                data-block-id={block.id}
                 onMouseDown={(e) => onBlockMouseDown(e, block)}
                 onClick={(e) => {
                   e.stopPropagation();
