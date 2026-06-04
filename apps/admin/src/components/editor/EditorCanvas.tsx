@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { YStack, XStack, Text, Icon, Spinner, Button, CertificateBlockRenderer, color, sanitizeHtml } from '@projeto/ui';
+import { YStack, XStack, Text, Icon, Spinner, color, sanitizeHtml } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
 import { AnyBlock } from '@projeto/types';
 
@@ -623,15 +623,11 @@ function renderViewportBlocks(args: {
   );
 }
 
-function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesignHeight }: {
+function PreviewCanvas({ blocks, viewportMode }: {
   blocks: AnyBlock[];
   viewportMode: 'desktop' | 'tablet' | 'mobile';
-  mode?: 'lesson' | 'certificate';
-  certDesignWidth?: number;
-  certDesignHeight?: number;
 }) {
   const [zoom, setZoom] = useState(1);
-  const isCertMode = mode === 'certificate';
   const isMobile = viewportMode === 'mobile';
   const isTablet = viewportMode === 'tablet';
   const isDesktop = viewportMode === 'desktop';
@@ -649,31 +645,6 @@ function PreviewCanvas({ blocks, viewportMode, mode, certDesignWidth, certDesign
   const zoomOut = () => setZoom(z => Math.max(0.25, z - 0.1));
 
   const content = (() => {
-    if (isCertMode) {
-      const pageW = certDesignWidth || 1100;
-      const pageH = certDesignHeight || Math.round(1100 / 1.414);
-      const sorted = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
-      return (
-        <div style={{
-          position: 'relative', width: pageW, height: '100%',
-          backgroundColor: color.cwBackground,
-          overflow: 'hidden',
-        }}>
-          {sorted.map((block) => {
-            const layout = getLayout(block);
-            return (
-              <div key={block.id} style={{
-                position: 'absolute', left: layout.x, top: layout.y,
-                width: layout.w, height: layout.h, zIndex: layout.zIndex + 1,
-              }}>
-                <CertificateBlockRenderer block={block as any} scale={1} fillContainer />
-              </div>
-            );
-          })}
-        </div>
-      );
-    }
-
     const pageH = Math.max(800, ...blocks.map(b => { const l = getLayout(b, viewportMode); return l.y + l.h + 120; }));
     const sortedBlocks = [...blocks].sort((a, b) => getLayout(a, viewportMode).zIndex - getLayout(b, viewportMode).zIndex);
     if (isDesktop) {
@@ -825,7 +796,7 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
 }
 
 export const EditorCanvas: React.FC = () => {
-  const { blocks, activeBlockId, selectedBlockIds, setActiveBlockId, removeBlock, removeBlocks, duplicateBlock, toggleSelectBlock, clearSelection, updateBlock, updateBlockSilent, previewMode, viewportMode, mode, certDesignWidth, certDesignHeight, certDesignChosen, setCertDesignSize, activeSide, setActiveSide, certIsDoubleSided } = useEditor();
+  const { blocks, activeBlockId, selectedBlockIds, setActiveBlockId, removeBlock, removeBlocks, duplicateBlock, toggleSelectBlock, clearSelection, updateBlock, updateBlockSilent, previewMode, viewportMode } = useEditor();
   const [mounted, setMounted] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
@@ -1142,23 +1113,13 @@ export const EditorCanvas: React.FC = () => {
 
   if (!mounted) return <YStack flex={1} bg="$background" ai="center" jc="center" gap={12} opacity={0.7}><Spinner size="large" color="$primary" /><Text color="$textMuted" fontSize={14}>Carregando canvas…</Text></YStack>;
 
-  if (previewMode) return <PreviewCanvas blocks={blocks} viewportMode={viewportMode} mode={mode} certDesignWidth={certDesignWidth} certDesignHeight={certDesignHeight} />;
+  if (previewMode) return <PreviewCanvas blocks={blocks} viewportMode={viewportMode} />;
 
   if (viewportMode === 'mobile') return <MobileViewport blocks={blocks} onImageDrop={handleImageDrop} />;
   if (viewportMode === 'tablet') return <TableViewport blocks={blocks} onImageDrop={handleImageDrop} />;
 
   const sortedBlocks = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
-  const isCertMode = mode === 'certificate';
-  const pageH = isCertMode ? Math.max(200, certDesignHeight) : Math.max(800, ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
-
-  if (isCertMode && !certDesignChosen) {
-    return (
-      <YStack flex={1} p="$5" bg="$background" ai="center" jc="center" gap="$3">
-        <Text fontSize={16} fontWeight="600">Personalize seu Certificado</Text>
-        <Text fontSize={13} color="$textMuted" textAlign="center">Selecione um tamanho de layout no painel à direita para começar</Text>
-      </YStack>
-    );
-  }
+  const pageH = Math.max(800, ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
 
   return (
     <YStack
@@ -1168,34 +1129,10 @@ export const EditorCanvas: React.FC = () => {
       data-editor-root
       ai="center"
     >
-      {isCertMode && certIsDoubleSided && (
-        <XStack ai="center" jc="center" gap="$2" mb="$4" bg="white" p="$1.5" borderRadius="$3" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)' }}>
-          <Button
-            backgroundColor={activeSide === 'front' ? '$primary' : 'transparent'}
-            hoverStyle={{ backgroundColor: activeSide === 'front' ? '$primary' : 'rgba(0,0,0,0.03)' }}
-            borderWidth={0}
-            onPress={(e: any) => { e.stopPropagation(); setActiveSide('front'); }}
-            px="$4"
-            borderRadius="$2"
-          >
-            <Text color={activeSide === 'front' ? 'white' : '$text'} fontWeight="600" fontSize={12}>Frente do Certificado</Text>
-          </Button>
-          <Button
-            backgroundColor={activeSide === 'back' ? '$primary' : 'transparent'}
-            hoverStyle={{ backgroundColor: activeSide === 'back' ? '$primary' : 'rgba(0,0,0,0.03)' }}
-            borderWidth={0}
-            onPress={(e: any) => { e.stopPropagation(); setActiveSide('back'); }}
-            px="$4"
-            borderRadius="$2"
-          >
-            <Text color={activeSide === 'back' ? 'white' : '$text'} fontWeight="600" fontSize={12}>Verso do Certificado</Text>
-          </Button>
-        </XStack>
-      )}
       <div
         ref={pageRootRef}
         data-page-root
-        style={{ position: 'relative', width: isCertMode ? certDesignWidth : PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: color.cwBackground, borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)', overflow: isCertMode ? 'hidden' : undefined }}
+        style={{ position: 'relative', width: PAGE_W, minHeight: pageH, margin: '0 auto', backgroundColor: color.cwBackground, borderRadius: '8px', boxShadow: '0 2px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)' }}
         onMouseDown={(e) => {
           if ((e.target as HTMLElement).closest('[role="button"]')) return;
           if (inlineEditingId) return;
@@ -1207,7 +1144,7 @@ export const EditorCanvas: React.FC = () => {
         }}
       >
         <Text position="absolute" top={-22} left={0} fontSize={10} color="$textMuted" userSelect="none" style={{ fontFamily: 'monospace', pointerEvents: 'none' }}>
-          {isCertMode ? `${certDesignWidth} × ${pageH}` : `${PAGE_W}px`} — Desktop
+          {`${PAGE_W}px`} — Desktop
         </Text>
 
         {blocks.length === 0 && (
@@ -1217,9 +1154,7 @@ export const EditorCanvas: React.FC = () => {
         )}
 
         {(() => {
-          const canvasBlocks = isCertMode && certIsDoubleSided
-            ? blocks.filter((b) => ((b as any).styles?.side || 'front') === activeSide)
-            : blocks;
+          const canvasBlocks = blocks;
           const sorted = [...canvasBlocks].sort((a, b) => {
             const aBg = (a as any).styles?.isBackground ? 1 : 0;
             const bBg = (b as any).styles?.isBackground ? 1 : 0;
@@ -1232,9 +1167,8 @@ export const EditorCanvas: React.FC = () => {
             const isEditing = block.id === inlineEditingId;
             const isHovered = hoveredBlockId === block.id;
             const showToolbar = isActive || isHovered;
-            const isBg = !!((block as any).styles?.isBackground && isCertMode);
-            const layout = isBg ? { x: 0, y: 0, w: certDesignWidth, h: pageH, zIndex: 0 } : getLayout(block);
-            const outOfBounds = isBg ? false : isOutOfBounds(block, isCertMode ? certDesignWidth : PAGE_W);
+            const layout = getLayout(block);
+            const outOfBounds = isOutOfBounds(block, PAGE_W);
 
 
             return (
@@ -1297,12 +1231,7 @@ export const EditorCanvas: React.FC = () => {
                   </XStack>
                 )}
 
-                <div style={{ position: 'absolute', inset: isBg ? 0 : 2, borderRadius: isBg ? '0px' : '4px', overflow: 'hidden', zIndex: 1 }}>
-                  {isBg && (
-                    <XStack position="absolute" top={8} left={8} zIndex={25} bg="$primary" py={1} px={2} borderRadius={4} ai="center" gap={4} style={{ pointerEvents: 'none', whiteSpace: 'nowrap' }}>
-                      <Text fontSize={9} fontWeight="600" color="white">✦ Plano de Fundo (Bloqueado)</Text>
-                    </XStack>
-                  )}
+                <div style={{ position: 'absolute', inset: 2, borderRadius: '4px', overflow: 'hidden', zIndex: 1 }}>
                   <BlockContent
                     block={block}
                     onImageDrop={handleImageDrop}
@@ -1361,7 +1290,7 @@ export const EditorCanvas: React.FC = () => {
                   </XStack>
                 )}
 
-                {(isActive || isSelected) && !isBg && HANDLES.map(({ id, cursor, style }) => (
+                {(isActive || isSelected) && HANDLES.map(({ id, cursor, style }) => (
                   <div
                     key={id}
                     data-handle={id}
@@ -1378,7 +1307,7 @@ export const EditorCanvas: React.FC = () => {
           <div key={`gv-${i}`} style={{ position: 'absolute', left: x, top: 0, width: 0, height: pageH, borderLeft: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
         ))}
         {guides.h.map((y, i) => (
-          <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y, width: isCertMode ? certDesignWidth : PAGE_W, height: 0, borderTop: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+          <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y, width: PAGE_W, height: 0, borderTop: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
         ))}
         {guides.m.map((m, i) => {
           if (m.orientation === 'h') {
