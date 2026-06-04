@@ -174,3 +174,85 @@ Plano Fase 5A refinado: 5 commits TDD, **28 novos testes (total 45)**. Prioridad
 - `EditorHeader` é 100% mode-agnostic; o label "Salvar" cert-specific vive em `CertificateEditorHeader` (SDR-001).
 - Guard defensivo no overlay: `if (pageRootRef.current.contains(e.target as Node)) return;` — não testável em JSDOM (event bubbling ignora zIndex), mas é belt-and-suspenders contra violações de stacking.
 - Coordenadas do marquee divididas por `zoom` para ficarem em design space.
+
+---
+
+## 🔧 Sessão: Drag-and-drop de imagem nos editores (cert + lesson)
+
+**Trigger:** Utilizador reportou que arrastar imagem para o placeholder "Arraste uma imagem aqui" não funcionava em ambos os editores. Validado manualmente em 2026-06-03 com curso "Teste 2": fluxo cert funcionou end-to-end após fix; pediu commit; também pediu criação de manual de teste (separado do workflow_adm).
+
+### Commit 1/3 — cert editor (commit `13b7da3`)
+- `CertificateBlockRenderer.tsx` (packages/ui) + prop `onImageDrop?: (file: File) => void`; placeholder YStack só liga `onDrop`/`onDragOver` quando a prop é fornecida (preview safety)
+- `CertificateCanvas.tsx` (apps/admin) + callback `handleImageDrop` (valida size ≤5MB, MIME JPEG/PNG/WebP; chama `StorageService.uploadCertificateImage`; `updateBlock` com URL); passa `onImageDrop` ao renderer
+- 10 testes novos em `CertificateBlockRenderer.test.tsx` (3 RED→GREEN) + `CertificateCanvas.test.tsx` (7)
+- Validação: 59/59 admin + 46/46 ui
+
+### Commit A — docs (commit `77e790e`)
+- `docs/manual-tests/certificate-end-to-end.md` NOVO (131 linhas) — procedimento completo: pré-requisitos, happy path 12 passos, cenários de borda, regressões, validação automatizada, histórico de execuções
+- `docs/workflows/workflow_adm.md` + cross-link no fim da secção 6 ("Validação manual end-to-end")
+- BACKLOG P1 #52 mantido em "em curso" (utilizador decidiu)
+
+### Commit 2/3 — lesson editor (commit `729a1c6`)
+- `EditorCanvas.tsx` (apps/admin) + `onDrop`/`onDragOver` no **block outer div** (linha 1228) com type-check inline `block.type === 'image'`. Cobre 100% da área do bloco, não é interrompido pelo `<svg>` interior
+- `e.stopPropagation()` no outer previne que o handler antigo do YStack interior (BlockContent:269) também dispare em desktop
+- `BlockContent` mantém o `onImageDrop` prop + handler interior — usado por `MobileViewport` e `TableViewport` (paths separados, ainda a tratar)
+- 2 testes novos em `EditorCanvas.test.tsx` NOVO:
+  - drop em image block outer div → `updateBlock` chamado com `data:image/png;base64,...`
+  - drop em text block outer div → `updateBlock` NÃO chamado (early return)
+- Mock de `useEditor` segue padrão de `CertificateCanvas.test.tsx`; YStack/XStack mockados como `<div>` que propagam handlers críticos (`onDrop`, `onDragOver`, `onClick`, etc.)
+- Validação: **61/61 admin + 53/53 ui + tsc 0 erros**
+
+### Estado actual
+- **Working tree**: 3 ficheiros modificados não relacionados (brand-mark.tsx, BrandMark.tsx, BrandMark.test.tsx) + 5 imagens partilhadas. NÃO commitar — provável edição concorrente que escapou a sessões anteriores
+- **BACKLOG P1 #52** ainda "em curso" — utilizador decidiu manter até cobertura completa
+- **Pendentes**: Commit 3/3 (extrair `uploadCertificateImageToBlock` helper partilhado entre `CertificateCanvas` e `CertificateImageSettings`); cobertura mobile/tablet viewports
+- **Validação manual do lesson editor (2026-06-03)**: ✅ Utilizador confirmou "deu certo" — drop de imagem funciona no lesson editor, bloco renderiza, persiste após F5
+- **Validação manual pós-refactor (2026-06-03)**: ✅ Utilizador confirmou "está funcionando as duas formas de incluir a imagem" — drop no canvas E botão "Carregar" no painel lateral, ambas as portas de entrada a passar pelo mesmo helper `uploadCertificateImageToBlock` (`e41d643`).
+
+### Commit 3/3 — refactor helper (commit `e41d643`)
+- **Problema**: `CertificateCanvas.handleImageDrop` (linha 89) e `CertificateImageSettings.handleFile` (linha 29) tinham **lógica duplicada**: validação 5MB, validação MIME JPEG/PNG/WebP, chamada a `StorageService.uploadCertificateImage`, `updateBlock({ url })`, e 3 mensagens de alert idênticas. Risco: mudanças num sítio e não no outro causariam divergência silenciosa.
+- **Solução**: extrair `uploadCertificateImageToBlock(file, courseId, blockId, updateBlock)` + `alertForUploadResult(result)` em ficheiro próprio `apps/admin/src/components/certificate-editor/uploadCertificateImageToBlock.ts`. Helper recebe `updateBlock` como callback (testável sem React); mensagens isoladas em `ALERT_MESSAGES` (i18n-ready).
+- **REFACTOR nos call sites**:
+  - `CertificateCanvas.handleImageDrop`: 7 → 4 linhas
+  - `CertificateImageSettings.handleFile`: 12 → 7 linhas (sem `try/catch` redundante, sem validações inline)
+- **11 testes TDD** (6 helper + 5 alert):
+  - happy path: upload OK + updateBlock chamado
+  - too-large (>5MB), wrong-type (PDF), no-course (null)
+  - upload-failed (resolve null), upload-failed (throw)
+  - alert: Portuguese messages para cada reason, silencioso para `no-course` e `ok:true`
+- **Validação**: 72/72 admin (61 → 72) + tsc 0 erros
+- **Sem regressão**: 42 testes do CertificateCanvas continuam a passar (mocks de `StorageService.uploadCertificateImage` funcionam porque o mock está no nível do módulo `@projeto/core`)
+
+### Pendentes (movidos para P2 no BACKLOG)
+- Mobile/tablet viewports drag-and-drop
+- Testes E2E Playwright
+- 3 ficheiros modificados não relacionados no working tree (brand-mark, BrandMark) — provável edição concorrente a investigar
+- Imagens partilhadas (image1-5.png) — não commitar
+
+### Histórico
+```
+e41d643 refactor(cert-editor): extract uploadCertificateImageToBlock shared helper
+729a1c6 fix(lesson-editor): wire onDrop on image block outer div
+77e790e docs(manual-tests): add certificate end-to-end manual test and link from workflow
+13b7da3 fix(cert-editor): wire onDrop on image placeholder
+12e145f docs(backlog): add P1 bug for drag-image-into-placeholder not working
+59b9098 fix(cert-editor): show image placeholder when image block has no URL
+0dd269b fix(cert-editor): header consistency, marquee fixes, side toggle, and canvas overlay
+127bfc1 feat(cert-editor): add collapse toggle to CertificatePalette
+```
+
+### Decisões
+- **Mobile/tablet ficam para depois**: paths separados (`MobileViewport` linha 754, `TableViewport` linha 784), mais trabalho, fora do scope deste commit
+- **Cleanup de `onImageDrop` prop em `BlockContent` adiado**: continua útil para mobile/tablet; remover agora quebraria esses paths
+- **Mesmo handler em desktop via outer div com stopPropagation**: garante que o YStack interior não dispara também (evita dupla chamada de `updateBlock`)
+
+### Histórico
+```
+729a1c6 fix(lesson-editor): wire onDrop on image block outer div
+77e790e docs(manual-tests): add certificate end-to-end manual test and link from workflow
+13b7da3 fix(cert-editor): wire onDrop on image placeholder
+12e145f docs(backlog): add P1 bug for drag-image-into-placeholder not working
+59b9098 fix(cert-editor): show image placeholder when image block has no URL
+0dd269b fix(cert-editor): header consistency, marquee fixes, side toggle, and canvas overlay
+127bfc1 feat(cert-editor): add collapse toggle to CertificatePalette
+```
