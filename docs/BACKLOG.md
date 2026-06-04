@@ -30,7 +30,7 @@
 
 | # | Item | Testes | Tempo | Status | Owner |
 |---|---|---|---|---|---|
-| 🔴 **5A.4** | **EditorCanvas cleanup — remover 13 branches `isCertMode` (fix `EditorCanvas.tsx:1282`)** | — | ~2h | **PRIORIDADE MÁXIMA** | **Agente 3** |
+| 🔴 **5A.4** | **EditorCanvas cleanup — remover 13 branches `isCertMode` (fix `EditorCanvas.tsx:1282`)** | — | ~2h | **In Progress** | **Agente 3** |
 | 5A.5 | EditorContext testes mínimos (3 testes) | 3 | ~45min | Backlog | Agente 3 |
 
 **Refactor separado (sprint à parte) [REVISIT: 2026-06-25]:**

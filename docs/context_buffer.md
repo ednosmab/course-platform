@@ -1,5 +1,13 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
+## 📋 Quick Board (snapshot kanban — 2026-06-04)
+- 🔴 **Em curso:** 5A.4 — EditorCanvas cleanup (fix `EditorCanvas.tsx:1282`)
+- 🟡 **Parado:** 5A.1 → 5A.2 → 5A.3 (sprint à parte) [REVISIT: 2026-06-25]
+- ⏭️ **Próximo:** 5A.5 — EditorContext testes (3 testes, ~45min)
+- ⏸️ **Bloqueado / P1 paralelas:** build fix `@tamagui/constants` (due 2026-06-10), renderer test (due 2026-06-15)
+
+> **Fonte canónica:** `docs/BACKLOG.md` (P0/P1/P2/P3 com Status, Due, Owner).
+
 ## Status Atual
 **Sessão de governança + pipeline de merge concluídos.** Regra 9+10 do AGENTS.md activas; DT-01..DT-04 em vigor. Branch `feat/dsv2-reform` deletada (conteúdo já em develop). Pipeline de merge Caminho C executado com sucesso. Nova secção "POLÍTICA DE BRANCHES E PIPELINE DE MERGE" formalizada em AGENTS.md.
 
@@ -8,7 +16,7 @@
 **Sub-itens 5A.1-5A.3 rebaixados** para sprint à parte [REVISIT: 2026-06-25].
 
 ## 🌿 Estado de Branches (2026-06-04)
-- `feat/cert-editor-isolation` (HEAD `94b0e32`) — sincronizada com develop, **pronta para 5A.4**
+- `feat/cert-editor-isolation` (HEAD `0c66d62`) — sincronizada com develop, **em 5A.4**
 - `develop` (`c166872`) — contém merge de `feat/dnd-e2e-coverage` via `--no-ff`
 - `feat/dnd-e2e-coverage` (`f0f928e`) — preservada, conteúdo já em develop
 - `feat/dsv2-reform` — **deletada** (0 commits únicos vs develop, risco zero). Recriar quando houver item P0/P1 do DSv2.
@@ -29,7 +37,7 @@
 - Renderer test: 1 falha pré-existente em `BlockRenderer.test.tsx` (P1, due 2026-06-15)
 
 ## 📌 Próximos Passos
-- **Iniciar 5A.4 (PRIORIDADE MÁXIMA)** — branch `feat/cert-editor-isolation` (HEAD `94b0e32`). TDD: RED → GREEN → REFACTOR sobre `EditorCanvas.tsx:1282`
+- **Iniciar 5A.4 (PRIORIDADE MÁXIMA)** — branch `feat/cert-editor-isolation` (HEAD `0c66d62`). TDD: RED → GREEN → REFACTOR sobre `EditorCanvas.tsx:1282`
 - Após 5A.4, seguir para 5A.5 (EditorContext testes mínimos, 3 testes, ~45min)
 - Sprint à parte [REVISIT: 2026-06-25]: 5A.1 → 5A.2 → 5A.3
 - P1 paralelas: build fix (due 2026-06-10), renderer test (due 2026-06-15)
