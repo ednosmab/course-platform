@@ -528,6 +528,7 @@ function renderViewportBlocks(args: {
         return (
           <div
             key={block.id}
+            data-block-id={block.id}
             onMouseDown={(e) => args.onBlockMouseDown(e, block)}
             onClick={(e) => { e.stopPropagation(); args.setActiveBlockId(block.id); }}
             style={{ position: 'absolute', left: layout.x * scale, top: layout.y * scale, width: layout.w * scale, height: layout.h * scale, zIndex: layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none', isolation: 'isolate' }}

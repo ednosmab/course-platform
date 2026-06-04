@@ -158,3 +158,65 @@ describe('EditorCanvas — image block drag-and-drop (block outer div)', () => {
     expect(mockUpdateBlock).not.toHaveBeenCalled();
   });
 });
+
+describe('EditorCanvas — image block drag-and-drop (mobile viewport)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    defaultEditorState.blocks = [];
+    defaultEditorState.activeBlockId = null;
+    defaultEditorState.selectedBlockIds = [];
+    defaultEditorState.previewMode = false;
+    defaultEditorState.viewportMode = 'mobile';
+    defaultEditorState.mode = 'lesson';
+  });
+
+  it('calls updateBlock with a DataURL when a file is dropped on an image block in mobile viewport', async () => {
+    const block = makeImageBlock({ id: 'img-mobile-1' });
+    defaultEditorState.blocks = [block];
+    const { container } = render(<EditorCanvas />);
+
+    const blockDiv = container.querySelector('[data-block-id="img-mobile-1"]') as HTMLElement;
+    expect(blockDiv).toBeTruthy();
+
+    const file = new File(['fake-png-bytes'], 'logo.png', { type: 'image/png' });
+    dispatchDrop(blockDiv, file);
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(mockUpdateBlock).toHaveBeenCalledWith(
+      'img-mobile-1',
+      expect.objectContaining({ url: expect.stringMatching(/^data:image\/png;base64,/) }),
+    );
+  });
+});
+
+describe('EditorCanvas — image block drag-and-drop (tablet viewport)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    defaultEditorState.blocks = [];
+    defaultEditorState.activeBlockId = null;
+    defaultEditorState.selectedBlockIds = [];
+    defaultEditorState.previewMode = false;
+    defaultEditorState.viewportMode = 'tablet';
+    defaultEditorState.mode = 'lesson';
+  });
+
+  it('calls updateBlock with a DataURL when a file is dropped on an image block in tablet viewport', async () => {
+    const block = makeImageBlock({ id: 'img-tablet-1' });
+    defaultEditorState.blocks = [block];
+    const { container } = render(<EditorCanvas />);
+
+    const blockDiv = container.querySelector('[data-block-id="img-tablet-1"]') as HTMLElement;
+    expect(blockDiv).toBeTruthy();
+
+    const file = new File(['fake-png-bytes'], 'logo.png', { type: 'image/png' });
+    dispatchDrop(blockDiv, file);
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(mockUpdateBlock).toHaveBeenCalledWith(
+      'img-tablet-1',
+      expect.objectContaining({ url: expect.stringMatching(/^data:image\/png;base64,/) }),
+    );
+  });
+});
