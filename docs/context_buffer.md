@@ -50,7 +50,7 @@ EditorCanvas agora é **lesson-only**:
 - `feat/dsv2-reform` — branch local deletada
 - Merge `feat/dnd-e2e-coverage` → `develop` (commit `c166872`), fast-forward de `feat/cert-editor-isolation` para `c166872`
 - **Troca do modelo padrão:** `opencode.json`, `docs/AGENTS.md` (secção 🧬 MODELO PREFERIDO) e `.opencode/agents/document-loader.md` — `deepseek-v4-flash-free` → `minimax-m3-free`. Pendente commit (G-01).
-- **Orquestração 3-fases no opencode.json** (side-quest tooling, sem commit G-01): `plan`/`build`/`review` com 3 modelos (minimax / deepseek / minimax). `default_agent: "plan"`. Removidos dead config `agent.inference` e `agent.profile`. 4/4 `jq` validations passam. Working tree: +1 modified (`opencode.json`, 28+/6-). **Requer restart manual do opencode** (config não é hot-reloaded).
+- **Orquestração 3-fases no opencode.json** (side-quest tooling, **commit `e5e33ea`**): `plan`/`build`/`review` com 3 modelos (minimax / deepseek / minimax). `default_agent: "plan"`. Removidos dead config `agent.inference` e `agent.profile`. 4/4 `jq` validations passam. **Requer restart manual do opencode** (config não é hot-reloaded).
 - **5A.4 — EditorCanvas lesson-only cleanup:** `EditorCanvas.tsx` (13 branches `isCertMode` removidas, import de `CertificateBlockRenderer`/`Button` removidos, `isBg` dead code removido, `PreviewCanvas` reescrita sem `mode`/`certDesign*`, destructure de `useEditor` sem campos cert) + novo `EditorCanvas.boundary.test.ts` (4 testes estáticos do contract). Pendente commit (G-01).
 
 ## ✅ Validação opencode.json 3-fases (2026-06-04)
@@ -61,7 +61,7 @@ EditorCanvas agora é **lesson-only**:
 - `jq '.agent.review.model'` → `"opencode/minimax-m3-free"` ✓
 - `jq '.agent.plan.model'` → `"opencode/minimax-m3-free"` ✓
 - Bash rules do `review`: 9 padrões `allow` + `*: ask` (inserção ordenada) ✓
-- Working tree: 1 modified (`opencode.json`, +28/-6)
+- **Post-commit diagnostic (regra 7):** `test:env-vars` OK · `pnpm ls zod` resolved · `pnpm ls @supabase/supabase-js` resolved · `verify:ui` 5/5 OK
 - **Aguarda restart manual do opencode** (config não é hot-reloaded — `customize-opencode` skill).
 
 ## ✅ Validação pós-merge
