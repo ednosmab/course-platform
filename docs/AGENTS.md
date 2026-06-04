@@ -51,6 +51,10 @@ Escreva códigos extremamente declarativos, simples e fáceis de ler. Evite otim
    d. **Correção Automática de Erros Críticos:** Se qualquer um dos comandos acima falhar, você DEVE executar as correções sugeridas pelo próprio terminal e repetir os testes até que todos passem, documentando cada tentativa no buffer, antes de prosseguir para a próxima tarefa.
 8. **CHECKLIST DE AMBIENTE PRÉ-DEPLOY:** Antes de commitar qualquer alteração em configs de deploy, secrets ou env vars, execute `bash scripts/check-test-env-vars.sh` e confirme que passa. Qualquer flag de teste (E2E_*, MOCK_*, BYPASS_*) tem de estar contida em `playwright.config.ts` e em mais nenhum outro lado. Ver regra ENV-01 em FORBIDDEN_OPERATIONS.
 
+9. **PRIORIDADE DE ENTRADA DE SESSÃO:** Ao iniciar qualquer nova sessão, a PRIMEIRA tarefa a ser atacada é o item P0 activo no `docs/BACKLOG.md`. Itens P1/P2 só podem ser iniciados após (a) concluir o P0, ou (b) registar adiamento datado (ver DT-01 em FORBIDDEN_OPERATIONS). A IA NÃO DEVE iniciar tarefa de prioridade inferior sem antes mostrar a justificação de adiamento.
+
+10. **INVARIANTE DE FIM DE SESSÃO:** Nenhuma sessão pode ser declarada "concluída" sem antes executar o ritual de fim de sessão: working tree limpo (zero modificações + zero untracked não relacionados à tarefa), buffer podado (≤ 50 linhas activas), backlog actualizado, testes verdes (`tsc --noEmit`, `pnpm run test`, `pnpm run build`). Ver template detalhado em `docs/session-template.md` e política DT-02 em FORBIDDEN_OPERATIONS.
+
 ---
 
 ## 🤖 DIVISÃO DE PAPÉIS DO TIME
@@ -110,6 +114,7 @@ Sempre que o usuário enviar uma nova mensagem ou comando, você DEVE executar r
 - Assim que o código compilar com sucesso, marque `[x]` na tarefa correspondente do plano.
 - Limpe a seção de `⚠️ Impedimentos` do buffer inserindo: "*Nenhum erro ativo.*"
 - Execute o checklist de conformidade (ver `document-loader` skill): JSDoc, idioma inglês, tokens de cor, testes, build.
+- Execute o ritual de fim de sessão conforme item 10 das REGRAS CRUCIAIS DE WORKFLOW E GIT: working tree limpo, buffer ≤ 50 linhas, backlog actualizado, testes verdes.
 - Termine sua resposta exibindo o estado atual resumido do buffer e o consumo estimado da sessão.
 
 ### 📜 Protocolo de Registro Histórico de Longo Prazo
