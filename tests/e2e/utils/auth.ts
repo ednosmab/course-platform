@@ -33,7 +33,7 @@ const MOCK_TOKEN_RESPONSE = {
  * `courses*` from the dashboard data loaders.
  *
  * Each test should still mock the specific REST endpoints it needs
- * (e.g. `**/rest/v1/lessons*`) AFTER calling this helper.
+ * (e.g. /rest/v1/lessons) AFTER calling this helper.
  */
 export async function loginAsAdmin(page: Page): Promise<void> {
   await page.route('**/auth/v1/token*', async (route) => {
