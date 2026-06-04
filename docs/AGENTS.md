@@ -61,6 +61,50 @@ Escreva códigos extremamente declarativos, simples e fáceis de ler. Evite otim
 - **Modelo:** `deepseek-v4-flash-free` (ID: `opencode/deepseek-v4-flash-free`)
 - **Status:** Modelo que melhor atendeu o projeto. Deve ser usado em todas as sessões.
 
+---
+
+## 🌿 POLÍTICA DE BRANCHES E PIPELINE DE MERGE (OBRIGATÓRIO)
+
+### Branches Canónicas
+- **`main`** — código de produção. Synced com `origin/main`. Recebe apenas merges de `develop` via release.
+- **`develop`** — integração contínua. **Toda** branch de feature deve mergear aqui. Deve estar sempre verde (testes 100%, build funcional).
+- **`feat/<escopo>`** — branches de feature/refactor. Criadas a partir de `develop`, mergeadas de volta a `develop` via `--no-ff` quando o escopo está completo.
+- **`fix/<escopo>`** — branches de correção pontual. Mesmo fluxo das `feat/*`.
+
+### Branches de Refactor de Longa Duração
+Branches de refactor estrutural (ex: `feat/dsv2-reform`) podem viver semanas/meses e absorver múltiplos itens do BACKLOG. A política é:
+
+1. **Nome da branch deve referenciar o roadmap** (ex: `feat/dsv2-reform` → `docs/roadmaps/design-system-reforma.md`).
+2. **A branch de refactor deve ser recriada quando necessário** — não preservar branches órfãs com 0 commits únicos vs `develop` (risco zero de perda, ver regra DT-02).
+3. **Se o refactor for pausado, registrar data `[REVISIT: YYYY-MM-DD]`** no BACKLOG e atualizar o status da branch no `docs/context_buffer.md` (regra DT-01).
+4. **Antes de recriar, listar no buffer** os commits do branch antigo e confirmar via `git log <branch> --not develop` se algum é único.
+
+### Pipeline de Merge de Feature → Develop (Caminho C)
+Quando uma branch de feature (`feat/X`) está pronta para integrar `develop`, seguir **rigorosamente** o runbook em `docs/runbooks/merge-dnd-to-develop.md`. Resumo dos passos:
+
+1. **Pré-condições:** working tree limpo, testes verdes, `docs/context_buffer.md` podado.
+2. **CI da branch:** `pnpm run test` + `pnpm run lint` + `pnpm run build` (se aplicável).
+3. **Sincronizar `feat/X` com `develop`:** `git fetch && git checkout feat/X && git merge --no-ff develop` (resolve conflitos antecipadamente).
+4. **Merge para `develop`:** `git checkout develop && git merge --no-ff feat/X -m "merge: <descrição concisa>"`.
+5. **Pós-merge:** rodar suite completa de CI em `develop`, atualizar `context_buffer.md`, deletar branch local com `git branch -d feat/X` (apenas se sem remote).
+6. **Rollback:** se CI pós-merge falhar, `git revert -m 1 <merge-sha>` em `develop`, documentar incidente.
+
+> 📖 **Referência completa:** `docs/runbooks/merge-dnd-to-develop.md` — runbook validado em 2026-06-04 com merge real de `feat/dnd-e2e-coverage` → `develop`.
+
+### Branch Estratégica de Refactor — `feat/dsv2-reform`
+- **Estado (2026-06-04):** Branch original deletada. Conteúdo já em `develop` (commits 8c26b04, 5c2446d, ab9c441, bf24316, 288c90c).
+- **Decisão:** Recriar a branch `feat/dsv2-reform` quando iniciar a próxima fase de refactor do Design System v2. **Não criar branch nova** com nome similar — usar a convenção `feat/dsv2-reform`.
+- **Roadmap de referência:** `docs/roadmaps/design-system-reforma.md` (6 fases, 38 tarefas). Token governance em `docs/layers/ui/token-governance.md`.
+- **Comando de recriação (quando aplicável):**
+  ```bash
+  git checkout develop
+  git checkout -b feat/dsv2-reform
+  # confirmar com: git log --oneline | head -1
+  ```
+- **Bloqueio:** Só recriar quando houver item P0/P1 de refactor DSv2 no BACKLOG. Não criar preemptivamente.
+
+> ⚠️ **Convenção:** Todas as refatorações de Design System (DSv2) — tokens, componentes, migração de apps para `@projeto/ui` — DEVEM ser feitas em `feat/dsv2-reform`, nunca em branches ad-hoc. Isso preserva a história de refactor e facilita rollbacks.
+
 ## 🤖 AGENTE ÚNICO — ARQUITETO SÊNIOR FULL-STACK
 
 Em reconhecimento ao desempenho excepcional, os 3 papéis foram consolidados em um único agente com autonomia total sobre todo o monorepo.

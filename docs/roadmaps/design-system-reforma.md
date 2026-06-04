@@ -126,3 +126,18 @@ Fase 6 (governança) — ao final, após tudo consolidado
 6. `tamagui.config.ts` importa tokens de `packages/ui/src/tokens/*.ts`
 7. `pnpm run lint` passa sem erros
 8. Ambos os apps compilam sem warnings
+
+---
+
+## 🌿 Branch de Trabalho
+
+> 📖 **Política vinculante:** Ver `docs/AGENTS.md` → secção "🌿 POLÍTICA DE BRANCHES E PIPELINE DE MERGE" — em particular "Branch Estratégica de Refactor — `feat/dsv2-reform`".
+
+**Convenção:** Todas as fases desta reforma DEVEM ser executadas em `feat/dsv2-reform`. A branch é recriada a partir de `develop` quando há item P0/P1 do DSv2 no BACKLOG.
+
+**Fluxo:**
+1. Recriar branch: `git checkout develop && git checkout -b feat/dsv2-reform`
+2. Implementar tarefas desta roadmap com commits TDD (RED → GREEN → REFACTOR).
+3. Antes de mergear: validar CI (`pnpm run test` + `pnpm run lint` + `pnpm run build`).
+4. Mergear via Caminho C: `git checkout develop && git merge --no-ff feat/dsv2-reform` (ver `docs/runbooks/merge-dnd-to-develop.md`).
+5. Recriar a branch para a próxima fase quando o item P0/P1 seguinte for atacado.
