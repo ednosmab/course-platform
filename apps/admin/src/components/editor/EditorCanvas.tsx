@@ -1243,6 +1243,16 @@ export const EditorCanvas: React.FC = () => {
                     setInlineEditingId(block.id);
                   }
                 }}
+                onDrop={(e) => {
+                  if (block.type !== 'image') return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const file = e.dataTransfer.files[0];
+                  if (file && file.type.startsWith('image/')) handleImageDrop(block.id, file);
+                }}
+                onDragOver={(e) => {
+                  if (block.type === 'image') e.preventDefault();
+                }}
                 onMouseEnter={() => setHoveredBlockId(block.id)}
                 onMouseLeave={() => setHoveredBlockId(null)}
                 onKeyDown={(e) => {
