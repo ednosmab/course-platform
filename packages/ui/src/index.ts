@@ -28,5 +28,5 @@ export * from './blocks/TextBlock';
 export * from './blocks/QuoteBlock';
 export * from './components/Certificate';
 export * from './components/Login';
-export { color, shadowPresets } from './tokens';
+export { color, shadowPresets, lineHeightHeading, lineHeightCardTitle } from './tokens';
 export { sanitizeHtml } from './utils/sanitize';

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { YStack, XStack, Text, Icon, Theme, Button, Card, Spinner, ProgressBar, Input, color } from '@projeto/ui';
+import { YStack, XStack, Text, Icon, Theme, Button, Card, Spinner, ProgressBar, Input, color, lineHeightHeading, lineHeightCardTitle } from '@projeto/ui';
 
 const BRAND_GRADIENT = `linear-gradient(135deg, ${color.cwGradientFrom}, ${color.cwGradientTo})`;
 import Link from 'next/link';
@@ -244,7 +244,7 @@ export default function Dashboard() {
                   <XStack w={6} h={6} borderRadius={3} bg="$success" />
                   <Text fontSize={12} color="$textMuted">Tudo certo por aqui</Text>
                 </XStack>
-                <Text fontFamily="$display" fontSize={36} fontWeight="$6" mt={16} style={{ lineHeight: 1.12 }} $md={{ fontSize: 40 }}>
+                <Text fontFamily="$display" fontSize={36} fontWeight="$6" mt={16} lineHeight={lineHeightHeading} $md={{ fontSize: 40 }}>
                   Oi, {firstName}, vamos montar uma aula nova?
                 </Text>
                 <Text mt={8} color="$textMuted" fontSize={15}>
@@ -323,7 +323,7 @@ export default function Dashboard() {
                         </YStack>
                         <YStack p={20}>
                           <XStack ai="flex-start" jc="space-between" gap={8}>
-                            <Text flex={1} fontFamily="$display" fontSize={16} fontWeight="$6" style={{ lineHeight: 1.3 }}>{c.title}</Text>
+                            <Text flex={1} fontFamily="$display" fontSize={16} fontWeight="$6" lineHeight={lineHeightCardTitle}>{c.title}</Text>
                             <XStack
                               p={4}
                               br="$2"

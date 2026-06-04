@@ -136,7 +136,6 @@ export const dmSansFont = createFont({
   },
   weight: {
     4: '400',
-    5: '500',
     6: '600',
     7: '700',
   },
@@ -145,3 +144,19 @@ export const dmSansFont = createFont({
   },
   face: {},
 });
+
+/**
+ * Unitless line-height multipliers for the admin dashboard.
+ *
+ * Why these live here (and not inside `style={{ lineHeight: <number> }}`):
+ * Tamagui's inline-style engine treats numeric values in `style` objects as
+ * pixel values, so `style={{ lineHeight: 1.12 }}` is emitted as
+ * `line-height: 1.12px` and collapses the line box. Passing the multiplier
+ * via the `lineHeight` prop (or via a `createTokens` namespace) preserves the
+ * unitless value, so the browser interprets it as a multiplier per CSS spec.
+ *
+ * @see apps/admin/src/app/page.tsx (heading + course card title)
+ * @see image8.png vs image9.png (devtools evidence)
+ */
+export const lineHeightHeading = 1.12;
+export const lineHeightCardTitle = 1.3;
