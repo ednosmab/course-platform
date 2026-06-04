@@ -1,73 +1,107 @@
 # 📋 BACKLOG — Plataforma de Cursos EAD com CMS
 
-> **Instruções:** Itens neste arquivo seguem o formato `[Priority] Layer: Descrição`.
-> Prioridades: **P0** (imediato), **P1** (curto prazo), **P2** (médio prazo), **P3** (baixa prioridade).
-> Status: `Backlog` | `In Progress` | `Done`
+> **Priorização e SLA:** P0 (imediato, ≤ 7d), P1 (curto prazo, ≤ 30d), P2 (médio prazo, ≤ 90d), P3 (baixa prioridade, sem SLA).
+>
+> **Status:** `Backlog` | `In Progress` | `Paused [REVISIT: YYYY-MM-DD]` | `Done`
+>
+> **Severidade:** 🔴 Crítico | 🟠 Alto | 🟡 Médio | 🟢 Baixo
+>
+> **Regras vinculantes:** `docs/FORBIDDEN_OPERATIONS.md` secção 8 (DT-01 a DT-04).
+>
+> **Owner:** Agente que assume o item. Itens sem owner são `unassigned`.
 
 ---
 
-## 🏆 P0 — Imediato (Sprint Atual)
+## 🏆 P0 — Sprint Actual (≤ 7 dias)
 
-### ⏳ **Refactor: Fase 5A — Isolamento definitivo do editor de certificado**
-**Contexto**: SDR-001. Inventário real: 13 branches `isCertMode` em `EditorCanvas.tsx`, 3 em `BlockSettings.tsx`, 5 em `EditorContext.tsx`, 1 em `EditorHeader.tsx`. Bug crítico: `EditorCanvas.tsx:1282` renderiza cert com `BlockContent` (lesson) em vez de `CertificateBlockRenderer`. Plano: 28 novos testes TDD (total 45), 5 commits, ~10h.
+### ⏳ Fase 5A — Isolamento definitivo do editor de certificado
 
-**Sub-itens (TDD estrito, por ordem)**:
-- [ ] **5A.1: CertificatePalette** — 7 testes, ~2h (novo componente + extrair BlockBtn)
-- [ ] **5A.2: CertificateCanvas** — 11 testes, ~3.5h (render com CertificateBlockRenderer, duplex, offset)
-- [ ] **5A.3: CertificateEditor refactor** — 7 testes, ~1.5h (compor novos componentes, 3 testes estáticos boundary)
-- [ ] **5A.4: EditorCanvas cleanup** — remover 13 branches `isCertMode` (~2h)
-- [ ] **5A.5: EditorContext testes mínimos** — 3 testes (~45min)
+| Campo | Valor |
+|---|---|
+| **Status** | In Progress |
+| **Severidade** | 🔴 Crítico |
+| **Owner** | Agente 3 (Eng. Sênior) |
+| **Due** | 2026-06-15 |
+| **Criado** | 2026-06-01 |
+| **SDR** | SDR-001 |
+| **Descrição** | Inventário real: 13 branches `isCertMode` em `EditorCanvas.tsx`, 3 em `BlockSettings.tsx`, 5 em `EditorContext.tsx`, 1 em `EditorHeader.tsx`. Bug crítico: `EditorCanvas.tsx:1282` renderiza bloco de certificado com `BlockContent` (renderer de aula) em vez de `CertificateBlockRenderer`. Plano: 28 novos testes TDD (total 45), 5 commits, ~10h. |
 
-**Adiado para Fase 5B**:
-- Extrair `useViewportInteraction` para ficheiro dedicado
-- Eliminar prop `mode` do `EditorProvider`
-- Limpar 3 branches de init do `EditorContext`
-- Corrigir bug: cert render com `BlockContent`
+**Sub-itens (TDD estrito, por ordem):**
+
+| # | Item | Testes | Tempo | Status | Owner |
+|---|---|---|---|---|---|
+| 5A.1 | CertificatePalette (novo componente + extrair BlockBtn) | 7 | ~2h | In Progress | Agente 3 |
+| 5A.2 | CertificateCanvas (render com CertificateBlockRenderer, duplex, offset) | 11 | ~3.5h | In Progress | Agente 3 |
+| 5A.3 | CertificateEditor refactor (compor novos componentes, testes boundary) | 7 | ~1.5h | Backlog | Agente 3 |
+| **5A.4** | **EditorCanvas cleanup — remover 13 branches `isCertMode` (fix linha 1282)** | — | ~2h | **Backlog** | **Agente 3** |
+| 5A.5 | EditorContext testes mínimos | 3 | ~45min | Backlog | Agente 3 |
+
+**Adiado para Fase 5B [REVISIT: 2026-06-20]:**
+
+| Item | Causa raiz do adiamento |
+|---|---|
+| Extrair `useViewportInteraction` para ficheiro dedicado | Bloqueado por 5A.4 — branches `isCertMode` consomem o hook internamente |
+| Eliminar prop `mode` do `EditorProvider` | Bloqueado por 5A.5 — sem testes não há segurança para refactor |
+| Limpar 3 branches de init do `EditorContext` | Bloqueado por 5A.5 |
+| Bug: cert render com `BlockContent` | **Bug da linha 1282** — subsumido em 5A.4 (prioridade máxima) |
+
+---
 
 ## ✅ Done
 
-- **Feat: Student app — tela de aulas e exercícios extras** — Implementado em `CourseLessons.tsx`.
-- **Feat: Student app — central de certificados** — Implementado em `Certificates.tsx`.
-- **Feat: Student app — Dashboard: botões contextuais** — Botões "Iniciar aula", "Continuar aula", "Próxima aula", "Ver certificado" baseados no status real do progresso.
-- **Feat: Student app — Dashboard: botão "Ver aulas"** — Botão estilizado com borda primary para navegar para lista de módulos.
-- **Feat: Student app — Dashboard: remover badge redundante** — Badge "64% concluído" removido do thumbnail do card.
-- **Feat: Student app — CourseLessons: botão hero contextual** — Botão muda entre "Retomar aula", "Próxima aula", "Ver certificado" baseado no status.
-- **Chore: ProgressService — getProgressByLessons** — Método adicionado ao serviço para buscar progresso de múltiplas aulas.
-- **Refactor: Student app — TopBar HTML→Tamagui + tokens** — `<ul>/<li>/<a>` migrados para `YStack/XStack` com tokens (`$border`, `$surface`, `$popover`). `useRef<HTMLDivElement>` → `useRef<View>`. `onMouseEnter/Leave` → `hoverStyle/pressStyle`. Dropdown usa `shadowPresets.cwPop`.
-- **Refactor: Shadow presets activos no design system** — `Card` agora consome `shadowPresets.cwSoft` como base + variant `elevated` (`cwPop`). Exports de `shadowPresets` adicionados ao `@projeto/ui`. `elevation={N}` ad-hoc substituídos por `shadowPresets.cwSoft` (TopBar) e `elevated` (hero cards) em todo o student app.
-- **Fix: XSS sanitization no BlockRenderer (S-01)** — Adicionado `dompurify` + `sanitizeHtml()` em `packages/ui/src/utils/sanitize.ts` com guard `typeof window` (cross-platform Web + Native). 3 sítios `dangerouslySetInnerHTML` corrigidos: `packages/renderer/src/BlockRenderer.tsx`, `apps/admin/src/components/editor/EditorCanvas.tsx`, `packages/ui/src/blocks/HtmlBlock.tsx`. Bug pré-existente no regex de detecção `/<[a-z][\s>]/i` corrigido para `/<\w+[\s>\/]/i` (multi-char tags). 20 testes unitários + 8 testes de integração cobrindo `<script>`, `<img onerror>`, `<iframe>`, `<svg onload>`, `javascript:`, `data:`, `vbscript:`, event handlers, meta refresh, etc.
-- **BUG: Impressão duplex só mostra 1 face** — Resolvido via iframe srcdoc (SDR-002) + `side='all'` + CSS `@media screen` toggle. Ambos os canvases renderizados sempre quando `isDoubleSided`.
-- **BUG: `CertificateMiniature` perdeu prop `isDoubleSided`** — Resolvido pela arquitectura `CertificatePage` com `side='all'`. Miniature reactivado com duplex.
-- **Validação: iframe print + Supabase Storage** — Bucket `certificate-images` confirmado público; URLs `/object/public/` funcionam em iframe com `srcdoc` sem auth (SDR-002). Risco mitigado.
-- **BUG: Drag-and-drop de imagem no placeholder (cert + lesson)** — Resolvido em desktop via commits `13b7da3` (cert editor, prop `onImageDrop` no `CertificateBlockRenderer`) e `729a1c6` (lesson editor, `onDrop`/`onDragOver` no block outer div em `EditorCanvas.tsx:1228`). Causa raiz: o `<svg>` interior no placeholder do `BlockContent` interceptava a propagação do evento `drop`; solução foi mover os handlers para um elemento pai que cobre 100% da área. 12 testes TDD + validação manual 2026-06-03.
+| Item | Severidade | Resolução |
+|---|---|---|
+| Feat: Student app — tela de aulas e exercícios extras | 🟡 Médio | Implementado em `CourseLessons.tsx` |
+| Feat: Student app — central de certificados | 🟡 Médio | Implementado em `Certificates.tsx` |
+| Feat: Student app — Dashboard: botões contextuais | 🟡 Médio | Botões "Iniciar/Continuar/Próxima/Ver certificado" baseados no progresso real |
+| Feat: Student app — Dashboard: botão "Ver aulas" | 🟢 Baixo | Botão estilizado com borda primary |
+| Feat: Student app — Dashboard: remover badge redundante | 🟢 Baixo | Badge "64% concluído" removido do thumbnail |
+| Feat: Student app — CourseLessons: botão hero contextual | 🟡 Médio | Botão muda entre "Retomar/Próxima/Ver certificado" |
+| Chore: ProgressService — getProgressByLessons | 🟢 Baixo | Método adicionado ao serviço |
+| Refactor: Student app — TopBar HTML→Tamagui + tokens | 🟡 Médio | `<ul>/<li>/<a>` migrados para YStack/XStack com tokens |
+| Refactor: Shadow presets activos no design system | 🟡 Médio | Card consome `shadowPresets.cwSoft` + variant `elevated` |
+| Fix: XSS sanitization no BlockRenderer (S-01) | 🔴 Crítico | `dompurify` + `sanitizeHtml()` em 3 sítios, 20+8 testes |
+| BUG: Impressão duplex só mostra 1 face | 🟠 Alto | Resolvido via iframe srcdoc (SDR-002) + `side='all'` |
+| BUG: CertificateMiniature perdeu prop isDoubleSided | 🟡 Médio | Resolvido pela arquitectura CertificatePage com `side='all'` |
+| Validação: iframe print + Supabase Storage | 🟡 Médio | Bucket público confirmado, URLs `/object/public/` sem auth |
+| BUG: Drag-and-drop de imagem no placeholder (cert + lesson) | 🟠 Alto | commits `13b7da3` (cert), `729a1c6` (lesson), 12 testes TDD |
+| Refactor: extract uploadCertificateImageToBlock helper | 🟡 Médio | commit `e41d643`, 11 testes, DRY entre Canvas + ImageSettings |
+| BUG: Student app — LessonPlayer crash | 🟠 Alto | Polling funcional + refresh ao focar aba |
+| BUG: Student app — UUID hardcoded | 🟠 Alto | `useMobileProgress.ts` agora usa `AuthService.getSession()` |
+| BUG: Student app — TopBar HTML tags e cores hardcoded | 🟡 Médio | Migrado para Tamagui |
+| BUG: Student app — Shadow presets não usados | 🟡 Médio | Shadow presets aplicados |
+| BUG: Zod schema — missing `heading` e `divider` | 🟠 Alto | Verificado em `packages/types/src/database.ts:96-97` |
+| BUG: Drag-and-drop de imagem (mobile/tablet viewports) | 🟠 Alto | commit `c80d309`, cobertura mobile/tablet |
 
-## 📌 P1 — Curto Prazo
+---
 
-- **BUG: Student app — LessonPlayer crash** — ✅ CORRIGIDO — Usa polling funcional (linhas 109-135) + refresh ao focar aba.
-- **BUG: Student app — UUID hardcoded** — ✅ CORRIGIDO — `useMobileProgress.ts` agora usa `AuthService.getSession()` para obter o ID real do usuário.
-- ~~**BUG: Student app — TopBar HTML tags e cores hardcoded**~~ — ✅ Concluído.
-- ~~**BUG: Student app — Shadow presets não usados**~~ — ✅ Concluído.
-- **BUG: Editor canvas de certificado usa renderer errado** — `EditorCanvas.tsx:1285-1294` renderiza blocos do certificado com `BlockContent` (renderer de aula) em vez de `CertificateBlockRenderer`. Corrigido em P0 (extrair `CertificateCanvas`).
-- ~~**BUG: Zod schema — `LessonSchema.blocks` missing `heading` e `divider`**~~ — ✅ Concluído (verificado em `packages/types/src/database.ts:96-97`).
-- ~~**Chore: Student app — sanitização XSS**~~ — ✅ Concluído (ver `Fix: XSS sanitization` no Done).
-- ~~**BUG: Drag-and-drop de imagem para dentro do placeholder não funciona**~~ — ✅ Concluído em desktop (cert + lesson). Commits `13b7da3` (cert) e `729a1c6` (lesson) + validação manual 2026-06-03. **Pendentes separados**: (a) cobertura mobile/tablet viewports; (b) testes E2E automatizados (Playwright).
+## 📌 P1 — Curto Prazo (≤ 30 dias)
 
-## 🗓️ P2 — Médio Prazo
+| Item | Severidade | Status | Due | Owner |
+|---|---|---|---|---|
+| Testes E2E Playwright para drag-and-drop de imagem | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
+| Student app — ErrorBoundary | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
 
-- **Refactor: extrair `uploadCertificateImageToBlock` helper** — Duplicação entre `CertificateCanvas.handleImageDrop` (linha 89) e `CertificateImageSettings.handleFile` (linha 29): ambos validam size ≤5MB + MIME JPEG/PNG/WebP, chamam `StorageService.uploadCertificateImage`, e fazem `updateBlock({ url })`. Criar helper partilhado em `apps/admin/src/components/certificate-editor/`, adicionar testes unitários.
-- **BUG: Drag-and-drop não funciona em mobile/tablet viewports** — `EditorCanvas` tem paths separados para `MobileViewport` (linha 754) e `TableViewport` (linha 784) que ainda usam o handler antigo do YStack interior (mesma causa raiz do bug desktop original). Replicar fix do commit `729a1c6` para esses paths.
-- **Chore: testes E2E Playwright para drag-and-drop de imagem** — Criar spec em `tests/e2e/` que arrasta ficheiro real e valida `block.url` actualizado em ambos os modos.
-- **Chore: Student app — ErrorBoundary** — Adicionar ErrorBoundary no `App.tsx` para evitar crash total em erros não tratados.
-- **Feat: Student app — Alinhar layout com design reference** — Headers `px="$6"` (24px), main `py="$8"` (32px), hero `br="$6"` (16px), dashed borders `$borderStrong`, sidebar CourseLessons "Atividades extras", botão "Ver materiais" no hero, certificates hero stats à direita, certificates cards `aspect-[4/3]`.
-- **BUG: Student app — Dashed border usa cor errada** — `Certificates.tsx` linha 243: `borderStyle="dashed" borderColor="$border"` deveria ser `$borderStrong`.
-- **Feat: Admin — seção de exercícios extras** — Adicionar no admin uma seção/aba para criar e gerenciar exercícios extras por aula/curso.
-- **Feat: Student app — CourseLessons: duração real das aulas** — Remover mock `Math.random()` de duração. Usar campo real do banco ou duração calculada a partir do bloco de vídeo.
-- **Feat: Student app — CourseLessons: progresso por módulo** — Adicionar barra de progresso visual individual em cada módulo (ex: preenchimento proporcional às aulas concluídas).
+---
 
-## 🌱 P3 — Baixa Prioridade (Backlog)
+## 🗓️ P2 — Médio Prazo (≤ 90 dias)
 
-- **BUG: Cursor escapa durante resize** — `document.body.style.cursor` não sobrescreve cursor de elementos filhos (text blocks, botões).
-- **BUG: Aspect ratio de imagem não funciona em W/N/cantos** — fixed-corner approach falha em handles esquerdo/superior.
-- **Renderização:** Extrair `removeBackground` para Web Worker para não travar UI em imagens grandes.
-- **Player Mobile:** Implementar retomada inteligente de vídeo (salvar timestamp no Supabase).
-- **Chore: Student app — Migrar BlockRenderer para Tamagui** — `BlockRenderer.tsx` usa `blockToHtml()` + `dangerouslySetInnerHTML`. Migrar para componentes Tamagui nativos (`TextBlockRenderer`, `VideoBlockRenderer`, etc.) de `packages/ui/src/blocks/`.
+| Item | Severidade | Status | Due | Owner |
+|---|---|---|---|---|
+| Student app — Alinhar layout com design reference | 🟢 Baixo | Backlog | 2026-07-15 | Agente 3 |
+| BUG: Student app — Dashed border cor errada | 🟢 Baixo | Paused [REVISIT: 2026-07-01] | 2026-07-01 | Agente 3 |
+| Admin — seção de exercícios extras | 🟢 Baixo | Backlog | 2026-07-30 | Agente 2 |
+| Student app — CourseLessons: duração real das aulas | 🟡 Médio | Backlog | 2026-08-01 | Agente 3 |
+| Student app — CourseLessons: progresso por módulo | 🟢 Baixo | Backlog | 2026-08-15 | Agente 3 |
+
+---
+
+## 🌱 P3 — Baixa Prioridade (sem SLA)
+
+| Item | Severidade | Status |
+|---|---|---|
+| BUG: Cursor escapa durante resize | 🟢 Baixo | Backlog |
+| BUG: Aspect ratio de imagem em W/N/cantos | 🟢 Baixo | Backlog |
+| Extrair `removeBackground` para Web Worker | 🟢 Baixo | Backlog |
+| Player Mobile: retomada inteligente de vídeo | 🟢 Baixo | Backlog |
+| Student app — Migrar BlockRenderer para Tamagui | 🟢 Baixo | Backlog |

@@ -66,6 +66,15 @@
 |---|---|---|
 | ENV-01 | **PROIBIDO** propagar flags de teste (E2E_*, MOCK_*, BYPASS_*) para `.env*`, `next.config.*`, `vercel.json`, `wrangler.toml`, `netlify.toml` ou qualquer config de deploy | Tais flags desactivam controlos de segurança no edge (ex: `E2E_BYPASS_AUTH` desactiva `supabase.auth.getUser()` no middleware, expondo todas as rotas protegidas). A whitelist única é `playwright.config.ts` → `webServer.env`. Validação automatizada em `scripts/check-test-env-vars.sh` (integrado em `pnpm run verify` e nos workflows CI/CD). Documentação completa em `docs/skills/e2e_testing.md`. |
 
+## 8. Violações de Higiene de Processo
+
+| # | Regra | Justificativa |
+|---|---|---|
+| DT-01 | **PROIBIDO** manter item de backlog com status "Adiado" ou "Pausado" sem data `[REVISIT: YYYY-MM-DD]` | Itens sem data perdem-se na memória institucional; ninguém revisita o que não tem prazo |
+| DT-02 | **PROIBIDO** declarar sessão como concluída com working tree contendo ficheiros modificados ou untracked não relacionados à tarefa | Edições concorrentes invisíveis são a causa #1 de conflitos silenciosos e drift técnico |
+| DT-03 | **PROIBIDO** adicionar item "adiado" no BACKLOG sem registar a causa raiz do adiamento | Adiar sem diagnosticar esconde o problema real |
+| DT-04 | **PROIBIDO** iniciar tarefa de prioridade inferior quando existe P0 activo, excepto com adiamento datado registado no buffer e no backlog | Respeitar a fila é pré-requisito de disciplina arquitectural |
+
 ---
 
 ## Consequências de Violação
@@ -74,7 +83,7 @@
 |---|---|
 | **Crítica** (F-01 a F-06, S-01 a S-03, ENV-01) | Commit rejeitado + correção imediata obrigatória |
 | **Alta** (D-01 a D-04, DB-01 a DB-03) | Rollback + documentação do erro no buffer |
-| **Média** (G-01 a G-04, P-01 a P-04) | Alerta + correção antes do próximo commit |
+| **Média** (G-01 a G-04, P-01 a P-04, DT-01 a DT-04) | Alerta + correção antes do próximo commit |
 
 > ⚠️ A IA DEVE ler este arquivo **integramente** no início de toda sessão (P0 obrigatório).
 > Qualquer violação detectada pela IA em código existente DEVE ser reportada ao usuário para correção.
