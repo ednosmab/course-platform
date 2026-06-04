@@ -6,7 +6,7 @@ description: >
   CONTEXT_MAP.md to identify the layer, then read the required documents
   and return a structured summary.
 mode: subagent
-model: opencode/deepseek-v4-flash-free
+model: opencode/minimax-m3-free
 permission:
   read: allow
   edit: deny

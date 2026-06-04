@@ -59,7 +59,7 @@ Escreva códigos extremamente declarativos, simples e fáceis de ler. Evite otim
 ---
 
 ## 🧬 MODELO PREFERIDO
-- **Modelo:** `deepseek-v4-flash-free` (ID: `opencode/deepseek-v4-flash-free`)
+- **Modelo:** `minimax-m3-free` (ID: `opencode/minimax-m3-free`)
 - **Status:** Modelo que melhor atendeu o projeto. Deve ser usado em todas as sessões.
 
 ---

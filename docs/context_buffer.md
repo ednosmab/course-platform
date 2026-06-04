@@ -30,6 +30,7 @@
 - `docs/runbooks/merge-dnd-to-develop.md` (NOVO em `f0f928e`): runbook do Caminho C
 - `feat/dsv2-reform` — branch local deletada
 - Merge `feat/dnd-e2e-coverage` → `develop` (commit `c166872`), fast-forward de `feat/cert-editor-isolation` para `c166872`
+- **Troca do modelo padrão:** `opencode.json`, `docs/AGENTS.md` (secção 🧬 MODELO PREFERIDO) e `.opencode/agents/document-loader.md` — `deepseek-v4-flash-free` → `minimax-m3-free`. Pendente commit (G-01).
 
 ## ✅ Validação pós-merge
 - Working tree limpo
