@@ -141,6 +141,9 @@ Disponível ao selecionar um bloco de imagem no Studio.
 - Mudanças no editor de aula **não podem** quebrar o editor de certificado (e vice-versa).
 - A única partilha permitida é via `CertificateBlockRenderer` (em `packages/ui/src/components/Certificate/`) — o renderizador puro dos blocos de certificado.
 
+### Validação manual end-to-end
+- Para o procedimento completo de teste manual (happy path, bordas, regressões), ver [`docs/manual-tests/certificate-end-to-end.md`](../manual-tests/certificate-end-to-end.md).
+
 ---
 
 ## 📦 7. Blocos do Editor
