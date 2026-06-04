@@ -34,6 +34,16 @@ export default defineConfig({
       url: 'http://localhost:3000',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
+      /**
+       * TEST-ONLY: this is the ONLY place `E2E_BYPASS_AUTH` may be set.
+       * The middleware short-circuits auth when it sees this var. Do not
+       * propagate it to .env*, next.config.*, vercel.json, wrangler.toml,
+       * netlify.toml or any deploy config. Enforced by
+       * scripts/check-test-env-vars.sh. See docs/skills/e2e_testing.md.
+       */
+      env: {
+        E2E_BYPASS_AUTH: '1',
+      },
     },
     {
       command: 'pnpm --filter student web',

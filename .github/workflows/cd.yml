@@ -27,6 +27,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Guardrail — no test env vars leaked
+        run: pnpm run test:env-vars
+
       - name: Merge develop into main
         run: |
           git fetch origin main

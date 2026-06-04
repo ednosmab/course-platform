@@ -72,6 +72,9 @@ jobs:
       - name: Check React consistency across workspace
         run: pnpm run test:react-consistency
 
+      - name: Check test-only env vars not in production config
+        run: pnpm run test:env-vars
+
       - name: Verify UI governance rules
         run: pnpm run verify:ui
 

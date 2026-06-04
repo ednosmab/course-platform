@@ -10,6 +10,7 @@
 - **Registros de Arquitetura (ADRs):** Toda decisão arquitetural de alto impacto está documentada na pasta `docs/adrs/`. É OBRIGATÓRIO ler e respeitar os ADRs existentes. Caso uma nova biblioteca estrutural precise ser adicionada, você deve primeiro sugerir a criação de um novo arquivo ADR para aprovação do usuário.
 - **Plano de Desenvolvimento (SDP):** O cronograma detalhado de 8 semanas, o fluxo de trabalho da esteira MCP e a matriz de responsabilidades estão documentados em `docs/roadmaps/sdp.md`. É OBRIGATÓRIO ler e seguir este plano.
 - **Regras Vinculantes (FORBIDDEN_OPERATIONS):** O arquivo `docs/FORBIDDEN_OPERATIONS.md` contém **regras absolutas** que a IA DEVE ler e seguir em toda sessão. Qualquer violação deve ser reportada e corrigida imediatamente.
+- **Configuração de Ambiente de Teste:** A flag `E2E_BYPASS_AUTH` é EXCLUSIVA do `playwright.config.ts` (sete via `webServer.env`). É TERMINANTEMENTE PROIBIDO propagá-la para `.env*`, `next.config.*`, `vercel.json`, `wrangler.toml`, `netlify.toml` ou qualquer config de deploy. O script `scripts/check-test-env-vars.sh` (integrado em `pnpm run verify` e nos workflows CI/CD) valida este contrato. Ver `docs/skills/e2e_testing.md` e regra ENV-01 em FORBIDDEN_OPERATIONS.
 - **Diretrizes de Engenharia (DESDO):** O arquivo `docs/DESDO.md` consolida as regras de governança, mitigações operacionais e padrões arquiteturais (SOLID, TDD, segurança, documentação) que devem ser observados em toda geração de código ou alteração de estado no projeto.
 
 
@@ -48,6 +49,7 @@ Escreva códigos extremamente declarativos, simples e fáceis de ler. Evite otim
 
    c. **Teste de Integridade do Monorepo:** Execute `pnpm run test:e2e` para garantir que os fluxos críticos de UI continuam funcionando. Documente qualquer falha encontrada na seção `## ⚠️ Impedimentos & Logs de Erro Recentes` do `docs/context_buffer.md`, incluindo o stack trace completo.
    d. **Correção Automática de Erros Críticos:** Se qualquer um dos comandos acima falhar, você DEVE executar as correções sugeridas pelo próprio terminal e repetir os testes até que todos passem, documentando cada tentativa no buffer, antes de prosseguir para a próxima tarefa.
+8. **CHECKLIST DE AMBIENTE PRÉ-DEPLOY:** Antes de commitar qualquer alteração em configs de deploy, secrets ou env vars, execute `bash scripts/check-test-env-vars.sh` e confirme que passa. Qualquer flag de teste (E2E_*, MOCK_*, BYPASS_*) tem de estar contida em `playwright.config.ts` e em mais nenhum outro lado. Ver regra ENV-01 em FORBIDDEN_OPERATIONS.
 
 ---
 

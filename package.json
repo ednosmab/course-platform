@@ -9,8 +9,9 @@
     "test:vrt:ladle": "playwright test --config playwright.ladle.config.ts",
     "test:vrt": "playwright test --config playwright.ladle.config.ts",
     "test:react-consistency": "bash scripts/check-react-consistency.sh",
+    "test:env-vars": "bash scripts/check-test-env-vars.sh",
     "verify:ui": "npx tsx scripts/verify-ui-rules.ts",
-    "verify:all": "pnpm run test:react-consistency && pnpm run verify:ui && pnpm run test"
+    "verify:all": "pnpm run test:react-consistency && pnpm run test:env-vars && pnpm run verify:ui && pnpm run test"
   },
   "engines": {
     "node": ">=20.0.0"

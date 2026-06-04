@@ -60,13 +60,19 @@
 | S-02 | **PROIBIDO** ignorar RLS policies ao criar tabelas | Toda tabela deve ter RLS configurado |
 | S-03 | **PROIBIDO** logar dados pessoais (CPF, email, senha) | LGPD — logs devem ser anonimizados |
 
+## 7. Violações de Configuração de Ambiente
+
+| # | Regra | Justificativa |
+|---|---|---|
+| ENV-01 | **PROIBIDO** propagar flags de teste (E2E_*, MOCK_*, BYPASS_*) para `.env*`, `next.config.*`, `vercel.json`, `wrangler.toml`, `netlify.toml` ou qualquer config de deploy | Tais flags desactivam controlos de segurança no edge (ex: `E2E_BYPASS_AUTH` desactiva `supabase.auth.getUser()` no middleware, expondo todas as rotas protegidas). A whitelist única é `playwright.config.ts` → `webServer.env`. Validação automatizada em `scripts/check-test-env-vars.sh` (integrado em `pnpm run verify` e nos workflows CI/CD). Documentação completa em `docs/skills/e2e_testing.md`. |
+
 ---
 
 ## Consequências de Violação
 
 | Nível | Consequência |
 |---|---|
-| **Crítica** (F-01 a F-06, S-01 a S-03) | Commit rejeitado + correção imediata obrigatória |
+| **Crítica** (F-01 a F-06, S-01 a S-03, ENV-01) | Commit rejeitado + correção imediata obrigatória |
 | **Alta** (D-01 a D-04, DB-01 a DB-03) | Rollback + documentação do erro no buffer |
 | **Média** (G-01 a G-04, P-01 a P-04) | Alerta + correção antes do próximo commit |
 

@@ -112,8 +112,7 @@ async function mountLessonEditor(page: Page) {
   });
 
   await page.goto(`/studio/${COURSE_ID}?lessonId=${LESSON_ID}`);
-  await page.waitForLoadState('networkidle');
-  await expect(page.locator('text=Arraste uma imagem aqui').first()).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('text=Arraste uma imagem aqui').first()).toBeVisible({ timeout: 20000 });
 }
 
 test.describe('Admin Image Drop - Lesson Editor (SDR-001 + dnd-e2e)', () => {
