@@ -26,15 +26,21 @@
 | **SDR** | SDR-001 |
 | **Descrição** | Inventário real: 13 branches `isCertMode` em `EditorCanvas.tsx`, 3 em `BlockSettings.tsx`, 5 em `EditorContext.tsx`, 1 em `EditorHeader.tsx`. Bug crítico: `EditorCanvas.tsx:1282` renderiza bloco de certificado com `BlockContent` (renderer de aula) em vez de `CertificateBlockRenderer`. Plano: 28 novos testes TDD (total 45), 5 commits, ~10h. |
 
-**Sub-itens (TDD estrito, por ordem):**
+**Sub-itens (prioridade de ataque):**
 
 | # | Item | Testes | Tempo | Status | Owner |
 |---|---|---|---|---|---|
-| 5A.1 | CertificatePalette (novo componente + extrair BlockBtn) | 7 | ~2h | In Progress | Agente 3 |
-| 5A.2 | CertificateCanvas (render com CertificateBlockRenderer, duplex, offset) | 11 | ~3.5h | In Progress | Agente 3 |
-| 5A.3 | CertificateEditor refactor (compor novos componentes, testes boundary) | 7 | ~1.5h | Backlog | Agente 3 |
-| **5A.4** | **EditorCanvas cleanup — remover 13 branches `isCertMode` (fix linha 1282)** | — | ~2h | **Backlog** | **Agente 3** |
-| 5A.5 | EditorContext testes mínimos | 3 | ~45min | Backlog | Agente 3 |
+| 🔴 **5A.4** | **EditorCanvas cleanup — remover 13 branches `isCertMode` (fix `EditorCanvas.tsx:1282`)** | — | ~2h | **PRIORIDADE MÁXIMA** | **Agente 3** |
+| 5A.5 | EditorContext testes mínimos (3 testes) | 3 | ~45min | Backlog | Agente 3 |
+
+**Refactor separado (sprint à parte) [REVISIT: 2026-06-25]:**
+Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1282; 5A.4 pode ser atacado independentemente. Documentado em `docs/history/2026-06-03-sessao-governanca.md` (secção "Decisão arquitectural").
+
+| # | Item | Testes | Tempo | Status | Owner |
+|---|---|---|---|---|---|
+| 5A.1 | CertificatePalette (novo componente + extrair BlockBtn) | 7 | ~2h | Paused | Agente 3 |
+| 5A.2 | CertificateCanvas (render com CertificateBlockRenderer, duplex, offset) | 11 | ~3.5h | Paused | Agente 3 |
+| 5A.3 | CertificateEditor refactor (compor novos componentes, testes boundary) | 7 | ~1.5h | Paused | Agente 3 |
 
 **Adiado para Fase 5B [REVISIT: 2026-06-20]:**
 
