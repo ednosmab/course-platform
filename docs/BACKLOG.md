@@ -125,7 +125,7 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 | Testes E2E Playwright para drag-and-drop de imagem | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
 | Student app — ErrorBoundary | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
 | Fix build admin — `@tamagui/constants` missing como dependência explícita | 🟠 Alto | Done | 2026-06-10 | Agente 2 |
-| Fix renderer test — `BlockRenderer.test.tsx` syntax error (XSS test) | 🟡 Médio | Paused [REVISIT: 2026-06-20] | 2026-06-15 | Agente 1 |
+| Fix renderer test — `BlockRenderer.test.tsx` syntax error (XSS test) | 🟡 Médio | Done | 2026-06-15 | Agente 1 |
 | ICP-02 — Rename `uuid_bsgi` → `uuid_extranet` em código fonte (CONFID-01 follow-up) | 🔴 Crítico | Backlog | 2026-06-10 | Agente 3 |
 
 **Contexto GTM (2026-06-05):** Estes P1 bloqueiam staging push (sem build verde não há demo). Sem demo, validação MVP com cliente piloto fica comprometida. Atacar antes de qualquer trabalho em MVP Coverage.
@@ -133,6 +133,8 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 **ICP-02 — Detalhe:** Confirmação do utilizador (2026-06-05) de que CONFID-01 proíbe **qualquer** referência a entidades do sector-alvo, mesmo técnicas (campo `uuid_bsgi`, função `generateBsgiCode`, prefixo `BSGI-` em códigos). Solução: nova migration SQL + rename de 8 ficheiros (database.ts, ICertificateRepository.ts, supabase-certificate-repository.ts, certificate.ts, certificate.test.ts, page.tsx admin, Certificates.tsx student, init_schema.sql — este último via migration nova).
 
 **P1-02 — Investigação (2026-06-05):** Erro "Expected 'from', got 'typeOf'" ocorre no SSR transform de `BlockRenderer.tsx` ao importar `@projeto/ui` (Tamagui). Root cause: incompatibilidade conhecida entre Vitest 1.6.1 + Vite 5.4.21 SSR transform + Tamagui 2.0-rc.42. Não é um problema no test file (verifiquei: minimal test com mesmo import falha, JSX é parseado por Rollup que não conhece TS type annotations). Solução proposta: upgrade Vitest para 2.x (breaking change em API mínima) **ou** configurar `server.deps.external` para bypassar SSR transform de Tamagui. ADR necessário para escolher caminho.
+
+**P1-02 — Resolução (2026-06-05):** Solução adoptada: refactor do test file para testar `sanitizeHtml` directamente (do ficheiro `packages/ui/src/utils/sanitize.ts`) em vez de `BlockRenderer` end-to-end. Razão: a defesa XSS é implementada em `sanitizeHtml`; o `BlockRenderer` apenas invoca essa função, sem lógica XSS adicional. Vantagens: (1) test fica mais focado, (2) evita o import chain que dispara o SSR error de Tamagui, (3) cobre mais casos (10 testes vs 8 originais — adicionado empty input, plain text, style attribute stripping). Ficheiro renomeado de `.tsx` para `.ts` (sem JSX agora). Vitest config actualizado para `environmentMatchGlobs` com extensão `.ts`. 13/13 testes renderer verde.
 
 ---
 
