@@ -2,7 +2,7 @@
 
 ## 📋 Quick Board (snapshot kanban — 2026-06-04)
 - 🔴 **Em curso:** nenhum — fila livre, sessão concluída em 5A.5
-- 🟡 **Parado:** 5A.1 → 5A.2 → 5A.3 (sprint à parte) [REVISIT: 2026-06-25]
+- 🟡 **Parado:** nenhum
 - ⏭️ **Próximo (decisão estratégica):** P0 "MVP Coverage & Audit" **NÃO está bloqueado** — Tier A (baseline) e Tier B (gaps) podem arrancar AGORA. P1 datados (build fix due 2026-06-10, renderer test due 2026-06-15) têm prioridade por SLA.
 - ⏸️ **P1 datadas a atacar primeiro:** build fix `@tamagui/constants` (due 2026-06-10), renderer test (due 2026-06-15)
 
@@ -13,8 +13,10 @@
 ## Status Atual
 **Sessão de governança + pipeline de merge concluídos.** Regra 9+10 do AGENTS.md activas; DT-01..DT-04 em vigor. Branch `feat/dsv2-reform` deletada (conteúdo já em develop). Pipeline de merge Caminho C executado com sucesso. Nova secção "POLÍTICA DE BRANCHES E PIPELINE DE MERGE" formalizada em AGENTS.md.
 
+**Sprint à parte 5A.1-5A.3 concluído em 2026-06-04.** Componentes já entregues em `feat/cert-editor-isolation` (commits `39a9957`, `1dd3854`, `0dd269b`); BACKLOG e buffer actualizados.
+
 ## 🎯 Tarefa em Execução
-**5A.5 CONCLUÍDO** (código escrito, testes verdes, **pendente commit/G-01**).
+**5A.5 CONCLUÍDO** (código escrito, testes verdes, commit `9f2a0ba`).
 EditorContext contract fixado com 6 testes (reducer puro, sem React, sem jsdom overhead):
 - 2 contract tests (UNDO no-op em historyIndex 0; UNDO após ADD_BLOCK reverte)
 - 1 contract test (REMOVE_BLOCK limpa activeBlockId + selectedBlockIds)
@@ -28,12 +30,12 @@ EditorContext contract fixado com 6 testes (reducer puro, sem React, sem jsdom o
 **5A.4 CONCLUÍDO** (commit `043d601`):
 EditorCanvas agora é **lesson-only** — 13 branches `isCertMode` removidas, `CertificateBlockRenderer`/`Button` removidos, `isBg` dead code removido. Boundary test estático (4 testes) alinha com `CertificateEditor.boundary.test.ts`.
 
-**Sub-itens 5A.1-5A.3 rebaixados** para sprint à parte [REVISIT: 2026-06-25].
+**Sub-itens 5A.1-5A.3 concluídos** (ver Status Atual e BACKLOG).
 
 **Próxima direcção estratégica (acordada):** 5A.5 → telas/links pendentes → P0 "MVP Coverage & Audit" (vivo, tiered, com sister P0 para scalability).
 
 ## 🌿 Estado de Branches (2026-06-04)
-- `feat/cert-editor-isolation` (HEAD `043d601`) — sincronizada com develop, **5A.4 commitado, 5A.5 código pronto pendente commit**
+- `feat/cert-editor-isolation` (HEAD `9c36a4d`) — sincronizada com develop, **5A.4/5A.5 commitados**
 - `develop` (`c166872`) — contém merge de `feat/dnd-e2e-coverage` via `--no-ff`
 - `feat/dnd-e2e-coverage` (`f0f928e`) — preservada, conteúdo já em develop
 - `feat/dsv2-reform` — **deletada** (0 commits únicos vs develop, risco zero). Recriar quando houver item P0/P1 do DSv2.
@@ -45,10 +47,10 @@ EditorCanvas agora é **lesson-only** — 13 branches `isCertMode` removidas, `C
 - `docs/runbooks/merge-dnd-to-develop.md` (NOVO em `f0f928e`): runbook do Caminho C
 - `feat/dsv2-reform` — branch local deletada
 - Merge `feat/dnd-e2e-coverage` → `develop` (commit `c166872`), fast-forward de `feat/cert-editor-isolation` para `c166872`
-- **Troca do modelo padrão:** `opencode.json`, `docs/AGENTS.md` (secção 🧬 MODELO PREFERIDO) e `.opencode/agents/document-loader.md` — `deepseek-v4-flash-free` → `minimax-m3-free`. Pendente commit (G-01).
+- **Troca do modelo padrão:** `opencode.json`, `docs/AGENTS.md` (secção 🧬 MODELO PREFERIDO) e `.opencode/agents/document-loader.md` — `deepseek-v4-flash-free` → `minimax-m3-free` (commit `7e244eb`).
 - **Orquestração 3-fases no opencode.json** (side-quest tooling, **commit `e5e33ea`**): `plan`/`build`/`review` com 3 modelos (minimax / deepseek / minimax). `default_agent: "plan"`. Removidos dead config `agent.inference` e `agent.profile`. 4/4 `jq` validations passam. **Requer restart manual do opencode** (config não é hot-reloaded).
-- **5A.4 — EditorCanvas lesson-only cleanup:** `EditorCanvas.tsx` (13 branches `isCertMode` removidas, import de `CertificateBlockRenderer`/`Button` removidos, `isBg` dead code removido, `PreviewCanvas` reescrita sem `mode`/`certDesign*`, destructure de `useEditor` sem campos cert) + novo `EditorCanvas.boundary.test.ts` (4 testes estáticos do contract). Pendente commit (G-01).
-- **5A.5 — EditorContext contract tests:** `EditorContext.tsx` (export de `EditorState`/`EditorAction`/`initialState`/`editorReducer` para testabilidade) + novo `EditorContext.test.tsx` (6 testes do reducer puro: 3 contract + 3 bug-hunt). 88/88 admin tests passam. Pendente commit (G-01).
+- **5A.4 — EditorCanvas lesson-only cleanup:** `EditorCanvas.tsx` (13 branches `isCertMode` removidas, import de `CertificateBlockRenderer`/`Button` removidos, `isBg` dead code removido, `PreviewCanvas` reescrita sem `mode`/`certDesign*`, destructure de `useEditor` sem campos cert) + novo `EditorCanvas.boundary.test.ts` (4 testes estáticos do contract, commit `043d601`).
+- **5A.5 — EditorContext contract tests:** `EditorContext.tsx` (export de `EditorState`/`EditorAction`/`initialState`/`editorReducer` para testabilidade) + novo `EditorContext.test.tsx` (6 testes do reducer puro: 3 contract + 3 bug-hunt, commit `9f2a0ba`). 88/88 admin tests passam.
 
 ## ✅ Validação opencode.json 3-fases (2026-06-04)
 - `jq '.default_agent'` → `"plan"` ✓
@@ -86,10 +88,8 @@ EditorCanvas agora é **lesson-only** — 13 branches `isCertMode` removidas, `C
 - Working tree: 1 modified (`EditorContext.tsx`) + 1 untracked (`EditorContext.test.tsx`)
 
 ## 📌 Próximos Passos
-- **5A.7 (PENDENTE G-01):** `git add` + `git commit` das alterações 5A.5 (1 modified + 1 untracked)
+- ~~**5A.7 (PENDENTE G-01):** `git add` + `git commit` das alterações 5A.5 (1 modified + 1 untracked)~~ — resolvido pelo commit `9f2a0ba`
 - **telas/links pendentes** (próxima fase de trabalho, items P0/P1 do BACKLOG)
 - **P0 "MVP Coverage & Audit"** (a construir DEPOIS das telas/links, para evitar refactor)
-- Sprint à parte [REVISIT: 2026-06-25]: 5A.1 → 5A.2 → 5A.3
-- P1 paralelas: build fix (due 2026-06-10), renderer test (due 2026-06-15)
 - P1 paralelas: build fix (due 2026-06-10), renderer test (due 2026-06-15)
 - Executar ritual de fim de sessão conforme AGENTS.md regra 10 e `session-template.md`

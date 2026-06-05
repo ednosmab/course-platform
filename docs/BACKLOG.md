@@ -41,17 +41,17 @@
 
 | # | Item | Testes | Tempo | Status | Owner |
 |---|---|---|---|---|---|
-| 🔴 **5A.4** | **EditorCanvas cleanup — remover 13 branches `isCertMode` (fix `EditorCanvas.tsx:1282`)** | — | ~2h | **In Progress** | **Agente 3** |
-| 5A.5 | EditorContext testes mínimos (3 testes) | 3 | ~45min | Backlog | Agente 3 |
+| 🔴 **5A.4** | **EditorCanvas cleanup — remover 13 branches `isCertMode` (fix `EditorCanvas.tsx:1282`)** | — | ~2h | **Done** | **Agente 3** |
+| 5A.5 | EditorContext testes mínimos (3 testes) | 3 | ~45min | Done | Agente 3 |
 
-**Refactor separado (sprint à parte) [REVISIT: 2026-06-25]:**
+**Refactor separado (sprint à parte) ✅ Concluído em 2026-06-04:**
 Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1282; 5A.4 pode ser atacado independentemente. Documentado em `docs/history/2026-06-03-sessao-governanca.md` (secção "Decisão arquitectural").
 
 | # | Item | Testes | Tempo | Status | Owner |
 |---|---|---|---|---|---|
-| 5A.1 | CertificatePalette (novo componente + extrair BlockBtn) | 7 | ~2h | Paused | Agente 3 |
-| 5A.2 | CertificateCanvas (render com CertificateBlockRenderer, duplex, offset) | 11 | ~3.5h | Paused | Agente 3 |
-| 5A.3 | CertificateEditor refactor (compor novos componentes, testes boundary) | 7 | ~1.5h | Paused | Agente 3 |
+| 5A.1 | CertificatePalette (novo componente + extrair BlockBtn) | 7 | ~2h | Done | Agente 3 |
+| 5A.2 | CertificateCanvas (render com CertificateBlockRenderer, duplex, offset) | 11 | ~3.5h | Done | Agente 3 |
+| 5A.3 | CertificateEditor refactor (compor novos componentes, testes boundary) | 7 | ~1.5h | Done | Agente 3 |
 
 **Adiado para Fase 5B [REVISIT: 2026-06-20]:**
 
@@ -89,6 +89,9 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 | BUG: Student app — Shadow presets não usados | 🟡 Médio | Shadow presets aplicados |
 | BUG: Zod schema — missing `heading` e `divider` | 🟠 Alto | Verificado em `packages/types/src/database.ts:96-97` |
 | BUG: Drag-and-drop de imagem (mobile/tablet viewports) | 🟠 Alto | commit `c80d309`, cobertura mobile/tablet |
+| Refactor: Fase 5A.1 — CertificatePalette + BlockBtn extraído | 🟡 Médio | commit `39a9957` (2026-06-03), 7 testes TDD passam |
+| Refactor: Fase 5A.2 — CertificateCanvas com zoom + side filter | 🟡 Médio | commit `1dd3854` (2026-06-03), 11 testes TDD passam |
+| Refactor: Fase 5A.3 — CertificateEditor decomposição + boundary tests | 🟡 Médio | commit `0dd269b` (2026-06-03) criou `CertificateEditor.boundary.test.ts` (7 testes); composição clean em `CertificateEditor.tsx:23-52` |
 
 ---
 
