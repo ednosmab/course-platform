@@ -126,8 +126,11 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 | Student app — ErrorBoundary | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
 | Fix build admin — `@tamagui/constants` missing como dependência explícita | 🟠 Alto | Backlog | 2026-06-10 | Agente 2 |
 | Fix renderer test — `BlockRenderer.test.tsx` syntax error (XSS test) | 🟡 Médio | Backlog | 2026-06-15 | Agente 1 |
+| ICP-02 — Rename `uuid_bsgi` → `uuid_extranet` em código fonte (CONFID-01 follow-up) | 🔴 Crítico | Backlog | 2026-06-10 | Agente 3 |
 
-**Contexto GTM (2026-06-05):** Estes dois P1 bloqueiam staging push (sem build verde não há demo). Sem demo, validação MVP com cliente piloto fica comprometida. Atacar antes de qualquer trabalho em MVP Coverage.
+**Contexto GTM (2026-06-05):** Estes P1 bloqueiam staging push (sem build verde não há demo). Sem demo, validação MVP com cliente piloto fica comprometida. Atacar antes de qualquer trabalho em MVP Coverage.
+
+**ICP-02 — Detalhe:** Confirmação do utilizador (2026-06-05) de que CONFID-01 proíbe **qualquer** referência a entidades do sector-alvo, mesmo técnicas (campo `uuid_bsgi`, função `generateBsgiCode`, prefixo `BSGI-` em códigos). Solução: nova migration SQL + rename de 8 ficheiros (database.ts, ICertificateRepository.ts, supabase-certificate-repository.ts, certificate.ts, certificate.test.ts, page.tsx admin, Certificates.tsx student, init_schema.sql — este último via migration nova).
 
 ---
 

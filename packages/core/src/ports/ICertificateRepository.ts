@@ -17,14 +17,14 @@ export interface ICertificateRepository {
 
   /**
    * @description Creates and persists a new certificate record.
-   * Business rule: Each certificate includes a unique BSGI-compliant UUID for
+   * Business rule: Each certificate includes a unique external validation UUID for
    * verification and auditability.
    * @param userId - The UUID of the student receiving the certificate.
    * @param courseId - The UUID of the completed course.
-   * @param uuidBsgi - The BSGI-compliant unique identifier for the certificate.
+   * @param uuidExtranet - The external unique identifier for the certificate.
    * @returns Promise resolving to the newly created Certificate object.
    */
-  insertCertificate(userId: string, courseId: string, uuidBsgi: string): Promise<Certificate>;
+  insertCertificate(userId: string, courseId: string, uuidExtranet: string): Promise<Certificate>;
 
   /**
    * @description Retrieves all certificates issued to a specific user.

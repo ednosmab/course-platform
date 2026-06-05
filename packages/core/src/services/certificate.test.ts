@@ -117,19 +117,19 @@ describe('CertificateService', () => {
   });
 
   describe('issueCertificate', () => {
-    it('should insert certificate with BSGI code', async () => {
+    it('should insert certificate with external validation code', async () => {
       mocks.certRepo.findExistingCertificate.mockResolvedValue(null);
       mocks.certRepo.insertCertificate.mockResolvedValue({
         id: 'cert-1',
         user_id: 'user-1',
         course_id: 'course-1',
-        uuid_bsgi: 'BSGI-xxxx',
+        uuid_extranet: 'EXTR-xxxx',
         issued_at: new Date().toISOString(),
       });
 
       const result = await service.issueCertificate('user-1', 'course-1');
       expect(result).not.toBeNull();
-      expect(result!.uuid_bsgi).toContain('BSGI-');
+      expect(result!.uuid_extranet).toContain('EXTR-');
     });
 
     it('should not issue duplicate certificate', async () => {
@@ -142,7 +142,7 @@ describe('CertificateService', () => {
   describe('getUserCertificates', () => {
     it('should return certificates from repo', async () => {
       const certs = [
-        { id: 'c1', user_id: 'u1', course_id: 'course-1', uuid_bsgi: 'BSGI-abc', issued_at: new Date().toISOString() },
+        { id: 'c1', user_id: 'u1', course_id: 'course-1', uuid_extranet: 'EXTR-abc', issued_at: new Date().toISOString() },
       ];
       mocks.certRepo.getUserCertificates.mockResolvedValue(certs);
       const result = await service.getUserCertificates('u1');
@@ -164,7 +164,7 @@ describe('CertificateService', () => {
       mocks.certRepo.findExistingCertificate.mockResolvedValue(null);
       mocks.certRepo.insertCertificate.mockResolvedValue({
         id: 'cert-1', user_id: 'u1', course_id: 'course-1',
-        uuid_bsgi: 'BSGI-abc', issued_at: new Date().toISOString(),
+        uuid_extranet: 'EXTR-abc', issued_at: new Date().toISOString(),
       });
 
       const result = await service.checkAndIssue('u1', 'lesson-2');

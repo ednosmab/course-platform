@@ -684,7 +684,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                   <Text fontSize={14} fontWeight="600">Certificado</Text>
                 </XStack>
                 <Text fontSize={12} color="$textMuted" lineHeight={18}>
-                  Quando ativo, os alunos que concluírem todas as aulas com aproveitamento mínimo de 70% receberão um certificado oficial com validação de código único (BSGI).
+                  Quando ativo, os alunos que concluírem todas as aulas com aproveitamento mínimo de 70% receberão um certificado oficial com validação de código único (extranet).
                 </Text>
 
                 <XStack ai="center" jc="space-between" bg="$background" p={8} borderRadius={6}>

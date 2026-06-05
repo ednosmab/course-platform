@@ -335,7 +335,7 @@ export function Certificates({ onBack }: CertificatesProps) {
                     </XStack>
 
                     <Text fontSize={11} color="$textMuted" fontFamily="$mono">
-                      Código: {cert.uuid_bsgi}
+                      Código: {cert.uuid_extranet}
                     </Text>
 
                     <XStack gap="$2">

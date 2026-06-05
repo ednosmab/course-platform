@@ -23,17 +23,17 @@ export const supabaseCertificateRepository: ICertificateRepository = {
   },
 
   /**
-   * @description Issues a new certificate for a student by inserting a record with the BSGI UUID.
-   * Business rule: The BSGI UUID is provided by the external certification authority (BSGI).
-   * Each certificate must have a unique BSGI identifier for verification.
+   * @description Issues a new certificate for a student by inserting a record with the external validation UUID.
+   * Business rule: The external UUID is provided by the external certificate validation authority.
+   * Each certificate must have a unique external identifier for verification.
    * @param {string} userId - The UUID of the student.
    * @param {string} courseId - The UUID of the course.
-   * @param {string} uuidBsgi - The BSGI unique identifier for the certificate.
+   * @param {string} uuidExtranet - The external unique identifier for the certificate.
    * @returns {Promise<Certificate>} The newly created certificate validated against CertificateSchema.
    * @throws {Error} If the database insert fails; error is logged before re-throw.
    */
-  async insertCertificate(userId: string, courseId: string, uuidBsgi: string): Promise<Certificate> {
-    const { data, error } = await (supabase.from('certificates') as any).insert({ user_id: userId, course_id: courseId, uuid_bsgi: uuidBsgi }).select('*').single();
+  async insertCertificate(userId: string, courseId: string, uuidExtranet: string): Promise<Certificate> {
+    const { data, error } = await (supabase.from('certificates') as any).insert({ user_id: userId, course_id: courseId, uuid_extranet: uuidExtranet }).select('*').single();
     if (error) { console.error('Error issuing certificate:', error); throw error; }
     return CertificateSchema.parse(data);
   },

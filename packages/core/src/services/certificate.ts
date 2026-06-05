@@ -4,15 +4,15 @@ import type { ICourseRepository } from '../ports/ICourseRepository';
 import type { ILessonRepository } from '../ports/ILessonRepository';
 import type { IProgressRepository } from '../ports/IProgressRepository';
 
-function generateBsgiCode(): string {
+function generateExtranetCode(): string {
   const uuid = crypto.randomUUID();
-  return `BSGI-${uuid}`;
+  return `EXTR-${uuid}`;
 }
 
 /**
  * @description Creates a certificate service that manages the full certificate lifecycle:
  * lesson-score computation, course-average calculation, completion verification,
- * BSGI-code generation, and certificate issuance for the CMS platform.
+ * external-validation-code generation, and certificate issuance for the CMS platform.
  * Business rule: Certificates are only issued when the course average is >= 70%
  * and all lessons are completed. Duplicate issuance is prevented.
  * @param certRepo - An implementation of ICertificateRepository for certificate persistence
@@ -104,10 +104,10 @@ export function createCertificateService(
     },
 
     /**
-     * @description Issues a new BSGI certificate for a user and course.
+     * @description Issues a new external-validation certificate for a user and course.
      * Business rule: A certificate can only be issued once per user-course pair.
      * If a certificate already exists, this method returns null.
-     * Each certificate gets a unique BSGI-XXXXXXXX code.
+     * Each certificate gets a unique EXTR-XXXXXXXX code.
      * @param userId - The UUID of the student
      * @param courseId - The UUID of the course
      * @returns The newly created Certificate object, or null if one already exists
@@ -116,8 +116,8 @@ export function createCertificateService(
       const existing = await certRepo.findExistingCertificate(userId, courseId);
       if (existing) return null;
 
-      const uuidBsgi = generateBsgiCode();
-      return certRepo.insertCertificate(userId, courseId, uuidBsgi);
+      const uuidExtranet = generateExtranetCode();
+      return certRepo.insertCertificate(userId, courseId, uuidExtranet);
     },
 
     /**
