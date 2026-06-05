@@ -77,11 +77,19 @@
 
 ---
 
+## 9. Violações de Confidencialidade Comercial
+
+| # | Regra | Justificativa |
+|---|---|---|
+| CONFID-01 | **PROIBIDO** mencionar nomes de empresas-alvo, parceiros em negociação, entidades do sector-alvo, ou qualquer informação comercialmente sensível em código, commits, BACKLOG, ADRs, SDRs, feedback, buffer de contexto, ou qualquer artefato versionado | Expor nomes de clientes-alvo ou estratégia de go-to-market no repositório compromete negociações comerciais e viola o princípio de separação entre produto e estratégia de vendas. Esta regra aplica-se mesmo em comentários, mensagens de commit, JSDoc, e histórias de utilizador |
+
+---
+
 ## Consequências de Violação
 
 | Nível | Consequência |
 |---|---|
-| **Crítica** (F-01 a F-06, S-01 a S-03, ENV-01) | Commit rejeitado + correção imediata obrigatória |
+| **Crítica** (F-01 a F-06, S-01 a S-03, ENV-01, CONFID-01) | Commit rejeitado + correção imediata obrigatória |
 | **Alta** (D-01 a D-04, DB-01 a DB-03) | Rollback + documentação do erro no buffer |
 | **Média** (G-01 a G-04, P-01 a P-04, DT-01 a DT-04) | Alerta + correção antes do próximo commit |
 
