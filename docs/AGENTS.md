@@ -33,6 +33,55 @@ Escreva códigos extremamente declarativos, simples e fáceis de ler. Evite otim
 
 ---
 
+## 🪜 Loading Profiles (Otimização de Tokens)
+
+O AGENTS.md é carregado via MCP em toda sessão. Para poupar tokens sem perder cobertura, aplicam-se os seguintes perfis:
+
+| Perfil | Regras carregadas | Quando usar | Tokens aprox. |
+|---|---|---|---|
+| `minimal` | #1-9 (workflow + git), FORBIDDEN_OPERATIONS, DESDO | Tarefas triviais (typo, rename, comment-only) | ~3-4k |
+| `lite` (default) | `minimal` + #10-11 (sessão) | Implementação de feature pequena, bug fix isolado | ~5-6k |
+| `full` | `lite` + #12-14 (tríade plan/build/review) + #15 (feedback) | Refactor, migration, multi-camada, adição de nova lib | ~8-10k |
+
+**Override:** o campo `loading_profile` em `opencode.json` força o perfil independentemente do default.
+
+---
+
+## 🕸️ Grafo de Dependências das Regras
+
+As regras não são todas do mesmo nível. Existem três camadas de dependência:
+
+```
+       ┌──────────────────────────┐
+       │  Camada 1: Workflow (1-11) │  ← sempre carregada
+       │  (git, sessão, TDD)         │
+       └────────────┬───────────────┘
+                    │ activa o modo activo
+                    ▼
+       ┌──────────────────────────┐
+       │  Camada 2: Mode (12-14)   │  ← carregada se loading_profile=full
+       │  review → plan → build    │
+       └────────────┬───────────────┘
+                    │ fecha o ciclo
+                    ▼
+       ┌──────────────────────────┐
+       │  Camada 3: Reflection (15)│  ← carregada só em fim-de-sessão
+       │  feedback de desempenho  │
+       └──────────────────────────┘
+```
+
+**Cadeia operacional:**
+1. **Review** (#12) valida que um plano anterior foi executado conforme spec.
+2. **Plan** (#13) gera o plano atómico que o **Build** (#14) vai executar.
+3. **Build** (#14) executa o plano literal e atalha o ciclo em direção ao próximo Review.
+
+**Regras com dependência implícita:**
+- #14 (build) pressupõe que #13 (plan) já foi cumprido — não executar build sem plan aprovado.
+- #13 (plan) pressupõe que #12 (review) já fechou o ciclo anterior — não planear sem antes auditar o que ficou pendente.
+- #15 (feedback) é o único disparado por sinal externo (keywords de fim-de-sessão), não por estado do código.
+
+---
+
 ## 🛑 REGRAS CRUCIAIS DE WORKFLOW E GIT (LEI ABSOLUTA)
 
 1. **NUNCA FAÇA COMMIT SEM PERMISSÃO:** É ESTREITAMENTE PROIBIDO executar comandos de `git commit` ou `git push` de forma automatizada. Você deve SEMPRE solicitar que o usuário teste as alterações localmente primeiro. Apenas após a confirmação visual e autorização explícita do usuário você poderá avançar ou sugerir o commit.
