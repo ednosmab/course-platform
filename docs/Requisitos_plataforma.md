@@ -29,7 +29,7 @@ Este documento reúne a visão de negócios, a jornada do aluno, a arquitetura d
 * 🛡️ **Administrador:** Acesso total à gestão de usuários, relatórios financeiros, controle do CMS e configurações gerais.
 
 ### Integrações e Conformidades
-* **Integração com Extranet BSGI:** Emissão e validação oficial de certificados.
+* **Integração com Extranet de Validação de Certificados:** Emissão e validação oficial de certificados via API externa de terceiros.
 * **Conformidade LGPD:** Controle rígido de cookies, consentimentos, encriptação de dados de usuários e logs de auditoria.
 
 ---
@@ -87,4 +87,4 @@ Este documento reúne a visão de negócios, a jornada do aluno, a arquitetura d
 5. **↩️ Retomada Inteligente:** Ao reabrir a plataforma, o aluno volta exatamente ao ponto (segundo do vídeo ou aula) de onde parou.
 6. **✅ Regra de Conclusão (85%):** Uma aula é marcada automaticamente como concluída quando o aluno assiste a **85% ou mais do vídeo**.
 7. **📝 Atividades & Quiz:** Resolução de quizzes de fixação ao fim de cada módulo.
-8. **🎓 Emissão de Certificado:** PDF gerado automaticamente com integração à extranet BSGI mediante diálogo de conclusão.
+8. **🎓 Emissão de Certificado:** PDF gerado automaticamente com integração à extranet de validação de certificados mediante diálogo de conclusão.

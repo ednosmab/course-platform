@@ -25,6 +25,29 @@
 | **Criado** | 2026-06-04 |
 | **Descrição** | Push para `origin` está bloqueado até que o critério objectivo de "MVP concluído" seja definido. Decisão do usuário (2026-06-04): "Definir mais tarde". Candidatos: P0 vazio + build verde + testes 100% + lint 0 erros + dívidas P1 resolvidas. Detalhes em `docs/runbooks/push-strategy.md`. |
 
+### 🔒 CONFID-01 — Regra vinculante de confidencialidade comercial
+
+| Campo | Valor |
+|---|---|
+| **Status** | Done |
+| **Severidade** | 🔴 Crítico |
+| **Owner** | Agente 3 |
+| **Due** | 2026-06-08 |
+| **Criado** | 2026-06-05 |
+| **Commit** | `d48f863` |
+| **Descrição** | Regra absoluta CONFID-01 adicionada a `docs/FORBIDDEN_OPERATIONS.md` (secção 9): proíbe mencionar nomes de empresas-alvo, parceiros em negociação, ou entidades do sector-alvo em código, commits, BACKLOG, ADRs, SDRs, feedback, ou qualquer artefato versionado. Referência cruzada em `AGENTS.md` secção "Regras Vinculantes". Consequência: Crítica (commit rejeitado + correção imediata). |
+
+### 🎯 ICP-01 — Re-brand genérico do backlog e buffer
+
+| Campo | Valor |
+|---|---|
+| **Status** | In Progress |
+| **Severidade** | 🟠 Alto |
+| **Owner** | Agente 3 |
+| **Due** | 2026-06-08 |
+| **Criado** | 2026-06-05 |
+| **Descrição** | Reescrever todos os artefactos versionados com ICP genérico: "plataforma B2B PaaS de cursos online para organizações que querem criar, distribuir e monetizar conhecimento (escolas, ONGs, empresas, comunidades)". Substituir qualquer referência a sector específico, exemplo de cliente, contexto de negociação, OU fornecedor técnico específico. Artefatos a tocar: `docs/BACKLOG.md`, `docs/context_buffer.md`, `docs/Requisitos_plataforma.md`, `docs/layers/supabase/database_schema_plan.md`, eventuais ADRs. Validação: `grep -ri "termos-confidenciais" docs/` deve retornar **zero matches** em artefactos versionados. Renomeação técnica: campo `uuid_extranet` aplicado ao schema (P1 follow-up: nova migration para renomeação do campo legado). |
+
 ### ⏳ Fase 5A — Isolamento definitivo do editor de certificado
 
 | Campo | Valor |
@@ -103,6 +126,8 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 | Student app — ErrorBoundary | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
 | Fix build admin — `@tamagui/constants` missing como dependência explícita | 🟠 Alto | Backlog | 2026-06-10 | Agente 2 |
 | Fix renderer test — `BlockRenderer.test.tsx` syntax error (XSS test) | 🟡 Médio | Backlog | 2026-06-15 | Agente 1 |
+
+**Contexto GTM (2026-06-05):** Estes dois P1 bloqueiam staging push (sem build verde não há demo). Sem demo, validação MVP com cliente piloto fica comprometida. Atacar antes de qualquer trabalho em MVP Coverage.
 
 ---
 

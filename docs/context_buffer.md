@@ -1,10 +1,11 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
-## 📋 Quick Board (snapshot kanban — 2026-06-04)
-- 🔴 **Em curso:** nenhum — fila livre, sessão concluída em 5A.5
+## 📋 Quick Board (snapshot kanban — 2026-06-05)
+- 🔴 **Em curso:** nenhum — fila livre
 - 🟡 **Parado:** nenhum
-- ⏭️ **Próximo (decisão estratégica):** P0 "MVP Coverage & Audit" **NÃO está bloqueado** — Tier A (baseline) e Tier B (gaps) podem arrancar AGORA. P1 datados (build fix due 2026-06-10, renderer test due 2026-06-15) têm prioridade por SLA.
-- ⏸️ **P1 datadas a atacar primeiro:** build fix `@tamagui/constants` (due 2026-06-10), renderer test (due 2026-06-15)
+- ⏭️ **Próximo (decisão estratégica):** P0 CONFID-01 (regra de confidencialidade) + ICP-01 (re-brand) — DEVEM ser atacados **antes** de qualquer commit de mercado. Risco de exposição comercial.
+- ⏸️ **P1 paralelas com SLA apertado:** build fix `@tamagui/constants` (due 2026-06-10), renderer test (due 2026-06-15)
+- 🎯 **ICP confirmado (2026-06-05):** B2B PaaS — plataforma para organizações que querem montar e vender cursos. Concorrentes: Teachable, Thinkific, Docebo, TalentLMS. **Nunca mencionar** nomes de alvos comerciais em código, commits, backlog, feedback.
 
 > **Fonte canónica:** `docs/BACKLOG.md` (P0/P1/P2/P3 com Status, Due, Owner).
 
