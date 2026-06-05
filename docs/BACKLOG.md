@@ -125,12 +125,14 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 | Testes E2E Playwright para drag-and-drop de imagem | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
 | Student app — ErrorBoundary | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
 | Fix build admin — `@tamagui/constants` missing como dependência explícita | 🟠 Alto | Done | 2026-06-10 | Agente 2 |
-| Fix renderer test — `BlockRenderer.test.tsx` syntax error (XSS test) | 🟡 Médio | Backlog | 2026-06-15 | Agente 1 |
+| Fix renderer test — `BlockRenderer.test.tsx` syntax error (XSS test) | 🟡 Médio | Paused [REVISIT: 2026-06-20] | 2026-06-15 | Agente 1 |
 | ICP-02 — Rename `uuid_bsgi` → `uuid_extranet` em código fonte (CONFID-01 follow-up) | 🔴 Crítico | Backlog | 2026-06-10 | Agente 3 |
 
 **Contexto GTM (2026-06-05):** Estes P1 bloqueiam staging push (sem build verde não há demo). Sem demo, validação MVP com cliente piloto fica comprometida. Atacar antes de qualquer trabalho em MVP Coverage.
 
 **ICP-02 — Detalhe:** Confirmação do utilizador (2026-06-05) de que CONFID-01 proíbe **qualquer** referência a entidades do sector-alvo, mesmo técnicas (campo `uuid_bsgi`, função `generateBsgiCode`, prefixo `BSGI-` em códigos). Solução: nova migration SQL + rename de 8 ficheiros (database.ts, ICertificateRepository.ts, supabase-certificate-repository.ts, certificate.ts, certificate.test.ts, page.tsx admin, Certificates.tsx student, init_schema.sql — este último via migration nova).
+
+**P1-02 — Investigação (2026-06-05):** Erro "Expected 'from', got 'typeOf'" ocorre no SSR transform de `BlockRenderer.tsx` ao importar `@projeto/ui` (Tamagui). Root cause: incompatibilidade conhecida entre Vitest 1.6.1 + Vite 5.4.21 SSR transform + Tamagui 2.0-rc.42. Não é um problema no test file (verifiquei: minimal test com mesmo import falha, JSX é parseado por Rollup que não conhece TS type annotations). Solução proposta: upgrade Vitest para 2.x (breaking change em API mínima) **ou** configurar `server.deps.external` para bypassar SSR transform de Tamagui. ADR necessário para escolher caminho.
 
 ---
 
