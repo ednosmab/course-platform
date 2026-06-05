@@ -15,6 +15,8 @@
 
 **Sprint à parte 5A.1-5A.3 concluído em 2026-06-04.** Componentes já entregues em `feat/cert-editor-isolation` (commits `39a9957`, `1dd3854`, `0dd269b`); BACKLOG e buffer actualizados.
 
+**Governança tripla formalizada em 2026-06-05:** Regras #12 (review), #13 (plan), #14 (build) em `docs/AGENTS.md` + path canónico `docs/plans/`.
+
 ## 🎯 Tarefa em Execução
 Fase 5A **encerrada**: 5A.1-5A.5 Done (commits `043d601`, `39a9957`, `1dd3854`, `0dd269b`, `9f2a0ba`). 88/88 admin tests verdes.
 **Próxima:** telas/links pendentes → P0 "MVP Coverage & Audit" (tiered).

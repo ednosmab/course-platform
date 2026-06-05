@@ -56,6 +56,38 @@ Escreva códigos extremamente declarativos, simples e fáceis de ler. Evite otim
 10. **INVARIANTE DE FIM DE SESSÃO:** Nenhuma sessão pode ser declarada "concluída" sem antes executar o ritual de fim de sessão: working tree limpo (zero modificações + zero untracked não relacionados à tarefa), buffer podado (≤ 50 linhas activas), backlog actualizado, testes verdes (`tsc --noEmit`, `pnpm run test`, `pnpm run build`). Ver template detalhado em `docs/session-template.md` e política DT-02 em FORBIDDEN_OPERATIONS.
 11. **QUICK BOARD DE AVISO (LEMBRETES PERMANENTES):** Ao iniciar QUALQUER sessão, a IA DEVE apresentar ao usuário o **Quick Board** do `docs/context_buffer.md` (secção `## 📋 Quick Board`) antes da primeira resposta operacional. O Quick Board lista: tarefa em curso, parado, próximo, dívidas P1 com due date. Este lembrete NÃO substitui a leitura completa dos P0 — é apenas um aviso de contexto. A omissão do Quick Board na primeira resposta é violação desta regra.
 
+12. **VALIDAÇÃO DE PLANO EM MODO REVIEW:** Quando o agente opera em modo `review` (definido em `opencode.json` no agent `review`), DEVE SEMPRE validar que o trabalho executado corresponde ao plano aprovado pelo usuário. Protocolo obrigatório:
+   a. **Tabela de conformidade:** Listar cada step do plano (1, 2, 3, ...) com estado (✅/⚠️/❌) e evidência objetiva (diff, linha, contagem, output de comando).
+   b. **Métricas vs. plano:** Comparar números declarados (linhas removidas, testes adicionados, ficheiros tocados) com números reais via `git diff --stat`, `wc -l`, `pnpm test`.
+   c. **Desvios explícitos:** Sinalizar qualquer step não executado, item perdido na poda, decisão tomada sem autorização (especialmente G-01).
+   d. **Planos arquivados:** Se o plano está em `docs/plans/YYYY-MM-DD-<task>.md`, comparar os checkboxes preenchidos pelo build contra o `git diff` real e a sequência de commits.
+   e. **Acções de follow-up:** Listar itens pendentes, reversões possíveis, próximos passos. **Output é vinculante** — bloqueia avanço se não for entregue.
+
+13. **PLANO FRAGMENTADO EM MODO PLAN:** Quando o agente opera em modo `plan` (definido em `opencode.json` no agent `plan`), DEVE SEMPRE produzir planos atómicos e fragmentados, optimizados para o executor `deepseek-v4-flash-free` (modelo rápido, propenso a esquecimento). Protocolo obrigatório:
+   a. **Steps atómicos:** Cada step = 1 acção primária (1 Edit, 1 sed, 1 write) + 1 verificação explícita (grep, wc, cat). Nunca batchar múltiplas acções num único step.
+   b. **Texto exacto:** Usar `oldString`/`newString` literais (não paráfrases) com hashes, paths, e valores numéricos. Incluir `grep` de verificação após cada step.
+   c. **Salvaguardas S1..S6:** Listar apólices anti-esquecimento (não fundir, não tocar código não-p laneado, não avançar com falha, G-01 explícito, não duplicar, não tocar docs não-p laneado).
+   d. **Pontos de pausa G-01:** Marcar `**PARAR e pedir autorização**` antes de qualquer `git commit` ou operação irreversível. Comandos seguintes ficam em standby.
+   e. **Path canónico:** Planos com ≥ 5 steps ou ≥ 2 ficheiros afectados são arquivados em `docs/plans/YYYY-MM-DD-<slug>.md` usando o template em `docs/plans/TEMPLATE.md`. O ficheiro contém checkboxes que o build vai preenchendo.
+   f. **Métricas-alvo:** Declarar ranges (ex: "target 38-48 linhas, tolerância ±5"). Output pós-execução tem de bater o range; se bater, OK; se não, **reportar desvio**.
+
+14. **EXECUÇÃO LITERAL EM MODO BUILD:** Quando o agente opera em modo `build` (definido em `opencode.json` no agent `build`, executado por `deepseek-v4-flash-free`), DEVE executar o plano aprovado de forma **literal e atómica**, sem decisões autónomas. Protocolo obrigatório:
+   a. **Sem improviso:** NÃO refactorar, NÃO adicionar JSDoc, NÃO renomear, NÃO corrigir bugs adjacentes, NÃO adicionar testes extra. Executa APENAS o que o `oldString`/`newString` do step diz.
+   b. **Detecção de desvio:** Antes de cada Edit/sed, confirma: "este step está dentro do que planeei?" Se o step exigir uma mudança não-p laneada, **PARA** e reporta ao utilizador. Nunca inventar conteúdo.
+   c. **Excepções mínimas permitidas:** (1) Ajustes triviais para o build passar (import em falta, tipo errado, formato de path) — desde que sejam < 5 linhas e não alterem semântica. (2) Registar achados fora-do-plano no `docs/context_buffer.md` secção "Refactorings Aplicadas" para revisão posterior.
+   d. **Comunicação com Plan/Review:** Se o plano está em `docs/plans/YYYY-MM-DD-<task>.md`, o build actualiza checkboxes conforme avança. O review compara diff real vs. template (ver regra #12).
+    e. **Em caso de dúvida:** PARAR. O deepseek é rápido mas esquece passos. Melhor interromper e perguntar do que improvisar e criar drift técnico.
+
+15. **FEEDBACK DE DESEMPENHO POR SESSÃO (TECH LEAD EM FORMAÇÃO):** Para developers com conhecimento arquitectural sênior mas código júnior/pleno, em desenvolvimento como tech lead, ao sinal de "fim de sessão" (keywords: "vamos parar", "sessão fechada", "até amanhã", "feedback da sessão"), o agente DEVE:
+   a. **Detectar** o sinal de fim automaticamente.
+   b. **Calibrar tom** ao perfil T-shaped: vocabulário pleno em arquitectura, vocabulário explicado brevemente em código, foco principal em visão/leadership.
+   c. **Gerar feedback estruturado** em `docs/feedback/YYYY-MM-DD.md` (1 ficheiro por dia, múltiplas sessões). Cada sessão é uma secção "### Sessão N (HH:MM)". Múltiplas sessões no mesmo dia são acrescentadas ao ficheiro existente (append) com sumário do dia no fim.
+   d. **Estilo correctivo em código:** crítica + exemplo + racional (modo mentor, não condescendente). Raro: 95% do feedback é no-code.
+   e. **Apresentar imediatamente** ao utilizador (resumo inline curto, máximo 10 bullets).
+   f. **No fim do MVP** (trigger: utilizador diz "MVP concluído"), agregar todos os ficheiros de feedback em `docs/feedback/MVP-aggregated.md` com análise de evolução longitudinal.
+    g. **Ficheiro privado** por defeito (em `.gitignore`).
+   i. **Compromisso de commit separado:** O feedback é privado e não versionado. Usar `git commit --allow-empty -m "docs(feedback): YYYY-MM-DD"` APÓS o(s) commit(s) de trabalho, para rastreabilidade sem expôr conteúdo.
+
 ---
 
 ## 🧬 MODELO PREFERIDO
