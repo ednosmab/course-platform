@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input } from '@projeto/ui';
 import { CertificateService, AuthService } from '@projeto/core';
 import { Certificate, Course } from '@projeto/types';
+import { downloadCertificatePdf, openCertificateValidation, shareCertificate } from '../services/certificate-actions';
 
 type CertificatesProps = {
   onBack: () => void;
@@ -339,14 +340,14 @@ export function Certificates({ onBack }: CertificatesProps) {
                     </Text>
 
                     <XStack gap="$2">
-                      <Button flex={1} size="sm" onPress={() => {}}>
+                      <Button flex={1} size="sm" onPress={() => downloadCertificatePdf(cert.id)}>
                         <Icon name="Download" size={14} color="$white" />
                         <Text ml="$1" fontSize={12} fontWeight="600" color="$white">Baixar PDF</Text>
                       </Button>
-                      <Button size="sm" variant="ghost" border={1} borderColor="$border" onPress={() => {}}>
+                      <Button size="sm" variant="ghost" border={1} borderColor="$border" onPress={() => shareCertificate(cert.uuid_extranet, cert.course?.title)}>
                         <Icon name="Share2" size={14} color="$text" />
                       </Button>
-                      <Button size="sm" variant="ghost" border={1} borderColor="$border" onPress={() => {}}>
+                      <Button size="sm" variant="ghost" border={1} borderColor="$border" onPress={() => openCertificateValidation(cert.uuid_extranet)}>
                         <Icon name="ExternalLink" size={14} color="$text" />
                       </Button>
                     </XStack>
