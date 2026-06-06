@@ -9,19 +9,20 @@
 > **Fonte canónica:** `docs/BACKLOG.md` · 🚦 Push para origin BLOQUEADO (critério MVP indefinido).
 
 ## Status Atual
-**Sessão 2026-06-05 — Governança + ICP + P1 + isReady refactor, 12 commits em `feat/cert-editor-isolation`.**
+**Sessão 2026-06-05 — Governança + ICP + P1 + isReady + merge Caminho C concluído, 12 commits merged to develop.**
 - CONFID-01 (regra vinculante) + ICP genérico (B2B PaaS) + rename `uuid_bsgi` → `uuid_extranet` (código + 2 DB migrations)
 - P1-01/P1-02 Done · **BACKLOG sincronizado** (ICP-01/02, 5A, 5A.4/5A.5 → Done)
 - **`useMobileProgress` isReady refactor** (2 commits): elimina race condition estrutural no hook do student app
+- **Merge Caminho C** executado: `feat/cert-editor-isolation` → `develop` via `--no-ff` (merge commit `7bec099`); 211/211 tests + admin build verde em develop
 - Pre-merge CI descobriu regressão pré-existente em test mock (regra 7) — corrigida em par com o refactor
 
 ## 🎯 Tarefa em Execução
 Fila livre. Próximo P0: telas/links pendentes → P0 "MVP Coverage & Audit".
 
 ## 🌿 Estado de Branches (2026-06-05)
-- `feat/cert-editor-isolation` (HEAD `5edaa17`) — 5A + CONFID/ICP/P1 + isReady ✅, **pronta para merge Caminho C**
-- `develop` (`c166872`) — contém merge de `feat/dnd-e2e-coverage`
+- `develop` (HEAD `7bec099`) — contém merge de `feat/cert-editor-isolation` (29 commits)
 - `main` (`43ae09b`) — inalterada, push bloqueado
+- ~~`feat/cert-editor-isolation`~~ — **deletada** pós-merge (sem remote tracking)
 
 ## 🛠️ Alterações desta sessão (12 commits)
 - `603aa44` governance: loading profiles, dep graph, user_profile, agent roles
@@ -45,7 +46,7 @@ Fila livre. Próximo P0: telas/links pendentes → P0 "MVP Coverage & Audit".
 **Step 8 (tsc student):** bloqueado por bug pré-existente TS 5.9.3 + Expo (`RangeError: Maximum call stack size exceeded`); reproduzido com working tree stashed — não é regressão deste refactor.
 
 ## 📌 Próximos Passos
-- Telas/links pendentes → P0 "MVP Coverage & Audit" · Merge `feat/cert-editor-isolation` → `develop` (Caminho C, com autorização) · ADR upgrade Vitest 2.x (deferred P1-02) · ADR fix TS 5.9.3 student crash (regressão pré-existente descoberta nesta sessão) · Ritual fim de sessão (regra 10) se utilizador sinalizar
+- Telas/links pendentes → P0 "MVP Coverage & Audit" · ADR upgrade Vitest 2.x (deferred P1-02) · ADR fix TS 5.9.3 student crash (regressão pré-existente) · Ritual fim de sessão (regra 10) se utilizador sinalizar
 
 ## 🕹️ Documentos Carregados via MCP (último turno)
 AGENTS.md, FORBIDDEN_OPERATIONS.md, DESDO.md, Requisitos_plataforma.md, CONTEXT_HIERARCHY.md, CONTEXT_MAP.md, context_buffer.md, BACKLOG.md, ADR-019, plans/TEMPLATE.md, plans/2026-06-05-usemobileprogress-isready.md
