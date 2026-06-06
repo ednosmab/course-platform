@@ -1,27 +1,51 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
+## 📋 Quick Board (snapshot kanban — 2026-06-05)
+- 🔴 **Em curso:** nenhum — fila livre
+- 🟡 **Parado:** nenhum
+- ⏭️ **Próximo:** telas/links pendentes → P0 "MVP Coverage & Audit" (tiered)
+- ⏸️ **P1 paralelas:** todas resolvidas · 🎯 ICP genérico (B2B PaaS, sem nomes comerciais)
+
+> **Fonte canónica:** `docs/BACKLOG.md` · 🚦 Push para origin BLOQUEADO (critério MVP indefinido).
+
 ## Status Atual
-**Sessão de governança — regras de higiene de processo implementadas.**
-Documentos alterados: `AGENTS.md` (regras 9+10 + PASSO 4), `FORBIDDEN_OPERATIONS.md` (secção 8, DT-01..DT-04), `BACKLOG.md` (refactor completo), `session-template.md` (NOVO), `debt-policy.md` (NOVO). Reorganização: 5A.4 marcado como PRIORIDADE MÁXIMA; 5A.1-5A.3 movidos para sprint à parte com `[REVISIT: 2026-06-25]`.
+**Sessão 2026-06-05 — Governança + ICP + P1 + isReady refactor, 12 commits em `feat/cert-editor-isolation`.**
+- CONFID-01 (regra vinculante) + ICP genérico (B2B PaaS) + rename `uuid_bsgi` → `uuid_extranet` (código + 2 DB migrations)
+- P1-01/P1-02 Done · **BACKLOG sincronizado** (ICP-01/02, 5A, 5A.4/5A.5 → Done)
+- **`useMobileProgress` isReady refactor** (2 commits): elimina race condition estrutural no hook do student app
+- Pre-merge CI descobriu regressão pré-existente em test mock (regra 7) — corrigida em par com o refactor
 
 ## 🎯 Tarefa em Execução
-**P0 activo no BACKLOG:** Fase 5A — Isolamento do editor de certificado.
-**Próxima acção (5A.4 — PRIORIDADE MÁXIMA):** Fix do bug crítico `EditorCanvas.tsx:1282`. EditorCanvas renderiza bloco de certificado com `BlockContent` (lesson renderer) em vez de `CertificateBlockRenderer`. Acção: remover as 13 branches `isCertMode` em `EditorCanvas.tsx` (~2h).
-**Sub-itens 5A.1-5A.3 rebaixados** para sprint à parte [REVISIT: 2026-06-25] — refactor de palette/canvas/editor não é pré-requisito técnico do fix da linha 1282.
+Fila livre. Próximo P0: telas/links pendentes → P0 "MVP Coverage & Audit".
 
-## 🛠️ Alterações desta sessão
-- `docs/AGENTS.md`: + regra 9 (prioridade de entrada P0), + regra 10 (invariante de fim de sessão), PASSO 4 actualizado
-- `docs/FORBIDDEN_OPERATIONS.md`: + secção 8 (DT-01..DT-04), consequência Média actualizada
-- `docs/BACKLOG.md`: refactor completo — SLA por prio, severidade, owner, due, formato tabela P1/P2/P3, adiados com `[REVISIT]`. **Reorganizado:** 5A.4 marcado como PRIORIDADE MÁXIMA; 5A.1-5A.3 movidos para sprint à parte com `[REVISIT: 2026-06-25]`
-- `docs/session-template.md`: NOVO — template de fim de sessão (9 secções)
-- `docs/debt-policy.md`: NOVO — política de datação de dívida (5 regras operacionais + auditoria)
-- `docs/context_buffer.md`: podado de 258 → ~20 linhas (RAM activa conforme regra DT-02)
+## 🌿 Estado de Branches (2026-06-05)
+- `feat/cert-editor-isolation` (HEAD `5edaa17`) — 5A + CONFID/ICP/P1 + isReady ✅, **pronta para merge Caminho C**
+- `develop` (`c166872`) — contém merge de `feat/dnd-e2e-coverage`
+- `main` (`43ae09b`) — inalterada, push bloqueado
 
-## ✅ Validação
-Documentos markdown — sem alterações de código. `tsc`/`test`/`build` inalterados.
+## 🛠️ Alterações desta sessão (12 commits)
+- `603aa44` governance: loading profiles, dep graph, user_profile, agent roles
+- `d48f863` governance: CONFID-01 (confidencialidade comercial) — `FORBIDDEN_OPERATIONS.md` secção 9
+- `6b5f17d` governance: ICP genérico (B2B PaaS) + remove confidential refs
+- `dabef56` feat: rename `uuid_bsgi` → `uuid_extranet` (8 source files)
+- `29853af` chore(db): rename index `certificates_uuid_bsgi_key` → `certificates_uuid_extranet_key`
+- `c9bfe96` chore(backlog): P1-01 Done (build passing 3/3)
+- `1d69659` chore(backlog): P1-02 pausado (Vitest/Tamagui SSR compat)
+- `c4cb6ac` docs(adr): ADR-019 (test sanitizeHtml directamente, refactor P1-02)
+- `55ae1cb` fix(tests): refactor `BlockRenderer.test.tsx` → `.ts` testando `sanitizeHtml` (10 testes)
+- `8342262` chore(backlog): sync status (ICP-01/02, 5A → Done)
+- `84b4707` refactor(student): expose `isReady` from `useMobileProgress` hook (elimina race condition)
+- `5edaa17` test(student): cover `!userId` guard in `useMobileProgress` (2 novos testes)
+
+## 🛠️ Refatorações Aplicadas (regra 4)
+1. **`useMobileProgress` isReady flag** (commits `84b4707`, `5edaa17`): hook expõe `isReady` que vira `true` após o `useEffect` async de auth completar. Elimina a race condition onde `result.current.saveProgressMobile` ainda era a closure da primeira render (com `userId=null`). Adicionados 2 testes que cobrem o guard `if (!userId) return` em `saveProgressMobile` e `syncPending`. Plano arquivado em `docs/plans/2026-06-05-usemobileprogress-isready.md`.
+
+## ✅ Validações (regra 7 AGENTS.md)
+**211/211 ✅** (admin 88 + core 46 + renderer 13 + student 7 + ui 57) · `verify:ui` 5/5 ✅ · working tree clean
+**Step 8 (tsc student):** bloqueado por bug pré-existente TS 5.9.3 + Expo (`RangeError: Maximum call stack size exceeded`); reproduzido com working tree stashed — não é regressão deste refactor.
 
 ## 📌 Próximos Passos
-- **Iniciar 5A.4 (PRIORIDADE MÁXIMA)** — branch `feat/cert-editor-isolation`. Remover 13 branches `isCertMode` em `EditorCanvas.tsx` (~2h)
-- Após 5A.4, seguir para 5A.5 (EditorContext testes mínimos, 3 testes, ~45min)
-- Sprint à parte [REVISIT: 2026-06-25]: 5A.1 → 5A.2 → 5A.3 (refactor de palette/canvas/editor)
-- Executar ritual de fim de sessão conforme AGENTS.md regra 10 e `session-template.md`
+- Telas/links pendentes → P0 "MVP Coverage & Audit" · Merge `feat/cert-editor-isolation` → `develop` (Caminho C, com autorização) · ADR upgrade Vitest 2.x (deferred P1-02) · ADR fix TS 5.9.3 student crash (regressão pré-existente descoberta nesta sessão) · Ritual fim de sessão (regra 10) se utilizador sinalizar
+
+## 🕹️ Documentos Carregados via MCP (último turno)
+AGENTS.md, FORBIDDEN_OPERATIONS.md, DESDO.md, Requisitos_plataforma.md, CONTEXT_HIERARCHY.md, CONTEXT_MAP.md, context_buffer.md, BACKLOG.md, ADR-019, plans/TEMPLATE.md, plans/2026-06-05-usemobileprogress-isready.md

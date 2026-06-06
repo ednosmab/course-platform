@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     environmentMatchGlobs: [
-      ['src/BlockRenderer.test.tsx', 'jsdom'],
+      ['src/BlockRenderer.test.ts', 'jsdom'],
     ],
     setupFiles: ['./src/test-setup.ts'],
   },

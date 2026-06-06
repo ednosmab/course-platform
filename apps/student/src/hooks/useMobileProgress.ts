@@ -13,6 +13,7 @@ export function useMobileProgress() {
   const [isOffline, setIsOffline] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -20,6 +21,7 @@ export function useMobileProgress() {
       if (session?.id) {
         setUserId(session.id);
       }
+      setIsReady(true);
     };
     loadUser();
     updatePendingCount();
@@ -120,5 +122,6 @@ export function useMobileProgress() {
     pendingCount,
     saveProgressMobile,
     syncPending,
+    isReady,
   };
 }

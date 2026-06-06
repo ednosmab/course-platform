@@ -96,7 +96,7 @@ erDiagram
         uuid user_id FK
         uuid course_id FK
         uuid path_id FK
-        text uuid_bsgi
+        text uuid_extranet
         timestamp created_at
     }
 ```
@@ -180,7 +180,7 @@ Geração de certificados com validação extranet.
 * `user_id`: `uuid` (FK -> `profiles(id)` com delete cascade)
 * `course_id`: `uuid` (FK -> `courses(id)` com delete cascade, nullable)
 * `path_id`: `uuid` (FK -> `paths(id)` com delete cascade, nullable)
-* `uuid_bsgi`: `text` (Unique, código verificador oficial com a Extranet BSGI)
+* `uuid_extranet`: `text` (Unique, código verificador oficial emitido pela extranet de validação de certificados)
 * `created_at`: `timestamptz` (Default `now()`)
 
 ---

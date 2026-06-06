@@ -9,7 +9,7 @@
 - **Validação:** Todas as entradas de dados e contratos de API devem usar **Zod** para validação em tempo de execução.
 - **Registros de Arquitetura (ADRs):** Toda decisão arquitetural de alto impacto está documentada na pasta `docs/adrs/`. É OBRIGATÓRIO ler e respeitar os ADRs existentes. Caso uma nova biblioteca estrutural precise ser adicionada, você deve primeiro sugerir a criação de um novo arquivo ADR para aprovação do usuário.
 - **Plano de Desenvolvimento (SDP):** O cronograma detalhado de 8 semanas, o fluxo de trabalho da esteira MCP e a matriz de responsabilidades estão documentados em `docs/roadmaps/sdp.md`. É OBRIGATÓRIO ler e seguir este plano.
-- **Regras Vinculantes (FORBIDDEN_OPERATIONS):** O arquivo `docs/FORBIDDEN_OPERATIONS.md` contém **regras absolutas** que a IA DEVE ler e seguir em toda sessão. Qualquer violação deve ser reportada e corrigida imediatamente.
+- **Regras Vinculantes (FORBIDDEN_OPERATIONS):** O arquivo `docs/FORBIDDEN_OPERATIONS.md` contém **regras absolutas** que a IA DEVE ler e seguir em toda sessão. Qualquer violação deve ser reportada e corrigida imediatamente. **Inclui CONFID-01** (confidencialidade comercial — proibição de mencionar nomes de alvos, parceiros ou entidades do sector-alvo em qualquer artefato versionado).
 - **Configuração de Ambiente de Teste:** A flag `E2E_BYPASS_AUTH` é EXCLUSIVA do `playwright.config.ts` (sete via `webServer.env`). É TERMINANTEMENTE PROIBIDO propagá-la para `.env*`, `next.config.*`, `vercel.json`, `wrangler.toml`, `netlify.toml` ou qualquer config de deploy. O script `scripts/check-test-env-vars.sh` (integrado em `pnpm run verify` e nos workflows CI/CD) valida este contrato. Ver `docs/skills/e2e_testing.md` e regra ENV-01 em FORBIDDEN_OPERATIONS.
 - **Diretrizes de Engenharia (DESDO):** O arquivo `docs/DESDO.md` consolida as regras de governança, mitigações operacionais e padrões arquiteturais (SOLID, TDD, segurança, documentação) que devem ser observados em toda geração de código ou alteração de estado no projeto.
 
@@ -30,6 +30,55 @@
 ## 📖 CÓDIGO DECLARATIVO E LEGÍVEL (REGRA ABSOLUTA)
 
 Escreva códigos extremamente declarativos, simples e fáceis de ler. Evite otimizações prematuras ou sintaxes excessivamente complexas. Prefira legibilidade à concisão. Código deve ser autoexplicativo para um desenvolvedor pleno — se precisar de um comentário para explicar o fluxo, o código provavelmente está complexo demais.
+
+---
+
+## 🪜 Loading Profiles (Otimização de Tokens)
+
+O AGENTS.md é carregado via MCP em toda sessão. Para poupar tokens sem perder cobertura, aplicam-se os seguintes perfis:
+
+| Perfil | Regras carregadas | Quando usar | Tokens aprox. |
+|---|---|---|---|
+| `minimal` | #1-9 (workflow + git), FORBIDDEN_OPERATIONS, DESDO | Tarefas triviais (typo, rename, comment-only) | ~3-4k |
+| `lite` (default) | `minimal` + #10-11 (sessão) | Implementação de feature pequena, bug fix isolado | ~5-6k |
+| `full` | `lite` + #12-14 (tríade plan/build/review) + #15 (feedback) | Refactor, migration, multi-camada, adição de nova lib | ~8-10k |
+
+**Override:** o campo `loading_profile` em `opencode.json` força o perfil independentemente do default.
+
+---
+
+## 🕸️ Grafo de Dependências das Regras
+
+As regras não são todas do mesmo nível. Existem três camadas de dependência:
+
+```
+       ┌──────────────────────────┐
+       │  Camada 1: Workflow (1-11) │  ← sempre carregada
+       │  (git, sessão, TDD)         │
+       └────────────┬───────────────┘
+                    │ activa o modo activo
+                    ▼
+       ┌──────────────────────────┐
+       │  Camada 2: Mode (12-14)   │  ← carregada se loading_profile=full
+       │  review → plan → build    │
+       └────────────┬───────────────┘
+                    │ fecha o ciclo
+                    ▼
+       ┌──────────────────────────┐
+       │  Camada 3: Reflection (15)│  ← carregada só em fim-de-sessão
+       │  feedback de desempenho  │
+       └──────────────────────────┘
+```
+
+**Cadeia operacional:**
+1. **Review** (#12) valida que um plano anterior foi executado conforme spec.
+2. **Plan** (#13) gera o plano atómico que o **Build** (#14) vai executar.
+3. **Build** (#14) executa o plano literal e atalha o ciclo em direção ao próximo Review.
+
+**Regras com dependência implícita:**
+- #14 (build) pressupõe que #13 (plan) já foi cumprido — não executar build sem plan aprovado.
+- #13 (plan) pressupõe que #12 (review) já fechou o ciclo anterior — não planear sem antes auditar o que ficou pendente.
+- #15 (feedback) é o único disparado por sinal externo (keywords de fim-de-sessão), não por estado do código.
 
 ---
 
@@ -54,12 +103,89 @@ Escreva códigos extremamente declarativos, simples e fáceis de ler. Evite otim
 9. **PRIORIDADE DE ENTRADA DE SESSÃO:** Ao iniciar qualquer nova sessão, a PRIMEIRA tarefa a ser atacada é o item P0 activo no `docs/BACKLOG.md`. Itens P1/P2 só podem ser iniciados após (a) concluir o P0, ou (b) registar adiamento datado (ver DT-01 em FORBIDDEN_OPERATIONS). A IA NÃO DEVE iniciar tarefa de prioridade inferior sem antes mostrar a justificação de adiamento.
 
 10. **INVARIANTE DE FIM DE SESSÃO:** Nenhuma sessão pode ser declarada "concluída" sem antes executar o ritual de fim de sessão: working tree limpo (zero modificações + zero untracked não relacionados à tarefa), buffer podado (≤ 50 linhas activas), backlog actualizado, testes verdes (`tsc --noEmit`, `pnpm run test`, `pnpm run build`). Ver template detalhado em `docs/session-template.md` e política DT-02 em FORBIDDEN_OPERATIONS.
+11. **QUICK BOARD DE AVISO (LEMBRETES PERMANENTES):** Ao iniciar QUALQUER sessão, a IA DEVE apresentar ao usuário o **Quick Board** do `docs/context_buffer.md` (secção `## 📋 Quick Board`) antes da primeira resposta operacional. O Quick Board lista: tarefa em curso, parado, próximo, dívidas P1 com due date. Este lembrete NÃO substitui a leitura completa dos P0 — é apenas um aviso de contexto. A omissão do Quick Board na primeira resposta é violação desta regra.
+
+12. **VALIDAÇÃO DE PLANO EM MODO REVIEW:** Quando o agente opera em modo `review` (definido em `opencode.json` no agent `review`), DEVE SEMPRE validar que o trabalho executado corresponde ao plano aprovado pelo usuário. Protocolo obrigatório:
+   a. **Tabela de conformidade:** Listar cada step do plano (1, 2, 3, ...) com estado (✅/⚠️/❌) e evidência objetiva (diff, linha, contagem, output de comando).
+   b. **Métricas vs. plano:** Comparar números declarados (linhas removidas, testes adicionados, ficheiros tocados) com números reais via `git diff --stat`, `wc -l`, `pnpm test`.
+   c. **Desvios explícitos:** Sinalizar qualquer step não executado, item perdido na poda, decisão tomada sem autorização (especialmente G-01).
+   d. **Planos arquivados:** Se o plano está em `docs/plans/YYYY-MM-DD-<task>.md`, comparar os checkboxes preenchidos pelo build contra o `git diff` real e a sequência de commits.
+   e. **Acções de follow-up:** Listar itens pendentes, reversões possíveis, próximos passos. **Output é vinculante** — bloqueia avanço se não for entregue.
+
+13. **PLANO FRAGMENTADO EM MODO PLAN:** Quando o agente opera em modo `plan` (definido em `opencode.json` no agent `plan`), DEVE SEMPRE produzir planos atómicos e fragmentados, optimizados para o executor `deepseek-v4-flash-free` (modelo rápido, propenso a esquecimento). Protocolo obrigatório:
+   a. **Steps atómicos:** Cada step = 1 acção primária (1 Edit, 1 sed, 1 write) + 1 verificação explícita (grep, wc, cat). Nunca batchar múltiplas acções num único step.
+   b. **Texto exacto:** Usar `oldString`/`newString` literais (não paráfrases) com hashes, paths, e valores numéricos. Incluir `grep` de verificação após cada step.
+   c. **Salvaguardas S1..S6:** Listar apólices anti-esquecimento (não fundir, não tocar código não-p laneado, não avançar com falha, G-01 explícito, não duplicar, não tocar docs não-p laneado).
+   d. **Pontos de pausa G-01:** Marcar `**PARAR e pedir autorização**` antes de qualquer `git commit` ou operação irreversível. Comandos seguintes ficam em standby.
+   e. **Path canónico:** Planos com ≥ 5 steps ou ≥ 2 ficheiros afectados são arquivados em `docs/plans/YYYY-MM-DD-<slug>.md` usando o template em `docs/plans/TEMPLATE.md`. O ficheiro contém checkboxes que o build vai preenchendo.
+   f. **Métricas-alvo:** Declarar ranges (ex: "target 38-48 linhas, tolerância ±5"). Output pós-execução tem de bater o range; se bater, OK; se não, **reportar desvio**.
+
+14. **EXECUÇÃO LITERAL EM MODO BUILD:** Quando o agente opera em modo `build` (definido em `opencode.json` no agent `build`, executado por `deepseek-v4-flash-free`), DEVE executar o plano aprovado de forma **literal e atómica**, sem decisões autónomas. Protocolo obrigatório:
+   a. **Sem improviso:** NÃO refactorar, NÃO adicionar JSDoc, NÃO renomear, NÃO corrigir bugs adjacentes, NÃO adicionar testes extra. Executa APENAS o que o `oldString`/`newString` do step diz.
+   b. **Detecção de desvio:** Antes de cada Edit/sed, confirma: "este step está dentro do que planeei?" Se o step exigir uma mudança não-p laneada, **PARA** e reporta ao utilizador. Nunca inventar conteúdo.
+   c. **Excepções mínimas permitidas:** (1) Ajustes triviais para o build passar (import em falta, tipo errado, formato de path) — desde que sejam < 5 linhas e não alterem semântica. (2) Registar achados fora-do-plano no `docs/context_buffer.md` secção "Refactorings Aplicadas" para revisão posterior.
+   d. **Comunicação com Plan/Review:** Se o plano está em `docs/plans/YYYY-MM-DD-<task>.md`, o build actualiza checkboxes conforme avança. O review compara diff real vs. template (ver regra #12).
+    e. **Em caso de dúvida:** PARAR. O deepseek é rápido mas esquece passos. Melhor interromper e perguntar do que improvisar e criar drift técnico.
+
+15. **FEEDBACK DE DESEMPENHO POR SESSÃO (TECH LEAD EM FORMAÇÃO):** Para developers com conhecimento arquitectural sênior mas código júnior/pleno, em desenvolvimento como tech lead, ao sinal de "fim de sessão" (keywords: "vamos parar", "sessão fechada", "até amanhã", "feedback da sessão"), o agente DEVE:
+   a. **Detectar** o sinal de fim automaticamente.
+   b. **Calibrar tom** ao perfil T-shaped: vocabulário pleno em arquitectura, vocabulário explicado brevemente em código, foco principal em visão/leadership.
+   c. **Gerar feedback estruturado** em `docs/feedback/YYYY-MM-DD.md` (1 ficheiro por dia, múltiplas sessões). Cada sessão é uma secção "### Sessão N (HH:MM)". Múltiplas sessões no mesmo dia são acrescentadas ao ficheiro existente (append) com sumário do dia no fim.
+   d. **Estilo correctivo em código:** crítica + exemplo + racional (modo mentor, não condescendente). Raro: 95% do feedback é no-code.
+   e. **Apresentar imediatamente** ao utilizador (resumo inline curto, máximo 10 bullets).
+   f. **No fim do MVP** (trigger: utilizador diz "MVP concluído"), agregar todos os ficheiros de feedback em `docs/feedback/MVP-aggregated.md` com análise de evolução longitudinal.
+    g. **Ficheiro privado** por defeito (em `.gitignore`).
+   i. **Compromisso de commit separado:** O feedback é privado e não versionado. Usar `git commit --allow-empty -m "docs(feedback): YYYY-MM-DD"` APÓS o(s) commit(s) de trabalho, para rastreabilidade sem expôr conteúdo.
 
 ---
 
 ## 🧬 MODELO PREFERIDO
-- **Modelo:** `deepseek-v4-flash-free` (ID: `opencode/deepseek-v4-flash-free`)
+- **Modelo:** `minimax-m3-free` (ID: `opencode/minimax-m3-free`)
 - **Status:** Modelo que melhor atendeu o projeto. Deve ser usado em todas as sessões.
+
+---
+
+## 🌿 POLÍTICA DE BRANCHES E PIPELINE DE MERGE (OBRIGATÓRIO)
+
+### Branches Canónicas
+- **`main`** — código de produção. Synced com `origin/main`. Recebe apenas merges de `develop` via release.
+- **`develop`** — integração contínua. **Toda** branch de feature deve mergear aqui. Deve estar sempre verde (testes 100%, build funcional).
+- **`feat/<escopo>`** — branches de feature/refactor. Criadas a partir de `develop`, mergeadas de volta a `develop` via `--no-ff` quando o escopo está completo.
+- **`fix/<escopo>`** — branches de correção pontual. Mesmo fluxo das `feat/*`.
+
+### Branches de Refactor de Longa Duração
+Branches de refactor estrutural (ex: `feat/dsv2-reform`) podem viver semanas/meses e absorver múltiplos itens do BACKLOG. A política é:
+
+1. **Nome da branch deve referenciar o roadmap** (ex: `feat/dsv2-reform` → `docs/roadmaps/design-system-reforma.md`).
+2. **A branch de refactor deve ser recriada quando necessário** — não preservar branches órfãs com 0 commits únicos vs `develop` (risco zero de perda, ver regra DT-02).
+3. **Se o refactor for pausado, registrar data `[REVISIT: YYYY-MM-DD]`** no BACKLOG e atualizar o status da branch no `docs/context_buffer.md` (regra DT-01).
+4. **Antes de recriar, listar no buffer** os commits do branch antigo e confirmar via `git log <branch> --not develop` se algum é único.
+
+### Pipeline de Merge de Feature → Develop (Caminho C)
+Quando uma branch de feature (`feat/X`) está pronta para integrar `develop`, seguir **rigorosamente** o runbook em `docs/runbooks/merge-dnd-to-develop.md`. Resumo dos passos:
+
+1. **Pré-condições:** working tree limpo, testes verdes, `docs/context_buffer.md` podado.
+2. **CI da branch:** `pnpm run test` + `pnpm run lint` + `pnpm run build` (se aplicável).
+3. **Sincronizar `feat/X` com `develop`:** `git fetch && git checkout feat/X && git merge --no-ff develop` (resolve conflitos antecipadamente).
+4. **Merge para `develop`:** `git checkout develop && git merge --no-ff feat/X -m "merge: <descrição concisa>"`.
+5. **Pós-merge:** rodar suite completa de CI em `develop`, atualizar `context_buffer.md`, deletar branch local com `git branch -d feat/X` (apenas se sem remote).
+6. **Rollback:** se CI pós-merge falhar, `git revert -m 1 <merge-sha>` em `develop`, documentar incidente.
+
+> 📖 **Referência completa:** `docs/runbooks/merge-dnd-to-develop.md` — runbook validado em 2026-06-04 com merge real de `feat/dnd-e2e-coverage` → `develop`.
+
+### Branch Estratégica de Refactor — `feat/dsv2-reform`
+- **Estado (2026-06-04):** Branch original deletada. Conteúdo já em `develop` (commits 8c26b04, 5c2446d, ab9c441, bf24316, 288c90c).
+- **Decisão:** Recriar a branch `feat/dsv2-reform` quando iniciar a próxima fase de refactor do Design System v2. **Não criar branch nova** com nome similar — usar a convenção `feat/dsv2-reform`.
+- **Roadmap de referência:** `docs/roadmaps/design-system-reforma.md` (6 fases, 38 tarefas). Token governance em `docs/layers/ui/token-governance.md`.
+- **Comando de recriação (quando aplicável):**
+  ```bash
+  git checkout develop
+  git checkout -b feat/dsv2-reform
+  # confirmar com: git log --oneline | head -1
+  ```
+- **Bloqueio:** Só recriar quando houver item P0/P1 de refactor DSv2 no BACKLOG. Não criar preemptivamente.
+
+> ⚠️ **Convenção:** Todas as refatorações de Design System (DSv2) — tokens, componentes, migração de apps para `@projeto/ui` — DEVEM ser feitas em `feat/dsv2-reform`, nunca em branches ad-hoc. Isso preserva a história de refactor e facilita rollbacks.
 
 ## 🤖 AGENTE ÚNICO — ARQUITETO SÊNIOR FULL-STACK
 

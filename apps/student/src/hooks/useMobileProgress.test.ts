@@ -15,8 +15,12 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
 
 const mockSaveProgressDebounced = vi.fn();
 const mockSaveProgressImmediate = vi.fn();
+const mockGetSession = vi.fn();
 
 vi.mock('@projeto/core', () => ({
+  AuthService: {
+    getSession: (...args: any[]) => mockGetSession(...args),
+  },
   ProgressService: {
     saveProgressDebounced: (...args: any[]) => mockSaveProgressDebounced(...args),
     saveProgressImmediate: (...args: any[]) => mockSaveProgressImmediate(...args),
@@ -31,6 +35,7 @@ describe('useMobileProgress', () => {
     mockGetItem.mockResolvedValue(null);
     mockSetItem.mockResolvedValue(undefined);
     mockRemoveItem.mockResolvedValue(undefined);
+    mockGetSession.mockResolvedValue({ id: 'test-user' });
   });
 
   it('should start with zero pending items', async () => {
@@ -63,6 +68,9 @@ describe('useMobileProgress', () => {
 
   it('should call ProgressService when online', async () => {
     const { result } = renderHook(() => useMobileProgress());
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true);
+    });
     await act(async () => {
       await result.current.saveProgressMobile('lesson-1', 50, 100);
     });
@@ -78,6 +86,9 @@ describe('useMobileProgress', () => {
     );
 
     const { result } = renderHook(() => useMobileProgress());
+    await waitFor(() => {
+      expect(result.current.pendingCount).toBe(1);
+    });
 
     await act(async () => {
       await result.current.syncPending();
@@ -85,5 +96,42 @@ describe('useMobileProgress', () => {
 
     expect(mockSaveProgressImmediate).toHaveBeenCalledTimes(1);
     expect(mockRemoveItem).toHaveBeenCalledWith('outbox_progress');
+  });
+
+  it('should skip saveProgressMobile when not authenticated', async () => {
+    mockGetSession.mockResolvedValue(null);
+
+    const { result } = renderHook(() => useMobileProgress());
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true);
+    });
+
+    await act(async () => {
+      await result.current.saveProgressMobile('lesson-1', 50, 100);
+    });
+
+    expect(mockSaveProgressDebounced).not.toHaveBeenCalled();
+    expect(mockSetItem).not.toHaveBeenCalled();
+  });
+
+  it('should skip syncPending when not authenticated', async () => {
+    mockGetSession.mockResolvedValue(null);
+    mockGetItem.mockResolvedValue(
+      JSON.stringify([
+        { lessonId: 'l1', progressSec: 50, durationSec: 100, updatedAt: new Date().toISOString() },
+      ]),
+    );
+
+    const { result } = renderHook(() => useMobileProgress());
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true);
+    });
+
+    await act(async () => {
+      await result.current.syncPending();
+    });
+
+    expect(mockSaveProgressImmediate).not.toHaveBeenCalled();
+    expect(mockRemoveItem).not.toHaveBeenCalled();
   });
 });

@@ -100,7 +100,7 @@ create table public.student_progress (
     unique (user_id, lesson_id)
 );
 
--- Tabela de Certificados (Integração oficial BSGI)
+-- Tabela de Certificados (Integração oficial de validação externa)
 create table public.certificates (
     id uuid primary key default gen_random_uuid(),
     user_id uuid not null references public.profiles(id) on delete cascade,

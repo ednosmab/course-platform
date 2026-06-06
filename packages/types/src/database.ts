@@ -126,7 +126,7 @@ export const CertificateSchema = z.object({
   user_id: z.string().uuid(),
   course_id: z.string().uuid().nullable().optional(),
   path_id: z.string().uuid().nullable().optional(),
-  uuid_bsgi: z.string().min(1),
+  uuid_extranet: z.string().min(1),
   created_at: z.string().or(z.date()),
 }).strict();
 
