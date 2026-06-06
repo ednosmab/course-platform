@@ -25,6 +25,38 @@
 | **Criado** | 2026-06-04 |
 | **Descrição** | Push para `origin` está bloqueado até que o critério objectivo de "MVP concluído" seja definido. Decisão do usuário (2026-06-04): "Definir mais tarde". Candidatos: P0 vazio + build verde + testes 100% + lint 0 erros + dívidas P1 resolvidas. Detalhes em `docs/runbooks/push-strategy.md`. |
 
+### 🧩 Button-Screen Linking — itens que precisam de spec (deferred 2026-06-06)
+
+| Campo | Valor |
+|---|---|
+| **Status** | Backlog |
+| **Severidade** | 🟠 Alto |
+| **Owner** | unassigned |
+| **Due** | Antes do MVP |
+| **Criado** | 2026-06-06 |
+| **Label** | `needs-spec` |
+| **Branch relacionada** | `feat/button-screen-linking` (3 commits implementados) |
+| **Descrição** | Auditoria de fluxos (2026-06-06) identificou 4 itens implementáveis + 7 itens que dependem de decisões de produto/arquitectura. Os 4 implementáveis (service `certificate-actions`, wiring no `Certificates.tsx`, forwarding de `lessonId` como search param, ADR-020) foram entregues em 3 commits (`1067efb`, `daad3d3`, `c884961`). Os 7 itens abaixo foram adiados para o próximo sprint até que cada spec seja escrita. |
+
+**Itens `needs-spec` (5 P0 + 2 P1):**
+
+| # | Item | Prioridade | Spec necessária | Origem |
+|---|---|---|---|---|
+| 1 | Endpoint real de download de PDF (substituir placeholder `api.example.com`) | P0 | Decidir: Supabase Edge Function vs API route Next.js vs Bunny Stream signed URL | Plan §#1, G-01 #1 |
+| 2 | URL de validação externa de certificados (substituir placeholder `validacao.example.com`) | P0 | Contrato com extranet parceira (RFC, auth scheme, formato de UUID) | Plan §#1, G-01 #1 |
+| 3 | UX do "Voltar ao curso" — comportamento contextual após lição | P0 | Decidir: volta para `CourseLessons` com scroll para lição actual vs dashboard | Plan §#6, G-01 #1 |
+| 4 | Semântica de "Continuar de onde parei" (milestone tracking) | P0 | Definir: % de progresso por aula vs módulo vs curso; qual é o ponto de "retomada" | Plan §#7, G-01 #1 |
+| 5 | Política de storage para upload de imagens de certificado (PWA admin) | P0 | Decidir: bucket partilhado vs dedicado, RLS policies, max size, allowed MIME types | Plan §#A, G-01 #1 |
+| 6 | Error fallback quando endpoint de PDF está down | P1 | Decidir: retry com backoff vs mensagem amigável + contact support | Plan §#1 follow-up |
+| 7 | Telemetria de "compartilhar certificado" (analytics) | P1 | Decidir: qual evento, quais properties, integração com qual provider (PostHog? Plausible?) | Plan §#share follow-up |
+
+**Commits da branch `feat/button-screen-linking` (3 entregues):**
+- `1067efb` — `feat(student): add certificate-actions service with PDF/share/validate` (3 ficheiros, 5 testes)
+- `daad3d3` — `feat(student): wire certificate actions in Certificates screen` (1 ficheiro, +4/-3)
+- `c884961` — `feat(student): forward lessonId as search param to player route` (3 source files + ADR-020, 60 linhas)
+
+**Próximo passo:** cada item `needs-spec` deve ser promovido a issue dedicado com secção "Decisão pendente" antes de entrar em sprint. Owner: alguém com acesso a product/architecture.
+
 ### 🔒 CONFID-01 — Regra vinculante de confidencialidade comercial
 
 | Campo | Valor |
