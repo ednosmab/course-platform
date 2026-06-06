@@ -97,4 +97,41 @@ describe('useMobileProgress', () => {
     expect(mockSaveProgressImmediate).toHaveBeenCalledTimes(1);
     expect(mockRemoveItem).toHaveBeenCalledWith('outbox_progress');
   });
+
+  it('should skip saveProgressMobile when not authenticated', async () => {
+    mockGetSession.mockResolvedValue(null);
+
+    const { result } = renderHook(() => useMobileProgress());
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true);
+    });
+
+    await act(async () => {
+      await result.current.saveProgressMobile('lesson-1', 50, 100);
+    });
+
+    expect(mockSaveProgressDebounced).not.toHaveBeenCalled();
+    expect(mockSetItem).not.toHaveBeenCalled();
+  });
+
+  it('should skip syncPending when not authenticated', async () => {
+    mockGetSession.mockResolvedValue(null);
+    mockGetItem.mockResolvedValue(
+      JSON.stringify([
+        { lessonId: 'l1', progressSec: 50, durationSec: 100, updatedAt: new Date().toISOString() },
+      ]),
+    );
+
+    const { result } = renderHook(() => useMobileProgress());
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true);
+    });
+
+    await act(async () => {
+      await result.current.syncPending();
+    });
+
+    expect(mockSaveProgressImmediate).not.toHaveBeenCalled();
+    expect(mockRemoveItem).not.toHaveBeenCalled();
+  });
 });
