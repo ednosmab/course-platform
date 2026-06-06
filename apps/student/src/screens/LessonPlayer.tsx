@@ -7,13 +7,14 @@ import { CourseService, LessonService } from '@projeto/core';
 
 type LessonPlayerProps = {
   courseId?: string | null;
+  lessonId?: string | null;
   onBack: () => void;
 };
 
-export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
+export function LessonPlayer({ courseId, lessonId, onBack }: LessonPlayerProps) {
   const { saveProgressMobile } = useMobileProgress();
   const [lessons, setLessons] = useState<any[]>([]);
-  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const [activeLessonId, setActiveLessonId] = useState<string | null>(lessonId ?? null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
