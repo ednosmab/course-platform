@@ -12,6 +12,7 @@ import {
   Spinner,
   ProgressBar,
   Input,
+  color,
   lineHeightHeading,
   lineHeightCardTitle,
 } from '@projeto/ui';
@@ -22,7 +23,7 @@ import { CourseService, StorageService, getSupabaseClient } from '@projeto/core'
 import type { Course } from '@projeto/types';
 
 // Gradiente padrão da marca do FLEXED Studio
-const BRAND_GRADIENT = 'linear-gradient(135deg, #10B981, #059669)';
+const BRAND_GRADIENT = `linear-gradient(135deg, ${color.cwGradientFrom}, ${color.cwGradientTo})`;
 
 // Mapeamento de categorias e seus ícones correspondentes
 const CATEGORY_ICONS: Record<string, string> = {
@@ -438,12 +439,11 @@ export default function CursosPage() {
                                 cursor="pointer"
                                 interactive
                                 borderWidth={1}
-                                borderColor="$border"
+                                borderColor={isPublished ? 'rgba(16, 185, 129, 0.35)' : '$border'}
                                 style={
                                   isPublished
                                     ? {
-                                        borderLeft: '4px solid #10B981',
-                                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.05)',
+                                        boxShadow: '0 4px 16px rgba(16, 185, 129, 0.04)',
                                       }
                                     : undefined
                                 }
@@ -455,7 +455,7 @@ export default function CursosPage() {
                                   style={{
                                     background: c.thumbnail_url
                                       ? `url(${c.thumbnail_url}) center/cover no-repeat`
-                                      : 'linear-gradient(135deg, #10B981, #059669)',
+                                      : BRAND_GRADIENT,
                                   }}
                                 >
                                   <YStack

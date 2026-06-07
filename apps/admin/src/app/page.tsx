@@ -267,8 +267,7 @@ export default function Dashboard() {
             backgroundColor="$card"
             p={32}
             style={{
-              borderLeft: '4px solid #10B981',
-              boxShadow: '0 4px 20px rgba(16, 185, 129, 0.04)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',
             }}
           >
             <div style={{ position: 'absolute', right: -64, top: -64, width: 256, height: 256, borderRadius: '50%', opacity: 0.6, filter: 'blur(64px)', background: BRAND_GRADIENT }} />
@@ -316,9 +315,10 @@ export default function Dashboard() {
                   p={16}
                   bg="$background"
                   br="$4"
-                  hoverStyle={{ scale: 1.01 }}
+                  borderWidth={1}
+                  borderColor="$border"
+                  hoverStyle={{ scale: 1.01, borderColor: '$primary' }}
                   style={{
-                    borderLeft: `3px solid ${idx === 0 || idx === 2 ? '#10B981' : '#DEE1EB'}`,
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.02)',
                     transition: 'all 0.2s ease',
                   }}
@@ -374,10 +374,11 @@ export default function Dashboard() {
                         br="$4"
                         cursor="pointer"
                         interactive
+                        borderWidth={1}
+                        borderColor={c.is_published ? 'rgba(16, 185, 129, 0.35)' : '$border'}
                         style={
                           c.is_published
                             ? {
-                                borderLeft: '4px solid #10B981',
                                 boxShadow: '0 4px 12px rgba(16, 185, 129, 0.05)',
                               }
                             : undefined
@@ -389,7 +390,7 @@ export default function Dashboard() {
                           style={{
                             background: c.thumbnail_url
                               ? `url(${c.thumbnail_url}) center/cover no-repeat`
-                              : 'linear-gradient(135deg, #10B981, #059669)',
+                              : BRAND_GRADIENT,
                           }}
                         >
                           <YStack

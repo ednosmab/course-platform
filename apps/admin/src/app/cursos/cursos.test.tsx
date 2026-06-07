@@ -83,6 +83,10 @@ vi.mock('@projeto/ui', () => {
     },
     lineHeightHeading: '1.2',
     lineHeightCardTitle: '1.4',
+    color: {
+      cwGradientFrom: '#3B82F6',
+      cwGradientTo: '#7C3AED',
+    },
   };
 });
 
