@@ -143,6 +143,16 @@ export default function Dashboard() {
   return (
     <Theme name="cloudWhite">
       <YStack bg="$background" minHeight="100vh">
+        <style>{`
+          @keyframes greenPulse {
+            0% { transform: scale(0.92); opacity: 0.6; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { transform: scale(1.12); opacity: 1; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.92); opacity: 0.6; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+          }
+          .pulse-dot {
+            animation: greenPulse 1.8s infinite ease-in-out;
+          }
+        `}</style>
         {/* Header */}
         <XStack
           position="sticky" top={0} zIndex={40}
@@ -248,7 +258,19 @@ export default function Dashboard() {
 
         <main style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 24px', width: '100%' }}>
           {/* Hero */}
-          <YStack position="relative" overflow="hidden" borderRadius={16} borderWidth={1} borderColor="$border" backgroundColor="$card" p={32}>
+          <YStack
+            position="relative"
+            overflow="hidden"
+            borderRadius={16}
+            borderWidth={1}
+            borderColor="$border"
+            backgroundColor="$card"
+            p={32}
+            style={{
+              borderLeft: '4px solid #10B981',
+              boxShadow: '0 4px 20px rgba(16, 185, 129, 0.04)',
+            }}
+          >
             <div style={{ position: 'absolute', right: -64, top: -64, width: 256, height: 256, borderRadius: '50%', opacity: 0.6, filter: 'blur(64px)', background: BRAND_GRADIENT }} />
             <YStack position="relative" gap={24} $md={{ fd: 'row', ai: 'flex-end', jc: 'space-between' }}>
               <YStack maxWidth={576}>
@@ -286,8 +308,21 @@ export default function Dashboard() {
             </YStack>
 
             <XStack position="relative" mt={32} gap={12} flexWrap="wrap">
-              {dashboardStats.map((stat) => (
-                <Card key={stat.label} flex={1} minWidth={220} p={16} bg="$background" br="$4">
+              {dashboardStats.map((stat, idx) => (
+                <Card
+                  key={stat.label}
+                  flex={1}
+                  minWidth={220}
+                  p={16}
+                  bg="$background"
+                  br="$4"
+                  hoverStyle={{ scale: 1.01 }}
+                  style={{
+                    borderLeft: `3px solid ${idx === 0 || idx === 2 ? '#10B981' : '#DEE1EB'}`,
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.02)',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
                   <XStack ai="center" jc="space-between">
                     <Icon name={stat.icon} size={16} color="$textMuted" />
                     <Text fontSize={11} color={stat.value === '--' ? '$textMuted' : '$success'}>{stat.trend}</Text>
@@ -333,14 +368,72 @@ export default function Dashboard() {
                   return (
                   <YStack key={c.id} flex={1} minWidth={320} maxWidth="calc(33.33% - 12px)">
                     <Link href={`/configuracoes/${c.id}`} style={{ textDecoration: 'none' }}>
-                      <Card p={0} overflow="hidden" br="$4" cursor="pointer" interactive>
-                        <YStack height={128} position="relative" style={{ background: c.thumbnail_url ? `url(${c.thumbnail_url}) center/cover no-repeat` : 'linear-gradient(135deg, #3B82F6, #7C3AED)' }}>
-                          <YStack position="absolute" inset={0} opacity={c.thumbnail_url ? 0 : 0.3} style={{ backgroundImage: c.thumbnail_url ? undefined : 'linear-gradient(to right, rgba(204, 208, 220, 0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(204, 208, 220, 0.35) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-                          {/* Grid pattern overlay (matches design bg-grid) — only visible when no thumbnail */}
+                      <Card
+                        p={0}
+                        overflow="hidden"
+                        br="$4"
+                        cursor="pointer"
+                        interactive
+                        style={
+                          c.is_published
+                            ? {
+                                borderLeft: '4px solid #10B981',
+                                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.05)',
+                              }
+                            : undefined
+                        }
+                      >
+                        <YStack
+                          height={128}
+                          position="relative"
+                          style={{
+                            background: c.thumbnail_url
+                              ? `url(${c.thumbnail_url}) center/cover no-repeat`
+                              : 'linear-gradient(135deg, #10B981, #059669)',
+                          }}
+                        >
+                          <YStack
+                            position="absolute"
+                            inset={0}
+                            opacity={c.thumbnail_url ? 0 : 0.3}
+                            style={{
+                              backgroundImage: c.thumbnail_url
+                                ? undefined
+                                : 'linear-gradient(to right, rgba(255, 255, 255, 0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 1px, transparent 1px)',
+                              backgroundSize: '24px 24px',
+                            }}
+                          />
 
                           <XStack position="absolute" left={16} top={16}>
-                            <XStack borderRadius={9999} px={8} py={2} style={{ backdropFilter: 'blur(8px)', backgroundColor: c.is_published ? '$successSurface' : '$surface' }}>
-                              <Text fontSize={11} fontWeight="500" color={c.is_published ? '$success' : '$text'}>{c.is_published ? 'Publicado' : 'Rascunho'}</Text>
+                            <XStack
+                              borderRadius={9999}
+                              px={10}
+                              py={4}
+                              ai="center"
+                              gap={6}
+                              style={{
+                                backdropFilter: 'blur(8px)',
+                                backgroundColor: c.is_published
+                                  ? 'rgba(16, 185, 129, 0.9)'
+                                  : 'rgba(55, 65, 81, 0.8)',
+                              }}
+                            >
+                              {c.is_published && (
+                                <XStack
+                                  w={6}
+                                  h={6}
+                                  borderRadius={3}
+                                  bg="#FFFFFF"
+                                  className="pulse-dot"
+                                  style={{
+                                    backgroundColor: '#FFFFFF',
+                                    borderRadius: '50%',
+                                  }}
+                                />
+                              )}
+                              <Text fontSize={11} fontWeight="700" color="#FFFFFF">
+                                {c.is_published ? 'Em Andamento' : 'Em Preparação'}
+                              </Text>
                             </XStack>
                           </XStack>
                         </YStack>
