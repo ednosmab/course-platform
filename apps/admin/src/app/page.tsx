@@ -5,13 +5,14 @@ import { YStack, XStack, Text, Icon, Theme, Button, Card, Spinner, ProgressBar, 
 
 const BRAND_GRADIENT = `linear-gradient(135deg, ${color.cwGradientFrom}, ${color.cwGradientTo})`;
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { BrandMark } from '../components/brand-mark';
 import { CourseService, StorageService, getSupabaseClient } from '@projeto/core';
 import type { Course } from '@projeto/types';
 
 export default function Dashboard() {
   const router = useRouter();
+  const pathname = usePathname();
   const [filter, setFilter] = useState(0);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -164,23 +165,45 @@ export default function Dashboard() {
           <XStack ai="center" gap={32}>
             <BrandMark />
             <XStack ai="center" gap={4}>
-              {['Cursos', 'Alunos', 'Mídia', 'Relatórios'].map((l, i) => (
-                <XStack
-                  key={l}
-                  px={12}
-                  py={6}
-                  borderRadius={6}
-                  backgroundColor={i === 0 ? '$secondary' : 'transparent'}
-                  cursor="pointer"
-                  onPress={() => {
-                    if (i === 0) {
-                      router.push('/cursos');
-                    }
-                  }}
-                >
-                  <Text fontSize={14} color={i === 0 ? '$text' : '$textMuted'} fontWeight={i === 0 ? '500' : '400'} style={{ userSelect: 'none' }}>{l}</Text>
-                </XStack>
-              ))}
+              {['Cursos', 'Alunos', 'Mídia', 'Relatórios'].map((l, i) => {
+                const isActive = l === 'Cursos' && (pathname === '/' || pathname.startsWith('/cursos') || pathname.startsWith('/configuracoes'));
+                return (
+                  <XStack
+                    key={l}
+                    px={12}
+                    py={6}
+                    borderRadius={6}
+                    cursor="pointer"
+                    hoverStyle={{ backgroundColor: '$secondary' }}
+                    position="relative"
+                    onPress={() => {
+                      if (i === 0) {
+                        router.push('/cursos');
+                      }
+                    }}
+                  >
+                    <Text
+                      fontSize={14}
+                      color={isActive ? '$text' : '$textMuted'}
+                      fontWeight={isActive ? '600' : '400'}
+                      style={{ userSelect: 'none' }}
+                    >
+                      {l}
+                    </Text>
+                    {isActive && (
+                      <XStack
+                        position="absolute"
+                        bottom={0}
+                        left={12}
+                        right={12}
+                        height={2}
+                        backgroundColor="#10B981"
+                        borderRadius={1}
+                      />
+                    )}
+                  </XStack>
+                );
+              })}
             </XStack>
           </XStack>
           <XStack ai="center" gap={12}>
