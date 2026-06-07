@@ -14,6 +14,7 @@ export default function Dashboard() {
   const router = useRouter();
   const pathname = usePathname();
   const [filter, setFilter] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -117,7 +118,13 @@ export default function Dashboard() {
     }
   };
 
-  const filteredCourses = filter === 0 ? courses : filter === 1 ? courses.filter((course) => course.is_published) : courses.filter((course) => !course.is_published);
+  const statusFiltered = filter === 0 ? courses : filter === 1 ? courses.filter((c) => c.is_published) : courses.filter((c) => !c.is_published);
+  const filteredCourses = searchQuery.trim()
+    ? statusFiltered.filter((c) =>
+        c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (c.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : statusFiltered;
   const firstName = displayName.split(' ')[0] || 'Usuário';
   const publishedCourses = courses.filter((course) => course.is_published).length;
   const draftCourses = courses.length - publishedCourses;
@@ -207,10 +214,10 @@ export default function Dashboard() {
             </XStack>
           </XStack>
           <XStack ai="center" gap={12}>
-            <XStack position="relative" style={{ display: 'none' }} $sm={{ display: 'flex' }}>
+            <XStack position="relative">
               <Icon name="Search" size={16} color="$textMuted" style={{ position: 'absolute', left: 12, top: 10, pointerEvents: 'none' }} />
               <Input
-                placeholder="Buscar cursos, aulas, alunos…"
+                placeholder="Buscar cursos…"
                 w={288}
                 h={36}
                 br="$3"
@@ -219,6 +226,8 @@ export default function Dashboard() {
                 paddingLeft={40}
                 fontSize="$3"
                 color="$text"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
               />
             </XStack>
             <XStack position="relative" p={8} borderRadius={6} cursor="pointer">
@@ -379,10 +388,14 @@ export default function Dashboard() {
                 <Text color="$textMuted" fontSize={14}>Carregando cursos…</Text>
               </YStack>
             ) : filteredCourses.length === 0 ? (
-              <YStack ai="center" jc="center" py={64} gap={8}>
-                <Icon name="BookOpen" size={48} color="$textMuted" />
-                <Text color="$textMuted" fontSize={16}>Nenhum curso encontrado</Text>
-                <Text color="$textMuted" fontSize={14}>Clique em &quot;Novo curso&quot; para começar.</Text>
+              <YStack ai="center" jc="center" py={64} gap={8} borderWidth={1} borderColor="$border" borderRadius={12} style={{ borderStyle: 'dashed' }} bg="$card">
+                <Icon name="Search" size={40} color="$textMuted" />
+                <Text color="$textMuted" fontSize={16} fontWeight="600">
+                  {searchQuery.trim() ? 'Nenhum resultado para sua busca' : 'Nenhum curso encontrado'}
+                </Text>
+                <Text color="$textMuted" fontSize={14}>
+                  {searchQuery.trim() ? `Nenhum curso corresponde a "${searchQuery}"` : 'Clique em "Novo curso" para começar.'}
+                </Text>
               </YStack>
             ) : (
               <XStack flexWrap="wrap" gap={16}>
