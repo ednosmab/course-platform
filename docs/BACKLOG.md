@@ -154,6 +154,7 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 | BUG: Student app — Dashed border cor errada | 🟢 Baixo | Paused [REVISIT: 2026-07-01] | 2026-07-01 | Agente 3 |
 | Admin — seção de exercícios extras | 🟢 Baixo | Backlog | 2026-07-30 | Agente 2 |
 | Student app — CourseLessons: duração real das aulas | 🟡 Médio | Backlog | 2026-08-01 | Agente 3 |
+| Admin — Substituir hex hardcoded por tokens Tamagui (`$color`) | 🟡 Médio | Backlog | 2026-07-15 | Agente 3 |
 | Student app — CourseLessons: progresso por módulo | 🟢 Baixo | Backlog | 2026-08-15 | Agente 3 |
 
 ---

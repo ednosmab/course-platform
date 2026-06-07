@@ -19,11 +19,13 @@ import {
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { BrandMark } from '../../components/brand-mark';
-import { CourseService, StorageService, getSupabaseClient } from '@projeto/core';
+import { CourseService, StorageService, AuthService } from '@projeto/core';
 import type { Course } from '@projeto/types';
 
 // Gradiente padrão da marca do FLEXED Studio
 const BRAND_GRADIENT = `linear-gradient(135deg, ${color.cwGradientFrom}, ${color.cwGradientTo})`;
+// Gradiente verde → azul usado nas barras de progresso dos cursos
+const PROGRESS_GRADIENT = `linear-gradient(90deg, ${color.cwSuccess}, ${color.cwGradientFrom})`;
 
 // Mapeamento de categorias e seus ícones correspondentes
 const CATEGORY_ICONS: Record<string, string> = {
@@ -85,15 +87,11 @@ export default function CursosPage() {
 
     (async () => {
       try {
-        const client = getSupabaseClient();
-        const { data: { user } } = await client.auth.getUser();
-        if (user && !cancelled) {
-          const { data: profile } = await client.from('profiles').select('full_name, email').eq('id', user.id).single();
-          if (profile) {
-            const name = profile.full_name || profile.email || 'Admin';
-            setDisplayName(name);
-            setInitials(name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase());
-          }
+        const profile = await AuthService.getCurrentProfile();
+        if (profile && !cancelled) {
+          const name = profile.full_name || profile.email || 'Admin';
+          setDisplayName(name);
+          setInitials(name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase());
         }
 
         const data = await CourseService.getAllCourses();
@@ -186,8 +184,7 @@ export default function CursosPage() {
   // Filtra cursos com base na busca
   const filteredCourses = courses.filter((course) => {
     if (!searchQuery.trim()) return true;
-    return course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (course.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+    return course.title.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   // Agrupa os cursos por categoria
@@ -471,7 +468,7 @@ export default function CursosPage() {
                                   style={{
                                     background: c.thumbnail_url
                                       ? `url(${c.thumbnail_url}) center/cover no-repeat`
-                                      : BRAND_GRADIENT,
+                                      : PROGRESS_GRADIENT,
                                   }}
                                 >
                                   <YStack
@@ -565,7 +562,7 @@ export default function CursosPage() {
                                         {readiness}%
                                       </Text>
                                     </XStack>
-                                    <ProgressBar progress={readiness} height={6} />
+                                    <ProgressBar progress={readiness} height={6} gradient={PROGRESS_GRADIENT} />
                                   </YStack>
                                 </YStack>
                               </Card>

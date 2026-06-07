@@ -17,21 +17,6 @@ vi.mock('../../components/brand-mark', () => ({
 
 // Mock dos serviços do core
 vi.mock('@projeto/core', () => {
-  const mockSupabase = {
-    auth: {
-      getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-123' } } }),
-    },
-    from: vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
-            data: { full_name: 'Admin Teste', email: 'admin@teste.com' },
-          }),
-        }),
-      }),
-    }),
-  };
-
   return {
     CourseService: {
       getAllCourses: vi.fn(),
@@ -42,7 +27,12 @@ vi.mock('@projeto/core', () => {
     StorageService: {
       uploadThumbnail: vi.fn(),
     },
-    getSupabaseClient: () => mockSupabase,
+    AuthService: {
+      getCurrentProfile: vi.fn().mockResolvedValue({
+        full_name: 'Admin Teste',
+        email: 'admin@teste.com',
+      }),
+    },
   };
 });
 

@@ -1,7 +1,7 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## 📋 Quick Board (snapshot kanban — 2026-06-07)
-- 🔴 **Em curso:** nenhum — alinhamento estético, cabeçalho e tela de cursos concluídos
+- 🔴 **Em curso:** nenhum — hero background substituído, 3/3 validações verdes
 - 🟡 **Parado:** nenhum
 - ⏭️ **Próximo:** ritual de merge / fechamento de feature branch
 
@@ -25,9 +25,10 @@ Ritual de merge e finalização da sessão.
 - Implementação de `apps/admin/src/app/cursos/page.tsx`
 - Implementação de `apps/admin/src/app/cursos/cursos.test.tsx`
 - Ajuste do cabeçalho e reestilização estética completa do dashboard em `apps/admin/src/app/page.tsx`
+- Substituição do efeito decorativo (radial gradient blur) do hero por background decorativo `fundo.png` (ondas verdes/azuis) posicionado no canto superior direito
 
 ## ✅ Validações (regra 7 AGENTS.md)
-**99/99 ✅** (vitest run em todos os pacotes passando: admin 92 + core + student 7) · `verify:ui` ✅ · working tree clean
+**92/92 ✅** (admin vitest passando) · `verify:ui` ✅ · `lint` ✅ (apenas 1 warning `no-img-element`, esperado) · `tsc --noEmit` ✅ · working tree clean
 
 ## 📌 Próximos Passos
 - Fechamento da branch e merge na develop.

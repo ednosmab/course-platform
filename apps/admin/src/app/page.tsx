@@ -4,10 +4,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { YStack, XStack, Text, Icon, Theme, Button, Card, Spinner, ProgressBar, Input, color, lineHeightHeading, lineHeightCardTitle } from '@projeto/ui';
 
 const BRAND_GRADIENT = `linear-gradient(135deg, ${color.cwGradientFrom}, ${color.cwGradientTo})`;
+const PROGRESS_GRADIENT = `linear-gradient(90deg, ${color.cwSuccess}, ${color.cwGradientFrom})`;
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { BrandMark } from '../components/brand-mark';
-import { CourseService, StorageService, getSupabaseClient } from '@projeto/core';
+import { CourseService, StorageService, AuthService } from '@projeto/core';
 import type { Course } from '@projeto/types';
 
 export default function Dashboard() {
@@ -35,12 +36,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     (async () => {
-      const client = getSupabaseClient();
-      const { data: { user } } = await client.auth.getUser();
-      if (user) {
-        const { data: profile } = await client.from('profiles').select('full_name, email').eq('id', user.id).single();
-        if (profile) setUserProfile(profile);
-      }
+      const profile = await AuthService.getCurrentProfile();
+      if (profile) setUserProfile({ full_name: profile.full_name ?? '', email: profile.email ?? '' });
     })();
   }, []);
 
@@ -120,10 +117,7 @@ export default function Dashboard() {
 
   const statusFiltered = filter === 0 ? courses : filter === 1 ? courses.filter((c) => c.is_published) : courses.filter((c) => !c.is_published);
   const filteredCourses = searchQuery.trim()
-    ? statusFiltered.filter((c) =>
-        c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (c.description || '').toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? statusFiltered.filter((c) => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
     : statusFiltered;
   const firstName = displayName.split(' ')[0] || 'Usuário';
   const publishedCourses = courses.filter((course) => course.is_published).length;
@@ -302,7 +296,22 @@ export default function Dashboard() {
               boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',
             }}
           >
-            <div style={{ position: 'absolute', right: -64, top: -64, width: 256, height: 256, borderRadius: '50%', opacity: 0.6, filter: 'blur(64px)', background: BRAND_GRADIENT }} />
+            <img
+              src="/fundo.png"
+              alt=""
+              aria-hidden
+              draggable={false}
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: -106,
+                width: 1280,
+                height: 'auto',
+                opacity: 0.7,
+                pointerEvents: 'none',
+                userSelect: 'none',
+              }}
+            />
             <YStack position="relative" gap={24} $md={{ fd: 'row', ai: 'flex-end', jc: 'space-between' }}>
               <YStack maxWidth={576}>
                 <XStack ai="center" gap={6} px={10} py={4} borderRadius={9999} borderWidth={1} borderColor="$border" backgroundColor="$background" alignSelf="flex-start">
@@ -426,7 +435,7 @@ export default function Dashboard() {
                           style={{
                             background: c.thumbnail_url
                               ? `url(${c.thumbnail_url}) center/cover no-repeat`
-                              : BRAND_GRADIENT,
+                              : PROGRESS_GRADIENT,
                           }}
                         >
                           <YStack
@@ -500,7 +509,7 @@ export default function Dashboard() {
                               <Text fontSize={11} color="$textMuted">{c.is_published ? 'Publicado' : 'Pronto para publicar'}</Text>
                               <Text fontSize={11} color="$textMuted">{readiness}%</Text>
                             </XStack>
-                            <ProgressBar progress={readiness} height={6} />
+                            <ProgressBar progress={readiness} height={6} gradient={PROGRESS_GRADIENT} />
                           </YStack>
                         </YStack>
                       </Card>
