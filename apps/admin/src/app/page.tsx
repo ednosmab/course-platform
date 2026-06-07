@@ -155,7 +155,19 @@ export default function Dashboard() {
             <BrandMark />
             <XStack ai="center" gap={4}>
               {['Cursos', 'Alunos', 'Mídia', 'Relatórios'].map((l, i) => (
-                <XStack key={l} px={12} py={6} borderRadius={6} backgroundColor={i === 0 ? '$secondary' : 'transparent'} cursor="pointer">
+                <XStack
+                  key={l}
+                  px={12}
+                  py={6}
+                  borderRadius={6}
+                  backgroundColor={i === 0 ? '$secondary' : 'transparent'}
+                  cursor="pointer"
+                  onPress={() => {
+                    if (i === 0) {
+                      router.push('/cursos');
+                    }
+                  }}
+                >
                   <Text fontSize={14} color={i === 0 ? '$text' : '$textMuted'} fontWeight={i === 0 ? '500' : '400'} style={{ userSelect: 'none' }}>{l}</Text>
                 </XStack>
               ))}
