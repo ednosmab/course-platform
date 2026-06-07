@@ -166,7 +166,7 @@ export default function Dashboard() {
             <BrandMark />
             <XStack ai="center" gap={4}>
               {['Cursos', 'Alunos', 'Mídia', 'Relatórios'].map((l, i) => {
-                const isActive = l === 'Cursos' && (pathname === '/' || pathname.startsWith('/cursos') || pathname.startsWith('/configuracoes'));
+                const isActive = l === 'Cursos' && (pathname.startsWith('/cursos') || pathname.startsWith('/configuracoes'));
                 return (
                   <XStack
                     key={l}
