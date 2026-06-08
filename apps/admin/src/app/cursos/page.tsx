@@ -45,6 +45,10 @@ export default function CursosPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState(0);
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'name-az' | 'name-za'>('recent');
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const sortDropdownRef = useRef<any>(null);
+  const filterDropdownRef = useRef<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Perfil do Administrador
@@ -65,6 +69,12 @@ export default function CursosPage() {
     function handleClickOutside(event: MouseEvent) {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false);
+      }
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+        setShowSortDropdown(false);
+      }
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setShowFilterDropdown(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -219,6 +229,15 @@ export default function CursosPage() {
   });
 
   const categories = Object.keys(groupedCourses).sort();
+
+  const sortLabel = {
+    recent: 'Mais recentes',
+    oldest: 'Mais antigos',
+    'name-az': 'Nome A-Z',
+    'name-za': 'Nome Z-A',
+  }[sortBy];
+
+  const filterLabel = filter === 0 ? null : filter === 1 ? 'Publicados' : 'Rascunhos';
 
   return (
     <Theme name="cloudWhite">
@@ -401,29 +420,178 @@ export default function CursosPage() {
             </XStack>
           </YStack>
 
-          {/* Filtros de Status e Ordenação */}
-          <YStack gap={8} mb={24}>
-            <XStack gap={4} p={4} borderRadius={8} borderWidth={1} borderColor="$border" backgroundColor="$card" alignSelf="flex-start">
-              {['Todos', 'Publicados', 'Rascunhos'].map((t, i) => (
-                <XStack key={t} px={12} py={4} borderRadius={4} backgroundColor={i === filter ? '$secondary' : 'transparent'} cursor="pointer" onPress={() => setFilter(i)}>
-                  <Text fontSize={14} color={i === filter ? '$text' : '$textMuted'}>{t}</Text>
+          {/* Filtros e Ordenação */}
+          <XStack gap={8} ai="center" mb={16} flexWrap="wrap">
+            {/* Botão de Filtro */}
+            <XStack position="relative" ref={filterDropdownRef}>
+              <XStack
+                gap={6}
+                px={12}
+                py={6}
+                borderRadius={8}
+                borderWidth={1}
+                borderColor={filterLabel ? '$primary' : '$border'}
+                backgroundColor={filterLabel ? '$primary' : '$card'}
+                cursor="pointer"
+                hoverStyle={{ backgroundColor: filterLabel ? '$primary' : '$secondary' }}
+                onPress={() => setShowFilterDropdown(!showFilterDropdown)}
+              >
+                <Icon name="Filter" size={14} color={filterLabel ? '$white' : '$textMuted'} />
+                <Text fontSize={13} fontWeight="500" color={filterLabel ? '$white' : '$text'}>Filtros</Text>
+                {filterLabel && (
+                  <XStack px={6} py={2} borderRadius={4} backgroundColor="rgba(255,255,255,0.2)">
+                    <Text fontSize={11} fontWeight="600" color="$white">{filterLabel}</Text>
+                  </XStack>
+                )}
+                <Icon name="ChevronDown" size={14} color={filterLabel ? '$white' : '$textMuted'} />
+              </XStack>
+
+              {showFilterDropdown && (
+                <XStack
+                  position="absolute"
+                  top="100%"
+                  left={0}
+                  mt={4}
+                  p={4}
+                  borderRadius={8}
+                  borderWidth={1}
+                  borderColor="$border"
+                  backgroundColor="$card"
+                  zIndex={50}
+                  minWidth={160}
+                  style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
+                >
+                  <YStack gap={2}>
+                    {['Todos', 'Publicados', 'Rascunhos'].map((t, i) => (
+                      <XStack
+                        key={t}
+                        px={10}
+                        py={6}
+                        borderRadius={4}
+                        backgroundColor={i === filter ? '$secondary' : 'transparent'}
+                        cursor="pointer"
+                        hoverStyle={{ backgroundColor: '$secondary' }}
+                        onPress={() => {
+                          setFilter(i);
+                          setShowFilterDropdown(false);
+                        }}
+                      >
+                        <Text fontSize={13} color={i === filter ? '$text' : '$textMuted'}>{t}</Text>
+                      </XStack>
+                    ))}
+                  </YStack>
                 </XStack>
-              ))}
+              )}
             </XStack>
 
-            <XStack gap={4} p={4} borderRadius={8} borderWidth={1} borderColor="$border" backgroundColor="$card" alignSelf="flex-start">
-              {[
-                { value: 'recent', label: 'Recentes' },
-                { value: 'oldest', label: 'Antigos' },
-                { value: 'name-az', label: 'A-Z' },
-                { value: 'name-za', label: 'Z-A' },
-              ].map((opt) => (
-                <XStack key={opt.value} px={10} py={4} borderRadius={4} backgroundColor={sortBy === opt.value ? '$secondary' : 'transparent'} cursor="pointer" onPress={() => setSortBy(opt.value as typeof sortBy)}>
-                  <Text fontSize={13} color={sortBy === opt.value ? '$text' : '$textMuted'}>{opt.label}</Text>
+            {/* Dropdown de Ordenação */}
+            <XStack position="relative" ref={sortDropdownRef}>
+              <XStack
+                gap={6}
+                px={12}
+                py={6}
+                borderRadius={8}
+                borderWidth={1}
+                borderColor="$border"
+                backgroundColor="$card"
+                cursor="pointer"
+                hoverStyle={{ backgroundColor: '$secondary' }}
+                onPress={() => setShowSortDropdown(!showSortDropdown)}
+              >
+                <Icon name="ArrowUpDown" size={14} color="$textMuted" />
+                <Text fontSize={13} fontWeight="500">{sortLabel}</Text>
+                <Icon name="ChevronDown" size={14} color="$textMuted" />
+              </XStack>
+
+              {showSortDropdown && (
+                <XStack
+                  position="absolute"
+                  top="100%"
+                  left={0}
+                  mt={4}
+                  p={4}
+                  borderRadius={8}
+                  borderWidth={1}
+                  borderColor="$border"
+                  backgroundColor="$card"
+                  zIndex={50}
+                  minWidth={160}
+                  style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
+                >
+                  <YStack gap={2}>
+                    {[
+                      { value: 'recent', label: 'Mais recentes' },
+                      { value: 'oldest', label: 'Mais antigos' },
+                      { value: 'name-az', label: 'Nome A-Z' },
+                      { value: 'name-za', label: 'Nome Z-A' },
+                    ].map((opt) => (
+                      <XStack
+                        key={opt.value}
+                        px={10}
+                        py={6}
+                        borderRadius={4}
+                        backgroundColor={sortBy === opt.value ? '$secondary' : 'transparent'}
+                        cursor="pointer"
+                        hoverStyle={{ backgroundColor: '$secondary' }}
+                        onPress={() => {
+                          setSortBy(opt.value as typeof sortBy);
+                          setShowSortDropdown(false);
+                        }}
+                      >
+                        <Text fontSize={13} color={sortBy === opt.value ? '$text' : '$textMuted'}>{opt.label}</Text>
+                      </XStack>
+                    ))}
+                  </YStack>
                 </XStack>
-              ))}
+              )}
             </XStack>
-          </YStack>
+
+            {/* Contador de Resultados */}
+            <XStack ml="auto" ai="center" gap={6}>
+              <Text fontSize={12} color="$textMuted">
+                {sortedCourses.length} {sortedCourses.length === 1 ? 'curso' : 'cursos'}
+              </Text>
+            </XStack>
+          </XStack>
+
+          {/* Chips de Filtros Ativos */}
+          {filterLabel && (
+            <XStack gap={6} mb={16} flexWrap="wrap" ai="center">
+              <Text fontSize={12} color="$textMuted">Filtros:</Text>
+              <XStack
+                gap={4}
+                px={8}
+                py={4}
+                borderRadius={16}
+                borderWidth={1}
+                borderColor="$border"
+                backgroundColor="$card"
+                ai="center"
+              >
+                <Text fontSize={12} fontWeight="500">{filterLabel}</Text>
+                <XStack
+                  ml={4}
+                  p={2}
+                  borderRadius={4}
+                  cursor="pointer"
+                  hoverStyle={{ backgroundColor: '$secondary' }}
+                  onPress={() => setFilter(0)}
+                >
+                  <Icon name="X" size={12} color="$textMuted" />
+                </XStack>
+              </XStack>
+              <XStack
+                px={8}
+                py={4}
+                borderRadius={16}
+                cursor="pointer"
+                hoverStyle={{ backgroundColor: '$secondary' }}
+                onPress={() => setFilter(0)}
+              >
+                <Text fontSize={12} color="$danger">Limpar tudo</Text>
+              </XStack>
+            </XStack>
+          )}
 
           {loading ? (
             <YStack py={64} ai="center" jc="center" gap={12} opacity={0.7}>
