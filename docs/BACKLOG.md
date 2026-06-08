@@ -130,6 +130,8 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 
 | Item | Severidade | Status | Due | Owner |
 |---|---|---|---|---|
+| Extrair filtro/ordenação para componente reutilizável (`@projeto/ui`) | 🟠 Alto | Backlog | 2026-06-30 | Agente 3 |
+| Student app — Tela de cursos com filtro/ordenação (reutilizar componente) | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
 | Testes E2E Playwright para drag-and-drop de imagem | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
 | Student app — ErrorBoundary | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
 | Fix build admin — `@tamagui/constants` missing como dependência explícita | 🟠 Alto | Done | 2026-06-10 | Agente 2 |
