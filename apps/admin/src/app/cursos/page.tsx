@@ -43,6 +43,8 @@ export default function CursosPage() {
   const pathname = usePathname();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState(0);
+  const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'name-az' | 'name-za'>('recent');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Perfil do Administrador
@@ -181,37 +183,39 @@ export default function CursosPage() {
     return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(date);
   };
 
-  // Filtra cursos com base na busca
-  const filteredCourses = courses.filter((course) => {
+  // Filtra cursos com base no status e na busca
+  const statusFiltered = filter === 0 ? courses : filter === 1 ? courses.filter((c) => c.is_published) : courses.filter((c) => !c.is_published);
+  const filteredCourses = statusFiltered.filter((course) => {
     if (!searchQuery.trim()) return true;
     return course.title.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
+  // Ordena os cursos conforme o critério selecionado
+  const sortCourses = (a: Course, b: Course) => {
+    switch (sortBy) {
+      case 'recent':
+        return new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime();
+      case 'oldest':
+        return new Date(a.updated_at || a.created_at).getTime() - new Date(b.updated_at || b.created_at).getTime();
+      case 'name-az':
+        return (a.title || '').localeCompare(b.title || '');
+      case 'name-za':
+        return (b.title || '').localeCompare(a.title || '');
+      default:
+        return 0;
+    }
+  };
+
+  const sortedCourses = [...filteredCourses].sort(sortCourses);
+
   // Agrupa os cursos por categoria
   const groupedCourses: Record<string, Course[]> = {};
-  filteredCourses.forEach((c) => {
+  sortedCourses.forEach((c) => {
     const cat = getCourseCategory(c);
     if (!groupedCourses[cat]) {
       groupedCourses[cat] = [];
     }
     groupedCourses[cat].push(c);
-  });
-
-  // Ordena os cursos dentro de cada categoria:
-  // 1. Não publicados (sendo preparados/rascunhos) primeiro.
-  // 2. Publicados (em andamento) depois.
-  // 3. Em caso de empate, pelo created_at mais recente primeiro (decrescente).
-  const sortCourses = (a: Course, b: Course) => {
-    if (a.is_published !== b.is_published) {
-      return a.is_published ? 1 : -1; // false (não publicado) vem antes de true (publicado)
-    }
-    const dateA = new Date(a.created_at).getTime();
-    const dateB = new Date(b.created_at).getTime();
-    return dateB - dateA;
-  };
-
-  Object.keys(groupedCourses).forEach((cat) => {
-    groupedCourses[cat].sort(sortCourses);
   });
 
   const categories = Object.keys(groupedCourses).sort();
@@ -397,16 +401,40 @@ export default function CursosPage() {
             </XStack>
           </YStack>
 
+          {/* Filtros de Status e Ordenação */}
+          <YStack gap={8} mb={24}>
+            <XStack gap={4} p={4} borderRadius={8} borderWidth={1} borderColor="$border" backgroundColor="$card" alignSelf="flex-start">
+              {['Todos', 'Publicados', 'Rascunhos'].map((t, i) => (
+                <XStack key={t} px={12} py={4} borderRadius={4} backgroundColor={i === filter ? '$secondary' : 'transparent'} cursor="pointer" onPress={() => setFilter(i)}>
+                  <Text fontSize={14} color={i === filter ? '$text' : '$textMuted'}>{t}</Text>
+                </XStack>
+              ))}
+            </XStack>
+
+            <XStack gap={4} p={4} borderRadius={8} borderWidth={1} borderColor="$border" backgroundColor="$card" alignSelf="flex-start">
+              {[
+                { value: 'recent', label: 'Recentes' },
+                { value: 'oldest', label: 'Antigos' },
+                { value: 'name-az', label: 'A-Z' },
+                { value: 'name-za', label: 'Z-A' },
+              ].map((opt) => (
+                <XStack key={opt.value} px={10} py={4} borderRadius={4} backgroundColor={sortBy === opt.value ? '$secondary' : 'transparent'} cursor="pointer" onPress={() => setSortBy(opt.value as typeof sortBy)}>
+                  <Text fontSize={13} color={sortBy === opt.value ? '$text' : '$textMuted'}>{opt.label}</Text>
+                </XStack>
+              ))}
+            </XStack>
+          </YStack>
+
           {loading ? (
             <YStack py={64} ai="center" jc="center" gap={12} opacity={0.7}>
               <Spinner size="large" color="$primary" />
               <Text color="$textMuted" fontSize={14}>Carregando cursos…</Text>
             </YStack>
-          ) : filteredCourses.length === 0 ? (
+          ) : sortedCourses.length === 0 ? (
             <YStack ai="center" jc="center" py={64} gap={8} borderWidth={1} borderColor="$border" borderRadius={12} borderStyle="dashed" bg="$card">
               <Icon name="BookOpen" size={48} color="$textMuted" />
               <Text color="$textMuted" fontSize={16} fontWeight="600">Nenhum curso encontrado</Text>
-              <Text color="$textMuted" fontSize={14}>Ajuste a sua busca ou clique em &quot;Novo curso&quot; para criar um.</Text>
+              <Text color="$textMuted" fontSize={14}>Ajuste a busca ou filtro, ou clique em &quot;Novo curso&quot; para criar um.</Text>
             </YStack>
           ) : (
             <YStack gap={40}>

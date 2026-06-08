@@ -1,24 +1,21 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { YStack, XStack, Text, Icon, Theme, Button, Card, Spinner, ProgressBar, Input, color, lineHeightHeading, lineHeightCardTitle } from '@projeto/ui';
+import { YStack, XStack, Text, Icon, Theme, Button, Card, Spinner, ProgressBar, color, lineHeightHeading, lineHeightCardTitle } from '@projeto/ui';
 
 const BRAND_GRADIENT = `linear-gradient(135deg, ${color.cwGradientFrom}, ${color.cwGradientTo})`;
 const PROGRESS_GRADIENT = `linear-gradient(90deg, ${color.cwSuccess}, ${color.cwGradientFrom})`;
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { BrandMark } from '../components/brand-mark';
-import { CourseService, StorageService, AuthService } from '@projeto/core';
+import { CourseService, AuthService } from '@projeto/core';
 import type { Course } from '@projeto/types';
 
 export default function Dashboard() {
   const router = useRouter();
   const pathname = usePathname();
-  const [filter, setFilter] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLUListElement>(null);
   const [userProfile, setUserProfile] = useState<{ full_name: string; email: string } | null>(null);
@@ -45,10 +42,6 @@ export default function Dashboard() {
     ? userProfile.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
     : '??';
   const displayName = userProfile?.full_name || 'Usuário';
-  const [formTitle, setFormTitle] = useState('');
-  const [formDescription, setFormDescription] = useState('');
-  const [formThumbnail, setFormThumbnail] = useState<File | null>(null);
-  const [formThumbnailPreview, setFormThumbnailPreview] = useState<string | null>(null);
 
   const fetchCourses = async () => {
     try {
@@ -81,30 +74,6 @@ export default function Dashboard() {
     };
   }, []);
 
-  const handleCreate = async () => {
-    if (!formTitle.trim()) return;
-    try {
-      const course = await CourseService.createCourse(
-        formTitle.trim(),
-        formDescription.trim(),
-      );
-      if (formThumbnail) {
-        const url = await StorageService.uploadThumbnail(formThumbnail, course.id);
-        if (url) {
-          await CourseService.updateCourse(course.id, { thumbnail_url: url });
-        }
-      }
-      setFormTitle('');
-      setFormDescription('');
-      setFormThumbnail(null);
-      setFormThumbnailPreview(null);
-      setShowCreateModal(false);
-      await fetchCourses();
-    } catch (err) {
-      console.error('Failed to create course:', err);
-    }
-  };
-
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este curso?')) return;
     try {
@@ -115,10 +84,13 @@ export default function Dashboard() {
     }
   };
 
-  const statusFiltered = filter === 0 ? courses : filter === 1 ? courses.filter((c) => c.is_published) : courses.filter((c) => !c.is_published);
-  const filteredCourses = searchQuery.trim()
-    ? statusFiltered.filter((c) => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
-    : statusFiltered;
+  const recentCourses = [...courses]
+    .sort((a, b) => {
+      const dateA = new Date(a.updated_at || a.created_at).getTime();
+      const dateB = new Date(b.updated_at || b.created_at).getTime();
+      return dateB - dateA;
+    })
+    .slice(0, 3);
   const firstName = displayName.split(' ')[0] || 'Usuário';
   const publishedCourses = courses.filter((course) => course.is_published).length;
   const draftCourses = courses.length - publishedCourses;
@@ -208,22 +180,6 @@ export default function Dashboard() {
             </XStack>
           </XStack>
           <XStack ai="center" gap={12}>
-            <XStack position="relative">
-              <Icon name="Search" size={16} color="$textMuted" style={{ position: 'absolute', left: 12, top: 10, pointerEvents: 'none' }} />
-              <Input
-                placeholder="Buscar cursos…"
-                w={288}
-                h={36}
-                br="$3"
-                borderColor="$border"
-                backgroundColor="$background"
-                paddingLeft={40}
-                fontSize="$3"
-                color="$text"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-            </XStack>
             <XStack position="relative" p={8} borderRadius={6} cursor="pointer">
               <Icon name="Bell" size={16} color="$textMuted" />
               <XStack position="absolute" right={6} top={6} w={6} h={6} borderRadius={3} bg="$primary" />
@@ -340,7 +296,7 @@ export default function Dashboard() {
                 <Button variant="ghost" borderWidth={1} borderColor="$border" bg="$card" px={16} py={10}>
                   <Text fontSize={14}>Importar conteúdo</Text>
                 </Button>
-                <Button onPress={() => setShowCreateModal(true)} px={16} py={10} ai="center" gap={6} style={{ background: BRAND_GRADIENT }}>
+                <Button onPress={() => router.push('/cursos')} px={16} py={10} ai="center" gap={6} style={{ background: BRAND_GRADIENT }}>
                   <Icon name="Plus" size={16} color="$white" />
                   <Text fontSize={14} color="$white" fontWeight="500">Novo curso</Text>
                 </Button>
@@ -379,16 +335,15 @@ export default function Dashboard() {
           <YStack mt={40}>
             <XStack ai="flex-end" jc="space-between" mb={16}>
               <YStack>
-                <Text fontFamily="$display" fontSize={20} fontWeight="$6">Seus cursos</Text>
-                <Text fontSize={14} color="$textMuted">Clique para abrir no Estúdio.</Text>
+                <Text fontFamily="$display" fontSize={20} fontWeight="$6">Últimos cursos</Text>
+                <Text fontSize={14} color="$textMuted">Seus cursos mais recentes.</Text>
               </YStack>
-              <XStack gap={4} p={4} borderRadius={8} borderWidth={1} borderColor="$border" backgroundColor="$card">
-                {['Todos', 'Publicados', 'Rascunhos'].map((t, i) => (
-                  <XStack key={t} px={12} py={4} borderRadius={4} backgroundColor={i === filter ? '$secondary' : 'transparent'} cursor="pointer" onPress={() => setFilter(i)}>
-                    <Text fontSize={14} color={i === filter ? '$text' : '$textMuted'}>{t}</Text>
-                  </XStack>
-                ))}
-              </XStack>
+              <Link href="/cursos" style={{ textDecoration: 'none' }}>
+                <XStack ai="center" gap={6} px={12} py={6} borderRadius={6} borderWidth={1} borderColor="$border" hoverStyle={{ backgroundColor: '$secondary' }}>
+                  <Text fontSize={13} fontWeight="500">Ver todos</Text>
+                  <Icon name="ArrowRight" size={14} color="$textMuted" />
+                </XStack>
+              </Link>
             </XStack>
 
             {loading ? (
@@ -396,19 +351,15 @@ export default function Dashboard() {
                 <Spinner size="large" color="$primary" />
                 <Text color="$textMuted" fontSize={14}>Carregando cursos…</Text>
               </YStack>
-            ) : filteredCourses.length === 0 ? (
+            ) : recentCourses.length === 0 ? (
               <YStack ai="center" jc="center" py={64} gap={8} borderWidth={1} borderColor="$border" borderRadius={12} style={{ borderStyle: 'dashed' }} bg="$card">
-                <Icon name="Search" size={40} color="$textMuted" />
-                <Text color="$textMuted" fontSize={16} fontWeight="600">
-                  {searchQuery.trim() ? 'Nenhum resultado para sua busca' : 'Nenhum curso encontrado'}
-                </Text>
-                <Text color="$textMuted" fontSize={14}>
-                  {searchQuery.trim() ? `Nenhum curso corresponde a "${searchQuery}"` : 'Clique em "Novo curso" para começar.'}
-                </Text>
+                <Icon name="BookOpen" size={40} color="$textMuted" />
+                <Text color="$textMuted" fontSize={16} fontWeight="600">Nenhum curso encontrado</Text>
+                <Text color="$textMuted" fontSize={14}>&quot;Novo curso&quot; na página de cursos para começar.</Text>
               </YStack>
             ) : (
               <XStack flexWrap="wrap" gap={16}>
-                {filteredCourses.map((c) => {
+                {recentCourses.map((c) => {
                   const readiness = c.is_published ? 100 : 45;
                   return (
                   <YStack key={c.id} flex={1} minWidth={320} maxWidth="calc(33.33% - 12px)">
@@ -527,94 +478,6 @@ export default function Dashboard() {
           </YStack>
         </main>
 
-        {/* Create Modal */}
-        {showCreateModal && (
-          <XStack position="fixed" inset={0} ai="center" jc="center" style={{ backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1000 }}>
-            <YStack bg="$card" br="$4" p={32} width={480} gap={20} borderWidth={1} borderColor="$border">
-              <XStack ai="center" jc="space-between">
-                <Text fontFamily="$display" fontSize={20} fontWeight="$6">Novo curso</Text>
-                <XStack onPress={() => setShowCreateModal(false)} cursor="pointer" p={4}>
-                  <Icon name="X" size={20} color="$textMuted" />
-                </XStack>
-              </XStack>
-              <YStack gap={8}>
-                <Text fontSize={14} fontWeight="500">Título</Text>
-                <Input
-                  value={formTitle}
-                  onChangeText={setFormTitle}
-                  placeholder="Ex: Desenvolvimento Web Full Stack"
-                  h={40}
-                  br="$3"
-                  borderColor="$border"
-                  autoFocus
-                />
-              </YStack>
-              <YStack gap={8}>
-                <Text fontSize={14} fontWeight="500">Descrição</Text>
-                <YStack
-                  borderWidth={1}
-                  borderColor="$border"
-                  borderRadius="$3"
-                  bg="$background"
-                  p="$3"
-                  focusStyle={{ borderColor: '$primary' }}
-                >
-                  <textarea
-                    value={formDescription}
-                    onChange={(e) => setFormDescription(e.target.value)}
-                    placeholder="Descreva o curso em poucas palavras..."
-                    rows={3}
-                    style={{
-                      border: 'none',
-                      outline: 'none',
-                      resize: 'vertical',
-                      fontSize: 14,
-                      fontFamily: 'inherit',
-                      color: 'inherit',
-                      background: 'transparent',
-                      width: '100%',
-                    }}
-                  />
-                </YStack>
-              </YStack>
-              <YStack gap={8}>
-                <Text fontSize={14} fontWeight="500">Thumbnail (1280×720px, máx 2MB)</Text>
-                <YStack
-                  position="relative"
-                  height={140}
-                  borderRadius={8}
-                  borderWidth={1}
-                  borderColor="$border"
-                  style={{ borderStyle: 'dashed', backgroundImage: formThumbnailPreview ? `url(${formThumbnailPreview})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', cursor: 'pointer' }}
-                  ai="center"
-                  jc="center"
-                  overflow="hidden"
-                  bg={formThumbnailPreview ? 'transparent' : '$background'}
-                  onPress={() => document.getElementById('thumb-input-create')?.click()}
-                >
-                  <input id="thumb-input-create" type="file" accept="image/jpeg,image/webp,image/png" style={{ display: 'none' }} onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      if (file.size > 2 * 1024 * 1024) { alert('Arquivo muito grande. Máximo: 2MB.'); return; }
-                      setFormThumbnail(file);
-                      setFormThumbnailPreview(URL.createObjectURL(file));
-                    }
-                  }} />
-                  {!formThumbnailPreview && (
-                    <XStack ai="center" gap={6}>
-                      <Icon name="Image" size={20} color="$textMuted" />
-                      <Text fontSize={13} color="$textMuted">Clique para selecionar</Text>
-                    </XStack>
-                  )}
-                </YStack>
-              </YStack>
-              <XStack gap={8} jc="flex-end">
-                <Button variant="secondary" onPress={() => setShowCreateModal(false)}>Cancelar</Button>
-                <Button onPress={handleCreate} disabled={!formTitle.trim()}>Criar curso</Button>
-              </XStack>
-            </YStack>
-          </XStack>
-        )}
       </YStack>
     </Theme>
   );
