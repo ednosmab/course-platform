@@ -71,7 +71,6 @@ export function SortDropdown({ options, value, onChange }: SortDropdownProps) {
                 px={10}
                 py={6}
                 borderRadius={4}
-                backgroundColor={value === opt.value ? '$secondary' : 'transparent'}
                 cursor="pointer"
                 hoverStyle={{ backgroundColor: '$secondary' }}
                 onPress={() => {
