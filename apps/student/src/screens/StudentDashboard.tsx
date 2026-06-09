@@ -15,6 +15,7 @@ const navTabs = [
 type StudentDashboardProps = {
   onPlay: (courseId: string) => void;
   onNavigateToCourseLessons: (courseId: string) => void;
+  onNavigateToCourses: () => void;
   onNavigateToCertificates: () => void;
   onLogout: () => void;
 };
@@ -30,7 +31,7 @@ interface ActiveProgressState {
   isCurrentLessonCompleted: boolean;
 }
 
-export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigateToCertificates, onLogout }: StudentDashboardProps) {
+export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigateToCourses, onNavigateToCertificates, onLogout }: StudentDashboardProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +53,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
         onNavigateToCertificates();
         break;
       case 'courses':
-        // Poderia navegar para uma tela de cursos, por enquanto não faz nada
+        onNavigateToCourses();
         break;
       case 'explore':
         // Poderia navegar para uma tela de exploração
