@@ -72,6 +72,23 @@ vi.mock('@projeto/ui', () => {
         />
       );
     },
+    FilterBar: ({ filterOptions, filterValue, onFilterChange, sortOptions, sortValue, onSortChange, resultCount, resultLabel, filterLabel, onClearFilter }: any) => (
+      <div data-testid="FilterBar">
+        <select data-testid="filter-select" value={filterValue} onChange={(e) => onFilterChange(e.target.value)}>
+          {filterOptions.map((opt: any) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+        <select data-testid="sort-select" value={sortValue} onChange={(e) => onSortChange(e.target.value)}>
+          {sortOptions.map((opt: any) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+        <span data-testid="result-count">{resultCount} {resultLabel}</span>
+        {filterLabel && <span data-testid="filter-label">{filterLabel}</span>}
+        {filterLabel && <button data-testid="clear-filter" onClick={onClearFilter}>Limpar tudo</button>}
+      </div>
+    ),
     lineHeightHeading: '1.2',
     lineHeightCardTitle: '1.4',
     color: {

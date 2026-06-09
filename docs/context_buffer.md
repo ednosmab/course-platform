@@ -1,34 +1,40 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## 📋 Quick Board (snapshot kanban — 2026-06-07)
-- 🔴 **Em curso:** nenhum — hero background substituído, 3/3 validações verdes
-- 🟡 **Parado:** nenhum
-- ⏭️ **Próximo:** ritual de merge / fechamento de feature branch
+- 🔴 **Em curso:** Refatoração admin para usar FilterBar + Student Courses Screen
+- 🟡 **Parado:** Nenhum
+- ⏭️ **Próximo:** Commit das mudanças de refatoração
 
 ## Status Atual
-**Sessão 2026-06-07 — Reestilização do Dashboard Principal e Tela de Cursos do Admin.**
-- Desenvolvida a página `/cursos` em `apps/admin/src/app/cursos/page.tsx` com agrupamento de categorias em-memória, ordenação rascunho primeiro (data desc), badges de status e pulso dinâmico para cursos ativos.
-- Adicionado link no cabeçalho do Dashboard principal (`apps/admin/src/app/page.tsx`) direcionando a aba "Cursos" para `/cursos`.
-- Reestilizados o card Hero/Welcome (sem bordas grossas e com sombra suave), cards de Estatísticas (sem borda esquerda grossa, com hover e escala dinâmicos) e cards de Cursos da home e da tela `/cursos` (com contorno fino sutil `rgba(16, 185, 129, 0.35)` nos publicados, degradê azul/roxo de marca como fallback e badge de status pulsante).
-- Atualizado o Cabeçalho: adicionada cor de fundo cinza (`$secondary`) sob efeito de hover em todas as abas. Configurada indicação active (texto destacado com peso `600` e linha base verde esmeralda absoluta) para a aba selecionada.
-- Criada suíte de testes unitários em `apps/admin/src/app/cursos/cursos.test.tsx` com 100% de aproveitamento (92/92 testes passando no admin app).
+**Sessão 2026-06-07 — Componentização de Filtros e Ordenação.**
+- Extraídos componentes reutilizáveis `FilterBar`, `FilterDropdown`, `SortDropdown`, `FilterChip` para `packages/ui/src/components/Filter/`.
+- Refatorada página `/cursos` do admin para usar `FilterBar` em vez de JSX inline.
+- Removidos states não utilizados: `showSortDropdown`, `showFilterDropdown`, `sortDropdownRef`, `filterDropdownRef`, `sortLabel`.
+- Corrigidos imports de `Icon` nos componentes Filter (de `tamagui` para `../Icon`).
+- Atualizado mock de `@projeto/ui` nos testes para incluir `FilterBar`.
 
 ## 🎯 Tarefa em Execução
-Ritual de merge e finalização da sessão.
+Finalizar refatoração admin e criar student courses screen.
 
 ## 🌿 Estado de Branches (2026-06-07)
-- `feat/admin-cursos` (HEAD) — contém a implementação da nova página de Cursos, reestilização estética e a respectiva suíte de testes unitários.
+- `feat/admin-cursos` (HEAD) — contém a implementação da nova página de Cursos, componentização de filtros.
 - `develop` — integração de features, base estável.
 - `main` — inalterada, push bloqueado.
 
 ## 🛠️ Alterações desta sessão
-- Implementação de `apps/admin/src/app/cursos/page.tsx`
-- Implementação de `apps/admin/src/app/cursos/cursos.test.tsx`
-- Ajuste do cabeçalho e reestilização estética completa do dashboard em `apps/admin/src/app/page.tsx`
-- Substituição do efeito decorativo (radial gradient blur) do hero por background decorativo `fundo.png` (ondas verdes/azuis) posicionado no canto superior direito
+- `packages/ui/src/components/Filter/FilterBar.tsx` (novo)
+- `packages/ui/src/components/Filter/FilterDropdown.tsx` (novo)
+- `packages/ui/src/components/Filter/SortDropdown.tsx` (novo)
+- `packages/ui/src/components/Filter/FilterChip.tsx` (novo)
+- `packages/ui/src/components/Filter/index.ts` (novo)
+- `packages/ui/src/index.ts` (atualizado com exports dos filtros)
+- `apps/admin/src/app/cursos/page.tsx` (refatorado para usar FilterBar)
+- `apps/admin/src/app/cursos/cursos.test.tsx` (mock atualizado)
 
 ## ✅ Validações (regra 7 AGENTS.md)
-**92/92 ✅** (admin vitest passando) · `verify:ui` ✅ · `lint` ✅ (apenas 1 warning `no-img-element`, esperado) · `tsc --noEmit` ✅ · working tree clean
+**92/92 ✅** (admin vitest passando) · `verify:ui` ✅ · `tsc --noEmit` ✅ · working tree clean
 
 ## 📌 Próximos Passos
-- Fechamento da branch e merge na develop.
+- Commit das mudanças de refatoração
+- Criar student courses screen em `apps/student/src/screens/StudentCourses.tsx`
+- Criar rota em `apps/student/app/(tabs)/courses.tsx`
