@@ -59,7 +59,7 @@ export function BrandMark({ small = false, onPress }: BrandMarkProps) {
           fontSize={20}
           letterSpacing={-0.3}
         >
-          FLEX<Text color="$primary">ED</Text> Studio
+          FLEX<Text color="$primary">ED</Text> Class
         </Text>
       )}
     </XStack>
