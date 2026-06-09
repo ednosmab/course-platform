@@ -1,9 +1,9 @@
 # 🧠 MEMÓRIA RAM ATIVA
 
 ## 📋 Quick Board (snapshot kanban — 2026-06-07)
-- 🔴 **Em curso:** Student Courses Screen — concluída
+- 🔴 **Em curso:** Nenhum — feature completa
 - 🟡 **Parado:** Nenhum
-- ⏭️ **Próximo:** Commit das mudanças do student app
+- ⏭️ **Próximo:** Merge na develop
 
 ## Status Atual
 **Sessão 2026-06-07 — Componentização de Filtros e Ordenação.**
@@ -14,7 +14,7 @@
 - Atualizado `StudentDashboard` para navegar para a tela de cursos.
 
 ## 🎯 Tarefa em Execução
-Commit das mudanças do student app.
+Feature concluída. Aguardando merge na develop.
 
 ## 🌿 Estado de Branches (2026-06-07)
 - `feat/admin-cursos` (HEAD) — contém a implementação da nova página de Cursos, componentização de filtros e tela de cursos do student.
@@ -39,5 +39,4 @@ Commit das mudanças do student app.
 **92/92 ✅** (admin vitest passando) · `verify:ui` ✅ · `tsc --noEmit` ✅ (admin) · working tree clean
 
 ## 📌 Próximos Passos
-- Commit das mudanças do student app
 - Merge na develop
