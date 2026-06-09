@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Image } from 'react-native';
-import { ScrollView, XStack, YStack, Text, Button, Card, Icon, BrandMark, Spinner, ProgressBar, GridBackground, Theme, useMedia } from '@projeto/ui';
+import { ScrollView, XStack, YStack, Text, Button, Card, Icon, BrandMark, Spinner, GridBackground, useMedia } from '@projeto/ui';
 import flexedLogo from '../../assets/flexed-logo.png';
 import { AuthService, CourseService, ProgressService } from '@projeto/core';
 import { Course } from '@projeto/types';
@@ -47,7 +47,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
     isCurrentLessonCompleted: false,
   });
 
-  const handleTabAction = (action: string) => {
+  const onTabAction = (action: string) => {
     switch (action) {
       case 'certificates':
         onNavigateToCertificates();
@@ -71,7 +71,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
         setError(null);
 
         const profile = await AuthService.getCurrentProfile();
-        setUserProfile(profile);
+        setUserProfile(profile ? { full_name: profile.full_name || '', email: profile.email } : null);
 
         const coursesData = await CourseService.getStudentPublishedCourses();
         const loadedCourses = coursesData || [];
@@ -142,9 +142,9 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
 
   return (
     <YStack flex={1} bg="$background">
-      <TopBar userProfile={userProfile} onLogout={onLogout} />
+      <TopBar userProfile={userProfile} onLogout={onLogout} onTabAction={onTabAction} />
       <ScrollView flex={1} contentContainerStyle={{ paddingBottom: 60 }}>
-        <YStack px="$6" pt="$12" pb="$4" gap="$6" maxWidth={1400} als="center" w="100%">
+        <YStack px="$6" pt="$12" pb="$4" gap="$6" maxWidth={1400} alignSelf="center" w="100%">
           {loading && (
             <Card ai="center" jc="center" p="$8" gap="$3">
               <Spinner size="large" color="$primary" />
@@ -227,7 +227,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                             <Text color="$white" fontWeight="700" ml="$2">Continuar aula</Text>
                           </Button>
                         )}
-                        <Button variant="ghost" border={1} borderColor="$border" onPress={() => onNavigateToCourseLessons(activeProgress.courseId)}>
+                        <Button variant="ghost" borderWidth={1} borderColor="$border" onPress={() => onNavigateToCourseLessons(activeProgress.courseId)}>
                           Ver curso
                         </Button>
                       </XStack>
@@ -274,7 +274,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                   <Card p="$5" gap="$3">
                     <XStack jc="space-between" ai="center">
                       <Text variant="h3" fontWeight="bold">Próximos passos</Text>
-                      <Button variant="ghost" p={0} size="$2">
+                      <Button variant="ghost" p={0}>
                         <Text color="$primary" fontSize={11} fontWeight="700">Ver tudo</Text>
                       </Button>
                     </XStack>
@@ -320,9 +320,9 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                       const courseStatus = progressPercent === 0 ? 'not_started' : progressPercent >= 100 ? 'completed' : 'in_progress';
 
                       const statusConfig = {
-                        not_started: { color: '$primary', label: 'Não iniciado', bg: '$primary' + '15' },
-                        in_progress: { color: '$warning', label: 'Em andamento', bg: '$warning' + '15' },
-                        completed: { color: '$success', label: 'Concluído', bg: '$success' + '15' },
+                        not_started: { color: '$primary', label: 'Não iniciado', bg: 'rgba(16, 185, 129, 0.09)' },
+                        in_progress: { color: '$warning', label: 'Em andamento', bg: 'rgba(245, 158, 11, 0.09)' },
+                        completed: { color: '$success', label: 'Concluído', bg: 'rgba(34, 197, 94, 0.09)' },
                       };
 
                       const status = statusConfig[courseStatus];
@@ -388,7 +388,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                               {courseStatus === 'not_started' && (
                                 <Button
                                   flex={1}
-                                  size="sm"
+                                  
                                   onPress={() => onPlay(course.id)}
                                 >
                                   <Icon name="Play" size={14} color="$white" />
@@ -398,7 +398,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                               {courseStatus === 'in_progress' && (
                                 <Button
                                   flex={1}
-                                  size="sm"
+                                  
                                   onPress={() => onPlay(course.id)}
                                 >
                                   <Icon name="Play" size={14} color="$white" />
@@ -408,7 +408,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                               {courseStatus === 'completed' && (
                                 <Button
                                   flex={1}
-                                  size="sm"
+                                  
                                   bg="$success"
                                   onPress={() => onNavigateToCertificates()}
                                 >
@@ -418,12 +418,12 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                               )}
                               <Button
                                 flex={1}
-                                size="sm"
+                                
                                 variant="ghost"
                                 borderWidth={1}
                                 borderColor="$primary"
                                 bg="transparent"
-                                hoverStyle={{ bg: '$primary' + '10' }}
+                                hoverStyle={{ bg: 'rgba(16, 185, 129, 0.06)' }}
                                 onPress={() => onNavigateToCourseLessons(course.id)}
                               >
                                 <Icon name="List" size={14} color="$primary" />
@@ -514,7 +514,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                       ))}
                     </YStack>
 
-                    <Button variant="ghost" border={1} borderColor="$border" mt="$2">
+                    <Button variant="ghost" borderWidth={1} borderColor="$border" mt="$2">
                       Abrir comunidade
                     </Button>
                   </Card>
@@ -531,12 +531,13 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
 interface TopBarProps {
   userProfile: { full_name: string; email: string } | null;
   onLogout: () => void;
+  onTabAction: (action: string) => void;
 }
 
-function TopBar({ userProfile, onLogout }: TopBarProps) {
+function TopBar({ userProfile, onLogout, onTabAction }: TopBarProps) {
   const media = useMedia();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const menuRef = useRef<View>(null);
+  const menuRef = useRef<any>(null);
   const initials = userProfile?.full_name
     ? userProfile.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
     : '--';
@@ -584,7 +585,7 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
                 cursor="pointer"
                 hoverStyle={{ backgroundColor: '$secondary' }}
                 position="relative"
-                onPress={() => handleTabAction(tab.action)}
+                onPress={() => onTabAction(tab.action)}
               >
                 <Text
                   fontSize={14}
@@ -601,7 +602,7 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
                     left={12}
                     right={12}
                     height={2}
-                    backgroundColor="#10B981"
+                    bg="$primary"
                     borderRadius={1}
                   />
                 )}
@@ -685,7 +686,7 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
               cursor="pointer"
               hoverStyle={{ backgroundColor: '$secondary' }}
               position="relative"
-              onPress={() => handleTabAction(tab.action)}
+              onPress={() => onTabAction(tab.action)}
             >
               <Text
                 fontSize={14}
@@ -702,7 +703,7 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
                   left={12}
                   right={12}
                   height={2}
-                  backgroundColor="#10B981"
+                  bg="$primary"
                   borderRadius={1}
                 />
               )}
