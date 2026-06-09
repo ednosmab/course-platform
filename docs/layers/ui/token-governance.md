@@ -53,6 +53,31 @@ O tema `cloudWhite` está registrado em `tamagui.config.ts` e mapeia todos os to
 
 **Sombras adicionais:** `cwSoft` e `cwPop` em `shadows.ts`.
 
+### Padrão de Sombras (Shadow Policy)
+
+**Decisão (2026-06-07):** O projeto **não usa sombras** em Cards e componentes de interface.
+
+**Regra vinculante:**
+- `Card` (componente base) **não deve ter sombra por padrão** — apenas `borderWidth: 1` e `borderColor: '$border'` para definir limites visuais.
+- Sombras **só são permitidas** quando explicitamente activas via variante `elevated` do Card, e mesmo assim com valores sutis (`shadowOpacity <= 0.08`).
+- É **PROIBIDO** espalhar `shadowPresets.*` directamente em `XStack`/`YStack`/`Card` fora do contexto de hover/press.
+
+**Justificativa:** Sombras em background claro (tema do aluno) criam ruído visual e fogem do design flat/clean do admin. O admin usa sombras mínimas porque o background é escuro (tema `dark`); o student usa background claro onde sombras ficam pesadas.
+
+**Exemplo correcto (Card sem sombra):**
+```tsx
+<Card p={0} overflow="hidden" br="$4">
+  {/* conteúdo */}
+</Card>
+```
+
+**Exemplo incorrecto (Card com sombra explícita):**
+```tsx
+<Card p={0} {...shadowPresets.cwSoft}>  {/* VIOLAÇÃO */}
+  {/* conteúdo */}
+</Card>
+```
+
 ### Ativação
 
 O tema ativo é `dark` (default). Para usar Cloud White em runtime:

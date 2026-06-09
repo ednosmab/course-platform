@@ -12,9 +12,6 @@ const navTabs = [
   { label: 'Conquistas', active: false, action: 'certificates' },
 ];
 
-const shadowSoft = { shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 };
-const shadowPop = { shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.12, shadowRadius: 24, elevation: 8 };
-
 type StudentDashboardProps = {
   onPlay: (courseId: string) => void;
   onNavigateToCourseLessons: (courseId: string) => void;
@@ -179,7 +176,6 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                         bg="$white"
                         ai="center"
                         jc="center"
-                        {...shadowPop}
                         pressStyle={{ scale: 0.95 }}
                         cursor="pointer"
                         onPress={() => onPlay(activeProgress.courseId)}
@@ -573,7 +569,6 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
       borderBottomColor="$border"
       px="$6"
       py="$3"
-      {...shadowSoft}
     >
       <XStack ai="center" jc="space-between" maxWidth={1400} w="100%" als="center">
         <XStack ai="center" gap="$6">
@@ -677,7 +672,6 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
                 p="$2"
                 minWidth={180}
                 zIndex={999}
-                {...shadowPop}
               >
                 <XStack
                   ai="center"
