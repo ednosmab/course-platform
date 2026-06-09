@@ -37,6 +37,7 @@ export function SortDropdown({ options, value, onChange }: SortDropdownProps) {
         py={6}
         borderRadius={8}
         borderWidth={1}
+        ai="center"
         borderColor="$border"
         backgroundColor="$card"
         cursor="pointer"
@@ -44,8 +45,8 @@ export function SortDropdown({ options, value, onChange }: SortDropdownProps) {
         onPress={() => setIsOpen(!isOpen)}
       >
         <Icon name="ArrowUpDown" size={14} color="$textMuted" />
-        <Text fontSize={13} fontWeight="500" fontFamily="$display">{selectedOption?.label || 'Ordenar'}</Text>
-        <Icon name="ChevronDown" size={14} color="$textMuted" />
+        <Text fontSize={13} fontFamily="$display">{selectedOption?.label || 'Ordenar'}</Text>
+        <Icon name={isOpen ? 'ChevronUp' : 'ChevronDown'} size={14} color="$textMuted" />
       </XStack>
 
       {isOpen && (
