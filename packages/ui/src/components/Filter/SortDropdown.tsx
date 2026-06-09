@@ -54,6 +54,7 @@ export function SortDropdown({ options, value, onChange }: SortDropdownProps) {
           position="absolute"
           top="100%"
           left={0}
+          right={0}
           mt={4}
           p={4}
           borderRadius={8}
@@ -61,10 +62,9 @@ export function SortDropdown({ options, value, onChange }: SortDropdownProps) {
           borderColor="$border"
           backgroundColor="$card"
           zIndex={50}
-          minWidth={160}
           style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
         >
-          <YStack gap={2}>
+          <YStack gap={2} w="100%">
             {options.map((opt) => (
               <XStack
                 key={opt.value}
