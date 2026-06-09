@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Image } from 'react-native';
-import { ScrollView, XStack, YStack, Text, Button, Card, Icon, BrandMark, Avatar, Spinner, ProgressBar, GridBackground, Input, Theme, useMedia } from '@projeto/ui';
+import { ScrollView, XStack, YStack, Text, Button, Card, Icon, BrandMark, Spinner, ProgressBar, GridBackground, Theme, useMedia } from '@projeto/ui';
 import flexedLogo from '../../assets/flexed-logo.png';
 import { AuthService, CourseService, ProgressService } from '@projeto/core';
 import { Course } from '@projeto/types';
@@ -119,13 +119,13 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
           );
 
           setActiveProgress({
-            courseTitle: firstCourse.title,
-            courseId: firstCourse.id,
-            lessonTitle: currentLesson.title,
+            courseTitle: firstCourse?.title || '',
+            courseId: firstCourse?.id || '',
+            lessonTitle: currentLesson?.title || '',
             moduleTitle: currentModule?.title || '',
             progress: progressPercent,
             remaining: `${allLessons.length - completedCount} aulas restantes`,
-            currentLessonId: currentLesson.id,
+            currentLessonId: currentLesson?.id || '',
             isCurrentLessonCompleted,
           });
         }
@@ -535,7 +535,6 @@ interface TopBarProps {
 
 function TopBar({ userProfile, onLogout }: TopBarProps) {
   const media = useMedia();
-  const [searchVal, setSearchVal] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<View>(null);
   const initials = userProfile?.full_name
@@ -563,108 +562,90 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
   };
 
   return (
-    <YStack
+    <>
+    <XStack
       bg="$background"
       borderBottomWidth={1}
       borderBottomColor="$border"
-      px="$6"
-      py="$3"
+      px={24}
+      height={64}
+      ai="center"
+      jc="space-between"
     >
-      <XStack ai="center" jc="space-between" maxWidth={1400} w="100%" als="center">
-        <XStack ai="center" gap="$6">
+      <XStack ai="center" gap={32}>
           <BrandMark />
-          <XStack gap="$2" $sm={{ display: 'none' }}>
+          <XStack ai="center" gap={4} $sm={{ display: 'none' }}>
             {navTabs.map((tab) => (
-              <Button
+              <XStack
                 key={tab.label}
-                variant="ghost"
-                px="$3"
-                py="$1.5"
-                br="$2"
-                bg={tab.active ? '$secondary' : 'transparent'}
+                px={12}
+                py={6}
+                borderRadius={6}
+                cursor="pointer"
+                hoverStyle={{ backgroundColor: '$secondary' }}
+                position="relative"
                 onPress={() => handleTabAction(tab.action)}
               >
                 <Text
-                  fontSize={13}
-                  fontWeight="700"
+                  fontSize={14}
                   color={tab.active ? '$text' : '$textMuted'}
+                  fontWeight={tab.active ? '600' : '400'}
+                  style={{ userSelect: 'none' }}
                 >
                   {tab.label}
                 </Text>
-              </Button>
+                {tab.active && (
+                  <XStack
+                    position="absolute"
+                    bottom={0}
+                    left={12}
+                    right={12}
+                    height={2}
+                    backgroundColor="#10B981"
+                    borderRadius={1}
+                  />
+                )}
+              </XStack>
             ))}
           </XStack>
-        </XStack>
+      </XStack>
 
-        <XStack ai="center" gap="$3">
-          <XStack
-            ai="center"
-            bg="$surface"
-            borderWidth={1}
-            borderColor="$border"
-            br="$3"
-            px="$3"
-            py="$1"
-            w={260}
-            $sm={{ display: 'none' }}
-          >
-            <Icon name="Search" size={15} color="$textMuted" />
-            <Input
-              value={searchVal}
-              onChangeText={setSearchVal}
-              placeholder="O que você quer aprender hoje?"
-              placeholderTextColor="$textMuted"
-              bg="transparent"
-              borderWidth={0}
-              h="$2.5"
-              fontSize={12}
-              color="$text"
-              flex={1}
-            />
-          </XStack>
-
-          <Button variant="ghost" px="$2.5" py="$2.5" borderRadius="$3">
+      <XStack ai="center" gap={12}>
+          <XStack position="relative" p={8} borderRadius={6} cursor="pointer">
             <Icon name="Bell" size={16} color="$textMuted" />
-            <XStack
-              position="absolute"
-              top={6}
-              right={6}
-              w={7}
-              h={7}
-              br={4}
-              bg="$primary"
-            />
-          </Button>
+            <XStack position="absolute" right={6} top={6} w={6} h={6} borderRadius={3} bg="$primary" />
+          </XStack>
 
           <YStack ref={menuRef} position="relative">
             <XStack
               ai="center"
-              gap="$2"
-              px="$2.5"
-              py="$1.5"
-              br="$3"
-              bg="$surface"
+              gap={8}
+              px={10}
+              py={6}
+              borderRadius={6}
               borderWidth={1}
               borderColor="$border"
+              backgroundColor="$background"
               cursor="pointer"
-              hoverStyle={{ opacity: 0.85 }}
+              hoverStyle={{ backgroundColor: '$secondary' }}
               pressStyle={{ scale: 0.97 }}
               onPress={() => setShowUserMenu(!showUserMenu)}
             >
-              <XStack w={24} h={24} br={12} bg="$secondary" ai="center" jc="center">
-                <Text fontSize={10} fontWeight="bold" color="$text">{initials}</Text>
+              <XStack w={24} h={24} br={4} bg="$accent" ai="center" jc="center">
+                <Text fontSize={11} fontWeight="600" color="$accentForeground">{initials}</Text>
               </XStack>
-              <Text fontSize={12} fontWeight="600" color="$text" $sm={{ display: 'none' }}>
+              <Text fontSize={14} color="$text" $sm={{ display: 'none' }}>
                 {firstName}
               </Text>
-              <Icon name="ChevronDown" size={13} color="$textMuted" />
+              <Icon name="ChevronDown" size={14} color="$textMuted" />
             </XStack>
 
             {showUserMenu && (
               <YStack
                 position="absolute"
-                top="$5"
+                top="100%"
                 right={0}
+                marginTop={4}
                 bg="$popover"
                 borderWidth={1}
                 borderColor="$border"
@@ -690,33 +671,45 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
               </YStack>
             )}
           </YStack>
-        </XStack>
       </XStack>
+    </XStack>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} mt="$3" display={media.sm ? 'flex' : 'none'}>
-        <XStack gap="$1">
+        <XStack gap={4}>
           {navTabs.map((tab) => (
-            <Button
+            <XStack
               key={tab.label}
-              px="$3.5"
-              py="$1.5"
-              br="$2"
-              bg={tab.active ? '$secondary' : 'transparent'}
-              variant="ghost"
-              size="$2"
+              px={12}
+              py={6}
+              borderRadius={6}
+              cursor="pointer"
+              hoverStyle={{ backgroundColor: '$secondary' }}
+              position="relative"
               onPress={() => handleTabAction(tab.action)}
             >
               <Text
-                fontSize={12}
-                fontWeight="700"
+                fontSize={14}
+                fontWeight={tab.active ? '600' : '400'}
                 color={tab.active ? '$text' : '$textMuted'}
+                style={{ userSelect: 'none' }}
               >
                 {tab.label}
               </Text>
-            </Button>
+              {tab.active && (
+                <XStack
+                  position="absolute"
+                  bottom={0}
+                  left={12}
+                  right={12}
+                  height={2}
+                  backgroundColor="#10B981"
+                  borderRadius={1}
+                />
+              )}
+            </XStack>
           ))}
         </XStack>
       </ScrollView>
-    </YStack>
+      </>
   );
 }
