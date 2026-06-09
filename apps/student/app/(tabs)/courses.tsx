@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import { YStack } from '@projeto/ui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { StudentCourses } from '../../src/screens/StudentCourses';
@@ -16,6 +15,9 @@ export default function StudentCoursesRoute() {
       <StudentCourses
         onSelectCourse={(courseId) => router.push(`/course/${courseId}`)}
         onBack={() => router.back()}
+        onLogout={() => router.replace('/login')}
+        onNavigateToDashboard={() => router.push('/')}
+        onNavigateToCertificates={() => router.push('/certificates')}
       />
     </SafeAreaView>
   );

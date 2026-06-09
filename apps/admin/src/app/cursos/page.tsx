@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   YStack,
   XStack,
@@ -18,8 +18,8 @@ import {
   FilterBar,
 } from '@projeto/ui';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
-import { BrandMark } from '../../components/brand-mark';
+import { useRouter } from 'next/navigation';
+import { AdminHeader } from '../../components/AdminHeader';
 import { CourseService, StorageService, AuthService } from '@projeto/core';
 import type { Course } from '@projeto/types';
 
@@ -41,18 +41,11 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 export default function CursosPage() {
   const router = useRouter();
-  const pathname = usePathname();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState(0);
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'name-az' | 'name-za'>('recent');
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Perfil do Administrador
-  const [displayName, setDisplayName] = useState('');
-  const [initials, setInitials] = useState('');
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const userMenuRef = useRef<HTMLUListElement>(null);
 
   // Modal de Criação de Cursos
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -60,17 +53,6 @@ export default function CursosPage() {
   const [formDescription, setFormDescription] = useState('');
   const [formThumbnail, setFormThumbnail] = useState<File | null>(null);
   const [formThumbnailPreview, setFormThumbnailPreview] = useState<string | null>(null);
-
-  // Fecha o menu de usuário se clicar fora dele
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setShowUserMenu(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const fetchCourses = async () => {
     try {
@@ -84,18 +66,13 @@ export default function CursosPage() {
     }
   };
 
-  // Carrega informações do perfil e cursos na inicialização
+  // Carrega perfil e cursos na inicialização
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       try {
-        const profile = await AuthService.getCurrentProfile();
-        if (profile && !cancelled) {
-          const name = profile.full_name || profile.email || 'Admin';
-          setDisplayName(name);
-          setInitials(name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase());
-        }
+        await AuthService.getCurrentProfile();
 
         const data = await CourseService.getAllCourses();
         if (!cancelled) setCourses(data);
@@ -238,118 +215,7 @@ export default function CursosPage() {
         `}</style>
 
         {/* Header */}
-        <XStack
-          position="sticky" top={0} zIndex={40}
-          borderBottomWidth={1} borderBottomColor="$border"
-          bg="$background"
-          style={{ backdropFilter: 'blur(12px)' }}
-          px={24} height={64} ai="center" jc="space-between"
-        >
-          <XStack ai="center" gap={32}>
-            <BrandMark />
-            <XStack ai="center" gap={4}>
-              {['Cursos', 'Alunos', 'Mídia', 'Relatórios'].map((l, i) => {
-                const isActive = l === 'Cursos' && (pathname.startsWith('/cursos') || pathname.startsWith('/configuracoes'));
-                return (
-                  <XStack
-                    key={l}
-                    px={12}
-                    py={6}
-                    borderRadius={6}
-                    cursor="pointer"
-                    hoverStyle={{ backgroundColor: '$secondary' }}
-                    position="relative"
-                    onPress={() => {
-                      if (i === 0) {
-                        router.push('/cursos');
-                      }
-                    }}
-                  >
-                    <Text
-                      fontSize={14}
-                      color={isActive ? '$text' : '$textMuted'}
-                      fontWeight={isActive ? '600' : '400'}
-                      style={{ userSelect: 'none' }}
-                    >
-                      {l}
-                    </Text>
-                    {isActive && (
-                      <XStack
-                        position="absolute"
-                        bottom={0}
-                        left={12}
-                        right={12}
-                        height={2}
-                        backgroundColor="#10B981"
-                        borderRadius={1}
-                      />
-                    )}
-                  </XStack>
-                );
-              })}
-            </XStack>
-          </XStack>
-
-          <XStack ai="center" gap={12}>
-            <XStack position="relative" p={8} borderRadius={6} cursor="pointer">
-              <Icon name="Bell" size={16} color="$textMuted" />
-              <XStack position="absolute" right={6} top={6} w={6} h={6} borderRadius={3} bg="$primary" />
-            </XStack>
-            {displayName && (
-              <ul ref={userMenuRef} style={{ listStyle: 'none', margin: 0, padding: 0, position: 'relative' }}>
-                <li>
-                  <a
-                    href="#"
-                    onClick={(e) => { e.preventDefault(); setShowUserMenu(!showUserMenu); }}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      padding: '6px 10px', borderRadius: 6,
-                      border: '1px solid #DEE1EB', background: '#FFFFFF',
-                      cursor: 'pointer', textDecoration: 'none', color: 'inherit',
-                      fontFamily: 'inherit', fontSize: 'inherit',
-                    }}
-                  >
-                    <XStack width={24} height={24} borderRadius={4} ai="center" jc="center" backgroundColor="$accent">
-                      <Text fontSize={11} fontWeight="$6" color="$accentForeground">{initials}</Text>
-                    </XStack>
-                    <Text fontSize={14}>{displayName}</Text>
-                    <Icon name="ChevronDown" size={14} color="$textMuted" />
-                  </a>
-
-                  {showUserMenu && (
-                    <ul
-                      style={{
-                        position: 'absolute', top: '100%', right: 0, marginTop: 4,
-                        listStyle: 'none', margin: 0, padding: 8, minWidth: 160,
-                        borderRadius: 8, zIndex: 999,
-                        background: '#FFFFFF', border: '1px solid #DEE1EB',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                      }}
-                    >
-                      <li>
-                        <a
-                          href="#"
-                          onClick={(e) => { e.preventDefault(); setShowUserMenu(false); router.push('/logout'); }}
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: 8,
-                            padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
-                            textDecoration: 'none', color: 'inherit',
-                            fontFamily: 'inherit', fontSize: 'inherit',
-                          }}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F7F8FC'; }}
-                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                        >
-                          <Icon name="LogOut" size={16} color="$textMuted" />
-                          <Text fontSize={14} color="$danger">Sair</Text>
-                        </a>
-                      </li>
-                    </ul>
-                  )}
-                </li>
-              </ul>
-            )}
-          </XStack>
-        </XStack>
+        <AdminHeader />
 
         <main style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 24px', width: '100%' }}>
           {/* Hero Header */}

@@ -1,19 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, XStack, YStack, Text, Card, Icon, Spinner, Theme, FilterBar } from '@projeto/ui';
+import { ScrollView, XStack, YStack, Text, Card, Icon, Spinner, FilterBar, GridBackground } from '@projeto/ui';
 import { CourseService, AuthService } from '@projeto/core';
 import { Course } from '@projeto/types';
+import { StudentHeader } from '../components/StudentHeader';
 
 type StudentCoursesProps = {
   onSelectCourse: (courseId: string) => void;
   onBack: () => void;
+  onLogout: () => void;
+  onNavigateToDashboard: () => void;
+  onNavigateToCertificates: () => void;
 };
 
-export function StudentCourses({ onSelectCourse, onBack }: StudentCoursesProps) {
+export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToDashboard, onNavigateToCertificates }: StudentCoursesProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState(0);
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'name-az' | 'name-za'>('recent');
+  const [userProfile, setUserProfile] = useState<{ full_name: string; email: string } | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const profile = await AuthService.getCurrentProfile();
+      if (profile) setUserProfile({ full_name: profile.full_name || '', email: profile.email || '' });
+    })();
+  }, []);
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -32,6 +44,19 @@ export function StudentCourses({ onSelectCourse, onBack }: StudentCoursesProps) 
 
     loadCourses();
   }, []);
+
+  const handleTabAction = (action: string) => {
+    switch (action) {
+      case 'dashboard':
+        onNavigateToDashboard();
+        break;
+      case 'certificates':
+        onNavigateToCertificates();
+        break;
+      case 'courses':
+        break;
+    }
+  };
 
   const filteredCourses = courses.filter((course) => {
     if (filter === 0) return true;
@@ -55,42 +80,41 @@ export function StudentCourses({ onSelectCourse, onBack }: StudentCoursesProps) 
     }
   });
 
-  const filterLabel = filter === 0 ? null : filter === 1 ? 'Publicados' : 'Rascunhos';
+  const filterLabel = filter === 0 ? null : filter === 1 ? 'Em andamento' : 'Não iniciados';
+
+  const formatDate = (value?: string | Date | null) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(date);
+  };
 
   return (
     <YStack flex={1} bg="$background">
+      <StudentHeader userProfile={userProfile} onLogout={onLogout} onTabAction={handleTabAction} activeTab="courses" />
+
       <ScrollView flex={1} contentContainerStyle={{ paddingBottom: 60 }}>
-        <YStack px="$6" pt="$12" pb="$4" gap="$6" maxWidth={1400} als="center" w="100%">
-          {/* Header */}
-          <XStack ai="center" gap="$4" mb="$4">
-            <XStack
-              p="$2"
-              borderRadius="$2"
-              cursor="pointer"
-              hoverStyle={{ backgroundColor: '$secondary' }}
-              onPress={onBack}
-            >
-              <Icon name="ArrowLeft" size={20} color="$text" />
-            </XStack>
-            <YStack gap="$1">
-              <Text variant="h1" fontFamily="$heading" fontWeight="bold">
-                Meus Cursos
-              </Text>
-              <Text variant="caption" color="$textMuted">
-                {courses.length} {courses.length === 1 ? 'curso matriculado' : 'cursos matriculados'}
-              </Text>
-            </YStack>
-          </XStack>
+        <YStack px={24} pt={24} pb={16} gap={24} maxWidth={1400} alignSelf="center" w="100%">
+
+          {/* Page Header */}
+          <YStack gap={4}>
+            <Text fontFamily="$display" fontSize={32} fontWeight="$6" letterSpacing={-0.5}>
+              Meus Cursos
+            </Text>
+            <Text fontSize={14} color="$textMuted">
+              {courses.length} {courses.length === 1 ? 'curso matriculado' : 'cursos matriculados'}
+            </Text>
+          </YStack>
 
           {loading && (
-            <Card ai="center" jc="center" p="$8" gap="$3">
+            <YStack py={64} ai="center" jc="center" gap={12} opacity={0.7}>
               <Spinner size="large" color="$primary" />
-              <Text color="$textMuted">Carregando cursos...</Text>
-            </Card>
+              <Text color="$textMuted" fontSize={14}>Carregando cursos...</Text>
+            </YStack>
           )}
 
           {error && (
-            <Card ai="center" jc="center" p="$8" gap="$3">
+            <Card ai="center" jc="center" p={32} gap={12}>
               <Icon name="AlertCircle" size={32} color="$danger" />
               <Text color="$danger" fontWeight="600">{error}</Text>
             </Card>
@@ -98,12 +122,11 @@ export function StudentCourses({ onSelectCourse, onBack }: StudentCoursesProps) 
 
           {!loading && !error && (
             <>
-              {/* Filters */}
               <FilterBar
                 filterOptions={[
                   { value: '0', label: 'Todos' },
-                  { value: '1', label: 'Publicados' },
-                  { value: '2', label: 'Rascunhos' },
+                  { value: '1', label: 'Em andamento' },
+                  { value: '2', label: 'Não iniciados' },
                 ]}
                 filterValue={String(filter)}
                 onFilterChange={(value) => setFilter(Number(value))}
@@ -121,52 +144,110 @@ export function StudentCourses({ onSelectCourse, onBack }: StudentCoursesProps) 
                 onClearFilter={() => setFilter(0)}
               />
 
-              {/* Course List */}
               {sortedCourses.length === 0 ? (
-                <Card ai="center" jc="center" p="$8" gap="$3">
+                <YStack ai="center" jc="center" py={64} gap={8} borderWidth={1} borderColor="$border" borderRadius={12} borderStyle="dashed" bg="$card">
                   <Icon name="BookOpen" size={48} color="$textMuted" />
                   <Text color="$textMuted" fontSize={16} fontWeight="600">Nenhum curso encontrado</Text>
                   <Text color="$textMuted" fontSize={14}>Ajuste os filtros ou volte mais tarde.</Text>
-                </Card>
+                </YStack>
               ) : (
-                <YStack gap="$4">
+                <XStack flexWrap="wrap" gap={16}>
                   {sortedCourses.map((course) => (
-                    <Card
+                    <YStack
                       key={course.id}
-                      p="$4"
-                      gap="$3"
-                      cursor="pointer"
-                      hoverStyle={{ backgroundColor: '$secondary' }}
-                      onPress={() => onSelectCourse(course.id)}
+                      flex={1}
+                      minWidth={320}
+                      $md={{ maxWidth: 'calc(50% - 8px)' }}
+                      $sm={{ maxWidth: '100%' }}
                     >
-                      <XStack gap="$4" ai="center">
-                        <YStack flex={1} gap="$2">
-                          <Text fontWeight="600" fontSize={16}>{course.title}</Text>
-                          <Text color="$textMuted" fontSize={13} numberOfLines={2}>
-                            {course.description || 'Sem descrição'}
-                          </Text>
-                          <XStack gap="$2" ai="center" mt="$1">
+                      <Card
+                        p={0}
+                        overflow="hidden"
+                        br="$4"
+                        cursor="pointer"
+                        borderWidth={1}
+                        borderColor="$border"
+                        hoverStyle={{ borderColor: '$primary' }}
+                        onPress={() => onSelectCourse(course.id)}
+                      >
+                        {/* Thumbnail */}
+                        <YStack
+                          height={128}
+                          position="relative"
+                          bg="$primary"
+                        >
+                          {course.thumbnail_url ? (
+                            <YStack
+                              position="absolute"
+                              inset={0}
+                              style={{
+                                backgroundImage: `url(${course.thumbnail_url})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                              }}
+                            />
+                          ) : (
+                            <>
+                              <GridBackground position="absolute" inset={0} opacity={0.15} />
+                              <YStack position="absolute" inset={0} ai="center" jc="center">
+                                <Icon name="Play" size={32} color="$white" />
+                              </YStack>
+                            </>
+                          )}
+
+                          {/* Status Badge */}
+                          <XStack position="absolute" left={12} top={12}>
                             <XStack
-                              px="$2"
-                              py="$1"
-                              borderRadius="$2"
-                              backgroundColor={course.status === 'published' ? '$primary' : '$secondary'}
+                              borderRadius={9999}
+                              px={10}
+                              py={4}
+                              ai="center"
+                              gap={6}
+                              style={{
+                                backdropFilter: 'blur(8px)',
+                                backgroundColor: 'rgba(16, 185, 129, 0.9)',
+                              }}
                             >
-                              <Text
-                                fontSize={11}
-                                fontWeight="600"
-                                color={course.status === 'published' ? '$white' : '$text'}
-                              >
-                                {course.status === 'published' ? 'Publicado' : 'Rascunho'}
+                              <XStack
+                                w={6}
+                                h={6}
+                                borderRadius={3}
+                                bg="$white"
+                                style={{ borderRadius: '50%' }}
+                              />
+                              <Text fontSize={11} fontWeight="700" color="$white">
+                                Em andamento
                               </Text>
                             </XStack>
                           </XStack>
                         </YStack>
-                        <Icon name="ChevronRight" size={20} color="$textMuted" />
-                      </XStack>
-                    </Card>
+
+                        {/* Content */}
+                        <YStack p={20} gap={8}>
+                          <Text
+                            fontFamily="$display"
+                            fontSize={16}
+                            fontWeight="$6"
+                            numberOfLines={1}
+                          >
+                            {course.title}
+                          </Text>
+
+                          <Text fontSize={13} color="$textMuted" numberOfLines={2}>
+                            {course.description || 'Sem descrição'}
+                          </Text>
+
+                          <XStack ai="center" gap={8} mt={4}>
+                            <Icon name="Clock" size={12} color="$textMuted" />
+                            <Text fontSize={12} color="$textMuted">
+                              Atualizado {formatDate(course.updated_at || course.created_at)}
+                            </Text>
+                          </XStack>
+                        </YStack>
+                      </Card>
+                    </YStack>
                   ))}
-                </YStack>
+                </XStack>
               )}
             </>
           )}
