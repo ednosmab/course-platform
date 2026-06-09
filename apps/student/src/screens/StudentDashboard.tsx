@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Image } from 'react-native';
-import { ScrollView, XStack, YStack, Text, Button, Card, Icon, BrandMark, Avatar, Spinner, ProgressBar, GridBackground, Input, Theme, useMedia, shadowPresets } from '@projeto/ui';
+import { ScrollView, XStack, YStack, Text, Button, Card, Icon, BrandMark, Avatar, Spinner, ProgressBar, GridBackground, Input, Theme, useMedia } from '@projeto/ui';
 import flexedLogo from '../../assets/flexed-logo.png';
 import { AuthService, CourseService, ProgressService } from '@projeto/core';
 import { Course } from '@projeto/types';
@@ -11,6 +11,9 @@ const navTabs = [
   { label: 'Explorar', active: false, action: 'explore' },
   { label: 'Conquistas', active: false, action: 'certificates' },
 ];
+
+const shadowSoft = { shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 };
+const shadowPop = { shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.12, shadowRadius: 24, elevation: 8 };
 
 type StudentDashboardProps = {
   onPlay: (courseId: string) => void;
@@ -176,7 +179,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                         bg="$white"
                         ai="center"
                         jc="center"
-                        {...shadowPresets.cwPop}
+                        {...shadowPop}
                         pressStyle={{ scale: 0.95 }}
                         cursor="pointer"
                         onPress={() => onPlay(activeProgress.courseId)}
@@ -315,6 +318,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                 ) : (
                   <XStack flexWrap="wrap" gap="$4" jc="flex-start" w="100%">
                     {courses.map((course, idx) => {
+                      if (!course) return null;
                       const isActive = course.id === activeProgress.courseId;
                       const progressPercent = isActive ? activeProgress.progress : idx === 0 && courses.length > 0 ? activeProgress.progress : 0;
                       const courseStatus = progressPercent === 0 ? 'not_started' : progressPercent >= 100 ? 'completed' : 'in_progress';
@@ -329,7 +333,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
 
                       return (
                         <Card
-                          key={course.id}
+                          key={course?.id || idx}
                           w="31.5%"
                           $md={{ w: '48%' }}
                           $sm={{ w: '100%' }}
@@ -338,7 +342,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                         >
                           <YStack h={110} bg="$primary" position="relative" jc="center" ai="center">
                             <GridBackground position="absolute" top={0} left={0} right={0} bottom={0} opacity={0.15} />
-                            {course.thumbnail_url ? (
+                            {course?.thumbnail_url ? (
                               <YStack
                                 position="absolute"
                                 top={0}
@@ -359,7 +363,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                           <YStack p="$4" gap="$3" bg="$surface">
                             <YStack gap="$1">
                               <Text fontSize={14} fontWeight="bold" numberOfLines={2}>
-                                {course.title}
+                                {course?.title || 'Sem titulo'}
                               </Text>
                               <Text fontSize={11} color="$textMuted">
                                 por Rafa Lima
@@ -569,7 +573,7 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
       borderBottomColor="$border"
       px="$6"
       py="$3"
-      {...shadowPresets.cwSoft}
+      {...shadowSoft}
     >
       <XStack ai="center" jc="space-between" maxWidth={1400} w="100%" als="center">
         <XStack ai="center" gap="$6">
@@ -673,7 +677,7 @@ function TopBar({ userProfile, onLogout }: TopBarProps) {
                 p="$2"
                 minWidth={180}
                 zIndex={999}
-                {...shadowPresets.cwPop}
+                {...shadowPop}
               >
                 <XStack
                   ai="center"
