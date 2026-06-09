@@ -53,12 +53,12 @@ export function FilterDropdown({
         onPress={() => setIsOpen(!isOpen)}
       >
         <Icon name={icon as any} size={14} color={hasSelection ? '$white' : '$textMuted'} />
-        <Text fontSize={13} fontWeight="500" color={hasSelection ? '$white' : '$text'}>
+        <Text fontSize={13} fontWeight="500" fontFamily="$display" color={hasSelection ? '$white' : '$text'}>
           {label}
         </Text>
         {hasSelection && selectedOption && (
           <XStack px={6} py={2} borderRadius={4} backgroundColor="rgba(255,255,255,0.2)">
-            <Text fontSize={11} fontWeight="600" color="$white">{selectedOption.label}</Text>
+            <Text fontSize={11} fontWeight="600" fontFamily="$display" color="$white">{selectedOption.label}</Text>
           </XStack>
         )}
         <Icon name="ChevronDown" size={14} color={hasSelection ? '$white' : '$textMuted'} />
@@ -94,7 +94,7 @@ export function FilterDropdown({
                   setIsOpen(false);
                 }}
               >
-                <Text fontSize={13} color={value === opt.value ? '$text' : '$textMuted'}>
+                <Text fontSize={13} fontFamily="$display" color={value === opt.value ? '$text' : '$textMuted'}>
                   {opt.label}
                 </Text>
               </XStack>

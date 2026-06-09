@@ -59,7 +59,7 @@ export function FilterBar({
         />
 
         <XStack ml="auto" ai="center" gap={6}>
-          <Text fontSize={12} color="$textMuted">
+          <Text fontSize={12} fontFamily="$display" color="$textMuted">
             {resultCount} {resultCount === 1 ? resultLabel.replace(/s$/, '') : resultLabel}
           </Text>
         </XStack>
@@ -67,7 +67,7 @@ export function FilterBar({
 
       {hasActiveFilter && onClearFilter && (
         <XStack gap={6} mb={16} flexWrap="wrap" ai="center">
-          <Text fontSize={12} color="$textMuted">Filtros:</Text>
+          <Text fontSize={12} fontFamily="$display" color="$textMuted">Filtros:</Text>
           <FilterChip label={filterLabel} onRemove={onClearFilter} />
           <XStack
             px={8}
@@ -77,7 +77,7 @@ export function FilterBar({
             hoverStyle={{ backgroundColor: '$secondary' }}
             onPress={onClearFilter}
           >
-            <Text fontSize={12} color="$danger">Limpar tudo</Text>
+            <Text fontSize={12} fontFamily="$display" color="$danger">Limpar tudo</Text>
           </XStack>
         </XStack>
       )}
