@@ -45,7 +45,7 @@ export function SortDropdown({ options, value, onChange }: SortDropdownProps) {
         onPress={() => setIsOpen(!isOpen)}
       >
         <Icon name="ArrowUpDown" size={14} color="$textMuted" />
-        <Text fontSize={13} fontFamily="$display">{selectedOption?.label || 'Ordenar'}</Text>
+        <Text fontSize={13} fontFamily="$display" fontWeight="400">{selectedOption?.label || 'Ordenar'}</Text>
         <Icon name={isOpen ? 'ChevronUp' : 'ChevronDown'} size={14} color="$textMuted" />
       </XStack>
 
@@ -79,7 +79,7 @@ export function SortDropdown({ options, value, onChange }: SortDropdownProps) {
                   setIsOpen(false);
                 }}
               >
-                <Text fontSize={13} fontFamily="$display" color={value === opt.value ? '$text' : '$textMuted'}>
+                <Text fontSize={13} fontFamily="$display" fontWeight="400" color={value === opt.value ? '$text' : '$textMuted'}>
                   {opt.label}
                 </Text>
               </XStack>

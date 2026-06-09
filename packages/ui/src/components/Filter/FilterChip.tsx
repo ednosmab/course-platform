@@ -19,7 +19,7 @@ export function FilterChip({ label, onRemove }: FilterChipProps) {
       backgroundColor="$card"
       ai="center"
     >
-      <Text fontSize={12} fontFamily="$display">{label}</Text>
+      <Text fontSize={12} fontFamily="$display" fontWeight="400">{label}</Text>
       <XStack
         ml={4}
         p={2}
