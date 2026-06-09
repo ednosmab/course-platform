@@ -1,5 +1,5 @@
 import React from 'react';
-import { XStack, Text } from 'tamagui';
+import { XStack, YStack, Text } from 'tamagui';
 import { FilterDropdown } from './FilterDropdown';
 import { SortDropdown } from './SortDropdown';
 import { FilterChip } from './FilterChip';
@@ -42,7 +42,7 @@ export function FilterBar({
   const hasActiveFilter = filterLabel && filterLabel !== filterOptions[0]?.label;
 
   return (
-    <>
+    <YStack>
       <XStack gap={8} ai="center" mb={16} flexWrap="wrap">
         <FilterDropdown
           options={filterOptions}
@@ -81,6 +81,6 @@ export function FilterBar({
           </XStack>
         </XStack>
       )}
-    </>
+    </YStack>
   );
 }
