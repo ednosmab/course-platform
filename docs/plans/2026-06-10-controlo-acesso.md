@@ -5,6 +5,28 @@
 **Executor previsto:** Agente (build mode)
 **Reviewer:** Agente (review mode)
 
+## 🤖 Atribuição de Modelos por Step
+
+| Step | Modelo | Justificativa |
+|---|---|---|
+| 1 | MiMo V2.5 Free | Migration SQL — estrutura de tabelas, índices, RLS |
+| 2 | MiMo V2.5 Free | Tipos Zod — schemas e types |
+| 3 | MiMo V2.5 Free | Exports — barrel file |
+| 4 | MiMo V2.5 Free | Interface — definição de métodos |
+| 5 | MiMo V2.5 Free | Service — delegação para repo |
+| **6** | **Nemotron 3 Ultra Free** | **Implementação Supabase — queries complexas, UPSERT, DFS, JOINs** |
+| 7 | MiMo V2.5 Free | Migration data — INSERT inicial |
+| 8 | MiMo V2.5 Free | Admin UI — componente React/Next.js |
+| 9 | MiMo V2.5 Free | Admin UI — validação de ciclo |
+| 10 | MiMo V2.5 Free | Student UI — lógica de acesso nos cards |
+| 11 | MiMo V2.5 Free | Student UI — filtros |
+| 12 | MiMo V2.5 Free | Testes — service tests |
+| 13 | MiMo V2.5 Free | Testes — types tests |
+| 14 | MiMo V2.5 Free | Docs — workflow admin |
+| 15 | MiMo V2.5 Free | Docs — backlog update |
+
+> **Nota:** O Step 6 é atribuído ao **Nemotron 3 Ultra Free** por ser a etapa mais complexa do plano — requer implementação de queries Supabase com JOINs multi-tabela, UPSERT, DFS para detecção de ciclos, e lógica de negócio transaccional. O Nemotron 3 Ultra Free demonstrou superioridade em tarefas de backend/database layer.
+
 ## 🎯 Objectivo
 
 Implementar sistema de controlo de acesso a cursos no modelo SaaS:
@@ -117,25 +139,25 @@ create policy "Estudantes visualizam seus próprios planos"
 
 ## 📋 Steps
 
-### Step 1: Migration SQL — Criar tabelas
+### Step 1: Migration SQL — Criar tabelas `[MiMo V2.5 Free]`
 - **Ficheiro:** `supabase/migrations/20260610000001_add_course_access_control.sql`
 - **Acção:** Criar 4 tabelas (`course_access`, `plans`, `plan_courses`, `student_plans`), 4 índices, 8 RLS policies, trigger `handle_updated_at` para `course_access` e `plans`
 - **Verificação:** `ls supabase/migrations/20260610000001_add_course_access_control.sql` → existe
 - [ ]
 
-### Step 2: Tipos Zod — Adicionar schemas
+### Step 2: Tipos Zod — Adicionar schemas `[MiMo V2.5 Free]`
 - **Ficheiro:** `packages/types/src/database.ts`
 - **Acção:** Adicionar `CourseAccessSchema`, `PlanSchema`, `PlanCourseSchema`, `StudentPlanSchema` + types correspondentes
 - **Verificação:** `grep "CourseAccessSchema" packages/types/src/database.ts` → presente
 - [ ]
 
-### Step 3: Tipos — Exportar novos types
+### Step 3: Tipos — Exportar novos types `[MiMo V2.5 Free]`
 - **Ficheiro:** `packages/types/src/index.ts`
 - **Acção:** Adicionar exports dos 4 novos schemas e types
 - **Verificação:** `grep "CourseAccess" packages/types/src/index.ts` → presente
 - [ ]
 
-### Step 4: Interface ICourseRepository — Adicionar métodos de acesso
+### Step 4: Interface ICourseRepository — Adicionar métodos de acesso `[MiMo V2.5 Free]`
 - **Ficheiro:** `packages/core/src/ports/ICourseRepository.ts`
 - **Acção:** Adicionar 5 métodos:
   - `getCourseAccess(courseId: string): Promise<CourseAccess | null>`
@@ -146,7 +168,7 @@ create policy "Estudantes visualizam seus próprios planos"
 - **Verificação:** `grep "getCourseAccess" packages/core/src/ports/ICourseRepository.ts` → presente
 - [ ]
 
-### Step 5: CourseService — Adicionar métodos de acesso
+### Step 5: CourseService — Adicionar métodos de acesso `[MiMo V2.5 Free]`
 - **Ficheiro:** `packages/core/src/services/course.ts`
 - **Acção:** Adicionar 5 métodos delegando para o repo:
   - `getCourseAccess(courseId)` → `repo.getCourseAccess(courseId)`
@@ -157,7 +179,7 @@ create policy "Estudantes visualizam seus próprios planos"
 - **Verificação:** `grep "getCourseAccess" packages/core/src/services/course.ts` → presente
 - [ ]
 
-### Step 6: Implementação Supabase — ICourseRepository
+### Step 6: Implementação Supabase — ICourseRepository `[Nemotron 3 Ultra Free]`
 - **Ficheiro:** `packages/core/src/repositories/supabase-course-repository.ts`
 - **Acção:** Implementar os 5 métodos usando queries Supabase:
   - `getCourseAccess`: SELECT da tabela `course_access`
@@ -168,13 +190,13 @@ create policy "Estudantes visualizam seus próprios planos"
 - **Verificação:** `grep "getCourseAccess" packages/core/src/repositories/supabase-course-repository.ts` → presente
 - [ ]
 
-### Step 7: Migration data — Dados iniciais
+### Step 7: Migration data — Dados iniciais `[MiMo V2.5 Free]`
 - **Ficheiro:** `supabase/migrations/20260610000001_add_course_access_control.sql` (mesmo ficheiro do Step 1)
 - **Acção:** Inserir `course_access` com `access_mode = 'free'` para todos os cursos existentes (backward compatible)
 - **Verificação:** `grep "INSERT INTO public.course_access" supabase/migrations/20260610000001_add_course_access_control.sql` → presente
 - [ ]
 
-### Step 8: Admin UI — Seção "Controlo de Acesso" na config do curso
+### Step 8: Admin UI — Seção "Controlo de Acesso" na config do curso `[MiMo V2.5 Free]`
 - **Ficheiro:** `apps/admin/src/app/configuracoes/[courseId]/page.tsx`
 - **Acção:** Inserir nova seção entre Thumbnail (linha 660) e Status de Publicação (linha 662):
   - Estado: `accessMode` ('free' | 'progressive' | 'restricted'), `prerequisiteCourseId` (string)
@@ -185,13 +207,13 @@ create policy "Estudantes visualizam seus próprios planos"
 - **Verificação:** `grep "accessMode" apps/admin/src/app/configuracoes/[courseId]/page.tsx` → presente
 - [ ]
 
-### Step 9: Admin UI — Validação de ciclo de pré-requisito
+### Step 9: Admin UI — Validação de ciclo de pré-requisito `[MiMo V2.5 Free]`
 - **Ficheiro:** `apps/admin/src/app/configuracoes/[courseId]/page.tsx`
 - **Acção:** Ao selecionar pré-requisito no dropdown, chamar `CourseService.detectPrerequisiteCycle(courseId, selectedId)` e mostrar erro se ciclo detectado
 - **Verificação:** `grep "detectPrerequisiteCycle" apps/admin/src/app/configuracoes/[courseId]/page.tsx` → presente
 - [ ]
 
-### Step 10: Student UI — Actualizar StudentExplore para mostrar acesso
+### Step 10: Student UI — Actualizar StudentExplore para mostrar acesso `[MiMo V2.5 Free]`
 - **Ficheiro:** `apps/student/src/screens/StudentExplore.tsx` (será criada antes como task simples)
 - **Acção:** Adicionar lógica de acesso ao card:
   - Livre: badge "Disponível" (verde)
@@ -202,7 +224,7 @@ create policy "Estudantes visualizam seus próprios planos"
 - **Verificação:** `grep "hasAccess" apps/student/src/screens/StudentExplore.tsx` → presente
 - [ ]
 
-### Step 11: Student UI — Filtros por estado de acesso
+### Step 11: Student UI — Filtros por estado de acesso `[MiMo V2.5 Free]`
 - **Ficheiro:** `apps/student/src/screens/StudentExplore.tsx`
 - **Acção:** Actualizar FilterBar com opções:
   - Todos (padrão)
@@ -212,7 +234,7 @@ create policy "Estudantes visualizam seus próprios planos"
 - **Verificação:** `grep "Bloqueados" apps/student/src/screens/StudentExplore.tsx` → presente
 - [ ]
 
-### Step 12: Testes unitários — Service
+### Step 12: Testes unitários — Service `[MiMo V2.5 Free]`
 - **Ficheiro:** `packages/core/src/services/course.test.ts`
 - **Acção:** Adicionar testes para:
   - `getCourseAccess` retorna null quando não configurado
@@ -223,19 +245,19 @@ create policy "Estudantes visualizam seus próprios planos"
 - **Verificação:** `pnpm --filter core test --run` → testes passam
 - [ ]
 
-### Step 13: Testes unitários — Types
+### Step 13: Testes unitários — Types `[MiMo V2.5 Free]`
 - **Ficheiro:** `packages/types/src/database.test.ts` (ou criar se não existir)
 - **Acção:** Validar schemas Zod: CourseAccessSchema, PlanSchema, PlanCourseSchema, StudentPlanSchema
 - **Verificação:** `pnpm --filter types test --run` → testes passam
 - [ ]
 
-### Step 14: Documentar workflow admin
+### Step 14: Documentar workflow admin `[MiMo V2.5 Free]`
 - **Ficheiro:** `docs/workflows/workflow_adm.md`
 - **Acção:** Adicionar seção "🛡️ 11. Controlo de Acesso a Cursos" com: onde configurar (acima do toggle de publicação), modos (Livre/Progressivo/Restrito), fluxo, regras de pré-requisito
 - **Verificação:** `grep "Controlo de Acesso" docs/workflows/workflow_adm.md` → presente
 - [ ]
 
-### Step 15: Actualizar BACKLOG.md
+### Step 15: Actualizar BACKLOG.md `[MiMo V2.5 Free]`
 - **Ficheiro:** `docs/BACKLOG.md`
 - **Acção:** Marcar item P2 "Controlo de Acesso" como `[x]` (implementado) e adicionar referência ao plano e commits
 - **Verificação:** `grep "Controlo de Acesso" docs/BACKLOG.md` → item presente com referência
