@@ -11,6 +11,8 @@
     "test:react-consistency": "bash scripts/check-react-consistency.sh",
     "test:env-vars": "bash scripts/check-test-env-vars.sh",
     "verify:ui": "npx tsx scripts/verify-ui-rules.ts",
+    "validate:session": "npx tsx scripts/validate-session.ts",
+    "close:session": "npx tsx scripts/close-session.ts",
     "verify:all": "pnpm run test:react-consistency && pnpm run test:env-vars && pnpm run verify:ui && pnpm run test"
   },
   "engines": {

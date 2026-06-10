@@ -1,0 +1,35 @@
+session:
+  id: "2026-06-10"
+  branch: "feat/admin-cursos"
+  operation_type: "FEATURE"
+  last_commit: "2d14bd7"
+
+current_task:
+  id: "governance-v2-workflow"
+  type: "FEATURE"
+  description: "Implementar WORKFLOW V2 — entrada central, buffer estruturado, scripts"
+  status: "in_progress"
+  plan_file: null
+  current_step: 1
+  model_assignments:
+    - step: 1
+      model: "minimax-m3-free"
+      status: "running"
+
+adr:
+  last: "ADR-021"
+  created: "2026-06-10"
+
+blockers: []
+
+next_steps:
+  - "Criar scripts/validate-session.ts"
+  - "Criar scripts/close-session.ts"
+
+last_decision:
+  adr: "ADR-021"
+  description: "Evoluir framework V1 → V2 com governança executável"
+
+technical_debt:
+  - "context_buffer.md em docs/ ainda é a fonte oficial — migrar para YAML"
+  - "WORKFLOW.md criado mas ainda não referenciado como entrada obrigatória"
