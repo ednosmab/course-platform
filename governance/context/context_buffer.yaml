@@ -2,12 +2,12 @@ session:
   id: "2026-06-10"
   branch: "feat/admin-cursos"
   operation_type: "FEATURE"
-  last_commit: "ac83e31"
+  last_commit: "1ab3203"
 
 current_task:
-  id: "v2-system-map-premortem-review"
-  type: "FEATURE"
-  description: "Criar SYSTEM_MAP.md, PREMORTEM.md, premortem-check.ts, SESSION_REVIEW.md"
+  id: "v2-migration-legacy"
+  type: "REFACTOR"
+  description: "Migrar docs/context_buffer.md + actualizar session-template.md e INDEX.md"
   status: "completed"
   plan_file: null
   current_step: null
@@ -20,13 +20,10 @@ adr:
 blockers: []
 
 next_steps:
-  - "Migrar docs/context_buffer.md para governance/context/ e remover original"
-  - "Actualizar session-template.md para referenciar novo sistema"
+  - "V2 completo — aguardar próxima tarefa do BACKLOG"
 
 last_decision:
   adr: "ADR-021"
-  description: "V2 completo: WORKFLOW.md + SYSTEM_MAP.md + scripts + premortem + review"
+  description: "V2 totalmente migrado. docs/context_buffer.md removido. session-template.md actualizado."
 
-technical_debt:
-  - "context_buffer.md em docs/ continua a existir — migrar pendente"
-  - "session-template.md ainda referencia docs/context_buffer.md"
+technical_debt: []

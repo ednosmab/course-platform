@@ -5,9 +5,11 @@ Este índice centraliza todo o ecossistema documental, regras cognitivas e plano
 ---
 
 ## 🏛️ 1. Governança e Regras Globais (P0 / P1)
+* **WORKFLOW (entrada única obrigatória):** [governance/WORKFLOW.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/governance/WORKFLOW.md)
+* **SYSTEM MAP (mapa central do sistema):** [governance/SYSTEM_MAP.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/governance/SYSTEM_MAP.md)
 * **Regras Mestre de Engenharia:** [docs/AGENTS.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/docs/AGENTS.md)
-* **Memória RAM Ativa de Sessão:** [docs/context_buffer.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/docs/context_buffer.md)
-* **Roteador Geral de Camadas (Lazy Loading):** [docs/CONTEXT_MAP.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/docs/CONTEXT_MAP.md)
+* **Context Buffer (estado da sessão):** [governance/context/context_buffer.yaml](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/governance/context/context_buffer.yaml)
+* **Roteador Geral de Camadas (Lazy Loading):** [governance/SYSTEM_MAP.md](file:///media/edson-ubuntu/Data1/Plataforma%20de%20Cursos%20com%20CMS/plataforma_cursos/governance/SYSTEM_MAP.md)
 
 ---
 
