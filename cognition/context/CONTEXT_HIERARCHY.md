@@ -23,7 +23,12 @@ A leitura do repositório por qualquer agente cognitivo deve seguir estritamente
        │
        ▼
 [Nível 4: P4] docs/history/ ── (Auditoria Histórica e ROM - Sob Demanda)
+       │
+       ▼
+[⚡ Cross-cutting] docs/skills/senior-engineer.md ── (Postura Operacional — obrigatório em TODO código)
 ```
+
+> **⚡ Cross-cutting:** A skill `docs/skills/senior-engineer.md` aplica-se a **todas as camadas** sempre que houver escrita, refatoração ou revisão de código. Deve ser activada em paralelo com o P2 da camada corrente, antes de qualquer alteração. Define a postura metódica, a verificação pós-step e a proibição de alterações fora de escopo.
 
 ---
 
