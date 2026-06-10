@@ -37,6 +37,8 @@ Você deve consultar os arquivos abaixo via MCP *apenas quando* o usuário solic
   - `docs/skills/animation_protocol.md`
   - `docs/layers/ui/token-governance.md`
   - `packages/ui/src/tokens/*.ts`
+  - `docs/skills/student-header.md`
+  - `docs/skills/admin-header.md`
 
 ## 🛡️ 3. Persistência, Banco de Dados e Segurança (Supabase)
 - **Escopo:** Migrations do PostgreSQL, tabelas de aulas, colunas JSONB, políticas RLS e Storage de mídias.

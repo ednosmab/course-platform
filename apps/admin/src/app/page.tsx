@@ -112,7 +112,7 @@ export default function Dashboard() {
           }
         `}</style>
         {/* Header */}
-        <AdminHeader />
+        <AdminHeader userProfile={userProfile} onLogout={() => router.push('/logout')} />
 
         <main style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 24px', width: '100%' }}>
           {/* Hero */}

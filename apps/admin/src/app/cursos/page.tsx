@@ -46,6 +46,7 @@ export default function CursosPage() {
   const [filter, setFilter] = useState(0);
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'name-az' | 'name-za'>('recent');
   const [searchQuery, setSearchQuery] = useState('');
+  const [userProfile, setUserProfile] = useState<{ full_name: string; email: string } | null>(null);
 
   // Modal de Criação de Cursos
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -72,7 +73,8 @@ export default function CursosPage() {
 
     (async () => {
       try {
-        await AuthService.getCurrentProfile();
+        const profile = await AuthService.getCurrentProfile();
+        if (profile) setUserProfile({ full_name: profile.full_name ?? '', email: profile.email ?? '' });
 
         const data = await CourseService.getAllCourses();
         if (!cancelled) setCourses(data);
@@ -215,7 +217,7 @@ export default function CursosPage() {
         `}</style>
 
         {/* Header */}
-        <AdminHeader />
+        <AdminHeader userProfile={userProfile} onLogout={() => router.push('/logout')} />
 
         <main style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 24px', width: '100%' }}>
           {/* Hero Header */}

@@ -130,6 +130,9 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 
 | Item | Severidade | Status | Due | Owner |
 |---|---|---|---|---|
+| Continuar construção de telas do student app | 🟠 Alto | Backlog | 2026-06-30 | unassigned |
+| Skill: TopBar/Header — padrão de cabeçalho compartilhado (admin + student) | 🟡 Médio | Backlog | 2026-06-30 | unassigned |
+| Skill: Student Screen — padrão de construção de telas do aluno | 🟡 Médio | Backlog | 2026-06-30 | unassigned |
 | Extrair filtro/ordenação para componente reutilizável (`@projeto/ui`) | 🟠 Alto | Done | 2026-06-30 | Agente 3 |
 | Student app — Tela de cursos com filtro/ordenação (reutilizar componente) | 🟡 Médio | Done | 2026-06-30 | Agente 3 |
 | Testes E2E Playwright para drag-and-drop de imagem | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
