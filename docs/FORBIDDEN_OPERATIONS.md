@@ -64,7 +64,7 @@
 
 | # | Regra | Justificativa |
 |---|---|---|
-| ENV-01 | **PROIBIDO** propagar flags de teste (E2E_*, MOCK_*, BYPASS_*) para `.env*`, `next.config.*`, `vercel.json`, `wrangler.toml`, `netlify.toml` ou qualquer config de deploy | Tais flags desactivam controlos de segurança no edge (ex: `E2E_BYPASS_AUTH` desactiva `supabase.auth.getUser()` no middleware, expondo todas as rotas protegidas). A whitelist única é `playwright.config.ts` → `webServer.env`. Validação automatizada em `scripts/check-test-env-vars.sh` (integrado em `pnpm run verify` e nos workflows CI/CD). Documentação completa em `docs/skills/e2e_testing.md`. |
+| ENV-01 | **PROIBIDO** propagar flags de teste (E2E_*, MOCK_*, BYPASS_*) para `.env*`, `next.config.*`, `vercel.json`, `wrangler.toml`, `netlify.toml` ou qualquer config de deploy | Tais flags desactivam controles de segurança no edge (ex: `E2E_BYPASS_AUTH` desactiva `supabase.auth.getUser()` no middleware, expondo todas as rotas protegidas). A whitelist única é `playwright.config.ts` → `webServer.env`. Validação automatizada em `scripts/check-test-env-vars.sh` (integrado em `pnpm run verify` e nos workflows CI/CD). Documentação completa em `docs/skills/e2e_testing.md`. |
 
 ## 8. Violações de Higiene de Processo
 

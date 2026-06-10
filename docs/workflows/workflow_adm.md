@@ -261,4 +261,4 @@ Nas **Configurações do Curso** (`/configuracoes/[courseId]`), na sidebar direi
 
 ### Plano de implementação
 
-Ver `docs/plans/2026-06-10-controlo-acesso.md` para detalhes completos da implementação (migration SQL, UI admin, UI student, testes).
+Ver `docs/plans/2026-06-10-controle-acesso.md` para detalhes completos da implementação (migration SQL, UI admin, UI student, testes).

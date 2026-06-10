@@ -10,7 +10,7 @@ import type { ImageBlock } from '@projeto/types';
  * Image block settings that are exclusive to the certificate editor.
  *
  * Boundary rule (SDR-001): o `BlockSettings.tsx` (lesson) não deve
- * carregar branches `mode === 'certificate'`. Todos os controlos
+ * carregar branches `mode === 'certificate'`. Todos os controles
  * exclusivos do cert — upload, flag "Imagem de Fundo" — vivem aqui
  * e são renderizados pelo `CertificateEditor` como slot.
  *
