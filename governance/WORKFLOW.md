@@ -28,7 +28,7 @@ Tipos possíveis: `FEATURE`, `BUG`, `REFACTOR`, `DOCUMENTATION`, `PLANNING`
    - SYSTEM_MAP.md
    - ADRs relacionadas
 
-2. Executar PREMORTEM
+2. Executar PREMORTEM (pnpm run premortem:check)
    - O que pode quebrar?
    - Existe ADR relacionada?
    - Existe impacto arquitectural?
@@ -48,6 +48,7 @@ Tipos possíveis: `FEATURE`, `BUG`, `REFACTOR`, `DOCUMENTATION`, `PLANNING`
 
 7. ENCERRAMENTO
    - Executar close-session
+   - Preencher SESSION_REVIEW (governance/reviews/SESSION_REVIEW.md)
 ```
 
 ---
@@ -72,6 +73,7 @@ Tipos possíveis: `FEATURE`, `BUG`, `REFACTOR`, `DOCUMENTATION`, `PLANNING`
 
 6. ENCERRAMENTO
    - Executar close-session
+   - Preencher SESSION_REVIEW (governance/reviews/SESSION_REVIEW.md)
 ```
 
 ---
@@ -85,6 +87,7 @@ Tipos possíveis: `FEATURE`, `BUG`, `REFACTOR`, `DOCUMENTATION`, `PLANNING`
 
 2. VERIFICAR
    - Impacto arquitectural
+   - Executar premortem:check
 
 3. EXECUTAR
    - Refactoração conforme plano
@@ -98,6 +101,7 @@ Tipos possíveis: `FEATURE`, `BUG`, `REFACTOR`, `DOCUMENTATION`, `PLANNING`
 
 6. ENCERRAMENTO
    - Executar close-session
+   - Preencher SESSION_REVIEW (governance/reviews/SESSION_REVIEW.md)
 ```
 
 ---
@@ -119,6 +123,7 @@ Tipos possíveis: `FEATURE`, `BUG`, `REFACTOR`, `DOCUMENTATION`, `PLANNING`
 
 5. ENCERRAMENTO
    - Executar close-session
+   - Preencher SESSION_REVIEW (governance/reviews/SESSION_REVIEW.md)
 ```
 
 ---
@@ -131,7 +136,7 @@ Tipos possíveis: `FEATURE`, `BUG`, `REFACTOR`, `DOCUMENTATION`, `PLANNING`
    - ADRs relacionadas
    - BACKLOG.md
 
-2. EXECUTAR PREMORTEM
+2. EXECUTAR PREMORTEM (pnpm run premortem:check)
    - O que pode quebrar?
    - Existe ADR relacionada?
    - Existe impacto arquitectural?
@@ -146,6 +151,7 @@ Tipos possíveis: `FEATURE`, `BUG`, `REFACTOR`, `DOCUMENTATION`, `PLANNING`
 
 5. ENCERRAMENTO
    - Executar close-session
+   - Preencher SESSION_REVIEW (governance/reviews/SESSION_REVIEW.md)
 ```
 
 ---
