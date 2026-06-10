@@ -218,7 +218,7 @@ Disponível ao selecionar um bloco de imagem no Studio.
 
 ---
 
-## 🛡️ 11. Controlo de Acesso a Cursos
+## 🛡️ 11. Controle de Acesso a Cursos
 
 ### Onde configurar
 Nas **Configurações do Curso** (`/configuracoes/[courseId]`), na sidebar direita
@@ -230,14 +230,14 @@ Nas **Configurações do Curso** (`/configuracoes/[courseId]`), na sidebar direi
 |------|---------------|-------------|
 | **Livre** (padrão) | Todos os alunos matriculados no plano acessam imediatamente | Cursos introdutórios, onboarding |
 | **Progressivo** | Aluno só acessa após concluir o pré-requisito (outro curso) | Trilhas de aprendizado, certificações |
-| **Restrito** | Curso não está em nenhum plano — acesso apenas por atribuição directa | Cursos exclusivos, VIP |
+| **Restrito** | Curso não está em nenhum plano — acesso apenas por atribuição direta | Cursos exclusivos, VIP |
 
 ### Fluxo de configuração
 
 1. Acesse `/configuracoes/[courseId]`
-2. Na sidebar direita, localise **"Controlo de Acesso"** (acima de "Status de Publicação")
+2. Na sidebar direita, localize **"Controle de Acesso"** (acima de "Status de Publicação")
 3. Selecione o modo:
-   - **Livre** → Nenhuma acção adicional
+   - **Livre** → Nenhuma ação adicional
    - **Progressivo** → Selecione o curso pré-requisito no dropdown
    - **Restrito** → Curso fica invisível até atribuição manual
 4. Clique em **"Salvar Alterações"**

@@ -1,5 +1,6 @@
 import {
   Course,
+  CourseAccess,
   Module,
   Lesson,
   Path,
@@ -197,4 +198,47 @@ export interface ICourseRepository {
    * @returns Promise resolving when seeding completes.
    */
   seedDemoData(params: { pathId: string; courseId: string; moduleId: string; activeLessonId: string; blocks: any[] }): Promise<void>;
+
+  /**
+   * @description Retrieves the access configuration for a specific course.
+   * Business rule: Returns null if no access configuration exists (defaults to free).
+   * @param courseId - The UUID of the course.
+   * @returns Promise resolving to CourseAccess object or null.
+   */
+  getCourseAccess(courseId: string): Promise<CourseAccess | null>;
+
+  /**
+   * @description Updates or creates the access configuration for a course.
+   * Business rule: If access_mode is not 'progressive', prerequisite_course_id is set to null.
+   * @param courseId - The UUID of the course.
+   * @param data - Object containing access_mode and optional prerequisite_course_id.
+   * @returns Promise resolving when the update completes.
+   */
+  updateCourseAccess(courseId: string, data: { access_mode: string; prerequisite_course_id: string | null }): Promise<void>;
+
+  /**
+   * @description Checks if a student has access to a specific course.
+   * Business rule: Evaluates access_mode (free/progressive/restricted) and prerequisites.
+   * @param studentId - The UUID of the student.
+   * @param courseId - The UUID of the course.
+   * @returns Promise resolving to an object with hasAccess flag and reason string.
+   */
+  getStudentCourseAccess(studentId: string, courseId: string): Promise<{ hasAccess: boolean; reason: string }>;
+
+  /**
+   * @description Retrieves all published courses available to a specific student.
+   * Business rule: Filters by access mode and plan assignments.
+   * @param studentId - The UUID of the student.
+   * @returns Promise resolving to an array of Course objects.
+   */
+  getPublishedCoursesForStudent(studentId: string): Promise<Course[]>;
+
+  /**
+   * @description Detects if adding a prerequisite would create a circular dependency.
+   * Business rule: Uses DFS traversal with max depth of 10 to prevent infinite loops.
+   * @param courseId - The UUID of the course.
+   * @param prerequisiteId - The UUID of the potential prerequisite course.
+   * @returns Promise resolving to true if a cycle would be created, false otherwise.
+   */
+  detectPrerequisiteCycle(courseId: string, prerequisiteId: string): Promise<boolean>;
 }

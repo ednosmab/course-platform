@@ -41,3 +41,7 @@ export type CourseLessonContent = z.infer<typeof CourseLessonContentSchema>;
 
 export * from './certificate-block';
 export * from './database';
+
+// Course Access Control types
+export type { CourseAccess, Plan, PlanCourse, StudentPlan } from './database';
+export { CourseAccessSchema, PlanSchema, PlanCourseSchema, StudentPlanSchema } from './database';

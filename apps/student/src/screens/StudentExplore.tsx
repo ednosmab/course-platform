@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, XStack, YStack, Text, Card, Icon, Spinner, FilterBar, GridBackground } from '@projeto/ui';
 import { CourseService, AuthService } from '@projeto/core';
-import { Course } from '@projeto/types';
+import { Course, CourseAccess } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
+
+type CourseWithAccess = Course & {
+  accessData?: CourseAccess | null;
+  hasAccess?: boolean;
+  accessReason?: string;
+};
 
 type StudentExploreProps = {
   onSelectCourse: (courseId: string) => void;
@@ -14,17 +20,21 @@ type StudentExploreProps = {
 };
 
 export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToDashboard, onNavigateToCourses, onNavigateToCertificates }: StudentExploreProps) {
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [courses, setCourses] = useState<CourseWithAccess[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState(0);
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'name-az' | 'name-za'>('recent');
   const [userProfile, setUserProfile] = useState<{ full_name: string; email: string } | null>(null);
+  const [studentId, setStudentId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       const profile = await AuthService.getCurrentProfile();
-      if (profile) setUserProfile({ full_name: profile.full_name || '', email: profile.email || '' });
+      if (profile) {
+        setUserProfile({ full_name: profile.full_name || '', email: profile.email || '' });
+        setStudentId(profile.id);
+      }
     })();
   }, []);
 
@@ -34,7 +44,22 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
         setLoading(true);
         setError(null);
         const coursesData = await CourseService.getStudentPublishedCourses();
-        setCourses(coursesData || []);
+        
+        const coursesWithAccess = await Promise.all(
+          (coursesData || []).map(async (course) => {
+            if (studentId) {
+              const accessResult = await CourseService.getStudentCourseAccess(studentId, course.id);
+              return {
+                ...course,
+                hasAccess: accessResult.hasAccess,
+                accessReason: accessResult.reason,
+              };
+            }
+            return { ...course, hasAccess: true, accessReason: 'unknown' };
+          })
+        );
+        
+        setCourses(coursesWithAccess);
       } catch (err: any) {
         console.error('Failed to load courses:', err);
         setError(err.message || 'Failed to load courses');
@@ -44,7 +69,7 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
     };
 
     loadCourses();
-  }, []);
+  }, [studentId]);
 
   const handleTabAction = (action: string) => {
     switch (action) {
@@ -63,6 +88,8 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
   const filteredCourses = courses.filter((course) => {
     if (filter === 0) return true;
     if (filter === 1) return course.is_published;
+    if (filter === 2) return course.hasAccess;
+    if (filter === 3) return !course.hasAccess;
     return true;
   });
 
@@ -81,7 +108,7 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
     }
   });
 
-  const filterLabel = filter === 0 ? null : filter === 1 ? 'Publicados' : null;
+  const filterLabel = filter === 0 ? null : filter === 1 ? 'Publicados' : filter === 2 ? 'Disponíveis' : filter === 3 ? 'Bloqueados' : null;
 
   const formatDate = (value?: string | Date | null) => {
     if (!value) return '';
@@ -127,6 +154,8 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
                 filterOptions={[
                   { value: '0', label: 'Todos' },
                   { value: '1', label: 'Publicados' },
+                  { value: '2', label: 'Disponíveis' },
+                  { value: '3', label: 'Bloqueados' },
                 ]}
                 filterValue={String(filter)}
                 onFilterChange={(value) => setFilter(Number(value))}
@@ -205,12 +234,18 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
                               gap={6}
                               style={{
                                 backdropFilter: 'blur(8px)',
-                                backgroundColor: 'rgba(59, 130, 246, 0.9)',
+                                backgroundColor: course.hasAccess 
+                                  ? 'rgba(34, 197, 94, 0.9)' 
+                                  : 'rgba(156, 163, 175, 0.9)',
                               }}
                             >
-                              <Icon name="Compass" size={10} color="$white" />
+                              <Icon 
+                                name={course.hasAccess ? "CheckCircle" : "Lock"} 
+                                size={10} 
+                                color="$white" 
+                              />
                               <Text fontSize={11} fontWeight="700" color="$white">
-                                Disponível
+                                {course.hasAccess ? 'Disponível' : 'Bloqueado'}
                               </Text>
                             </XStack>
                           </XStack>
@@ -237,6 +272,17 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
                               Atualizado {formatDate(course.updated_at || course.created_at)}
                             </Text>
                           </XStack>
+
+                          {!course.hasAccess && course.accessReason === 'prerequisite_not_completed' && (
+                            <Text fontSize={11} color="$warning" mt={4}>
+                              Complete o pré-requisito primeiro
+                            </Text>
+                          )}
+                          {!course.hasAccess && course.accessReason === 'not_assigned_to_plan' && (
+                            <Text fontSize={11} color="$warning" mt={4}>
+                              Acesso restrito — requer atribuição de plano
+                            </Text>
+                          )}
                         </YStack>
                       </Card>
                     </YStack>

@@ -330,23 +330,23 @@ create policy "Estudantes visualizam seus próprios planos"
 
 | Step | Modelo | Estado | Última sessão |
 |---|---|---|---|
-| 1 | MiMo V2.5 Free | [ ] Pendente | — |
-| 2 | MiMo V2.5 Free | [ ] Pendente | — |
-| 3 | MiMo V2.5 Free | [ ] Pendente | — |
-| 4 | MiMo V2.5 Free | [ ] Pendente | — |
-| 5 | MiMo V2.5 Free | [ ] Pendente | — |
-| 6a | Nemotron 3 Ultra Free | [ ] Pendente | — |
-| 6b | Nemotron 3 Ultra Free | [ ] Pendente | — |
-| 6c | Nemotron 3 Ultra Free | [ ] Pendente | — |
-| 7 | MiMo V2.5 Free | [ ] Pendente | — |
-| 8 | MiMo V2.5 Free | [ ] Pendente | — |
-| 9 | MiMo V2.5 Free | [ ] Pendente | — |
-| 10 | MiMo V2.5 Free | [ ] Pendente | — |
-| 11 | MiMo V2.5 Free | [ ] Pendente | — |
-| 12 | MiMo V2.5 Free | [ ] Pendente | — |
-| 13 | MiMo V2.5 Free | [ ] Pendente | — |
-| 14 | MiMo V2.5 Free | [ ] Pendente | — |
-| 15 | MiMo V2.5 Free | [ ] Pendente | — |
+| 1 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
+| 2 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
+| 3 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
+| 4 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
+| 5 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
+| 6a | Nemotron 3 Ultra Free | [x] Concluído | 2026-06-10 |
+| 6b | Nemotron 3 Ultra Free | [x] Concluído | 2026-06-10 |
+| 6c | Nemotron 3 Ultra Free | [x] Concluído | 2026-06-10 |
+| 7 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
+| 8 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
+| 9 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
+| 10 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
+| 11 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
+| 12 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
+| 13 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
+| 14 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
+| 15 | MiMo V2.5 Free | [x] Concluído | 2026-06-10 |
 
 **Regras de actualização:**
 1. Ao iniciar um step → marcar `[~]` e registar data na coluna "Última sessão"

@@ -34,6 +34,7 @@
 | G-02 | **PROIBIDO** fazer commit sem passar pelos 4 passos do algoritmo de gestão de contexto | Garante rastreabilidade e consistência |
 | G-03 | **PROIBIDO** mesclar branches sem validação de CI | A branch `develop` deve estar sempre verde |
 | G-04 | **PROIBIDO** sobrescrever `docs/history/` (registros imutáveis) | Histórico é preservado para auditoria |
+| G-05 | **PROIBIDO** executar steps com modelo diferente do atribuído no plano | O executor DEVE usar exactamente o modelo indicado no step; violações causam drift técnico e quebram a rastreabilidade |
 
 ## 4. Violações de Banco de Dados
 
@@ -91,7 +92,7 @@
 |---|---|
 | **Crítica** (F-01 a F-06, S-01 a S-03, ENV-01, CONFID-01) | Commit rejeitado + correção imediata obrigatória |
 | **Alta** (D-01 a D-04, DB-01 a DB-03) | Rollback + documentação do erro no buffer |
-| **Média** (G-01 a G-04, P-01 a P-04, DT-01 a DT-04) | Alerta + correção antes do próximo commit |
+| **Média** (G-01 a G-05, P-01 a P-04, DT-01 a DT-04) | Alerta + correção antes do próximo commit |
 
 > ⚠️ A IA DEVE ler este arquivo **integramente** no início de toda sessão (P0 obrigatório).
 > Qualquer violação detectada pela IA em código existente DEVE ser reportada ao usuário para correção.

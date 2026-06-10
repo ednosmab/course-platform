@@ -128,6 +128,7 @@ As regras não são todas do mesmo nível. Existem três camadas de dependência
    c. **Excepções mínimas permitidas:** (1) Ajustes triviais para o build passar (import em falta, tipo errado, formato de path) — desde que sejam < 5 linhas e não alterem semântica. (2) Registar achados fora-do-plano no `docs/context_buffer.md` secção "Refactorings Aplicadas" para revisão posterior.
    d. **Comunicação com Plan/Review:** Se o plano está em `docs/plans/YYYY-MM-DD-<task>.md`, o build actualiza checkboxes conforme avança. O review compara diff real vs. template (ver regra #12).
     e. **Em caso de dúvida:** PARAR. O deepseek é rápido mas esquece passos. Melhor interromper e perguntar do que improvisar e criar drift técnico.
+    f. **Respeitar modelo do step:** O executor DEVE usar exactamente o modelo indicado no campo `[Modelo]` de cada step do plano. Violações configuram G-05 em FORBIDDEN_OPERATIONS.md.
 
 17. **FEEDBACK DE DESEMPENHO POR SESSÃO (TECH LEAD EM FORMAÇÃO):** Para developers com conhecimento arquitectural sênior mas código júnior/pleno, em desenvolvimento como tech lead, ao sinal de "fim de sessão" (keywords: "vamos parar", "sessão fechada", "até amanhã", "feedback da sessão"), o agente DEVE:
    a. **Detectar** o sinal de fim automaticamente.

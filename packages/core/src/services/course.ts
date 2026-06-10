@@ -1,5 +1,6 @@
 import {
   Course,
+  CourseAccess,
   CourseSchema,
   Module,
   ModuleSchema,
@@ -234,6 +235,53 @@ export function createCourseService(repo: ICourseRepository) {
      */
     async seedDemoData(params: { pathId: string; courseId: string; moduleId: string; activeLessonId: string; blocks: any[] }): Promise<void> {
       return repo.seedDemoData(params);
+    },
+
+    /**
+     * @description Retrieves the access configuration for a specific course.
+     * @param courseId - The UUID of the course
+     * @returns The CourseAccess object or null if not configured
+     */
+    async getCourseAccess(courseId: string): Promise<CourseAccess | null> {
+      return repo.getCourseAccess(courseId);
+    },
+
+    /**
+     * @description Updates or creates the access configuration for a course.
+     * @param courseId - The UUID of the course
+     * @param data - Object containing access_mode and optional prerequisite_course_id
+     */
+    async updateCourseAccess(courseId: string, data: { access_mode: string; prerequisite_course_id: string | null }): Promise<void> {
+      return repo.updateCourseAccess(courseId, data);
+    },
+
+    /**
+     * @description Checks if a student has access to a specific course.
+     * @param studentId - The UUID of the student
+     * @param courseId - The UUID of the course
+     * @returns An object with hasAccess flag and reason string
+     */
+    async getStudentCourseAccess(studentId: string, courseId: string): Promise<{ hasAccess: boolean; reason: string }> {
+      return repo.getStudentCourseAccess(studentId, courseId);
+    },
+
+    /**
+     * @description Retrieves all published courses available to a specific student.
+     * @param studentId - The UUID of the student
+     * @returns An array of Course objects
+     */
+    async getPublishedCoursesForStudent(studentId: string): Promise<Course[]> {
+      return repo.getPublishedCoursesForStudent(studentId);
+    },
+
+    /**
+     * @description Detects if adding a prerequisite would create a circular dependency.
+     * @param courseId - The UUID of the course
+     * @param prerequisiteId - The UUID of the potential prerequisite course
+     * @returns true if a cycle would be created, false otherwise
+     */
+    async detectPrerequisiteCycle(courseId: string, prerequisiteId: string): Promise<boolean> {
+      return repo.detectPrerequisiteCycle(courseId, prerequisiteId);
     },
   };
 }

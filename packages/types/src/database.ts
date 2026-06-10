@@ -131,3 +131,45 @@ export const CertificateSchema = z.object({
 }).strict();
 
 export type Certificate = z.infer<typeof CertificateSchema>;
+
+// 10. CourseAccess Schema & Type
+export const CourseAccessSchema = z.object({
+  course_id: z.string().uuid(),
+  access_mode: z.enum(['free', 'progressive', 'restricted']),
+  prerequisite_course_id: z.string().uuid().nullable().optional(),
+  created_at: z.string().or(z.date()),
+  updated_at: z.string().or(z.date()),
+}).strict();
+
+export type CourseAccess = z.infer<typeof CourseAccessSchema>;
+
+// 11. Plan Schema & Type
+export const PlanSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1),
+  description: z.string().nullable().optional(),
+  is_active: z.boolean(),
+  created_at: z.string().or(z.date()),
+  updated_at: z.string().or(z.date()),
+}).strict();
+
+export type Plan = z.infer<typeof PlanSchema>;
+
+// 12. PlanCourse Schema & Type
+export const PlanCourseSchema = z.object({
+  plan_id: z.string().uuid(),
+  course_id: z.string().uuid(),
+  order_index: z.number().int().nonnegative(),
+}).strict();
+
+export type PlanCourse = z.infer<typeof PlanCourseSchema>;
+
+// 13. StudentPlan Schema & Type
+export const StudentPlanSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  plan_id: z.string().uuid(),
+  assigned_at: z.string().or(z.date()),
+}).strict();
+
+export type StudentPlan = z.infer<typeof StudentPlanSchema>;

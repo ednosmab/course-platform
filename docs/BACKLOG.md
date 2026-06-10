@@ -161,7 +161,7 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 | Student app — CourseLessons: duração real das aulas | 🟡 Médio | Backlog | 2026-08-01 | Agente 3 |
 | Admin — Substituir hex hardcoded por tokens Tamagui (`$color`) | 🟡 Médio | Backlog | 2026-07-15 | Agente 3 |
 | Student app — CourseLessons: progresso por módulo | 🟢 Baixo | Backlog | 2026-08-15 | Agente 3 |
-| 🛡️ Controle de Acesso a Cursos via Planos (SaaS Multi-Tenant) | 🟠 Alto | Backlog | 2026-08-15 | unassigned |
+| 🛡️ Controle de Acesso a Cursos via Planos (SaaS Multi-Tenant) | 🟠 Alto | Concluído | 2026-06-10 | Agente |
 
 **Detalhe Controle de Acesso:** Sistema de controle de acesso a cursos no modelo SaaS. Admin configura por curso (Livre/Progressivo/Restrito) na tela de configurações (acima do toggle de publicação). Aluno vê estado na tela "Explorar Cursos". Plano completo: `docs/plans/2026-06-10-controle-acesso.md` | Workflow: `docs/workflows/workflow_adm.md` secção 11.
 

@@ -1,6 +1,8 @@
 import { supabase } from '../supabase';
 import {
   Course,
+  CourseAccess,
+  CourseAccessSchema,
   CourseSchema,
   Module,
   ModuleSchema,
@@ -350,5 +352,138 @@ export const supabaseCourseRepository: ICourseRepository = {
     await supabase.from('lessons').upsert({ id: activeLessonId, module_id: moduleId, title: '1. Introdução à Plataforma Híbrida', order_index: 1, is_published: true, blocks });
     const draftId = activeLessonId.substring(0, 24) + 'dddddddddddd';
     await supabase.from('lessons').upsert({ id: draftId, module_id: moduleId, title: '1. Introdução à Plataforma Híbrida', order_index: 1, is_published: false, blocks });
+  },
+
+  /**
+   * @description Retrieves the access configuration for a specific course.
+   * Queries the `course_access` table by course_id and returns the validated record.
+   * @param {string} courseId - The UUID of the course.
+   * @returns {Promise<CourseAccess | null>} The access configuration or null if not configured.
+   */
+  async getCourseAccess(courseId: string): Promise<CourseAccess | null> {
+    const { data, error } = await supabase.from('course_access').select('*').eq('course_id', courseId).single();
+    if (error) {
+      if (error.code === 'PGRST116') return null;
+      throw error;
+    }
+    return CourseAccessSchema.parse(data);
+  },
+
+  /**
+   * @description Updates or creates the access configuration for a course using UPSERT.
+   * If access_mode is not 'progressive', prerequisite_course_id is set to null.
+   * @param {string} courseId - The UUID of the course.
+   * @param {{ access_mode: string; prerequisite_course_id: string | null }} data - The access configuration.
+   * @returns {Promise<void>}
+   */
+  async updateCourseAccess(courseId: string, data: { access_mode: string; prerequisite_course_id: string | null }): Promise<void> {
+    const payload = {
+      course_id: courseId,
+      access_mode: data.access_mode,
+      prerequisite_course_id: data.access_mode !== 'progressive' ? null : data.prerequisite_course_id,
+    };
+    const { error } = await supabase.from('course_access').upsert(payload, { onConflict: 'course_id' });
+    if (error) throw error;
+  },
+
+  /**
+   * @description Checks if a student has access to a specific course based on access mode.
+   * Evaluates free access, progressive prerequisites, and restricted plan assignments.
+   * @param {string} studentId - The UUID of the student.
+   * @param {string} courseId - The UUID of the course.
+   * @returns {Promise<{ hasAccess: boolean; reason: string }>} Access status and reason.
+   */
+  async getStudentCourseAccess(studentId: string, courseId: string): Promise<{ hasAccess: boolean; reason: string }> {
+    const { data: accessData, error: accessError } = await supabase.from('course_access').select('*').eq('course_id', courseId).single();
+    if (accessError) {
+      if (accessError.code === 'PGRST116') return { hasAccess: true, reason: 'free' };
+      throw accessError;
+    }
+    const access = CourseAccessSchema.parse(accessData);
+
+    if (access.access_mode === 'free') {
+      return { hasAccess: true, reason: 'free' };
+    }
+
+    if (access.access_mode === 'progressive' && access.prerequisite_course_id) {
+      const { data: prereqProgress } = await supabase
+        .from('student_progress')
+        .select('completed')
+        .eq('user_id', studentId)
+        .eq('lesson_id', access.prerequisite_course_id)
+        .single();
+
+      if (prereqProgress?.completed) {
+        return { hasAccess: true, reason: 'prerequisite_completed' };
+      }
+      return { hasAccess: false, reason: 'prerequisite_not_completed' };
+    }
+
+    if (access.access_mode === 'restricted') {
+      const { data: planAccess } = await supabase
+        .from('student_plans')
+        .select('id')
+        .eq('user_id', studentId)
+        .limit(1)
+        .single();
+
+      if (planAccess) {
+        return { hasAccess: true, reason: 'plan_assigned' };
+      }
+      return { hasAccess: false, reason: 'not_assigned_to_plan' };
+    }
+
+    return { hasAccess: true, reason: 'default' };
+  },
+
+  /**
+   * @description Retrieves all published courses available to a specific student.
+   * Joins courses with access configuration and plan assignments.
+   * @param {string} studentId - The UUID of the student.
+   * @returns {Promise<Course[]>} Array of available courses.
+   */
+  async getPublishedCoursesForStudent(studentId: string): Promise<Course[]> {
+    const { data, error } = await supabase
+      .from('courses')
+      .select(`
+        *,
+        course_access!left(access_mode),
+        student_plans!left(plan_id, user_id)
+      `)
+      .eq('is_published', true)
+      .is('student_plans.user_id', studentId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return z.array(CourseSchema).parse(data ?? []);
+  },
+
+  /**
+   * @description Detects if adding a prerequisite would create a circular dependency.
+   * Uses DFS traversal with max depth of 10 to prevent infinite loops.
+   * @param {string} courseId - The UUID of the course.
+   * @param {string} prerequisiteId - The UUID of the potential prerequisite course.
+   * @returns {Promise<boolean>} true if a cycle would be created, false otherwise.
+   */
+  async detectPrerequisiteCycle(courseId: string, prerequisiteId: string): Promise<boolean> {
+    const visited = new Set<string>();
+    const stack = [prerequisiteId];
+    let depth = 0;
+    const MAX_DEPTH = 10;
+
+    while (stack.length > 0 && depth < MAX_DEPTH) {
+      const currentId = stack.pop()!;
+      if (currentId === courseId) return true;
+      if (visited.has(currentId)) continue;
+      visited.add(currentId);
+
+      const { data } = await supabase.from('course_access').select('prerequisite_course_id').eq('course_id', currentId).single();
+      if (data?.prerequisite_course_id) {
+        stack.push(data.prerequisite_course_id);
+      }
+      depth++;
+    }
+
+    return false;
   },
 };
