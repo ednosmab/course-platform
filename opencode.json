@@ -46,9 +46,8 @@
   },
 
   "instructions": [
+    "./governance/WORKFLOW.md",
     "./docs/AGENTS.md",
-    "./docs/CONTEXT_MAP.md",
-    "./docs/context_buffer.md",
     "./docs/FORBIDDEN_OPERATIONS.md",
     "./docs/DESDO.md",
     "./docs/Requisitos_plataforma.md",
