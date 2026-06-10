@@ -293,3 +293,35 @@ create policy "Estudantes visualizam seus próprios planos"
 ## ⚠️ Pontos de pausa G-01
 
 - **G-01 #1** (Step 15): Antes de commitar a actualização do BACKLOG. Após autorização, commitar e seguir.
+
+---
+
+## 📊 Tracking de Progresso
+
+> **Protocolo:** A cada sessão, o agente DEVE actualizar o estado dos steps abaixo.
+> Steps com `[x]` foram concluídos. Steps com `[~]` estão em andamento. Steps com `[ ]` aguardam execução.
+> Se a sessão terminar com steps pendentes, criar tarefa no BACKLOG para dar andamento.
+
+| Step | Modelo | Estado | Última sessão |
+|---|---|---|---|
+| 1 | MiMo V2.5 Free | [ ] Pendente | — |
+| 2 | MiMo V2.5 Free | [ ] Pendente | — |
+| 3 | MiMo V2.5 Free | [ ] Pendente | — |
+| 4 | MiMo V2.5 Free | [ ] Pendente | — |
+| 5 | MiMo V2.5 Free | [ ] Pendente | — |
+| 6 | Nemotron 3 Ultra Free | [ ] Pendente | — |
+| 7 | MiMo V2.5 Free | [ ] Pendente | — |
+| 8 | MiMo V2.5 Free | [ ] Pendente | — |
+| 9 | MiMo V2.5 Free | [ ] Pendente | — |
+| 10 | MiMo V2.5 Free | [ ] Pendente | — |
+| 11 | MiMo V2.5 Free | [ ] Pendente | — |
+| 12 | MiMo V2.5 Free | [ ] Pendente | — |
+| 13 | MiMo V2.5 Free | [ ] Pendente | — |
+| 14 | MiMo V2.5 Free | [ ] Pendente | — |
+| 15 | MiMo V2.5 Free | [ ] Pendente | — |
+
+**Regras de actualização:**
+1. Ao iniciar um step → marcar `[~]` e registar data na coluna "Última sessão"
+2. Ao concluir um step → marcar `[x]`, registar commit hash na coluna "Última sessão"
+3. Se a sessão terminar com `[~]` → manter como "em andamento" (não reverter para `[ ]`)
+4. Se a sessão terminar com steps `[ ]` → criar tarefa P1 no BACKLOG: "Continuar plano de controlo de acesso — próximo step: N"
