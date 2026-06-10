@@ -1,4 +1,4 @@
-# Plano: Controlo de Acesso a Cursos (SaaS Multi-Tenant)
+# Plano: Controle de Acesso a Cursos (SaaS Multi-Tenant)
 
 **Data:** 2026-06-10
 **Autor do plano:** Agente (plan mode)
@@ -31,7 +31,7 @@
 
 ## 🎯 Objectivo
 
-Implementar sistema de controlo de acesso a cursos no modelo SaaS:
+Implementar sistema de controle de acesso a cursos no modelo SaaS:
 - Admin configura modo de acesso por curso (Livre/Progressivo/Restrito)
 - Sistema verifica acesso do aluno antes de permitir visualização
 - Aluno vê estado de acesso na tela "Explorar Cursos"
@@ -222,7 +222,7 @@ create policy "Estudantes visualizam seus próprios planos"
 - **Verificação:** `grep "INSERT INTO public.course_access" supabase/migrations/20260610000001_add_course_access_control.sql` → presente
 - [ ]
 
-### Step 8: Admin UI — Seção "Controlo de Acesso" na config do curso `[MiMo V2.5 Free]`
+### Step 8: Admin UI — Seção "Controle de Acesso" na config do curso `[MiMo V2.5 Free]`
 - **Ficheiro:** `apps/admin/src/app/configuracoes/[courseId]/page.tsx`
 - **Acção:** Inserir nova seção entre Thumbnail (linha 660) e Status de Publicação (linha 662):
   - Estado: `accessMode` ('free' | 'progressive' | 'restricted'), `prerequisiteCourseId` (string)
@@ -279,14 +279,14 @@ create policy "Estudantes visualizam seus próprios planos"
 
 ### Step 14: Documentar workflow admin `[MiMo V2.5 Free]`
 - **Ficheiro:** `docs/workflows/workflow_adm.md`
-- **Acção:** Adicionar seção "🛡️ 11. Controlo de Acesso a Cursos" com: onde configurar (acima do toggle de publicação), modos (Livre/Progressivo/Restrito), fluxo, regras de pré-requisito
-- **Verificação:** `grep "Controlo de Acesso" docs/workflows/workflow_adm.md` → presente
+- **Acção:** Adicionar seção "🛡️ 11. Controle de Acesso a Cursos" com: onde configurar (acima do toggle de publicação), modos (Livre/Progressivo/Restrito), fluxo, regras de pré-requisito
+- **Verificação:** `grep "Controle de Acesso" docs/workflows/workflow_adm.md` → presente
 - [ ]
 
 ### Step 15: Actualizar BACKLOG.md `[MiMo V2.5 Free]`
 - **Ficheiro:** `docs/BACKLOG.md`
-- **Acção:** Marcar item P2 "Controlo de Acesso" como `[x]` (implementado) e adicionar referência ao plano e commits
-- **Verificação:** `grep "Controlo de Acesso" docs/BACKLOG.md` → item presente com referência
+- **Acção:** Marcar item P2 "Controle de Acesso" como `[x]` (implementado) e adicionar referência ao plano e commits
+- **Verificação:** `grep "Controle de Acesso" docs/BACKLOG.md` → item presente com referência
 - [ ]
 
 ---
@@ -352,4 +352,4 @@ create policy "Estudantes visualizam seus próprios planos"
 1. Ao iniciar um step → marcar `[~]` e registar data na coluna "Última sessão"
 2. Ao concluir um step → marcar `[x]`, registar commit hash na coluna "Última sessão"
 3. Se a sessão terminar com `[~]` → manter como "em andamento" (não reverter para `[ ]`)
-4. Se a sessão terminar com steps `[ ]` → criar tarefa P1 no BACKLOG: "Continuar plano de controlo de acesso — próximo step: 6a/6b/6c/7/..."
+4. Se a sessão terminar com steps `[ ]` → criar tarefa P1 no BACKLOG: "Continuar plano de controle de acesso — próximo step: 6a/6b/6c/7/..."
