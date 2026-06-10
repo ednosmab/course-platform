@@ -3,17 +3,17 @@
 ## 📋 Quick Board (snapshot kanban — 2026-06-10)
 - 🔴 **Em curso:** Controle de Acesso a Cursos (plano `docs/plans/2026-06-10-controle-acesso.md`)
 - 🟡 **Parado:** Nenhum
-- ⏭️ **Próximo:** Execução dos steps 1-5, 7-15 (MiMo V2.5 Free) + step 6 (Nemotron 3 Ultra Free)
+- ⏭️ **Próximo:** Execução dos steps 1-5, 7-15 (MiMo V2.5 Free) + steps 6a/6b/6c (Nemotron 3 Ultra Free)
 
 ## Status Atual
-**Sessão 2026-06-10 — Explorar Cursos + Plano de Controle de Acesso.**
-- Botão "Explorar" renomeado para "Explorar Cursos" no StudentHeader.
-- Tela `StudentExplore` criada com grid de cursos e filtros (`apps/student/src/screens/StudentExplore.tsx`).
-- Rota `/explore` criada (`apps/student/app/(tabs)/explore.tsx`).
-- Navegação actualizada em Dashboard, Courses e rotas (props `onNavigateToExplore`).
-- Workflow admin documentado (seção 11 — Controle de Acesso).
-- Backlog actualizado (item P2 com referência ao plano).
-- Plano formal salvo em `docs/plans/2026-06-10-controle-acesso.md` (15 steps, 2 modelos).
+**Sessão 2026-06-10 — Explorar Cursos + Plano de Controle de Acesso + Skills.**
+- Tela "Explorar Cursos" criada e funcionando (rota, navegação, filtros).
+- Plano formal salvo em `docs/plans/2026-06-10-controle-acesso.md` (17 steps: 15 + 6a/6b/6c).
+- Step 6 dividido em 3 sub-tarefas (6a query, 6b upsert, 6c DFS) para Nemotron.
+- Skill `senior-engineer.md` traduzida para PT-BR e salva em `docs/skills/`.
+- Skill `tdd-agent.md` salva em `docs/skills/`.
+- Ambas as skills adicionadas como obrigatórias no AGENTS.md (regras #7 e #8).
+- "controlo" renomeado para "controle" em todo o repo.
 
 ## 🎯 Tarefa em Execução
 **Plano de Controle de Acesso** — aguarda execução dos steps.
@@ -43,7 +43,7 @@
 **Próximo step a executar:** Step 1 (Migration SQL — MiMo V2.5 Free)
 
 ## 🌿 Estado de Branches (2026-06-10)
-- `feat/admin-cursos` (HEAD) — explorar cursos + plano de controle de acesso.
+- `feat/admin-cursos` (HEAD) — explorar cursos + plano de controle + skills.
 - `develop` — integração de features, base estável.
 - `main` — inalterada, push bloqueado.
 
@@ -55,9 +55,14 @@
 - `apps/student/src/screens/StudentCourses.tsx` (prop onNavigateToExplore + case explore)
 - `apps/student/app/(tabs)/index.tsx` (prop onNavigateToExplore)
 - `apps/student/app/(tabs)/courses.tsx` (prop onNavigateToExplore)
-- `docs/plans/2026-06-10-controle-acesso.md` (novo — plano formal 15 steps + tracking)
+- `docs/plans/2026-06-10-controle-acesso.md` (novo — plano formal 17 steps + tracking)
 - `docs/workflows/workflow_adm.md` (seção 11 — Controle de Acesso)
 - `docs/BACKLOG.md` (item P2 — Controle de Acesso)
+- `docs/skills/senior-engineer.md` (novo — skill PT-BR)
+- `docs/skills/tdd-agent.md` (novo — skill PT-BR)
+- `docs/AGENTS.md` (regras #7 e #8 obrigatórias)
+- `docs/FORBIDDEN_OPERATIONS.md` (controlo → controle)
+- `apps/admin/src/components/certificate-editor/CertificateImageSettings.tsx` (controlo → controle)
 
 ## ✅ Validações (regra 7 AGENTS.md)
 **verify:ui** ✅ · **Student 7/7** ✅ · **Admin 92/92** ✅ · **Core 46/46** ✅
@@ -66,5 +71,5 @@
 ## 📌 Próximos Passos
 1. Executar Step 1 do plano (Migration SQL — MiMo V2.5 Free)
 2. Seguir sequência do plano até step 5
-3. Step 6: trocar para Nemotron 3 Ultra Free
+3. Steps 6a/6b/6c: trocar para Nemotron 3 Ultra Free
 4. Steps 7-15: MiMo V2.5 Free
