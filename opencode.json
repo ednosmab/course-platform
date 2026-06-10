@@ -48,6 +48,7 @@
   "instructions": [
     "./governance/WORKFLOW.md",
     "./docs/AGENTS.md",
+    "./governance/SYSTEM_MAP.md",
     "./docs/FORBIDDEN_OPERATIONS.md",
     "./docs/DESDO.md",
     "./docs/Requisitos_plataforma.md",

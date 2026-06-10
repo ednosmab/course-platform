@@ -2,12 +2,12 @@ session:
   id: "2026-06-10"
   branch: "feat/admin-cursos"
   operation_type: "FEATURE"
-  last_commit: "755ebb8"
+  last_commit: "ac83e31"
 
 current_task:
-  id: "v2-integration"
+  id: "v2-system-map-premortem-review"
   type: "FEATURE"
-  description: "Integrar V2 ao sistema existente — opencode.json, AGENTS.md, buffer"
+  description: "Criar SYSTEM_MAP.md, PREMORTEM.md, premortem-check.ts, SESSION_REVIEW.md"
   status: "completed"
   plan_file: null
   current_step: null
@@ -20,15 +20,13 @@ adr:
 blockers: []
 
 next_steps:
-  - "Criar SYSTEM_MAP.md (substituir CONTEXT_MAP.md)"
-  - "Criar PREMORTEM.md e premortem-check script"
-  - "Criar SESSION_REVIEW.md template"
+  - "Migrar docs/context_buffer.md para governance/context/ e remover original"
+  - "Actualizar session-template.md para referenciar novo sistema"
 
 last_decision:
   adr: "ADR-021"
-  description: "WORKFLOW.md como entrada única obrigatória do sistema V2"
+  description: "V2 completo: WORKFLOW.md + SYSTEM_MAP.md + scripts + premortem + review"
 
 technical_debt:
-  - "context_buffer.md em docs/ continua a existir — remover ou arquivar"
+  - "context_buffer.md em docs/ continua a existir — migrar pendente"
   - "session-template.md ainda referencia docs/context_buffer.md"
-  - "Vários ficheiros antigos referenciam docs/context_buffer.md — REFACTOR aberto"
