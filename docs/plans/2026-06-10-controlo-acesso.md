@@ -14,7 +14,9 @@
 | 3 | MiMo V2.5 Free | Exports — barrel file |
 | 4 | MiMo V2.5 Free | Interface — definição de métodos |
 | 5 | MiMo V2.5 Free | Service — delegação para repo |
-| **6** | **Nemotron 3 Ultra Free** | **Implementação Supabase — queries complexas, UPSERT, DFS, JOINs** |
+| **6a** | **Nemotron 3 Ultra Free** | **Query de acesso — `getCourseAccess`, `getStudentCourseAccess`, `getPublishedCoursesForStudent`** |
+| **6b** | **Nemotron 3 Ultra Free** | **Upsert — `updateCourseAccess`** |
+| **6c** | **Nemotron 3 Ultra Free** | **DFS de ciclos — `detectPrerequisiteCycle`** |
 | 7 | MiMo V2.5 Free | Migration data — INSERT inicial |
 | 8 | MiMo V2.5 Free | Admin UI — componente React/Next.js |
 | 9 | MiMo V2.5 Free | Admin UI — validação de ciclo |
@@ -25,7 +27,7 @@
 | 14 | MiMo V2.5 Free | Docs — workflow admin |
 | 15 | MiMo V2.5 Free | Docs — backlog update |
 
-> **Nota:** O Step 6 é atribuído ao **Nemotron 3 Ultra Free** por ser a etapa mais complexa do plano — requer implementação de queries Supabase com JOINs multi-tabela, UPSERT, DFS para detecção de ciclos, e lógica de negócio transaccional. O Nemotron 3 Ultra Free demonstrou superioridade em tarefas de backend/database layer.
+> **Nota:** O Step 6 é dividido em **3 sub-tarefas** (6a, 6b, 6c) atribuídas ao **Nemotron 3 Ultra Free**. Pedidos focados e separados produzem código mais limpo do que um pedido monolítico. Cada sub-tarefa é independente e pode ser executada em paralelo.
 
 ## 🎯 Objectivo
 
@@ -179,15 +181,39 @@ create policy "Estudantes visualizam seus próprios planos"
 - **Verificação:** `grep "getCourseAccess" packages/core/src/services/course.ts` → presente
 - [ ]
 
-### Step 6: Implementação Supabase — ICourseRepository `[Nemotron 3 Ultra Free]`
+### Step 6a: Implementação Supabase — Query de Acesso `[Nemotron 3 Ultra Free]`
 - **Ficheiro:** `packages/core/src/repositories/supabase-course-repository.ts`
-- **Acção:** Implementar os 5 métodos usando queries Supabase:
-  - `getCourseAccess`: SELECT da tabela `course_access`
-  - `updateCourseAccess`: UPSERT na tabela `course_access`
-  - `getStudentCourseAccess`: Query complexa que verifica: (1) student_plans → plan_courses → course_access, (2) se progressivo, verifica student_progress do pré-requisito
-  - `getPublishedCoursesForStudent`: JOIN courses + course_access + student_plans
-  - `detectPrerequisiteCycle`: DFS no grafo de pré-requisitos (máx 10 níveis)
+- **Acção:** Implementar 3 métodos de leitura:
+  - `getCourseAccess(courseId)`: SELECT da tabela `course_access` WHERE `course_id = $1`
+  - `getStudentCourseAccess(studentId, courseId)`: Query complexa:
+    1. Verificar se student tem plano que contém o curso (student_plans → plan_courses)
+    2. Buscar `course_access` do curso
+    3. Se `access_mode = 'free'` → `{ hasAccess: true, reason: 'free' }`
+    4. Se `access_mode = 'progressive'` → verificar se pré-requisito foi concluído (student_progress.completed = true)
+    5. Se `access_mode = 'restricted'` → verificar se student tem atribuição directa
+    6. Retorna `{ hasAccess: boolean; reason: string }`
+  - `getPublishedCoursesForStudent(studentId)`: JOIN courses + course_access + student_plans, filtrar por `is_published = true`
 - **Verificação:** `grep "getCourseAccess" packages/core/src/repositories/supabase-course-repository.ts` → presente
+- [ ]
+
+### Step 6b: Implementação Supabase — Upsert `[Nemotron 3 Ultra Free]`
+- **Ficheiro:** `packages/core/src/repositories/supabase-course-repository.ts`
+- **Acção:** Implementar 1 método de escrita:
+  - `updateCourseAccess(courseId, data)`: UPSERT na tabela `course_access` com `on conflict (course_id) do update`
+  - Dados: `access_mode`, `prerequisite_course_id`
+  - Se `access_mode != 'progressive'`, definir `prerequisite_course_id = null`
+- **Verificação:** `grep "updateCourseAccess" packages/core/src/repositories/supabase-course-repository.ts` → presente
+- [ ]
+
+### Step 6c: Implementação Supabase — DFS de Ciclos `[Nemotron 3 Ultra Free]`
+- **Ficheiro:** `packages/core/src/repositories/supabase-course-repository.ts`
+- **Acção:** Implementar 1 método de validação:
+  - `detectPrerequisiteCycle(courseId, prerequisiteId)`: DFS no grafo de pré-requisitos
+  - Partir de `prerequisiteId`, seguir `course_access.prerequisite_course_id` recursivamente
+  - Se encontrar `courseId` durante a travessia → ciclo detectado → retorna `true`
+  - Máximo 10 níveis de profundidade (evitar loop infinito)
+  - Se `prerequisiteId` não tem pré-requisito → retorna `false` (sem ciclo)
+- **Verificação:** `grep "detectPrerequisiteCycle" packages/core/src/repositories/supabase-course-repository.ts` → presente
 - [ ]
 
 ### Step 7: Migration data — Dados iniciais `[MiMo V2.5 Free]`
@@ -309,7 +335,9 @@ create policy "Estudantes visualizam seus próprios planos"
 | 3 | MiMo V2.5 Free | [ ] Pendente | — |
 | 4 | MiMo V2.5 Free | [ ] Pendente | — |
 | 5 | MiMo V2.5 Free | [ ] Pendente | — |
-| 6 | Nemotron 3 Ultra Free | [ ] Pendente | — |
+| 6a | Nemotron 3 Ultra Free | [ ] Pendente | — |
+| 6b | Nemotron 3 Ultra Free | [ ] Pendente | — |
+| 6c | Nemotron 3 Ultra Free | [ ] Pendente | — |
 | 7 | MiMo V2.5 Free | [ ] Pendente | — |
 | 8 | MiMo V2.5 Free | [ ] Pendente | — |
 | 9 | MiMo V2.5 Free | [ ] Pendente | — |
@@ -324,4 +352,4 @@ create policy "Estudantes visualizam seus próprios planos"
 1. Ao iniciar um step → marcar `[~]` e registar data na coluna "Última sessão"
 2. Ao concluir um step → marcar `[x]`, registar commit hash na coluna "Última sessão"
 3. Se a sessão terminar com `[~]` → manter como "em andamento" (não reverter para `[ ]`)
-4. Se a sessão terminar com steps `[ ]` → criar tarefa P1 no BACKLOG: "Continuar plano de controlo de acesso — próximo step: N"
+4. Se a sessão terminar com steps `[ ]` → criar tarefa P1 no BACKLOG: "Continuar plano de controlo de acesso — próximo step: 6a/6b/6c/7/..."

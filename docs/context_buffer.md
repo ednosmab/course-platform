@@ -27,7 +27,9 @@
 | 3 | MiMo V2.5 Free | [ ] Pendente | — |
 | 4 | MiMo V2.5 Free | [ ] Pendente | — |
 | 5 | MiMo V2.5 Free | [ ] Pendente | — |
-| 6 | Nemotron 3 Ultra Free | [ ] Pendente | — |
+| 6a | Nemotron 3 Ultra Free | [ ] Pendente | — |
+| 6b | Nemotron 3 Ultra Free | [ ] Pendente | — |
+| 6c | Nemotron 3 Ultra Free | [ ] Pendente | — |
 | 7 | MiMo V2.5 Free | [ ] Pendente | — |
 | 8 | MiMo V2.5 Free | [ ] Pendente | — |
 | 9 | MiMo V2.5 Free | [ ] Pendente | — |
