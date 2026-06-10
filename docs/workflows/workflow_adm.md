@@ -215,3 +215,50 @@ Disponível ao selecionar um bloco de imagem no Studio.
 - Quando o admin publica ou altera uma aula, a atualização chega **instantaneamente** aos alunos conectados.
 - O aluno vê a alteração na tela sem precisar recarregar o aplicativo.
 - Isso funciona via WebSockets (Supabase Realtime Channels).
+
+---
+
+## 🛡️ 11. Controlo de Acesso a Cursos
+
+### Onde configurar
+Nas **Configurações do Curso** (`/configuracoes/[courseId]`), na sidebar direita
+("Metadados e Opções"), **acima do Status de Publicação**.
+
+### Modos de acesso
+
+| Modo | Comportamento | Quando usar |
+|------|---------------|-------------|
+| **Livre** (padrão) | Todos os alunos matriculados no plano acessam imediatamente | Cursos introdutórios, onboarding |
+| **Progressivo** | Aluno só acessa após concluir o pré-requisito (outro curso) | Trilhas de aprendizado, certificações |
+| **Restrito** | Curso não está em nenhum plano — acesso apenas por atribuição directa | Cursos exclusivos, VIP |
+
+### Fluxo de configuração
+
+1. Acesse `/configuracoes/[courseId]`
+2. Na sidebar direita, localise **"Controlo de Acesso"** (acima de "Status de Publicação")
+3. Selecione o modo:
+   - **Livre** → Nenhuma acção adicional
+   - **Progressivo** → Selecione o curso pré-requisito no dropdown
+   - **Restrito** → Curso fica invisível até atribuição manual
+4. Clique em **"Salvar Alterações"**
+
+### Regras de pré-requisito (modo Progressivo)
+
+- O pré-requisito deve ser um **curso publicado** do mesmo tenant
+- Um curso pode ter **no máximo 1 pré-requisito** (encadeamento linear)
+- O sistema detecta **ciclos** (A→B→A) e impede a configuração
+- Ao remover um pré-requisito, alunos que já desbloquearam mantêm o acesso
+
+### Visão do aluno (tela "Explorar Cursos")
+
+| Estado do curso | O que o aluno vê |
+|-----------------|------------------|
+| Livre + no plano | Card com badge "Disponível" — clique para acessar |
+| Progressivo + pré-requisito concluído | Card com badge "Disponível" — clique para acessar |
+| Progressivo + pré-requisito NÃO concluído | Card com badge "Bloqueado" + "Complete {curso} primeiro" |
+| Restrito + não atribuído | Curso **não aparece** na tela Explorar |
+| Restrito + atribuído | Card com badge "Acesso especial" |
+
+### Plano de implementação
+
+Ver `docs/plans/2026-06-10-controlo-acesso.md` para detalhes completos da implementação (migration SQL, UI admin, UI student, testes).

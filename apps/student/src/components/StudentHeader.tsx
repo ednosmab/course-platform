@@ -5,7 +5,7 @@ import { AuthService } from '@projeto/core';
 const NAV_TABS = [
   { label: 'Meu painel', action: 'dashboard' },
   { label: 'Meus cursos', action: 'courses' },
-  { label: 'Explorar', action: 'explore' },
+  { label: 'Explorar Cursos', action: 'explore' },
   { label: 'Conquistas', action: 'certificates' },
 ];
 

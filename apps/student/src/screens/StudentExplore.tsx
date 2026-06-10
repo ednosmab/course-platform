@@ -4,16 +4,16 @@ import { CourseService, AuthService } from '@projeto/core';
 import { Course } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
 
-type StudentCoursesProps = {
+type StudentExploreProps = {
   onSelectCourse: (courseId: string) => void;
   onBack: () => void;
   onLogout: () => void;
   onNavigateToDashboard: () => void;
-  onNavigateToExplore: () => void;
+  onNavigateToCourses: () => void;
   onNavigateToCertificates: () => void;
 };
 
-export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToDashboard, onNavigateToExplore, onNavigateToCertificates }: StudentCoursesProps) {
+export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToDashboard, onNavigateToCourses, onNavigateToCertificates }: StudentExploreProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,21 +51,18 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
       case 'dashboard':
         onNavigateToDashboard();
         break;
-      case 'explore':
-        onNavigateToExplore();
+      case 'courses':
+        onNavigateToCourses();
         break;
       case 'certificates':
         onNavigateToCertificates();
-        break;
-      case 'courses':
         break;
     }
   };
 
   const filteredCourses = courses.filter((course) => {
     if (filter === 0) return true;
-    if (filter === 1) return course.status === 'published';
-    if (filter === 2) return course.status === 'draft';
+    if (filter === 1) return course.is_published;
     return true;
   });
 
@@ -84,7 +81,7 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
     }
   });
 
-  const filterLabel = filter === 0 ? null : filter === 1 ? 'Em andamento' : 'Não iniciados';
+  const filterLabel = filter === 0 ? null : filter === 1 ? 'Publicados' : null;
 
   const formatDate = (value?: string | Date | null) => {
     if (!value) return '';
@@ -95,7 +92,7 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
 
   return (
     <YStack flex={1} bg="$background">
-      <StudentHeader userProfile={userProfile} onLogout={onLogout} onTabAction={handleTabAction} activeTab="courses" />
+      <StudentHeader userProfile={userProfile} onLogout={onLogout} onTabAction={handleTabAction} activeTab="explore" />
 
       <ScrollView flex={1} contentContainerStyle={{ paddingBottom: 60 }}>
         <YStack px={24} pt={24} pb={16} gap={24} maxWidth={1400} alignSelf="center" w="100%">
@@ -103,10 +100,10 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
           {/* Page Header */}
           <YStack gap={4}>
             <Text fontFamily="$display" fontSize={32} fontWeight="$6" letterSpacing={-0.5}>
-              Meus Cursos
+              Explorar Cursos
             </Text>
             <Text fontSize={14} color="$textMuted">
-              {courses.length} {courses.length === 1 ? 'curso matriculado' : 'cursos matriculados'}
+              {courses.length} {courses.length === 1 ? 'curso disponível' : 'cursos disponíveis'}
             </Text>
           </YStack>
 
@@ -129,8 +126,7 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
               <FilterBar
                 filterOptions={[
                   { value: '0', label: 'Todos' },
-                  { value: '1', label: 'Em andamento' },
-                  { value: '2', label: 'Não iniciados' },
+                  { value: '1', label: 'Publicados' },
                 ]}
                 filterValue={String(filter)}
                 onFilterChange={(value) => setFilter(Number(value))}
@@ -209,18 +205,12 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
                               gap={6}
                               style={{
                                 backdropFilter: 'blur(8px)',
-                                backgroundColor: 'rgba(16, 185, 129, 0.9)',
+                                backgroundColor: 'rgba(59, 130, 246, 0.9)',
                               }}
                             >
-                              <XStack
-                                w={6}
-                                h={6}
-                                borderRadius={3}
-                                bg="$white"
-                                style={{ borderRadius: '50%' }}
-                              />
+                              <Icon name="Compass" size={10} color="$white" />
                               <Text fontSize={11} fontWeight="700" color="$white">
-                                Em andamento
+                                Disponível
                               </Text>
                             </XStack>
                           </XStack>

@@ -1,23 +1,23 @@
 /**
- * Student courses route (/courses). Shows all enrolled courses with filtering and sorting.
+ * Student explore route (/explore). Shows all available courses for discovery.
  */
 
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { StudentCourses } from '../../src/screens/StudentCourses';
+import { StudentExplore } from '../../src/screens/StudentExplore';
 
-export default function StudentCoursesRoute() {
+export default function StudentExploreRoute() {
   const router = useRouter();
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <StudentCourses
+      <StudentExplore
         onSelectCourse={(courseId) => router.push(`/course/${courseId}`)}
         onBack={() => router.back()}
         onLogout={() => router.replace('/login')}
         onNavigateToDashboard={() => router.push('/')}
-        onNavigateToExplore={() => router.push('/explore')}
+        onNavigateToCourses={() => router.push('/courses')}
         onNavigateToCertificates={() => router.push('/certificates')}
       />
     </SafeAreaView>
