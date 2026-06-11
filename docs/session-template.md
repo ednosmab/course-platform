@@ -33,9 +33,11 @@
 
 ## 7. Validações Executadas
 - [ ] `pnpm run validate:session` — all checks pass
-- [ ] `pnpm run close:session` — checklist completo
+- [ ] `pnpm run close:session` — checklist completo (inclui UI governance + build)
 - [ ] `pnpm run test` — X/X passam
 - [ ] `tsc --noEmit` — 0 erros
+- [ ] `pnpm run verify:ui` — UI rules pass
+- [ ] `pnpm run build:verify` — build admin + student ok
 - [ ] Buffer YAML actualizado (`governance/context/context_buffer.yaml`)
 - [ ] Backlog actualizado
 - [ ] SESSION_REVIEW preenchido (`governance/reviews/SESSION_REVIEW.md`)
