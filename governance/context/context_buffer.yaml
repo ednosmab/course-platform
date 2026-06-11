@@ -1,15 +1,15 @@
 session:
-  id: "2026-06-10"
+  id: "2026-06-11"
   branch: "feat/admin-cursos"
   operation_type: "FEATURE"
-  last_commit: "1ab3203"
+  last_commit: "89cb972"
 
 current_task:
-  id: "v2-migration-legacy"
-  type: "REFACTOR"
-  description: "Migrar docs/context_buffer.md + actualizar session-template.md e INDEX.md"
-  status: "completed"
-  plan_file: null
+  id: "crud-planos-mvp"
+  type: "FEATURE"
+  description: "CRUD de Planos no Admin — criar/editar planos, vincular cursos, atribuir alunos"
+  status: "planned"
+  plan_file: "docs/plans/2026-06-11-crud-planos.md"
   current_step: null
   model_assignments: []
 
@@ -20,10 +20,12 @@ adr:
 blockers: []
 
 next_steps:
-  - "V2 completo — aguardar próxima tarefa do BACKLOG"
+  - "Criar telas admin e student em paralelo (decisão do usuário 2026-06-11)"
+  - "Executar Step 1 do plano CRUD Planos quando iniciar a implementação"
 
 last_decision:
-  adr: "ADR-021"
-  description: "V2 totalmente migrado. docs/context_buffer.md removido. session-template.md actualizado."
+  adr: null
+  description: "Sessão encerrada. Usuário quer continuar amanhã criando telas admin e student em paralelo."
 
-technical_debt: []
+technical_debt:
+  - "Botões de acesso (Livre/Progressivo/Restrito) usam hex hardcoded (#3B82F6, #DEE1EB) — migrar para tokens Tamagui quando possível"

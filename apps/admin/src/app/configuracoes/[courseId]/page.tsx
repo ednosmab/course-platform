@@ -225,14 +225,22 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
       setModules(structure.modules);
       setExpandedModules(new Set(structure.modules.map(m => m.id)));
 
-      const accessData = await CourseService.getCourseAccess(courseId);
-      if (accessData) {
-        setAccessMode(accessData.access_mode);
-        setPrerequisiteCourseId(accessData.prerequisite_course_id);
+      try {
+        const accessData = await CourseService.getCourseAccess(courseId);
+        if (accessData) {
+          setAccessMode(accessData.access_mode);
+          setPrerequisiteCourseId(accessData.prerequisite_course_id);
+        }
+      } catch {
+        // course_access table may not exist yet
       }
 
-      const courses = await CourseService.getAllCourses();
-      setAllCourses(courses.filter(c => c.id !== courseId));
+      try {
+        const courses = await CourseService.getAllCourses();
+        setAllCourses(courses.filter(c => c.id !== courseId));
+      } catch (err) {
+        console.error('Error loading courses for prerequisite:', err);
+      }
     } catch (err) {
       console.error('Error loading course:', err);
     } finally {
@@ -687,67 +695,78 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                   Configure como os alunos acessam este curso. Modo livre permite acesso a todos. Modo progressivo exige conclusão de pré-requisito. Modo restrito requer atribuição de plano.
                 </Text>
 
-                <XStack gap={8} mt={8}>
+                <XStack gap={6} mt={8} jc="space-between">
                   <Button
-                    size="$3"
-                    variant={accessMode === 'free' ? 'outlined' : 'ghost'}
-                    borderColor={accessMode === 'free' ? '$primary' : '$border'}
-                    bg={accessMode === 'free' ? '$primaryLight' : 'transparent'}
+                    size="$1"
+                    px={10} py={4}
+                    borderWidth={1}
+                    borderColor={accessMode === 'free' ? '#3B82F6' : '#DEE1EB'}
+                    bg={accessMode === 'free' ? '#3B82F6' : 'white'}
                     onPress={() => {
                       setAccessMode('free');
                       setPrerequisiteCourseId(null);
                     }}
                   >
-                    Livre
+                    <Text color={accessMode === 'free' ? 'white' : '#666'} fontSize={12} fontWeight={accessMode === 'free' ? '600' : '400'}>Livre</Text>
                   </Button>
                   <Button
-                    size="$3"
-                    variant={accessMode === 'progressive' ? 'outlined' : 'ghost'}
-                    borderColor={accessMode === 'progressive' ? '$primary' : '$border'}
-                    bg={accessMode === 'progressive' ? '$primaryLight' : 'transparent'}
+                    size="$1"
+                    px={10} py={4}
+                    borderWidth={1}
+                    borderColor={accessMode === 'progressive' ? '#3B82F6' : '#DEE1EB'}
+                    bg={accessMode === 'progressive' ? '#3B82F6' : 'white'}
                     onPress={() => setAccessMode('progressive')}
                   >
-                    Progressivo
+                    <Text color={accessMode === 'progressive' ? 'white' : '#666'} fontSize={12} fontWeight={accessMode === 'progressive' ? '600' : '400'}>Progressivo</Text>
                   </Button>
                   <Button
-                    size="$3"
-                    variant={accessMode === 'restricted' ? 'outlined' : 'ghost'}
-                    borderColor={accessMode === 'restricted' ? '$primary' : '$border'}
-                    bg={accessMode === 'restricted' ? '$primaryLight' : 'transparent'}
+                    size="$1"
+                    px={10} py={4}
+                    borderWidth={1}
+                    borderColor={accessMode === 'restricted' ? '#3B82F6' : '#DEE1EB'}
+                    bg={accessMode === 'restricted' ? '#3B82F6' : 'white'}
                     onPress={() => {
                       setAccessMode('restricted');
                       setPrerequisiteCourseId(null);
                     }}
                   >
-                    Restrito
+                    <Text color={accessMode === 'restricted' ? 'white' : '#666'} fontSize={12} fontWeight={accessMode === 'restricted' ? '600' : '400'}>Restrito</Text>
                   </Button>
                 </XStack>
 
                 {accessMode === 'progressive' && (
                   <YStack mt={8} gap={4}>
                     <Text fontSize={12} fontWeight="600">Pré-requisito</Text>
-                    <select
-                      value={prerequisiteCourseId || ''}
-                      onChange={async (e) => {
-                        const selectedId = e.target.value || null;
-                        setPrerequisiteCourseId(selectedId);
-                        setPrerequisiteError(null);
-                        if (selectedId) {
-                          const hasCycle = await CourseService.detectPrerequisiteCycle(courseId, selectedId);
-                          if (hasCycle) {
-                            setPrerequisiteError('Este pré-requisito criaria um ciclo. Selecione outro curso.');
-                            setPrerequisiteCourseId(null);
-                          }
-                        }
-                      }}
-                      style={{
-                        padding: '8px 12px',
-                        borderRadius: '6px',
-                        border: '1px solid #e0e0e0',
-                        fontSize: '13px',
-                        width: '100%',
-                      }}
+                    <YStack
+                      borderWidth={1}
+                      borderColor="$border"
+                      borderRadius={6}
+                      bg="white"
                     >
+                      <select
+                        value={prerequisiteCourseId || ''}
+                        onChange={async (e) => {
+                          const selectedId = e.target.value || null;
+                          setPrerequisiteCourseId(selectedId);
+                          setPrerequisiteError(null);
+                          if (selectedId) {
+                            const hasCycle = await CourseService.detectPrerequisiteCycle(courseId, selectedId);
+                            if (hasCycle) {
+                              setPrerequisiteError('Este pré-requisito criaria um ciclo. Selecione outro curso.');
+                              setPrerequisiteCourseId(null);
+                            }
+                          }
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          fontSize: '13px',
+                          width: '100%',
+                          backgroundColor: 'transparent',
+                          outline: 'none',
+                        }}
+                      >
                       <option value="">Selecione o pré-requisito...</option>
                       {allCourses.map(c => (
                         <option key={c.id} value={c.id}>{c.title}</option>
@@ -756,6 +775,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                     {prerequisiteError && (
                       <Text fontSize={11} color="$error">{prerequisiteError}</Text>
                     )}
+                    </YStack>
                   </YStack>
                 )}
 

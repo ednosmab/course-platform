@@ -171,6 +171,7 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 
 | Item | Severidade | Status |
 |---|---|---|
+| CRUD de Planos no Admin (criar/editar planos, vincular cursos, atribuir alunos) | 🟢 Baixo | Backlog |
 | BUG: Cursor escapa durante resize | 🟢 Baixo | Backlog |
 | BUG: Aspect ratio de imagem em W/N/cantos | 🟢 Baixo | Backlog |
 | Extrair `removeBackground` para Web Worker | 🟢 Baixo | Backlog |

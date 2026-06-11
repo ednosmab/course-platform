@@ -232,15 +232,22 @@ Nas **Configurações do Curso** (`/configuracoes/[courseId]`), na sidebar direi
 | **Progressivo** | Aluno só acessa após concluir o pré-requisito (outro curso) | Trilhas de aprendizado, certificações |
 | **Restrito** | Curso não está em nenhum plano — acesso apenas por atribuição direta | Cursos exclusivos, VIP |
 
-### Fluxo de configuração
+### Como interagir
 
-1. Acesse `/configuracoes/[courseId]`
-2. Na sidebar direita, localize **"Controle de Acesso"** (acima de "Status de Publicação")
-3. Selecione o modo:
-   - **Livre** → Nenhuma ação adicional
-   - **Progressivo** → Selecione o curso pré-requisito no dropdown
-   - **Restrito** → Curso fica invisível até atribuição manual
-4. Clique em **"Salvar Alterações"**
+#### 1. Selecionar o modo de acesso
+- Clique no botão do modo desejado (**Livre**, **Progressivo** ou **Restrito**)
+- O botão selecionado fica com **fundo azul e texto branco** (feedback visual)
+- Os outros botões ficam com borda cinza e fundo transparente
+
+#### 2. Configurar pré-requisito (modo Progressivo)
+- Ao selecionar **Progressivo**, aparece o campo **"Pré-requisito"**
+- Clique no dropdown e selecione o curso que o aluno deve concluir primeiro
+- O sistema valida automaticamente se a seleção criaria um **ciclo** (ex: A→B→A)
+- Se detectar ciclo, exibe mensagem de erro e desfaz a seleção
+
+#### 3. Salvar as alterações
+- Após configurar o modo, clique em **"Salvar Alterações"** na parte inferior
+- As configurações são salvas imediatamente no banco de dados
 
 ### Regras de pré-requisito (modo Progressivo)
 
@@ -249,15 +256,32 @@ Nas **Configurações do Curso** (`/configuracoes/[courseId]`), na sidebar direi
 - O sistema detecta **ciclos** (A→B→A) e impede a configuração
 - Ao remover um pré-requisito, alunos que já desbloquearam mantêm o acesso
 
+### Regras de plano (modo Restrito)
+
+- O curso deve estar vinculado a **pelo menos 1 plano** para ter efeito prático
+- Apenas alunos com **plano atribuído** que contenha o curso podem acessar
+- Alunos **sem plano** ou com plano **sem esse curso** não veem o curso na tela Explorar
+- Para atribuir planos aos alunos, use o painel de **Gestão de Planos** no admin
+- Um aluno pode ter **vários planos** simultâneamente (ex: Básico + Premium)
+- Ao desvincular um curso de um alunos com plano ativo perdem acesso
+
 ### Visão do aluno (tela "Explorar Cursos")
 
 | Estado do curso | O que o aluno vê |
 |-----------------|------------------|
-| Livre + no plano | Card com badge "Disponível" — clique para acessar |
-| Progressivo + pré-requisito concluído | Card com badge "Disponível" — clique para acessar |
-| Progressivo + pré-requisito NÃO concluído | Card com badge "Bloqueado" + "Complete {curso} primeiro" |
+| Livre + no plano | Card com badge verde "Disponível" — clique para acessar |
+| Progressivo + pré-requisito concluído | Card com badge verde "Disponível" — clique para acessar |
+| Progressivo + pré-requisito NÃO concluído | Card com badge cinza "Bloqueado" + "Complete o pré-requisito primeiro" |
 | Restrito + não atribuído | Curso **não aparece** na tela Explorar |
-| Restrito + atribuído | Card com badge "Acesso especial" |
+| Restrito + atribuído | Card com badge azul "Acesso especial" |
+
+### Filtros disponíveis para o aluno
+
+O aluno pode filtrar os cursos por:
+- **Todos** — mostra todos os cursos publicados
+- **Publicados** — cursos publicados
+- **Disponíveis** — cursos que o aluno tem acesso (livre ou desbloqueado)
+- **Bloqueados** — cursos progressivos com pré-requisito pendente
 
 ### Plano de implementação
 
