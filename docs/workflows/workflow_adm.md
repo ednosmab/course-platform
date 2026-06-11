@@ -169,6 +169,12 @@ Disponível ao selecionar um bloco de imagem no Studio.
 
 ## 🚦 8. Publicar Aulas e Cursos
 
+### Regra Importante: Cursos são criados como Rascunho
+
+> **Por padrão, todo curso novo é criado com `is_published = false` (rascunho).**
+> Apenas cursos publicados (`is_published = true`) aparecem na sessão **"Explorar Cursos"**.
+> Para um curso aparecer, o admin deve activar o toggle de publicação nas Configurações do Curso.
+
 ### Auto-Save
 - Toda alteração no editor é salva automaticamente como **rascunho** (não público).
 - O salvamento é automático — não precisa clicar em salvar.
