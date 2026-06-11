@@ -11,7 +11,12 @@ export default function CertificatesRoute() {
   const router = useRouter();
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Certificates onBack={() => router.back()} />
+      <Certificates
+        onNavigateToDashboard={() => router.push('/')}
+        onNavigateToCourses={() => router.push('/courses')}
+        onNavigateToExplore={() => router.push('/explore')}
+        onLogout={() => router.replace('/login')}
+      />
     </SafeAreaView>
   );
 }

@@ -7,11 +7,11 @@ session:
   last_commit: "89cb972"
 
 current_task:
-  id: "crud-planos-mvp"
+  id: "conquistas-screen"
   type: "FEATURE"
-  description: "CRUD de Planos no Admin — criar/editar planos, vincular cursos, atribuir alunos"
-  status: "planned"
-  plan_file: "docs/plans/2026-06-11-crud-planos.md"
+  description: "Tela de Conquistas (Student) — StudentHeader + cards 200x141 + modal detalhes"
+  status: "completed"
+  plan_file: "docs/plans/2026-06-11-conquistas-screen.md"
   current_step: null
   model_assignments: []
 
@@ -22,12 +22,26 @@ adr:
 blockers: []
 
 next_steps:
-  - "Criar telas admin e student em paralelo (decisão do usuário 2026-06-11)"
-  - "Executar Step 1 do plano CRUD Planos quando iniciar a implementação"
+  - "Testar a tela de Conquistas no browser (pnpm --filter student dev)"
+  - "Verificar se Montserrat carrega correctamente no native"
+  - "Continuar com outras telas do student (se necessário)"
 
 last_decision:
   adr: null
-  description: "Sessão encerrada. Usuário quer continuar amanhã criando telas admin e student em paralelo."
+  description: "Tela de Conquistas concluída. StudentHeader integrado, cards 200x141px (A4), modal de detalhes com Dialog."
 
 technical_debt:
   - "Botões de acesso (Livre/Progressivo/Restrito) usam hex hardcoded (#3B82F6, #DEE1EB) — migrar para tokens Tamagui quando possível"
+  - "CertificateMiniature e CertificateBlockRenderer são web-only — criar versão mobile se necessário"
+  - "Botões Baixar PDF e Compartilhar no modal são placeholder (onPress vazio)"
+
+documents_loaded:
+  - "governance/WORKFLOW.md"
+  - "governance/context/context_buffer.yaml"
+  - "docs/layers/apps/mobile_player_plan.md"
+  - "apps/student/src/screens/Certificates.tsx"
+  - "apps/student/src/components/StudentHeader.tsx"
+  - "packages/ui/src/components/Certificate/CertificateMiniature.tsx"
+  - "packages/ui/src/index.ts"
+  - "apps/student/app/_layout.tsx"
+  - "apps/student/app/(tabs)/certificates.tsx"
