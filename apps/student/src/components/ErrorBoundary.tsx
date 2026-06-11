@@ -1,9 +1,18 @@
+/**
+ * ErrorBoundary — React class-based error boundary for the student app.
+ *
+ * Catches unhandled rendering errors in the child tree, logs them,
+ * and displays a fallback UI with a retry button. Accepts an optional
+ * custom fallback and an onError callback for external error reporting.
+ */
+
 import React, { Component, ReactNode } from 'react';
 import { YStack, Text, Button } from '@projeto/ui';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }
 
 interface ErrorBoundaryState {
@@ -23,8 +32,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('[ErrorBoundary] Unhandled error:', error.message);
-    console.error('[ErrorBoundary] Stack:', error.stack);
     console.error('[ErrorBoundary] Component stack:', info.componentStack);
+    this.props.onError?.(error, info);
   }
 
   handleRetry = () => {
@@ -40,10 +49,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return (
         <YStack f={1} ai="center" jc="center" p="$4" gap="$4" maxWidth={600}>
           <Text fontSize="$6" fontWeight="700" color="$danger">
-            Algo deu errado
+            Something went wrong
           </Text>
           <Text fontSize="$3" color="$textMuted" textAlign="center">
-            {this.state.error?.message || 'Erro desconhecido'}
+            {this.state.error?.message || 'Unknown error'}
           </Text>
           {this.state.error?.stack && (
             <YStack
@@ -66,7 +75,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             </YStack>
           )}
           <Button onPress={this.handleRetry} theme="active">
-            Tentar novamente
+            Try again
           </Button>
         </YStack>
       );

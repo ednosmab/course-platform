@@ -1,7 +1,13 @@
 import React from 'react';
 import { XStack, YStack, Text } from 'tamagui';
 
-const logoAsset = require('../assets/flexed-logo.png');
+const logoAsset: { uri?: string } | string = (() => {
+  try {
+    return require('../assets/flexed-logo.png');
+  } catch {
+    return { uri: '' };
+  }
+})();
 
 type BrandMarkProps = {
   small?: boolean;
