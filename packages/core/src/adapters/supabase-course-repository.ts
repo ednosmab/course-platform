@@ -174,12 +174,16 @@ export const supabaseCourseRepository: ICourseRepository = {
   },
 
   async getCourseAccess(courseId: string): Promise<CourseAccess | null> {
-    const { data, error } = await supabase.from('course_access').select('*').eq('course_id', courseId).single();
-    if (error) {
-      if (error.code === 'PGRST116') return null;
-      throw error;
+    try {
+      const { data, error } = await supabase.from('course_access').select('*').eq('course_id', courseId).single();
+      if (error) {
+        if (error.code === 'PGRST116') return null;
+        return null;
+      }
+      return CourseAccessSchema.parse(data);
+    } catch {
+      return null;
     }
-    return CourseAccessSchema.parse(data);
   },
 
   async updateCourseAccess(courseId: string, data: { access_mode: string; prerequisite_course_id: string | null }): Promise<void> {

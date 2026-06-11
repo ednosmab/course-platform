@@ -15,7 +15,7 @@ type BrandMarkProps = {
 };
 
 /**
- * Brand wordmark for **FLEXED Studio**.
+ * Brand wordmark for **FLEXED Class**.
  *
  * Renders the logo image (via CSS backgroundImage — no expo-asset needed)
  * plus the text wordmark. The admin app uses its own `brand-mark.tsx` with

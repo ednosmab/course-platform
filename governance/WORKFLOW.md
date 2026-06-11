@@ -14,6 +14,11 @@ Ler este ficheiro (`WORKFLOW.md`).
 ### Passo 2
 Ler `context_buffer.yaml` para obter estado actual.
 
+### Passo 2.5
+Apresentar o **Quick Board** ao utilizador ANTES de qualquer resposta operacional.
+O Quick Board lista: tarefa em curso, em espera, próxima, dívidas P1 com due date.
+Fonte: `context_buffer.yaml` → secção `current_task`.
+
 ### Passo 3
 Identificar o tipo de operação.
 

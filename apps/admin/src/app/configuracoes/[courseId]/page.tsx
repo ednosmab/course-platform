@@ -229,7 +229,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
         const accessData = await CourseService.getCourseAccess(courseId);
         if (accessData) {
           setAccessMode(accessData.access_mode);
-          setPrerequisiteCourseId(accessData.prerequisite_course_id);
+          setPrerequisiteCourseId(accessData.prerequisite_course_id ?? null);
         }
       } catch {
         // course_access table may not exist yet
@@ -697,7 +697,6 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
 
                 <XStack gap={6} mt={8} jc="space-between">
                   <Button
-                    size="$1"
                     px={10} py={4}
                     borderWidth={1}
                     borderColor={accessMode === 'free' ? '#3B82F6' : '#DEE1EB'}
@@ -710,7 +709,6 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                     <Text color={accessMode === 'free' ? 'white' : '#666'} fontSize={12} fontWeight={accessMode === 'free' ? '600' : '400'}>Livre</Text>
                   </Button>
                   <Button
-                    size="$1"
                     px={10} py={4}
                     borderWidth={1}
                     borderColor={accessMode === 'progressive' ? '#3B82F6' : '#DEE1EB'}
@@ -720,7 +718,6 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                     <Text color={accessMode === 'progressive' ? 'white' : '#666'} fontSize={12} fontWeight={accessMode === 'progressive' ? '600' : '400'}>Progressivo</Text>
                   </Button>
                   <Button
-                    size="$1"
                     px={10} py={4}
                     borderWidth={1}
                     borderColor={accessMode === 'restricted' ? '#3B82F6' : '#DEE1EB'}
