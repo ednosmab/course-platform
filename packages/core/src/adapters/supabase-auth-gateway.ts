@@ -49,7 +49,7 @@ export const supabaseAuthGateway: IAuthGateway = {
     const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
     if (error || !data) return null;
     const parsed = ProfileSchema.safeParse(data);
-    if (!parsed.success) { console.error('Profile data contract validation failed:', parsed.error); return data as Profile; }
+    if (!parsed.success) { console.error('Profile data contract validation failed:', parsed.error); return null; }
     return parsed.data;
   },
 
