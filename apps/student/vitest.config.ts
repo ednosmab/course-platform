@@ -1,0 +1,11 @@
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  assetsInclude: ['**/*.png'],
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.test.{ts,tsx}'],
+    globals: true,
+    setupFiles: ['./vitest.setup.ts'],
+  },
+});

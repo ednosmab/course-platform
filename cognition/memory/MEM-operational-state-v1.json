@@ -1,0 +1,36 @@
+{
+  "session": {
+    "id": 3,
+    "started_at": "2026-05-16T23:32:00Z",
+    "status": "WAITING_FOR_CORE_SERVICES"
+  },
+  "workflow": {
+    "active_id": "WF-CORE-SERVICES-004",
+    "active_layer": "core",
+    "active_agent": "Executor"
+  },
+  "agents": {
+    "planner": {
+      "active": false,
+      "last_run": "2026-05-16T23:30:00Z"
+    },
+    "executor": {
+      "active": true,
+      "last_run": "2026-05-16T23:54:00Z"
+    },
+    "reviewer": {
+      "active": false,
+      "last_run": null
+    },
+    "orchestrator": {
+      "active": false,
+      "last_run": "2026-05-16T23:25:00Z"
+    }
+  },
+  "metrics": {
+    "total_handoffs": 2,
+    "failed_tests": 0,
+    "completed_tasks": 24
+  },
+  "failures": []
+}

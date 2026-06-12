@@ -1,18 +1,64 @@
 {
-  "$schema": "https://opencode.ai",
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode/mimo-v2.5-free",
+  "default_agent": "plan",
+
   "agent": {
-    "profile": {
-      "model_tier": "medium",
-      "identity_file": "./AGENTS.md"
+    "plan": {
+      "role": "planner",
+      "model": "opencode/mimo-v2.5-free",
+      "description": "Planning agent. Reads project context and produces atomic, fragmented plans tailored for deepseek-v4-flash-free executor. MANDATORY: every plan must be broken into small, verifiable, single-action steps (Edit + grep verify cycle) so the fast executor does not skip or merge steps. Include safeguards table (S1..S6), explicit G-01 pause points for commits, and reference to AGENTS.md rule 13 for full protocol. Plans for complex tasks (>= 5 steps) are archived in docs/plans/."
     },
-    "inference": {
-      "temperature": 0.5
+    "build": {
+      "role": "executor",
+      "model": "opencode/deepseek-v4-flash-free",
+      "description": "Build/executor agent. Runs the user-approved plan step-by-step. MANDATORY: execute ONLY what the plan specifies — no autonomous refactors, no JSDoc additions, no renames, no 'improvements'. If you spot something outside the plan, STOP and report (do not fix it). Allowed exceptions: (1) minimal fixes (< 5 lines) to make the current step's build pass; (2) recording out-of-scope findings in the buffer's 'Refactorings Aplicadas' section. See AGENTS.md rule 14 for full protocol."
+    },
+    "review": {
+      "description": "Reviewer agent. Audits code produced by build. MAY run pnpm test/lint/verify and read-only git commands, but NEVER edits production code. MANDATORY: validate that executed work matches the user-approved plan (compare each step, metrics, files, deviations). For plans archived in docs/plans/, compare the template's checkboxes against the actual git diff. See AGENTS.md rule 12 for full protocol.",
+      "role": "auditor",
+      "mode": "primary",
+      "model": "opencode/mimo-v2.5-free",
+      "permission": {
+        "edit": "deny",
+        "bash": {
+          "pnpm run test": "allow",
+          "pnpm run lint": "allow",
+          "pnpm run verify": "allow",
+          "pnpm run verify:ui": "allow",
+          "pnpm ls *": "allow",
+          "git status": "allow",
+          "git diff": "allow",
+          "git log *": "allow",
+          "git show *": "allow",
+          "*": "ask"
+        }
+      }
+    },
+    "document-loader": {
+      "description": "Reads and summarizes the project documents relevant to the current task layer (P0-P3). Use before any code change.",
+      "mode": "subagent",
+      "permission": {
+        "read": "allow",
+        "edit": "deny"
+      }
     }
   },
+
   "instructions": [
-    "./AGENTS.md",
-    "./docs/CONTEXT_MAP.md"
+    "./governance/WORKFLOW.md",
+    "./docs/AGENTS.md",
+    "./governance/SYSTEM_MAP.md",
+    "./docs/FORBIDDEN_OPERATIONS.md",
+    "./docs/DESDO.md",
+    "./docs/Requisitos_plataforma.md",
+    "./docs/opencode-context.md",
+    "./cognition/context/CONTEXT_HIERARCHY.md",
+    "./docs/session-template.md"
   ],
+  "skills": {
+    "paths": [".opencode/skills"]
+  },
   "mcp": {
     "local-filesystem": {
       "type": "local",
@@ -23,7 +69,7 @@
         "."
       ],
       "enabled": true,
-      "env": {
+      "environment": {
         "AI_OPERATIONAL_RULES": "1. PROIBIDO lógica de domínio em packages/ui. 2. Todo schema Zod deve possuir version and .strict(). 3. Conventional Commits obrigatórios. 4. Respeitar teto de 50%-55% do contexto. 5. Proteger boundaries definidos no AGENTS.md. 6. Proibido imports cruzados entre apps. 7. Proibido instalar dependências sem justificativa. 8. Proibido modificar package.json fora da task atual. 9. Proibido sobrescrever documentação sem merge semântico. 10. Proibido criar código funcional durante TASK-00."
       }
     }

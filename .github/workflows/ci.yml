@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+jobs:
+  codeql:
+    name: CodeQL SAST
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable corepack and install pnpm
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare pnpm@11 --activate
+          pnpm --version
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Create env files
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > apps/admin/.env.local
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> apps/admin/.env.local
+          echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > apps/student/.env
+          echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> apps/student/.env
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build — student (expo web) + admin (next build)
+        run: pnpm run build:verify
+
+      - name: Check React consistency across workspace
+        run: pnpm run test:react-consistency
+
+      - name: Check test-only env vars not in production config
+        run: pnpm run test:env-vars
+
+      - name: Verify UI governance rules
+        run: pnpm run verify:ui
+
+      - name: Run unit tests
+        run: pnpm run test
+
+      - name: Build Ladle stories
+        run: pnpm --filter @projeto/ui ladle:build
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Run E2E + Visual Regression tests
+        run: pnpm run test:e2e
+
+      - name: Upload Playwright report (E2E)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-e2e
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Run Ladle VRT (component-level visual regression)
+        run: pnpm run test:vrt:ladle
+
+      - name: Upload Playwright report (Ladle VRT)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-ladle-vrt
+          path: |
+            tests/ladle-vrt/test-results/
+            test-results-ladle/
+          retention-days: 7

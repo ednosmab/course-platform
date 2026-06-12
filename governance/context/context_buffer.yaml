@@ -1,0 +1,46 @@
+quick_board_required: true
+
+session:
+  id: "2026-06-12"
+  branch: "develop"
+  operation_type: "FEATURE"
+  last_commit: "a26b637"
+
+current_task:
+  id: "certificate-print"
+  type: "FEATURE"
+  description: "Imprimir certificado via iframe isolado (substituir Baixar PDF)"
+  status: "completed"
+  plan_file: null
+  current_step: null
+  model_assignments: []
+
+adr:
+  last: "ADR-021"
+  created: "2026-06-10"
+
+blockers: []
+
+next_steps:
+  - "Commit e push para develop"
+  - "Utilizador pode re-concluir curso 'Casa' ou corrigir recheckAndIssueAll para emitir certificado pendente"
+
+last_decision:
+  adr: null
+  description: "Tela de Conquistas concluída. StudentHeader integrado, cards 200x141px (A4), modal de detalhes com Dialog."
+
+technical_debt:
+  - "Botões de acesso (Livre/Progressivo/Restrito) usam hex hardcoded (#3B82F6, #DEE1EB) — migrar para tokens Tamagui quando possível"
+  - "CertificateMiniature e CertificateBlockRenderer são web-only — criar versão mobile se necessário"
+  - "Botões Baixar PDF e Compartilhar no modal são placeholder (onPress vazio)"
+
+documents_loaded:
+  - "governance/WORKFLOW.md"
+  - "governance/context/context_buffer.yaml"
+  - "docs/layers/apps/mobile_player_plan.md"
+  - "apps/student/src/screens/Certificates.tsx"
+  - "apps/student/src/components/StudentHeader.tsx"
+  - "packages/ui/src/components/Certificate/CertificateMiniature.tsx"
+  - "packages/ui/src/index.ts"
+  - "apps/student/app/_layout.tsx"
+  - "apps/student/app/(tabs)/certificates.tsx"

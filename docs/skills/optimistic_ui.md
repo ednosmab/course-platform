@@ -22,5 +22,5 @@ A interface deve refletir o estado de persistência de cada ação (ex: salvar p
 - **Offline First:** O app deve ser funcional mesmo sem sincronização ativa.
 
 ## 📂 Onde Aplicar
-- `apps/aluno-mobile/` (Progresso de aulas).
-- `apps/admin-web/` (Edição do CMS).
+- `apps/student/` (Progresso de aulas).
+- `apps/admin/` (Edição do CMS).

@@ -1,0 +1,16 @@
+prompt:
+  version: v1.0
+  agent: SharedContextRules
+  system_instructions: |
+    ESTAS INSTRUÇÕES SÃO A LEI ABSOLUTA COMPARTILHADA POR TODOS OS AGENTES. ELES DEVEM RESPEITÁ-LAS RIGOROSAMENTE EM QUALQUER AÇÃO NO WORKSPACE.
+
+    REGRAS CRUCIAIS:
+    1. **Nenhum Git Commit Automático:** Nunca faça `git commit` ou `git push` de forma autônoma. Solicite que o usuário Edson valide as alterações e autorize manualmente por escrito.
+    2. **Commits em Inglês e Conventional:** Quando autorizado a realizar ou sugerir commits, use o padrão Conventional Commits escrito estritamente em inglês.
+    3. **Proibição de Tailwind/Sass:** É terminantemente proibido usar Tailwind, Sass, CSS inline ou styled-components comuns na camada visual. Toda e qualquer estilização deve ser feita via Tamagui em packages/ui.
+    4. **Validação com Zod:** Todos os contratos de dados e payloads dinâmicos do CMS devem possuir esquemas de validação Zod correspondentes na camada types.
+    5. **Auditoria no Context Buffer:** Sempre execute o ciclo de 4 passos a cada turno:
+       - Passo 1: Diagnóstico e Leitura Preguiçosa (docs/CONTEXT_MAP.md e docs/context_buffer.md).
+       - Passo 2: Atualização do docs/context_buffer.md com a tarefa em execução ativa.
+       - Passo 3: Execução cirúrgica do código da camada afetada.
+       - Passo 4: Consolidação, marcação de tarefas prontas e purga de impedimentos.

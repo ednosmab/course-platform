@@ -30,7 +30,7 @@ Respeite rigorosamente as responsabilidades de isolamento de cada camada do mono
 Atualize o arquivo `docs/CONTEXT_MAP.md` e crie fisicamente no disco os seguintes diretórios e arquivos markdown modulares, adicionando o conteúdo interno obrigatório:
 
 ### 📂 1. CAMADA CORE & DOMÍNIO
-* [ ] `docs/layers/core/domain-logic.md`
+* [x] `docs/layers/core/domain-logic.md`
 ```markdown
 # Camada de Domínio Compartilhada
 
@@ -41,7 +41,7 @@ Atualize o arquivo `docs/CONTEXT_MAP.md` e crie fisicamente no disco os seguinte
 ## Use Cases
 ## Adapters
 ```
-* [ ] `docs/layers/core/event-architecture.md`
+* [x] `docs/layers/core/event-architecture.md`
 ```markdown
 # Arquitetura de Eventos
 
@@ -51,7 +51,7 @@ Atualize o arquivo `docs/CONTEXT_MAP.md` e crie fisicamente no disco os seguinte
 ## Undo/Redo Estrutural
 ## Autosave
 ```
-* [ ] `docs/layers/core/offline-strategy.md`
+* [x] `docs/layers/core/offline-strategy.md`
 ```markdown
 # Sincronização Offline
 
@@ -62,7 +62,7 @@ Atualize o arquivo `docs/CONTEXT_MAP.md` e crie fisicamente no disco os seguinte
 ```
 
 ### 📂 2. CAMADA RENDERER & CMS
-* [ ] `docs/layers/renderer/engine-spec.md`
+* [x] `docs/layers/renderer/engine-spec.md`
 ```markdown
 # Render Engine Independente
 
@@ -72,7 +72,7 @@ Atualize o arquivo `docs/CONTEXT_MAP.md` e crie fisicamente no disco os seguinte
 ## Plugins
 ## Marketplace Futuro
 ```
-* [ ] `docs/layers/types/jsonb-governance.md`
+* [x] `docs/layers/types/jsonb-governance.md`
 ```markdown
 # Versionamento JSONB
 
@@ -81,7 +81,7 @@ Atualize o arquivo `docs/CONTEXT_MAP.md` e crie fisicamente no disco os seguinte
 ## Compatibilidade entre versões
 ## Source of Truth via Zod
 ```
-* [ ] `docs/layers/types/data-lifecycle.md`
+* [x] `docs/layers/types/data-lifecycle.md`
 ```markdown
 # Exportação de Conteúdo
 
@@ -91,7 +91,7 @@ Atualize o arquivo `docs/CONTEXT_MAP.md` e crie fisicamente no disco os seguinte
 ```
 
 ### 📂 3. CAMADA SEGURANÇA & OBSERVABILIDADE
-* [ ] `docs/layers/supabase/security-policies.md`
+* [x] `docs/layers/supabase/security-policies.md`
 ```markdown
 # Estratégia de Segurança
 
@@ -101,7 +101,7 @@ Atualize o arquivo `docs/CONTEXT_MAP.md` e crie fisicamente no disco os seguinte
 ## Multi-tenant
 ## Auditoria
 ```
-* [ ] `docs/layers/infra/observability.md`
+* [x] `docs/layers/infra/observability.md`
 ```markdown
 # Telemetria
 
@@ -110,7 +110,7 @@ Atualize o arquivo `docs/CONTEXT_MAP.md` e crie fisicamente no disco os seguinte
 ## Métricas
 ## Histórico de Alterações
 ```
-* [ ] `docs/layers/infra/future-automation.md`
+* [x] `docs/layers/infra/future-automation.md`
 ```markdown
 # Automação Futura
 
@@ -123,7 +123,7 @@ Atualize o arquivo `docs/CONTEXT_MAP.md` e crie fisicamente no disco os seguinte
 ```
 
 ### 📂 4. CAMADA UI
-* [ ] `docs/layers/ui/token-governance.md`
+* [x] `docs/layers/ui/token-governance.md`
 ```markdown
 # Governança de Tokens
 

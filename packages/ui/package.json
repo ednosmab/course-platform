@@ -2,12 +2,63 @@
   "name": "@projeto/ui",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./native": {
+      "import": "./native.ts",
+      "default": "./native.ts"
+    }
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "ladle": "ladle serve",
+    "ladle:build": "ladle build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module"
+  "dependencies": {
+    "@tamagui/animations-react-native": "2.0.0-rc.42",
+    "@tamagui/config": "2.0.0-rc.42",
+    "@tamagui/core": "2.0.0-rc.42",
+    "@tamagui/font-inter": "2.0.0-rc.42",
+    "@tamagui/image": "2.0.0-rc.42",
+    "dompurify": "^3.2.4",
+    "expo-asset": "^56.0.15",
+    "tamagui": "2.0.0-rc.42"
+  },
+  "devDependencies": {
+    "@ladle/react": "^5.1.1",
+    "@projeto/types": "workspace:*",
+    "@tamagui/babel-plugin": "2.0.0-rc.42",
+    "@types/dompurify": "^3.2.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/react-native": "^0.73.0",
+    "expo-av": "^15.0.2",
+    "jsdom": "^25.0.1",
+    "lucide-react": "^0.378.0",
+    "lucide-react-native": "^0.475.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "^0.81.5",
+    "react-native-web": "~0.21.2",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  },
+  "peerDependencies": {
+    "@projeto/types": "workspace:*",
+    "expo-av": "*",
+    "lucide-react": "*",
+    "lucide-react-native": "*",
+    "react": "*",
+    "react-dom": "*",
+    "react-native": "*"
+  }
 }

@@ -11,6 +11,6 @@ Garantir que a plataforma seja resiliente a falhas de conexão e permita o consu
 5. **UI de Estado de Conexão:** Informe claramente ao usuário quando ele está offline e quais conteúdos estão disponíveis.
 
 ## 📂 Onde Aplicar
-- `apps/aluno-mobile/`
+- `apps/student/`
 - `packages/core/hooks/`
 - Estratégias de Service Workers no Web.

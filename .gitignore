@@ -10,6 +10,7 @@ build/
 
 # Caches e arquivos gerados pelo Expo (Mobile)
 .expo/
+.tamagui/
 *.jks
 *.p8
 *.p12
@@ -29,3 +30,15 @@ yarn-error.log*
 
 # Arquivo de configuração de zona do sistema operacional
 .DS_Store
+design/
+desing_old/
+
+# Playwright test artifacts (generated at runtime)
+test-results/
+test-results-ladle/
+playwright-report/
+tests/ladle-vrt/test-results/
+
+# Feedback privado do tech lead em formação
+docs/feedback/
+
