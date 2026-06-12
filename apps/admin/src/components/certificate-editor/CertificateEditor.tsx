@@ -66,7 +66,7 @@ export const CertificateEditor: React.FC<{ courseId: string }> = ({ courseId }) 
   const certConfig = useMemo(() => createCertificateModeConfig(), []);
 
   return (
-    <EditorProvider courseId={courseId} mode="certificate" modeConfig={certConfig}>
+    <EditorProvider courseId={courseId} modeConfig={certConfig}>
       <YStack f={1} h="100vh" w="100vw" overflow="hidden">
         <CertificateEditorHeader courseId={courseId} />
         <CertificateEditorLayout />

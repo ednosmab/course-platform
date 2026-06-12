@@ -112,13 +112,13 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 | 5A.2 | CertificateCanvas (render com CertificateBlockRenderer, duplex, offset) | 11 | ~3.5h | Done | Agente 3 |
 | 5A.3 | CertificateEditor refactor (compor novos componentes, testes boundary) | 7 | ~1.5h | Done | Agente 3 |
 
-**Adiado para Fase 5B [REVISIT: 2026-06-20]:**
+**Fase 5B — In Progress (2026-06-12):**
 
-| Item | Causa raiz do adiamento |
-|---|---|
-| Extrair `useViewportInteraction` para ficheiro dedicado | Bloqueado por 5A.4 — branches `isCertMode` consomem o hook internamente |
-| Eliminar prop `mode` do `EditorProvider` | Bloqueado por 5A.5 — sem testes não há segurança para refactor |
-| Limpar 3 branches de init do `EditorContext` | Bloqueado por 5A.5 |
+| Item | Status | Causa raiz do adiamento |
+|---|---|---|
+| Extrair `useViewportInteraction` para ficheiro dedicado | **Done (2026-06-12)** | Extraído para `hooks/useViewportInteraction.ts` com `editor-types.ts` partilhado — #5B-Item1 |
+| Eliminar prop `mode` do `EditorProvider` | **Done (2026-06-12)** | `mode` agora implícito via `modeConfig.mode` — #5B-Item2 |
+| Limpar 3 branches de init do `EditorContext` | **Done (2026-06-12)** | Branches movidas para `modeConfig.load()`; initDatabase mode-agnostic — #5B-Item3 |
 
 ---
 

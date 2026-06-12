@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useState, useEffect, useCallback, useMemo } from 'react';
 import { AnyBlock } from '@projeto/types';
-import { LessonService, CourseService } from '@projeto/core';
+import { LessonService } from '@projeto/core';
 import type { EditorModeConfig, EditorBlockType } from './editor-modes';
 import { DEFAULT_CERT_WIDTH, DEFAULT_CERT_HEIGHT } from './editor-modes';
 
@@ -379,9 +379,9 @@ export const EditorProvider: React.FC<{
   children: React.ReactNode;
   lessonId?: string;
   courseId?: string;
-  mode?: 'lesson' | 'certificate';
   modeConfig: EditorModeConfig;
-}> = ({ children, lessonId, courseId: initialCourseId, mode = 'lesson', modeConfig }) => {
+}> = ({ children, lessonId, courseId: initialCourseId, modeConfig }) => {
+  const mode = modeConfig.mode;
   const [state, dispatch] = useReducer(editorReducer, initialState);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [activeLessonId] = useState(lessonId || '11111111-1111-1111-1111-111111111111');
@@ -459,31 +459,9 @@ export const EditorProvider: React.FC<{
           setCertDesignHeight(result.certMeta.designHeight);
           setCertIsDoubleSided(!!result.certMeta.isDoubleSided);
           setCertDesignChosen(true);
-        } else if (mode === 'certificate' && result.blocks.length > 0) {
-          setCertDesignChosen(true);
         }
         if (result.lessonMeta) {
           setLessonMeta(result.lessonMeta);
-        } else if (mode === 'lesson' && activeLessonId === '11111111-1111-1111-1111-111111111111') {
-          // Demo lesson fallback: seed data when no blocks were found
-          const defaultBlocks = [
-            { id: crypto.randomUUID(), type: 'text', content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.', styles: { align: 'left', fontSize: 'medium' }, layouts: { desktop: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, tablet: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, mobile: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 } } },
-            { id: crypto.randomUUID(), type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', provider: 'youtube', layouts: { desktop: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, tablet: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, mobile: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 } } },
-            { id: crypto.randomUUID(), type: 'quiz', question: 'Qual banco de dados relacional é utilizado no Supabase?', options: [{ id: crypto.randomUUID(), text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' }, { id: crypto.randomUUID(), text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }], layouts: { desktop: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, tablet: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, mobile: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 } } },
-          ] as AnyBlock[];
-
-          await CourseService.seedDemoData({
-            pathId: '88888888-8888-8888-8888-888888888888',
-            courseId: '99999999-9999-9999-9999-999999999999',
-            moduleId: '00000000-0000-0000-0000-000000000000',
-            activeLessonId,
-            blocks: defaultBlocks,
-          });
-
-          setBlocks(defaultBlocks);
-          setLessonMeta({ module_id: '00000000-0000-0000-0000-000000000000', title: '1. Introdução à Plataforma Híbrida', order_index: 1 });
-        } else if (mode === 'lesson' && !result.lessonMeta) {
-          setLessonMeta({ module_id: '', title: 'Nova aula', order_index: 1 });
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err);

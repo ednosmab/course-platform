@@ -30,7 +30,9 @@ describe('CertificateEditor boundary (SDR-001)', () => {
     expect(SOURCE).toContain('activeSide={activeSide}');
   });
 
-  it('configures EditorProvider with mode="certificate"', () => {
-    expect(SOURCE).toContain('mode="certificate"');
+  it('configures EditorProvider with createCertificateModeConfig (mode implicit via modeConfig)', () => {
+    expect(SOURCE).toContain('createCertificateModeConfig');
+    expect(SOURCE).toContain('modeConfig={certConfig}');
+    expect(SOURCE).not.toContain('mode="certificate"');
   });
 });

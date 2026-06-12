@@ -25,6 +25,8 @@ export const DEFAULT_CERT_WIDTH = 1100;
 export const DEFAULT_CERT_HEIGHT = Math.round(DEFAULT_CERT_WIDTH / A4_RATIO);
 
 export interface EditorModeConfig {
+  /** Identifies the editing mode for the shared EditorProvider context */
+  mode: 'lesson' | 'certificate';
   /** Load initial blocks and metadata for editing */
   load: (params: { courseId?: string; lessonId?: string }) => Promise<{
     blocks: AnyBlock[];
@@ -64,8 +66,28 @@ export interface EditorModeConfig {
  */
 export function createLessonModeConfig(): EditorModeConfig {
   return {
+    mode: 'lesson',
     load: async ({ lessonId }) => {
-      if (!lessonId) return { blocks: [] };
+      if (!lessonId) return { blocks: [], lessonMeta: { module_id: '', title: 'Nova aula', order_index: 1 } };
+
+      if (lessonId === '11111111-1111-1111-1111-111111111111') {
+        const defaultBlocks = [
+          { id: crypto.randomUUID(), type: 'text', content: 'Bem-vindo ao curso! Nesta aula estudaremos como a arquitetura do EAD está conectada.', styles: { align: 'left', fontSize: 'medium' }, layouts: { desktop: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, tablet: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 }, mobile: { x: 40, y: 40, w: 700, h: 80, zIndex: 0 } } },
+          { id: crypto.randomUUID(), type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', provider: 'youtube', layouts: { desktop: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, tablet: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 }, mobile: { x: 40, y: 160, w: 700, h: 380, zIndex: 1 } } },
+          { id: crypto.randomUUID(), type: 'quiz', question: 'Qual banco de dados relacional é utilizado no Supabase?', options: [{ id: crypto.randomUUID(), text: 'PostgreSQL', isCorrect: true, feedback: 'Correto! O Supabase é construído sobre o PostgreSQL.' }, { id: crypto.randomUUID(), text: 'MongoDB', isCorrect: false, feedback: 'Incorreto! MongoDB é NoSQL.' }], layouts: { desktop: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, tablet: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 }, mobile: { x: 40, y: 580, w: 700, h: 240, zIndex: 2 } } },
+        ] as AnyBlock[];
+
+        await CourseService.seedDemoData({
+          pathId: '88888888-8888-8888-8888-888888888888',
+          courseId: '99999999-9999-9999-9999-999999999999',
+          moduleId: '00000000-0000-0000-0000-000000000000',
+          activeLessonId: lessonId,
+          blocks: defaultBlocks,
+        });
+
+        return { blocks: defaultBlocks, lessonMeta: { module_id: '00000000-0000-0000-0000-000000000000', title: '1. Introdução à Plataforma Híbrida', order_index: 1 } };
+      }
+
       const draft = await LessonService.getDraftLesson(lessonId);
       if (draft) {
         return {
@@ -81,7 +103,7 @@ export function createLessonModeConfig(): EditorModeConfig {
           lessonMeta: { module_id: published.module_id, title: published.title, order_index: published.order_index },
         };
       }
-      return { blocks: [] };
+      return { blocks: [], lessonMeta: { module_id: '', title: 'Nova aula', order_index: 1 } };
     },
     save: async ({ entityId, blocks, lessonMeta }) => {
       const meta = lessonMeta || {
@@ -126,6 +148,7 @@ const CERTIFICATE_COMPATIBLE_TYPES = new Set<EditorBlockType>(['text', 'heading'
  */
 export function createCertificateModeConfig(): EditorModeConfig {
   return {
+    mode: 'certificate',
     load: async ({ courseId }) => {
       if (!courseId) return { blocks: [], certMeta: { designWidth: DEFAULT_CERT_WIDTH, designHeight: DEFAULT_CERT_HEIGHT, isDoubleSided: false } };
       const cData = await CourseService.getCourse(courseId);
