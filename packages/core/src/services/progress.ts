@@ -78,10 +78,26 @@ export function createProgressService(
      * Used by the CourseLessons screen to display completion status for all lessons in a course.
      * @param userId - The UUID of the student
      * @param lessonIds - Array of lesson UUIDs to fetch progress for
-     * @returns Array of progress records with lesson_id, completed, and percentage_watched
+     * @returns Array of progress records with lesson_id, completed, tests_completed, percentage_watched, and last_played_seconds
      */
     async getProgressByLessons(userId: string, lessonIds: string[]): Promise<any[]> {
       return progressRepo.getProgressByLessons(userId, lessonIds);
+    },
+
+    /**
+     * @description Calculates completion percentage for a set of lessons belonging to a module.
+     * Business rule: Module progress = (completed lessons / total lessons) * 100.
+     * Used by CourseLessons to display per-module progress bars.
+     * @param userId - The UUID of the student
+     * @param lessonIds - Array of lesson UUIDs in the module
+     * @returns Object with completed count, total count, and percentage (0-100)
+     */
+    async getModuleProgress(userId: string, lessonIds: string[]): Promise<{ completed: number; total: number; percentage: number }> {
+      const progressData = await progressRepo.getProgressByLessons(userId, lessonIds);
+      const completed = progressData.filter((p: any) => p.completed).length;
+      const total = lessonIds.length;
+      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      return { completed, total, percentage };
     },
 
     /**

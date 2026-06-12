@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input } from '@projeto/ui';
 import { CourseService, ProgressService, AuthService } from '@projeto/core';
 import { Course, Module, Lesson } from '@projeto/types';
@@ -17,6 +17,7 @@ interface LessonWithStatus extends Lesson {
   moduleTitle: string;
   duration?: string;
   type?: 'video' | 'leitura' | 'audio';
+  percentageWatched?: number;
 }
 
 interface ModuleWithLessons extends Module {
@@ -45,6 +46,7 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
   const [openModules, setOpenModules] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [userProfile, setUserProfile] = useState<{ full_name: string } | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const loadData = async () => {
     try {
@@ -82,6 +84,7 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
             duration: `${Math.floor(Math.random() * 20 + 5)} min`,
             type: lesson.blocks.some(b => b.type === 'video') ? 'video' :
                   lesson.blocks.some(b => b.type === 'text') ? 'leitura' : 'audio',
+            percentageWatched: progress?.percentage_watched,
           };
         }),
       }));
@@ -94,6 +97,11 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
         initialOpenState[mod.id] = hasCurrentLesson;
       });
       setOpenModules(initialOpenState);
+
+      // Auto-scroll to top after data loads
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      }, 300);
 
     } catch (err: any) {
       console.error('Failed to load course data:', err);
@@ -242,7 +250,7 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
         </XStack>
       </YStack>
 
-      <ScrollView flex={1} contentContainerStyle={{ padding: 24, gap: 24, paddingBottom: 32 }}>
+      <ScrollView ref={scrollViewRef} flex={1} contentContainerStyle={{ padding: 24, gap: 24, paddingBottom: 32 }}>
         <YStack maxWidth={1400} w="100%" als="center" gap="$6">
 
           {/* Hero Section */}
@@ -550,6 +558,22 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
                                       letterSpacing={0.5}
                                     >
                                       Em andamento
+                                    </Text>
+                                  </YStack>
+                                )}
+                                {isCurrent && lesson.percentageWatched != null && lesson.percentageWatched > 0 && (
+                                  <YStack>
+                                    <Text
+                                      fontSize={10}
+                                      fontWeight="600"
+                                      color="$textMuted"
+                                      bg="$secondary"
+                                      px="$1.5"
+                                      py="$0.5"
+                                      br="$2"
+                                      overflow="hidden"
+                                    >
+                                      {Math.round(lesson.percentageWatched)}% concluído
                                     </Text>
                                   </YStack>
                                 )}

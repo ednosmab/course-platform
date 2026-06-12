@@ -130,7 +130,7 @@ export const supabaseProgressRepository: IProgressRepository = {
    * @returns {Promise<any[]>} Array of progress records (lesson_id, completed, tests_completed).
    */
   async getProgressByLessons(userId: string, lessonIds: string[]): Promise<any[]> {
-    const { data: progress } = await supabase.from('student_progress').select('lesson_id, completed, tests_completed').eq('user_id', userId).in('lesson_id', lessonIds);
+    const { data: progress } = await supabase.from('student_progress').select('lesson_id, completed, tests_completed, percentage_watched, last_played_seconds').eq('user_id', userId).in('lesson_id', lessonIds);
     return progress ?? [];
   },
 };

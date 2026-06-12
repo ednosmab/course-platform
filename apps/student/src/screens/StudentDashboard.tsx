@@ -24,6 +24,7 @@ interface ActiveProgressState {
   remaining: string;
   currentLessonId: string;
   isCurrentLessonCompleted: boolean;
+  allLessonsCompleted: boolean;
 }
 
 export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigateToCourses, onNavigateToExplore, onNavigateToCertificates, onLogout }: StudentDashboardProps) {
@@ -31,6 +32,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<{ full_name: string; email: string } | null>(null);
+  const [courseProgressMap, setCourseProgressMap] = useState<Record<string, number>>({});
   const [activeProgress, setActiveProgress] = useState<ActiveProgressState>({
     courseTitle: 'Onboarding de Vendas 2026',
     courseId: '',
@@ -40,6 +42,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
     remaining: '8 min restantes',
     currentLessonId: '',
     isCurrentLessonCompleted: false,
+    allLessonsCompleted: false,
   });
 
   const onTabAction = (action: string) => {
@@ -72,6 +75,21 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
         const loadedCourses = coursesData || [];
         setCourses(loadedCourses);
 
+        // Fetch progress for all courses
+        const progressMap: Record<string, number> = {};
+        for (const course of loadedCourses) {
+          const structure = await CourseService.getCourseStructure(course.id);
+          const allLessonIds = structure.modules.flatMap(mod => mod.lessons.map(l => l.id));
+          if (allLessonIds.length > 0) {
+            const progressData = await ProgressService.getProgressByLessons(profile?.id || '', allLessonIds);
+            const completedCount = progressData.filter(p => p.completed).length;
+            progressMap[course.id] = Math.round((completedCount / allLessonIds.length) * 100);
+          } else {
+            progressMap[course.id] = 0;
+          }
+        }
+        setCourseProgressMap(progressMap);
+
         if (loadedCourses.length > 0) {
           const firstCourse = loadedCourses[0];
 
@@ -86,6 +104,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
           // Encontrar a aula atual (primeira não concluída)
           let currentLesson = allLessons[0];
           let isCurrentLessonCompleted = false;
+          let allLessonsCompleted = false;
 
           for (const lesson of allLessons) {
             const progress = progressData.find(p => p.lesson_id === lesson.id);
@@ -99,6 +118,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
               // Todas as aulas foram concluídas
               currentLesson = lesson;
               isCurrentLessonCompleted = true;
+              allLessonsCompleted = true;
             }
           }
 
@@ -122,6 +142,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
             remaining: `${allLessons.length - completedCount} aulas restantes`,
             currentLessonId: currentLesson?.id || '',
             isCurrentLessonCompleted,
+            allLessonsCompleted,
           });
         }
       } catch (err: any) {
@@ -217,6 +238,11 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                           <Button onPress={() => onPlay(activeProgress.courseId)}>
                             <Icon name="Play" size={16} color="$white" />
                             <Text color="$white" fontWeight="700" ml="$2">Iniciar aula</Text>
+                          </Button>
+                        ) : activeProgress.allLessonsCompleted ? (
+                          <Button onPress={() => onNavigateToCertificates()}>
+                            <Icon name="Award" size={16} color="$white" />
+                            <Text color="$white" fontWeight="700" ml="$2">Ver certificado</Text>
                           </Button>
                         ) : activeProgress.isCurrentLessonCompleted ? (
                           <Button onPress={() => onPlay(activeProgress.courseId)}>
@@ -332,8 +358,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                       .slice(0, 3)
                       .map((course) => {
                         if (!course) return null;
-                        const isActive = course.id === activeProgress.courseId;
-                        const progressPercent = isActive ? activeProgress.progress : 0;
+                        const progressPercent = courseProgressMap[course.id] ?? 0;
                         const courseStatus = progressPercent === 0 ? 'not_started' : progressPercent >= 100 ? 'completed' : 'in_progress';
 
                         return (
@@ -344,7 +369,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                               br="$4"
                               cursor="pointer"
                               borderWidth={1}
-                              borderColor={isActive ? 'rgba(16, 185, 129, 0.35)' : '$border'}
+                              borderColor={courseStatus === 'in_progress' ? 'rgba(59, 130, 246, 0.35)' : courseStatus === 'completed' ? 'rgba(16, 185, 129, 0.35)' : '$border'}
                               hoverStyle={{ borderColor: '$primary' }}
                               onPress={() => onNavigateToCourseLessons(course.id)}
                             >
@@ -381,16 +406,18 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                                     gap={6}
                                     style={{
                                       backdropFilter: 'blur(8px)',
-                                      backgroundColor: isActive
+                                      backgroundColor: courseStatus === 'completed'
                                         ? 'rgba(16, 185, 129, 0.9)'
-                                        : 'rgba(55, 65, 81, 0.8)',
+                                        : courseStatus === 'in_progress'
+                                          ? 'rgba(59, 130, 246, 0.9)'
+                                          : 'rgba(55, 65, 81, 0.8)',
                                     }}
                                   >
-                                    {isActive && (
+                                    {courseStatus === 'completed' && (
                                       <XStack w={6} h={6} borderRadius={3} bg="$white" style={{ borderRadius: '50%' }} />
                                     )}
                                     <Text fontSize={11} fontWeight="700" color="$white">
-                                      {isActive ? 'Em andamento' : 'Não iniciado'}
+                                      {courseStatus === 'completed' ? 'Concluído' : courseStatus === 'in_progress' ? 'Em andamento' : 'Não iniciado'}
                                     </Text>
                                   </XStack>
                                 </XStack>
@@ -410,14 +437,14 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                                     Atualizado {formatDate(course.updated_at || course.created_at)}
                                   </Text>
                                 </XStack>
-                                {isActive && (
+                                {progressPercent > 0 && (
                                   <YStack mt={4} gap={4}>
                                     <XStack ai="center" jc="space-between">
                                       <Text fontSize={11} color="$textMuted">Progresso</Text>
                                       <Text fontSize={11} color="$textMuted">{progressPercent}%</Text>
                                     </XStack>
                                     <YStack h={6} bg="$secondary" borderRadius={999} overflow="hidden">
-                                      <YStack h={6} bg="$primary" borderRadius={999} w={`${progressPercent}%`} />
+                                      <YStack h={6} bg={courseStatus === 'completed' ? '$success' : '$primary'} borderRadius={999} w={`${progressPercent}%`} />
                                     </YStack>
                                   </YStack>
                                 )}

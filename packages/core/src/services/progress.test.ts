@@ -197,4 +197,39 @@ describe('ProgressService', () => {
       expect(result).toEqual(expected);
     });
   });
+
+  describe('getModuleProgress', () => {
+    it('should return 0% when no lessons are completed', async () => {
+      progressRepo.getProgressByLessons.mockResolvedValue([
+        { lesson_id: 'l1', completed: false, percentage_watched: 30 },
+        { lesson_id: 'l2', completed: false, percentage_watched: 0 },
+        { lesson_id: 'l3', completed: false, percentage_watched: 0 },
+      ]);
+
+      const result = await service.getModuleProgress('u1', ['l1', 'l2', 'l3']);
+      expect(result).toEqual({ completed: 0, total: 3, percentage: 0 });
+    });
+
+    it('should return 100% when all lessons are completed', async () => {
+      progressRepo.getProgressByLessons.mockResolvedValue([
+        { lesson_id: 'l1', completed: true, percentage_watched: 100 },
+        { lesson_id: 'l2', completed: true, percentage_watched: 100 },
+        { lesson_id: 'l3', completed: true, percentage_watched: 100 },
+      ]);
+
+      const result = await service.getModuleProgress('u1', ['l1', 'l2', 'l3']);
+      expect(result).toEqual({ completed: 3, total: 3, percentage: 100 });
+    });
+
+    it('should calculate partial progress correctly', async () => {
+      progressRepo.getProgressByLessons.mockResolvedValue([
+        { lesson_id: 'l1', completed: true, percentage_watched: 100 },
+        { lesson_id: 'l2', completed: false, percentage_watched: 50 },
+        { lesson_id: 'l3', completed: false, percentage_watched: 0 },
+      ]);
+
+      const result = await service.getModuleProgress('u1', ['l1', 'l2', 'l3']);
+      expect(result).toEqual({ completed: 1, total: 3, percentage: 33 });
+    });
+  });
 });

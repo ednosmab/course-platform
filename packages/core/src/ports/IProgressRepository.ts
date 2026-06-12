@@ -85,10 +85,10 @@ export interface IProgressRepository {
 
   /**
    * @description Retrieves progress records for a student across a set of lessons.
-   * Returns completion status and test scores for each lesson.
+   * Returns completion status, test scores, watch percentage, and last played position.
    * @param userId - The UUID of the student.
    * @param lessonIds - Array of lesson UUIDs to fetch progress for.
-   * @returns Array of progress records (lesson_id, completed, tests_completed).
+   * @returns Array of progress records (lesson_id, completed, tests_completed, percentage_watched, last_played_seconds).
    */
   getProgressByLessons(userId: string, lessonIds: string[]): Promise<any[]>;
 }
