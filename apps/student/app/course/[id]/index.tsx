@@ -28,7 +28,7 @@ export default function CourseLessonsRoute() {
     <SafeAreaView style={{ flex: 1 }}>
       <CourseLessons
         courseId={courseId}
-        onSelectLesson={() => router.push(`/course/${courseId}/play`)}
+        onSelectLesson={(lessonId) => router.push(`/course/${courseId}/play?lessonId=${lessonId}`)}
         onBack={() => router.back()}
         onViewCertificate={() => router.push('/certificates')}
       />

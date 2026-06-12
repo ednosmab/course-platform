@@ -10,9 +10,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LessonPlayer } from '../../../src/screens/LessonPlayer';
 
 export default function LessonPlayerRoute() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, lessonId } = useLocalSearchParams<{ id: string; lessonId?: string | string[] }>();
   const router = useRouter();
   const courseId = typeof id === 'string' ? id : Array.isArray(id) ? id[0] : '';
+  const resolvedLessonId = typeof lessonId === 'string' ? lessonId : Array.isArray(lessonId) ? lessonId[0] : null;
 
   if (!courseId) {
     return (
@@ -28,6 +29,7 @@ export default function LessonPlayerRoute() {
     <SafeAreaView style={{ flex: 1 }}>
       <LessonPlayer
         courseId={courseId}
+        lessonId={resolvedLessonId}
         onBack={() => router.push(`/course/${courseId}`)}
       />
     </SafeAreaView>
