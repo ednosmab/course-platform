@@ -1,7 +1,9 @@
 name: CD
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [develop]
 
 concurrency:
@@ -12,6 +14,7 @@ jobs:
   deploy:
     name: Deploy develop → main
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: write
       pull-requests: write
@@ -26,20 +29,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Enable corepack and install pnpm
-        shell: bash
-        run: |
-          npm install -g pnpm@11
-          pnpm --version
-
-      - name: Guardrail — no test env vars leaked
-        run: pnpm run test:env-vars
 
       - name: Merge develop into main
         run: |
