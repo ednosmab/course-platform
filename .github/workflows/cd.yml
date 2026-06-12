@@ -27,6 +27,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable corepack and install pnpm
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare pnpm@11 --activate
+          pnpm --version
+
       - name: Guardrail — no test env vars leaked
         run: pnpm run test:env-vars
 

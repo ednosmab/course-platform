@@ -39,10 +39,12 @@ jobs:
         with:
           node-version: 22
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 11
+      - name: Enable corepack and install pnpm
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare pnpm@11 --activate
+          pnpm --version
 
       - name: Get pnpm store directory
         shell: bash
