@@ -1,17 +1,17 @@
 quick_board_required: true
 
 session:
-  id: "2026-06-11"
-  branch: "feat/admin-cursos"
+  id: "2026-06-12"
+  branch: "develop"
   operation_type: "FEATURE"
-  last_commit: "89cb972"
+  last_commit: "pending"
 
 current_task:
-  id: "conquistas-screen"
+  id: "certificate-print"
   type: "FEATURE"
-  description: "Tela de Conquistas (Student) — StudentHeader + cards 200x141 + modal detalhes"
+  description: "Imprimir certificado via iframe isolado (substituir Baixar PDF)"
   status: "completed"
-  plan_file: "docs/plans/2026-06-11-conquistas-screen.md"
+  plan_file: null
   current_step: null
   model_assignments: []
 
@@ -22,9 +22,8 @@ adr:
 blockers: []
 
 next_steps:
-  - "Testar a tela de Conquistas no browser (pnpm --filter student dev)"
-  - "Verificar se Montserrat carrega correctamente no native"
-  - "Continuar com outras telas do student (se necessário)"
+  - "Commit e push para develop"
+  - "Utilizador pode re-concluir curso 'Casa' ou corrigir recheckAndIssueAll para emitir certificado pendente"
 
 last_decision:
   adr: null

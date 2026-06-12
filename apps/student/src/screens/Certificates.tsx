@@ -11,7 +11,7 @@ import { CertificateService, AuthService } from '@projeto/core';
 import { Certificate, Course } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
 import { CertificateDetailCard, CertificateWithCourse } from '../components/CertificateDetailCard';
-import { downloadCertificatePdf, openCertificateValidation, shareCertificate } from '../services/certificate-actions';
+import { printCertificate, openCertificateValidation, shareCertificate } from '../services/certificate-actions';
 
 type CertificatesProps = {
   onNavigateToDashboard: () => void;
@@ -345,41 +345,6 @@ export function Certificates({
                       </XStack>
                     </YStack>
                   )}
-
-                  {/* Meta + Actions */}
-                  <YStack p="$4" gap="$3">
-                    <XStack ai="center" jc="space-between">
-                      <XStack ai="center" gap="$1">
-                        <Icon name="Calendar" size={14} color="$textMuted" />
-                        <Text fontSize={11} color="$textMuted">
-                          {new Date(cert.created_at).toLocaleDateString('pt-BR')}
-                        </Text>
-                      </XStack>
-                      <XStack ai="center" gap="$1">
-                        <Icon name="Clock" size={14} color="$textMuted" />
-                        <Text fontSize={11} color="$textMuted">
-                          {Math.floor(Math.random() * 20 + 5)}h
-                        </Text>
-                      </XStack>
-                    </XStack>
-
-                    <Text fontSize={11} color="$textMuted" fontFamily="$mono">
-                      Código: {cert.uuid_extranet}
-                    </Text>
-
-                    <XStack gap="$2">
-                      <Button flex={1} size="sm" onPress={() => downloadCertificatePdf(cert.id)}>
-                        <Icon name="Download" size={14} color="$white" />
-                        <Text ml="$1" fontSize={12} fontWeight="600" color="$white">Baixar PDF</Text>
-                      </Button>
-                      <Button size="sm" variant="ghost" border={1} borderColor="$border" onPress={() => shareCertificate(cert.uuid_extranet, cert.course?.title)}>
-                        <Icon name="Share2" size={14} color="$text" />
-                      </Button>
-                      <Button size="sm" variant="ghost" border={1} borderColor="$border" onPress={() => openCertificateValidation(cert.uuid_extranet)}>
-                        <Icon name="ExternalLink" size={14} color="$text" />
-                      </Button>
-                    </XStack>
-                  </YStack>
                 </Card>
               ))}
             </XStack>

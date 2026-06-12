@@ -303,7 +303,6 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
 
               <XStack mt="$4" gap="$3" flexWrap="wrap">
                 <Button
-                  size="lg"
                   bg="$white"
                   hoverStyle={{ bg: '$secondary' }}
                   onPress={heroButtonAction}

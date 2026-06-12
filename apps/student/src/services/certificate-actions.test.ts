@@ -13,7 +13,7 @@ vi.mock('react-native', () => ({
   },
 }));
 
-import { downloadCertificatePdf, openCertificateValidation, shareCertificate } from './certificate-actions';
+import { printCertificate, openCertificateValidation, shareCertificate } from './certificate-actions';
 
 describe('certificate-actions', () => {
   beforeEach(() => {
@@ -23,16 +23,35 @@ describe('certificate-actions', () => {
     mockShare.mockResolvedValue({ action: 'sharedAction' });
   });
 
-  describe('downloadCertificatePdf', () => {
-    it('should open the PDF URL constructed from EXPO_PUBLIC_PDF_BASE_URL and cert id', async () => {
-      vi.stubEnv('EXPO_PUBLIC_PDF_BASE_URL', 'https://api.example.com');
-      await downloadCertificatePdf('cert-123');
-      expect(mockOpenURL).toHaveBeenCalledWith('https://api.example.com/certificates/cert-123.pdf');
+  describe('printCertificate', () => {
+    it('should create an iframe and trigger print when document is available', () => {
+      const mockAppendChild = vi.fn();
+      const mockRemove = vi.fn();
+      const mockPrint = vi.fn();
+      const mockFocus = vi.fn();
+
+      vi.stubGlobal('document', {
+        createElement: vi.fn(() => ({
+          style: {},
+          srcdoc: '',
+          setAttribute: vi.fn(),
+          onload: null,
+          contentWindow: { focus: mockFocus, print: mockPrint },
+          remove: mockRemove,
+        })),
+        body: { appendChild: mockAppendChild },
+      });
+
+      printCertificate([
+        { id: '1', type: 'text', content: 'Hello', layouts: { desktop: { x: 0, y: 0, w: 100, h: 50, zIndex: 0 } } },
+      ]);
+
+      expect(mockAppendChild).toHaveBeenCalled();
     });
 
-    it('should silently no-op when EXPO_PUBLIC_PDF_BASE_URL is missing', async () => {
-      await downloadCertificatePdf('cert-123');
-      expect(mockOpenURL).not.toHaveBeenCalled();
+    it('should be a no-op when document is undefined (SSR)', () => {
+      vi.stubGlobal('document', undefined);
+      expect(() => printCertificate([])).not.toThrow();
     });
   });
 

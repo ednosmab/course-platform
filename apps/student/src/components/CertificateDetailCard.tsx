@@ -9,6 +9,7 @@ import React from 'react';
 import { YStack, XStack, Text, Button, Card, Icon } from '@projeto/ui';
 import { Certificate, Course, CertificateBlock } from '@projeto/types';
 import { CertificateMiniature } from '@projeto/ui';
+import { printCertificate } from '../services/certificate-actions';
 
 export interface CertificateWithCourse extends Certificate {
   course?: Course;
@@ -121,7 +122,6 @@ export function CertificateDetailCard({ certificate, onClose }: CertificateDetai
           fontSize={14}
           fontWeight="bold"
           color="$text"
-          fontFamily="$mono"
           letterSpacing={2}
         >
           {certificate.uuid_extranet}
@@ -130,10 +130,14 @@ export function CertificateDetailCard({ certificate, onClose }: CertificateDetai
 
       {/* Action Buttons */}
       <XStack gap="$3">
-        <Button flex={1} onPress={() => {}}>
-          <Icon name="Download" size={16} color="$white" />
+        <Button flex={1} onPress={() => printCertificate(
+          certificate.certificate_blocks || [],
+          certificate.designWidth || 1100,
+          certificate.designHeight || 778,
+        )}>
+          <Icon name="Printer" size={16} color="$white" />
           <Text ml="$2" fontSize={13} fontWeight="600" color="$white">
-            Baixar PDF
+            Imprimir
           </Text>
         </Button>
         <Button flex={1} variant="secondary" onPress={() => {}}>
