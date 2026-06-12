@@ -153,7 +153,7 @@ export const supabaseLessonRepository: ILessonRepository = {
     const { data: modules } = await supabase.from('modules').select('id').eq('course_id', courseId);
     if (!modules || modules.length === 0) return [];
     const moduleIds = modules.map((m) => m.id);
-    const { data: lessons } = await supabase.from('lessons').select('id').in('module_id', moduleIds);
+    const { data: lessons } = await supabase.from('lessons').select('id').in('module_id', moduleIds).eq('is_published', true);
     if (!lessons) return [];
     return lessons.map((l) => l.id);
   },

@@ -41,6 +41,8 @@ export default function DashboardRoute() {
       <StudentDashboard
         onPlay={(courseId) => router.push(`/course/${courseId}/play`)}
         onNavigateToCourseLessons={(courseId) => router.push(`/course/${courseId}`)}
+        onNavigateToCourses={() => router.push('/courses')}
+        onNavigateToExplore={() => router.push('/explore')}
         onNavigateToCertificates={() => router.push('/certificates')}
         onLogout={() => router.replace('/login')}
       />

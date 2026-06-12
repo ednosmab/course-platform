@@ -89,8 +89,8 @@ describe('ProgressService', () => {
       expect(progressRepo.markCompleted).toHaveBeenCalledWith('u1', 'l1', expect.any(String));
     });
 
-    it('should not mark completed when video < 85%', async () => {
-      progressRepo.getLessonBlocks.mockResolvedValue([]);
+    it('should not mark completed when video < 85% and lesson has video blocks', async () => {
+      progressRepo.getLessonBlocks.mockResolvedValue([{ id: 'v1', type: 'video' }]);
       progressRepo.getProgress.mockResolvedValue({
         user_id: 'u1', lesson_id: 'l1', completed: false,
         percentage_watched: 50, last_played_seconds: 50,
@@ -107,6 +107,32 @@ describe('ProgressService', () => {
       await service.saveProgressImmediate('u1', 'l1', 50, 50);
 
       expect(progressRepo.markCompleted).not.toHaveBeenCalled();
+    });
+
+    it('should mark completed when lesson has no video blocks', async () => {
+      progressRepo.getLessonBlocks.mockResolvedValue([{ id: 'img1', type: 'image' }]);
+      progressRepo.getProgress.mockResolvedValue({
+        user_id: 'u1', lesson_id: 'l1', completed: false,
+        percentage_watched: 0, last_played_seconds: 0,
+        tests_completed: {},
+        created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+      });
+      progressRepo.upsert.mockResolvedValue({
+        user_id: 'u1', lesson_id: 'l1', completed: false,
+        percentage_watched: 0, last_played_seconds: 0,
+        tests_completed: {},
+        created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+      });
+      progressRepo.markCompleted.mockResolvedValue({
+        user_id: 'u1', lesson_id: 'l1', completed: true,
+        percentage_watched: 0, last_played_seconds: 0,
+        tests_completed: {},
+        created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+      });
+
+      await service.saveProgressImmediate('u1', 'l1', 0, 0);
+
+      expect(progressRepo.markCompleted).toHaveBeenCalledWith('u1', 'l1', expect.any(String));
     });
   });
 

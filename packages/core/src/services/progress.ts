@@ -39,7 +39,8 @@ export function createProgressService(
     if (!progress) return null;
 
     const testsCompleted = progress.tests_completed ?? {};
-    const videoPassed = progress.percentage_watched >= 85;
+    const hasVideoBlocks = blocks.some((b: any) => b.type === 'video');
+    const videoPassed = hasVideoBlocks ? progress.percentage_watched >= 85 : true;
     const allTestsPassed = testBlocks.every((block: any) => {
       const testScore = testsCompleted[block.id];
       return testScore !== undefined && testScore >= 70;
@@ -81,6 +82,17 @@ export function createProgressService(
      */
     async getProgressByLessons(userId: string, lessonIds: string[]): Promise<any[]> {
       return progressRepo.getProgressByLessons(userId, lessonIds);
+    },
+
+    /**
+     * @description Counts completed and total lessons for a user within a course.
+     * Used by StudentCourses to compute per-course completion status.
+     * @param userId - The UUID of the student
+     * @param courseId - The UUID of the course
+     * @returns Object with completed and total lesson counts
+     */
+    async getCompletedLessonCount(userId: string, courseId: string): Promise<{ completed: number; total: number }> {
+      return progressRepo.getCompletedLessonCount(userId, courseId);
     },
 
     /**
@@ -144,6 +156,30 @@ export function createProgressService(
 
       const progress = await progressRepo.getProgress(userId, lessonId);
       return progress!;
+    },
+
+    /**
+     * @description Marks a lesson as complete for a user, regardless of video progress.
+     * Business rule: Used for lessons without video content (images, text, HTML) where
+     * the 85% video rule does not apply. Triggers certificate eligibility checks.
+     * @param userId - The UUID of the student
+     * @param lessonId - The UUID of the lesson
+     * @returns The updated StudentProgress object
+     */
+    async markLessonComplete(userId: string, lessonId: string): Promise<StudentProgress> {
+      const now = new Date().toISOString();
+      const progress = await progressRepo.upsert(userId, lessonId, {
+        percentage_watched: 100,
+        completed: true,
+        completed_at: now,
+        updated_at: now,
+      });
+
+      certificateService.checkAndIssue(userId, lessonId).catch((err) => {
+        console.error('Error issuing certificate after manual completion:', err);
+      });
+
+      return progress;
     },
 
     /**

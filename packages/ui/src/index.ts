@@ -10,6 +10,7 @@ export {
   ScrollView,
   Spinner,
   Input,
+  Dialog,
 } from 'tamagui';
 
 export { default as config } from './tamagui.config';
@@ -28,5 +29,6 @@ export * from './blocks/TextBlock';
 export * from './blocks/QuoteBlock';
 export * from './components/Certificate';
 export * from './components/Login';
+export * from './components/Filter';
 export { color, shadowPresets, lineHeightHeading, lineHeightCardTitle } from './tokens';
 export { sanitizeHtml } from './utils/sanitize';

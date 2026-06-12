@@ -27,7 +27,7 @@ export function BrandMark({ small = false }: { small?: boolean }) {
           alt="FLEXED Studio"
           priority
           style={{
-            height: small ? 32 : 40,
+            height: small ? 32 : 39.5,
             width: 'auto',
             objectFit: 'contain',
           }}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input, shadowPresets } from '@projeto/ui';
+import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input } from '@projeto/ui';
 import { CourseService, ProgressService, AuthService } from '@projeto/core';
 import { Course, Module, Lesson } from '@projeto/types';
 
@@ -426,7 +426,6 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
                   p={0}
                   overflow="hidden"
                   br="$5"
-                  {...(hasCurrent ? shadowPresets.cwSoft : shadowPresets.sm)}
                   borderWidth={hasCurrent ? 2 : 0}
                   borderColor={hasCurrent ? '$primary' : 'transparent'}
                 >

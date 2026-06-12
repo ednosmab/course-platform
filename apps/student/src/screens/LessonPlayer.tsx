@@ -3,7 +3,7 @@ import { StatusBar } from 'react-native';
 import { YStack, XStack, Text, Button, ScrollView, Spinner, Icon } from '@projeto/ui';
 import { useMobileProgress } from '../hooks/useMobileProgress';
 import { BlockRenderer } from '../components/BlockRenderer';
-import { CourseService, LessonService } from '@projeto/core';
+import { CourseService, LessonService, ProgressService, AuthService } from '@projeto/core';
 
 type LessonPlayerProps = {
   courseId?: string | null;
@@ -19,6 +19,8 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
 
   const [completions, setCompletions] = useState<Record<string, boolean>>({});
   const [videoPositions, setVideoPositions] = useState<Record<string, number>>({});
+  const [userId, setUserId] = useState<string | null>(null);
+  const [completing, setCompleting] = useState(false);
 
   const getErrorMessage = (err: any): string => {
     if (!err) return 'Erro desconhecido';
@@ -69,6 +71,16 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
 
   useEffect(() => {
     loadCourseData();
+  }, []);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const session = await AuthService.getSession();
+      if (session?.user?.id) {
+        setUserId(session.user.id);
+      }
+    };
+    loadUser();
   }, []);
 
   const refreshActiveLesson = async () => {
@@ -166,6 +178,28 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
     }
   };
 
+  const handleCompleteLesson = async () => {
+    if (!activeLessonId || !userId || completing) return;
+
+    try {
+      setCompleting(true);
+      await ProgressService.markLessonComplete(userId, activeLessonId);
+      setCompletions((prev) => ({
+        ...prev,
+        [activeLessonId]: true,
+      }));
+
+      const currentIndex = lessons.findIndex((l) => l.id === activeLessonId);
+      if (currentIndex < lessons.length - 1) {
+        setActiveLessonId(lessons[currentIndex + 1].id);
+      }
+    } catch (err) {
+      console.error('Failed to mark lesson as complete:', err);
+    } finally {
+      setCompleting(false);
+    }
+  };
+
   if (error) {
     return (
       <YStack flex={1} jc="center" ai="center" p="$6" bg="$background">
@@ -226,6 +260,36 @@ export function LessonPlayer({ courseId, onBack }: LessonPlayerProps) {
           savedPosition={videoPositions[activeLessonId || ''] || 0}
         />
       </ScrollView>
+
+      <XStack px="$4" py="$3" bg="$background" borderTopWidth={1} borderTopColor="$border">
+        {completions[activeLessonId] ? (
+          <Button
+            flex={1}
+            bg="$success"
+            onPress={onBack}
+          >
+            <Text color="$white" fontWeight="600">
+              Voltar ao curso
+            </Text>
+          </Button>
+        ) : (
+          <Button
+            flex={1}
+            bg="$primary"
+            onPress={handleCompleteLesson}
+            disabled={completing}
+            opacity={completing ? 0.7 : 1}
+          >
+            {completing ? (
+              <Spinner size="small" color="$white" />
+            ) : (
+              <Text color="$white" fontWeight="600">
+                Concluir aula
+              </Text>
+            )}
+          </Button>
+        )}
+      </XStack>
     </YStack>
   );
 }

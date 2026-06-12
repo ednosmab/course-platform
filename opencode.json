@@ -1,26 +1,12 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "opencode/minimax-m3-free",
+  "model": "opencode/mimo-v2.5-free",
   "default_agent": "plan",
-  "loading_profile": "lite",
-  "user_profile": {
-    "shape": "T-shaped",
-    "architecture_level": "senior",
-    "code_level": "junior-pleno",
-    "preferred_tone": {
-      "architecture": "peer",
-      "code": "mentor",
-      "feedback": "calibrado por camada, 95% no-code"
-    },
-    "notes": "Tech lead em formação. Calibrar respostas técnicas com vocabulário pleno, exemplos práticos em código, foco em visão/leadership."
-  },
-
-  "_agent_role_mapping": "Cada agent tem um campo 'role' interno que descreve o seu contrato semântico, independentemente do nome do agent ou do model. Roles: planner (gera planos), executor (executa planos), auditor (valida execução), subagent (loader). Trocar o model num agent não quebra a sua função; trocar o 'role' sim — é o contrato semântico do agente.",
 
   "agent": {
     "plan": {
       "role": "planner",
-      "model": "opencode/minimax-m3-free",
+      "model": "opencode/mimo-v2.5-free",
       "description": "Planning agent. Reads project context and produces atomic, fragmented plans tailored for deepseek-v4-flash-free executor. MANDATORY: every plan must be broken into small, verifiable, single-action steps (Edit + grep verify cycle) so the fast executor does not skip or merge steps. Include safeguards table (S1..S6), explicit G-01 pause points for commits, and reference to AGENTS.md rule 13 for full protocol. Plans for complex tasks (>= 5 steps) are archived in docs/plans/."
     },
     "build": {
@@ -32,7 +18,7 @@
       "description": "Reviewer agent. Audits code produced by build. MAY run pnpm test/lint/verify and read-only git commands, but NEVER edits production code. MANDATORY: validate that executed work matches the user-approved plan (compare each step, metrics, files, deviations). For plans archived in docs/plans/, compare the template's checkboxes against the actual git diff. See AGENTS.md rule 12 for full protocol.",
       "role": "auditor",
       "mode": "primary",
-      "model": "opencode/minimax-m3-free",
+      "model": "opencode/mimo-v2.5-free",
       "permission": {
         "edit": "deny",
         "bash": {
@@ -60,12 +46,13 @@
   },
 
   "instructions": [
+    "./governance/WORKFLOW.md",
     "./docs/AGENTS.md",
-    "./docs/CONTEXT_MAP.md",
-    "./docs/context_buffer.md",
+    "./governance/SYSTEM_MAP.md",
     "./docs/FORBIDDEN_OPERATIONS.md",
     "./docs/DESDO.md",
     "./docs/Requisitos_plataforma.md",
+    "./docs/opencode-context.md",
     "./cognition/context/CONTEXT_HIERARCHY.md",
     "./docs/session-template.md"
   ],
@@ -82,7 +69,7 @@
         "."
       ],
       "enabled": true,
-      "env": {
+      "environment": {
         "AI_OPERATIONAL_RULES": "1. PROIBIDO lógica de domínio em packages/ui. 2. Todo schema Zod deve possuir version and .strict(). 3. Conventional Commits obrigatórios. 4. Respeitar teto de 50%-55% do contexto. 5. Proteger boundaries definidos no AGENTS.md. 6. Proibido imports cruzados entre apps. 7. Proibido instalar dependências sem justificativa. 8. Proibido modificar package.json fora da task atual. 9. Proibido sobrescrever documentação sem merge semântico. 10. Proibido criar código funcional durante TASK-00."
       }
     }

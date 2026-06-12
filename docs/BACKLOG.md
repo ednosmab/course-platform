@@ -130,6 +130,11 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 
 | Item | Severidade | Status | Due | Owner |
 |---|---|---|---|---|
+| Continuar construção de telas do student app | 🟠 Alto | Backlog | 2026-06-30 | unassigned |
+| Skill: TopBar/Header — padrão de cabeçalho compartilhado (admin + student) | 🟡 Médio | Backlog | 2026-06-30 | unassigned |
+| Skill: Student Screen — padrão de construção de telas do aluno | 🟡 Médio | Backlog | 2026-06-30 | unassigned |
+| Extrair filtro/ordenação para componente reutilizável (`@projeto/ui`) | 🟠 Alto | Done | 2026-06-30 | Agente 3 |
+| Student app — Tela de cursos com filtro/ordenação (reutilizar componente) | 🟡 Médio | Done | 2026-06-30 | Agente 3 |
 | Testes E2E Playwright para drag-and-drop de imagem | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
 | Student app — ErrorBoundary | 🟡 Médio | Backlog | 2026-06-30 | Agente 3 |
 | Fix build admin — `@tamagui/constants` missing como dependência explícita | 🟠 Alto | Done | 2026-06-10 | Agente 2 |
@@ -154,7 +159,11 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 | BUG: Student app — Dashed border cor errada | 🟢 Baixo | Paused [REVISIT: 2026-07-01] | 2026-07-01 | Agente 3 |
 | Admin — seção de exercícios extras | 🟢 Baixo | Backlog | 2026-07-30 | Agente 2 |
 | Student app — CourseLessons: duração real das aulas | 🟡 Médio | Backlog | 2026-08-01 | Agente 3 |
+| Admin — Substituir hex hardcoded por tokens Tamagui (`$color`) | 🟡 Médio | Backlog | 2026-07-15 | Agente 3 |
 | Student app — CourseLessons: progresso por módulo | 🟢 Baixo | Backlog | 2026-08-15 | Agente 3 |
+| 🛡️ Controle de Acesso a Cursos via Planos (SaaS Multi-Tenant) | 🟠 Alto | Concluído | 2026-06-10 | Agente |
+
+**Detalhe Controle de Acesso:** Sistema de controle de acesso a cursos no modelo SaaS. Admin configura por curso (Livre/Progressivo/Restrito) na tela de configurações (acima do toggle de publicação). Aluno vê estado na tela "Explorar Cursos". Plano completo: `docs/plans/2026-06-10-controle-acesso.md` | Workflow: `docs/workflows/workflow_adm.md` secção 11.
 
 ---
 
@@ -162,6 +171,7 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 
 | Item | Severidade | Status |
 |---|---|---|
+| CRUD de Planos no Admin (criar/editar planos, vincular cursos, atribuir alunos) | 🟢 Baixo | Backlog |
 | BUG: Cursor escapa durante resize | 🟢 Baixo | Backlog |
 | BUG: Aspect ratio de imagem em W/N/cantos | 🟢 Baixo | Backlog |
 | Extrair `removeBackground` para Web Worker | 🟢 Baixo | Backlog |

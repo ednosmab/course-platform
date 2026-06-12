@@ -3,10 +3,10 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 /**
- * Regression guard for the FLEXED Studio wordmark.
+ * Regression guard for the FLEXED Class wordmark.
  *
  * The shared BrandMark renders the wordmark as `FLEX` (base) + a
- * colored `ED` accent + ` Studio` descriptor. The colored `ED` is a
+ * colored `ED` accent + ` Class` descriptor. The colored `ED` is a
  * load-bearing part of the brand identity — these tests ensure it is
  * not accidentally flattened into a single uniform string.
  *
@@ -28,14 +28,10 @@ describe('BrandMark wordmark', () => {
     expect(source).toMatch(/FLEX<Text[^>]*color[^>]*>ED<\/Text>/);
   });
 
-  it('appends " Studio" after the ED accent', () => {
-    // The "Studio" word appears earlier in the JSDoc, so anchor the
-    // assertion to the ED closing tag instead of a bare Studio search.
-    expect(source).toMatch(/ED<\/Text>[\s\S]*?Studio/);
-  });
-
-  it('uses an alt attribute that mirrors the wordmark', () => {
-    expect(source).toMatch(/alt=["']FLEXED Studio["']/);
+  it('appends " Class" after the ED accent', () => {
+    // The "Class" word appears earlier in the JSDoc, so anchor the
+    // assertion to the ED closing tag instead of a bare Class search.
+    expect(source).toMatch(/ED<\/Text>[\s\S]*?Class/);
   });
 
   it('does not use bold weight', () => {

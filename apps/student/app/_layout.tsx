@@ -10,6 +10,15 @@ import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import Head from 'expo-router/head';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useFonts } from 'expo-font';
+import {
+  Montserrat_400Regular,
+  Montserrat_500Medium,
+  Montserrat_600SemiBold,
+  Montserrat_700Bold,
+  Montserrat_800ExtraBold,
+  Montserrat_900Black,
+} from '@expo-google-fonts/montserrat';
 import {
   TamaguiProvider,
   config,
@@ -21,6 +30,14 @@ import { AuthService } from '@projeto/core';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    Montserrat_400Regular,
+    Montserrat_500Medium,
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
+    Montserrat_800ExtraBold,
+    Montserrat_900Black,
+  });
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -35,7 +52,7 @@ export default function RootLayout() {
     init();
   }, []);
 
-  if (!ready) {
+  if (!ready || !fontsLoaded) {
     return (
       <SafeAreaProvider>
         <TamaguiProvider config={config} defaultTheme={null}>

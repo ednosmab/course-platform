@@ -26,6 +26,11 @@ function makeRepo() {
     getCourseTitle: vi.fn(),
     getCourseCertificateEnabled: vi.fn(),
     seedDemoData: vi.fn(),
+    getCourseAccess: vi.fn(),
+    updateCourseAccess: vi.fn(),
+    getStudentCourseAccess: vi.fn(),
+    getPublishedCoursesForStudent: vi.fn(),
+    detectPrerequisiteCycle: vi.fn(),
   };
 }
 
@@ -89,6 +94,67 @@ describe('CourseService', () => {
       const result = await service.getStudentPublishedCourses();
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('1');
+    });
+  });
+
+  describe('getCourseAccess', () => {
+    it('should return null when not configured', async () => {
+      const repo = makeRepo();
+      repo.getCourseAccess.mockResolvedValue(null);
+      const service = createCourseService(repo);
+      const result = await service.getCourseAccess('course-1');
+      expect(result).toBeNull();
+      expect(repo.getCourseAccess).toHaveBeenCalledWith('course-1');
+    });
+
+    it('should return access mode when configured', async () => {
+      const repo = makeRepo();
+      const accessData = {
+        course_id: 'course-1',
+        access_mode: 'progressive',
+        prerequisite_course_id: 'course-0',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      repo.getCourseAccess.mockResolvedValue(accessData);
+      const service = createCourseService(repo);
+      const result = await service.getCourseAccess('course-1');
+      expect(result).toEqual(accessData);
+    });
+  });
+
+  describe('updateCourseAccess', () => {
+    it('should save access configuration correctly', async () => {
+      const repo = makeRepo();
+      repo.updateCourseAccess.mockResolvedValue(undefined);
+      const service = createCourseService(repo);
+      await service.updateCourseAccess('course-1', {
+        access_mode: 'progressive',
+        prerequisite_course_id: 'course-0',
+      });
+      expect(repo.updateCourseAccess).toHaveBeenCalledWith('course-1', {
+        access_mode: 'progressive',
+        prerequisite_course_id: 'course-0',
+      });
+    });
+  });
+
+  describe('detectPrerequisiteCycle', () => {
+    it('should detect cycle A→B→A', async () => {
+      const repo = makeRepo();
+      repo.detectPrerequisiteCycle.mockResolvedValue(true);
+      const service = createCourseService(repo);
+      const result = await service.detectPrerequisiteCycle('course-a', 'course-b');
+      expect(result).toBe(true);
+      expect(repo.detectPrerequisiteCycle).toHaveBeenCalledWith('course-a', 'course-b');
+    });
+
+    it('should allow A→B (no cycle)', async () => {
+      const repo = makeRepo();
+      repo.detectPrerequisiteCycle.mockResolvedValue(false);
+      const service = createCourseService(repo);
+      const result = await service.detectPrerequisiteCycle('course-a', 'course-b');
+      expect(result).toBe(false);
     });
   });
 });
