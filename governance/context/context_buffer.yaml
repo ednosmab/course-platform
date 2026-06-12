@@ -7,9 +7,9 @@ session:
   last_commit: "a26b637"
 
 current_task:
-  id: "fase5b-item3"
-  type: "REFACTOR"
-  description: "Limpar 3 branches de init do EditorContext — movidas para modeConfig.load()"
+  id: "explore-course-status"
+  type: "FEATURE"
+  description: "Mostrar status do curso (Concluído/Em andamento/Não iniciado) na página Explorar Cursos"
   status: "completed"
   plan_file: null
   current_step: null
@@ -25,12 +25,11 @@ next_steps:
   - "Investigar erros CI verify — profile validation warning + possíveis erros restantes"
   - "Verificar se secrets SUPABASE_URL e SUPABASE_ANON_KEY estão correctos no GitHub"
   - "Confirmar que CI passa 100% após cache invalidation (cdc547c)"
-  - "Mostrar status do curso na página Explorar Cursos (Concluído/Em andamento/Não iniciado)"
   - "Substituir dados hardcoded no dashboard do aluno por dados reais"
 
 last_decision:
   adr: null
-  description: "Fase 5B completa (3/3 itens). initDatabase mode-agnostic. Demo seed + empty lesson fallback movidos para lessonModeConfig.load(). Branch 1 era dead code e removida. CourseService import removido de EditorContext."
+  description: "Status do curso adicionado ao Explorar Cursos. StudentExplore.tsx agora mostra badges Concluído/Em andamento/Não iniciado (igual a Meus Cursos). FilterBar com filtros extras de progresso. Bloqueado mantém badge Lock. ProgressService integrado. 233/233 testes verdes."
 
 technical_debt:
   - "Botões de acesso (Livre/Progressivo/Restrito) usam hex hardcoded (#3B82F6, #DEE1EB) — migrar para tokens Tamagui quando possível"

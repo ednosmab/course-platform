@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, XStack, YStack, Text, Card, Icon, Spinner, FilterBar, GridBackground } from '@projeto/ui';
-import { CourseService, AuthService } from '@projeto/core';
+import { CourseService, ProgressService, AuthService } from '@projeto/core';
 import { Course, CourseAccess } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
 
-type CourseWithAccess = Course & {
+type CourseWithAccessAndStatus = Course & {
   accessData?: CourseAccess | null;
   hasAccess?: boolean;
   accessReason?: string;
+  status: 'completed' | 'in_progress' | 'not_started';
+  progressPercent: number;
 };
 
 type StudentExploreProps = {
@@ -20,7 +22,7 @@ type StudentExploreProps = {
 };
 
 export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToDashboard, onNavigateToCourses, onNavigateToCertificates }: StudentExploreProps) {
-  const [courses, setCourses] = useState<CourseWithAccess[]>([]);
+  const [courses, setCourses] = useState<CourseWithAccessAndStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState(0);
@@ -45,21 +47,37 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
         setError(null);
         const coursesData = await CourseService.getStudentPublishedCourses();
         
-        const coursesWithAccess = await Promise.all(
+        const profile = await AuthService.getCurrentProfile();
+        const profileId = profile?.id;
+
+        const coursesWithData = await Promise.all(
           (coursesData || []).map(async (course) => {
-            if (studentId) {
-              const accessResult = await CourseService.getStudentCourseAccess(studentId, course.id);
-              return {
-                ...course,
-                hasAccess: accessResult.hasAccess,
-                accessReason: accessResult.reason,
-              };
+            let hasAccess = true;
+            let accessReason: string | undefined = 'unknown';
+            let status: 'completed' | 'in_progress' | 'not_started' = 'not_started';
+            let progressPercent = 0;
+
+            if (profileId) {
+              const accessResult = await CourseService.getStudentCourseAccess(profileId, course.id);
+              hasAccess = accessResult.hasAccess;
+              accessReason = accessResult.reason;
+
+              if (hasAccess) {
+                const { completed, total } = await ProgressService.getCompletedLessonCount(profileId, course.id);
+                progressPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
+                if (completed >= total && total > 0) {
+                  status = 'completed';
+                } else if (completed > 0) {
+                  status = 'in_progress';
+                }
+              }
             }
-            return { ...course, hasAccess: true, accessReason: 'unknown' };
+
+            return { ...course, hasAccess, accessReason, status, progressPercent };
           })
         );
         
-        setCourses(coursesWithAccess);
+        setCourses(coursesWithData);
       } catch (err: any) {
         console.error('Failed to load courses:', err);
         setError(err.message || 'Failed to load courses');
@@ -90,6 +108,9 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
     if (filter === 1) return course.is_published;
     if (filter === 2) return course.hasAccess;
     if (filter === 3) return !course.hasAccess;
+    if (filter === 4) return course.status === 'in_progress';
+    if (filter === 5) return course.status === 'not_started';
+    if (filter === 6) return course.status === 'completed';
     return true;
   });
 
@@ -108,7 +129,13 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
     }
   });
 
-  const filterLabel = filter === 0 ? null : filter === 1 ? 'Publicados' : filter === 2 ? 'Disponíveis' : filter === 3 ? 'Bloqueados' : null;
+  const filterLabel = filter === 0 ? null
+    : filter === 1 ? 'Publicados'
+    : filter === 2 ? 'Disponíveis'
+    : filter === 3 ? 'Bloqueados'
+    : filter === 4 ? 'Em andamento'
+    : filter === 5 ? 'Não iniciados'
+    : 'Concluídos';
 
   const formatDate = (value?: string | Date | null) => {
     if (!value) return '';
@@ -156,6 +183,9 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
                   { value: '1', label: 'Publicados' },
                   { value: '2', label: 'Disponíveis' },
                   { value: '3', label: 'Bloqueados' },
+                  { value: '4', label: 'Em andamento' },
+                  { value: '5', label: 'Não iniciados' },
+                  { value: '6', label: 'Concluídos' },
                 ]}
                 filterValue={String(filter)}
                 onFilterChange={(value) => setFilter(Number(value))}
@@ -226,28 +256,47 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
 
                           {/* Status Badge */}
                           <XStack position="absolute" left={12} top={12}>
-                            <XStack
-                              borderRadius={9999}
-                              px={10}
-                              py={4}
-                              ai="center"
-                              gap={6}
-                              style={{
-                                backdropFilter: 'blur(8px)',
-                                backgroundColor: course.hasAccess 
-                                  ? 'rgba(34, 197, 94, 0.9)' 
-                                  : 'rgba(156, 163, 175, 0.9)',
-                              }}
-                            >
-                              <Icon 
-                                name={course.hasAccess ? "CheckCircle" : "Lock"} 
-                                size={10} 
-                                color="$white" 
-                              />
-                              <Text fontSize={11} fontWeight="700" color="$white">
-                                {course.hasAccess ? 'Disponível' : 'Bloqueado'}
-                              </Text>
-                            </XStack>
+                            {course.hasAccess ? (
+                              <XStack
+                                borderRadius={9999}
+                                px={10}
+                                py={4}
+                                ai="center"
+                                gap={6}
+                                style={{
+                                  backdropFilter: 'blur(8px)',
+                                  backgroundColor: course.status === 'completed'
+                                    ? 'rgba(34, 197, 94, 0.9)'
+                                    : course.status === 'in_progress'
+                                      ? 'rgba(59, 130, 246, 0.9)'
+                                      : 'rgba(107, 114, 128, 0.9)',
+                                }}
+                              >
+                                <XStack w={6} h={6} borderRadius={3} bg="$white" style={{ borderRadius: '50%' }} />
+                                <Text fontSize={11} fontWeight="700" color="$white">
+                                  {course.status === 'completed'
+                                    ? 'Concluído'
+                                    : course.status === 'in_progress'
+                                      ? 'Em andamento'
+                                      : 'Não iniciado'}
+                                </Text>
+                              </XStack>
+                            ) : (
+                              <XStack
+                                borderRadius={9999}
+                                px={10}
+                                py={4}
+                                ai="center"
+                                gap={6}
+                                style={{
+                                  backdropFilter: 'blur(8px)',
+                                  backgroundColor: 'rgba(156, 163, 175, 0.9)',
+                                }}
+                              >
+                                <Icon name="Lock" size={10} color="$white" />
+                                <Text fontSize={11} fontWeight="700" color="$white">Bloqueado</Text>
+                              </XStack>
+                            )}
                           </XStack>
                         </YStack>
 
