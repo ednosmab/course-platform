@@ -23,7 +23,7 @@ function generateExtranetCode(): string {
  */
 export function createCertificateService(
   certRepo: ICertificateRepository,
-  courseRepo: Pick<ICourseRepository, 'getCourse' | 'getCourseCertificateEnabled'>,
+  courseRepo: Pick<ICourseRepository, 'getCourse' | 'getCourseCertificateEnabled' | 'getAllCourses'>,
   lessonRepo: Pick<ILessonRepository, 'getCourseIdFromLesson' | 'getLessonTestBlocks' | 'getLessonsByCourse'>,
   progressRepo: Pick<IProgressRepository, 'getCompletedLessonCount' | 'getLessonTestScores' | 'getProgressByLessons'>,
 ) {
@@ -171,6 +171,36 @@ export function createCertificateService(
      */
     async getCertificate(id: string): Promise<Certificate | null> {
       return certRepo.getCertificate(id);
+    },
+
+    /**
+     * @description Re-checks certificate eligibility for all completed courses and issues
+     * any missing certificates. Used as a recovery mechanism when previous issuance attempts
+     * failed (e.g., due to RLS policy issues).
+     * @param userId - The UUID of the student
+     * @returns Array of newly issued certificates
+     */
+    async recheckAndIssueAll(userId: string): Promise<Certificate[]> {
+      const issued: Certificate[] = [];
+      const courses = await courseRepo.getAllCourses();
+
+      for (const course of courses) {
+        if (!course.certificate_enabled) continue;
+
+        const existing = await certRepo.findExistingCertificate(userId, course.id);
+        if (existing) continue;
+
+        const completed = await this.isCourseCompleted(userId, course.id);
+        if (!completed) continue;
+
+        const average = await this.getCourseAverage(userId, course.id);
+        if (average < 70) continue;
+
+        const cert = await this.issueCertificate(userId, course.id);
+        if (cert) issued.push(cert);
+      }
+
+      return issued;
     },
   };
 }

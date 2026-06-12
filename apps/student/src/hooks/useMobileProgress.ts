@@ -18,8 +18,8 @@ export function useMobileProgress() {
   useEffect(() => {
     const loadUser = async () => {
       const session = await AuthService.getSession();
-      if (session?.id) {
-        setUserId(session.id);
+      if (session?.user?.id) {
+        setUserId(session.user.id);
       }
       setIsReady(true);
     };

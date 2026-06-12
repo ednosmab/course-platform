@@ -7,12 +7,17 @@
 
 import React from 'react';
 import { YStack, XStack, Text, Button, Card, Icon } from '@projeto/ui';
-import { Certificate, Course } from '@projeto/types';
+import { Certificate, Course, CertificateBlock } from '@projeto/types';
+import { CertificateMiniature } from '@projeto/ui';
 
 export interface CertificateWithCourse extends Certificate {
   course?: Course;
   gradient: string;
   category: string;
+  certificate_blocks?: CertificateBlock[];
+  designWidth?: number;
+  designHeight?: number;
+  isDoubleSided?: boolean;
 }
 
 interface CertificateDetailCardProps {
@@ -30,51 +35,62 @@ export function CertificateDetailCard({ certificate, onClose }: CertificateDetai
   return (
     <YStack gap="$4" p="$4">
       {/* Certificate Preview Card */}
-      <Card
-        w={200}
-        h={141}
-        p={0}
-        overflow="hidden"
-        br="$3"
-        alignSelf="center"
-      >
-        <YStack
-          flex={1}
-          style={{ background: certificate.gradient }}
-          p="$3"
-          jc="space-between"
+      {certificate.certificate_blocks && certificate.certificate_blocks.length > 0 ? (
+        <YStack alignSelf="center" w={200} h={141} overflow="hidden" br="$3">
+          <CertificateMiniature
+            blocks={certificate.certificate_blocks}
+            designWidth={certificate.designWidth || 1100}
+            designHeight={certificate.designHeight || 778}
+            isDoubleSided={certificate.isDoubleSided || false}
+          />
+        </YStack>
+      ) : (
+        <Card
+          w={200}
+          h={141}
+          p={0}
+          overflow="hidden"
+          br="$3"
+          alignSelf="center"
         >
-          <XStack ai="center" jc="space-between">
-            <YStack w={24} h={24} br="$2" bg="rgba(255,255,255,0.2)" ai="center" jc="center">
-              <Icon name="Sparkles" size={12} color="$white" />
-            </YStack>
-            <YStack px="$1.5" py="$0.5" br="$2" bg="rgba(255,255,255,0.2)">
-              <Text fontSize={8} fontWeight="600" color="$white" textTransform="uppercase">
-                {certificate.category}
+          <YStack
+            flex={1}
+            style={{ background: certificate.gradient }}
+            p="$3"
+            jc="space-between"
+          >
+            <XStack ai="center" jc="space-between">
+              <YStack w={24} h={24} br="$2" bg="rgba(255,255,255,0.2)" ai="center" jc="center">
+                <Icon name="Sparkles" size={12} color="$white" />
+              </YStack>
+              <YStack px="$1.5" py="$0.5" br="$2" bg="rgba(255,255,255,0.2)">
+                <Text fontSize={8} fontWeight="600" color="$white" textTransform="uppercase">
+                  {certificate.category}
+                </Text>
+              </YStack>
+            </XStack>
+
+            <YStack>
+              <Text fontSize={8} color="rgba(255,255,255,0.8)" textTransform="uppercase" letterSpacing={1}>
+                Certificado de conclusão
+              </Text>
+              <Text fontSize={11} fontWeight="bold" color="$white" numberOfLines={2} mt="$0.5">
+                {certificate.course?.title || 'Curso'}
               </Text>
             </YStack>
-          </XStack>
 
-          <YStack>
-            <Text fontSize={8} color="rgba(255,255,255,0.8)" textTransform="uppercase" letterSpacing={1}>
-              Certificado de conclusão
-            </Text>
-            <Text fontSize={11} fontWeight="bold" color="$white" numberOfLines={2} mt="$0.5">
-              {certificate.course?.title || 'Curso'}
-            </Text>
-          </YStack>
-
-          <XStack ai="center" jc="space-between">
-            <Text fontSize={8} color="rgba(255,255,255,0.9)">
-              {certificate.course?.author_id || 'Instrutor'}
-            </Text>
-            <XStack ai="center" gap="$0.5">
-              <Icon name="CheckCircle" size={8} color="$white" />
-              <Text fontSize={8} color="$white">Autenticado</Text>
+            <XStack ai="center" jc="space-between">
+              <Text fontSize={8} color="rgba(255,255,255,0.9)">
+                {certificate.course?.author_id || 'Instrutor'}
+              </Text>
+              <XStack ai="center" gap="$0.5">
+                <Icon name="CheckCircle" size={8} color="$white" />
+                <Text fontSize={8} color="$white">Autenticado</Text>
+              </XStack>
             </XStack>
-          </XStack>
-        </YStack>
-      </Card>
+          </YStack>
+        </Card>
+      )}
 
       {/* Course Title */}
       <YStack gap="$1" alignItems="center">

@@ -101,7 +101,7 @@ export const supabaseProgressRepository: IProgressRepository = {
     const { data: modules } = await supabase.from('modules').select('id').eq('course_id', courseId);
     if (!modules || modules.length === 0) return { completed: 0, total: 0 };
     const moduleIds = modules.map((m) => m.id);
-    const { data: lessons } = await supabase.from('lessons').select('id').in('module_id', moduleIds);
+    const { data: lessons } = await supabase.from('lessons').select('id').in('module_id', moduleIds).eq('is_published', true);
     if (!lessons) return { completed: 0, total: 0 };
     const total = lessons.length;
     if (total === 0) return { completed: 0, total: 0 };

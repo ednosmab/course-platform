@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, XStack, YStack, Text, Card, Icon, Spinner, FilterBar, GridBackground } from '@projeto/ui';
-import { CourseService, AuthService } from '@projeto/core';
+import { CourseService, ProgressService, AuthService } from '@projeto/core';
 import { Course } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
 
@@ -13,8 +13,13 @@ type StudentCoursesProps = {
   onNavigateToCertificates: () => void;
 };
 
+type CourseWithStatus = Course & {
+  status: 'completed' | 'in_progress' | 'not_started';
+  progressPercent: number;
+};
+
 export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToDashboard, onNavigateToExplore, onNavigateToCertificates }: StudentCoursesProps) {
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [courses, setCourses] = useState<CourseWithStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState(0);
@@ -33,8 +38,32 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
       try {
         setLoading(true);
         setError(null);
+
+        const profile = await AuthService.getCurrentProfile();
         const coursesData = await CourseService.getStudentPublishedCourses();
-        setCourses(coursesData || []);
+
+        if (!profile?.id || !coursesData) {
+          setCourses((coursesData || []).map(c => ({ ...c, status: 'not_started', progressPercent: 0 })));
+          return;
+        }
+
+        const coursesWithStatus: CourseWithStatus[] = await Promise.all(
+          coursesData.map(async (course) => {
+            const { completed, total } = await ProgressService.getCompletedLessonCount(profile.id, course.id);
+            const progressPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            let status: 'completed' | 'in_progress' | 'not_started' = 'not_started';
+            if (completed >= total && total > 0) {
+              status = 'completed';
+            } else if (completed > 0) {
+              status = 'in_progress';
+            }
+
+            return { ...course, status, progressPercent };
+          })
+        );
+
+        setCourses(coursesWithStatus);
       } catch (err: any) {
         console.error('Failed to load courses:', err);
         setError(err.message || 'Failed to load courses');
@@ -64,8 +93,9 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
 
   const filteredCourses = courses.filter((course) => {
     if (filter === 0) return true;
-    if (filter === 1) return course.status === 'published';
-    if (filter === 2) return course.status === 'draft';
+    if (filter === 1) return course.status === 'in_progress';
+    if (filter === 2) return course.status === 'not_started';
+    if (filter === 3) return course.status === 'completed';
     return true;
   });
 
@@ -84,7 +114,7 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
     }
   });
 
-  const filterLabel = filter === 0 ? null : filter === 1 ? 'Em andamento' : 'Não iniciados';
+  const filterLabel = filter === 0 ? null : filter === 1 ? 'Em andamento' : filter === 2 ? 'Não iniciados' : 'Concluídos';
 
   const formatDate = (value?: string | Date | null) => {
     if (!value) return '';
@@ -131,6 +161,7 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
                   { value: '0', label: 'Todos' },
                   { value: '1', label: 'Em andamento' },
                   { value: '2', label: 'Não iniciados' },
+                  { value: '3', label: 'Concluídos' },
                 ]}
                 filterValue={String(filter)}
                 onFilterChange={(value) => setFilter(Number(value))}
@@ -209,7 +240,11 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
                               gap={6}
                               style={{
                                 backdropFilter: 'blur(8px)',
-                                backgroundColor: 'rgba(16, 185, 129, 0.9)',
+                                backgroundColor: course.status === 'completed'
+                                  ? 'rgba(34, 197, 94, 0.9)'
+                                  : course.status === 'in_progress'
+                                    ? 'rgba(59, 130, 246, 0.9)'
+                                    : 'rgba(107, 114, 128, 0.9)',
                               }}
                             >
                               <XStack
@@ -220,7 +255,11 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
                                 style={{ borderRadius: '50%' }}
                               />
                               <Text fontSize={11} fontWeight="700" color="$white">
-                                Em andamento
+                                {course.status === 'completed'
+                                  ? 'Concluído'
+                                  : course.status === 'in_progress'
+                                    ? 'Em andamento'
+                                    : 'Não iniciado'}
                               </Text>
                             </XStack>
                           </XStack>

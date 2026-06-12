@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input, Dialog } from '@projeto/ui';
+import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input, Dialog, CertificateMiniature } from '@projeto/ui';
 import { CertificateService, AuthService } from '@projeto/core';
 import { Certificate, Course } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
@@ -56,6 +56,10 @@ export function Certificates({
         });
       }
 
+      if (profile?.id) {
+        await CertificateService.recheckAndIssueAll(profile.id);
+      }
+
       const certs = await CertificateService.getUserCertificates(profile?.id || '');
 
       const certsWithCourse: CertificateWithCourse[] = await Promise.all(
@@ -69,6 +73,11 @@ export function Certificates({
             }
           }
 
+          // Extract certificate_blocks and metadata
+          const rawBlocks = (course as any)?.certificate_blocks || [];
+          const meta = rawBlocks.find((b: any) => b.type === '__meta__');
+          const certificateBlocks = rawBlocks.filter((b: any) => b.type !== '__meta__');
+
           return {
             ...cert,
             course,
@@ -76,6 +85,10 @@ export function Certificates({
             category: course?.title?.includes('Vendas') ? 'Vendas' :
                       course?.title?.includes('Liderança') ? 'Liderança' :
                       course?.title?.includes('Comunicação') ? 'Soft skills' : 'Cultura',
+            certificate_blocks: certificateBlocks,
+            designWidth: meta?.designWidth || 1100,
+            designHeight: meta?.designHeight || 778,
+            isDoubleSided: meta?.isDoubleSided || false,
           };
         })
       );
@@ -172,7 +185,7 @@ export function Certificates({
       />
 
       <ScrollView flex={1} contentContainerStyle={{ padding: 24, gap: 20, paddingBottom: 32 }}>
-        <YStack maxWidth={1400} w="100%" als="center" gap="$6">
+        <YStack maxWidth={1400} w="100%" alignSelf="center" gap="$6">
           {/* Hero Section */}
           <Card p={0} overflow="hidden" br="$4">
             <YStack p="$5" gap="$4">
@@ -194,19 +207,19 @@ export function Certificates({
               </Text>
 
               <XStack gap="$3" mt="$2" flexWrap="wrap">
-                <YStack flex={1} minW={100} p="$3" bg="$secondary" br="$3" ai="center">
+                <YStack flex={1} minWidth={100} p="$3" bg="$secondary" br="$3" ai="center">
                   <Text variant="h2" fontWeight="bold">{certificates.length}</Text>
                   <Text fontSize={10} color="$textMuted" textTransform="uppercase" fontWeight="700">
                     Certificados
                   </Text>
                 </YStack>
-                <YStack flex={1} minW={100} p="$3" bg="$secondary" br="$3" ai="center">
+                <YStack flex={1} minWidth={100} p="$3" bg="$secondary" br="$3" ai="center">
                   <Text variant="h2" fontWeight="bold">{totalHours}h</Text>
                   <Text fontSize={10} color="$textMuted" textTransform="uppercase" fontWeight="700">
                     Horas
                   </Text>
                 </YStack>
-                <YStack flex={1} minW={100} p="$3" bg="$secondary" br="$3" ai="center">
+                <YStack flex={1} minWidth={100} p="$3" bg="$secondary" br="$3" ai="center">
                   <Text variant="h2" fontWeight="bold">{totalCategories}</Text>
                   <Text fontSize={10} color="$textMuted" textTransform="uppercase" fontWeight="700">
                     Categorias
@@ -241,7 +254,7 @@ export function Certificates({
               ))}
             </XStack>
 
-            <XStack flex={1} maxW={300} ai="center" bg="$surface" borderWidth={1} borderColor="$border" br="$3" px="$3" py="$2">
+            <XStack flex={1} maxWidth={300} ai="center" bg="$surface" borderWidth={1} borderColor="$border" br="$3" px="$3" py="$2">
               <Icon name="Search" size={15} color="$textMuted" />
               <Input
                 value={query}
@@ -284,42 +297,53 @@ export function Certificates({
                   onPress={() => setSelectedCertificate(cert)}
                 >
                   {/* Certificate Preview - Compact */}
-                  <YStack
-                    flex={1}
-                    style={{ background: cert.gradient }}
-                    p="$3"
-                    jc="space-between"
-                  >
-                    <XStack ai="center" jc="space-between">
-                      <YStack w={24} h={24} br="$2" bg="rgba(255,255,255,0.2)" ai="center" jc="center">
-                        <Icon name="Sparkles" size={12} color="$white" />
-                      </YStack>
-                      <YStack px="$1.5" py="$0.5" br="$2" bg="rgba(255,255,255,0.2)">
-                        <Text fontSize={8} fontWeight="600" color="$white" textTransform="uppercase">
-                          {cert.category}
+                  {cert.certificate_blocks && cert.certificate_blocks.length > 0 ? (
+                    <YStack flex={1} overflow="hidden">
+                      <CertificateMiniature
+                        blocks={cert.certificate_blocks}
+                        designWidth={cert.designWidth || 1100}
+                        designHeight={cert.designHeight || 778}
+                        isDoubleSided={cert.isDoubleSided || false}
+                      />
+                    </YStack>
+                  ) : (
+                    <YStack
+                      flex={1}
+                      style={{ background: cert.gradient }}
+                      p="$3"
+                      jc="space-between"
+                    >
+                      <XStack ai="center" jc="space-between">
+                        <YStack w={24} h={24} br="$2" bg="rgba(255,255,255,0.2)" ai="center" jc="center">
+                          <Icon name="Sparkles" size={12} color="$white" />
+                        </YStack>
+                        <YStack px="$1.5" py="$0.5" br="$2" bg="rgba(255,255,255,0.2)">
+                          <Text fontSize={8} fontWeight="600" color="$white" textTransform="uppercase">
+                            {cert.category}
+                          </Text>
+                        </YStack>
+                      </XStack>
+
+                      <YStack>
+                        <Text fontSize={8} color="rgba(255,255,255,0.8)" textTransform="uppercase" letterSpacing={1}>
+                          Certificado de conclusão
+                        </Text>
+                        <Text fontSize={11} fontWeight="bold" color="$white" numberOfLines={2} mt="$0.5">
+                          {cert.course?.title || 'Curso'}
                         </Text>
                       </YStack>
-                    </XStack>
 
-                    <YStack>
-                      <Text fontSize={8} color="rgba(255,255,255,0.8)" textTransform="uppercase" letterSpacing={1}>
-                        Certificado de conclusão
-                      </Text>
-                      <Text fontSize={11} fontWeight="bold" color="$white" numberOfLines={2} mt="$0.5">
-                        {cert.course?.title || 'Curso'}
-                      </Text>
-                    </YStack>
-
-                    <XStack ai="center" jc="space-between">
-                      <Text fontSize={8} color="rgba(255,255,255,0.9)" numberOfLines={1}>
-                        {new Date(cert.created_at).toLocaleDateString('pt-BR')}
-                      </Text>
-                      <XStack ai="center" gap="$0.5">
-                        <Icon name="CheckCircle" size={8} color="$white" />
-                        <Text fontSize={8} color="$white">✓</Text>
+                      <XStack ai="center" jc="space-between">
+                        <Text fontSize={8} color="rgba(255,255,255,0.9)" numberOfLines={1}>
+                          {new Date(cert.created_at).toLocaleDateString('pt-BR')}
+                        </Text>
+                        <XStack ai="center" gap="$0.5">
+                          <Icon name="CheckCircle" size={8} color="$white" />
+                          <Text fontSize={8} color="$white">✓</Text>
+                        </XStack>
                       </XStack>
-                    </XStack>
-                  </YStack>
+                    </YStack>
+                  )}
                 </Card>
               ))}
             </XStack>
@@ -336,7 +360,6 @@ export function Certificates({
             position="fixed"
             inset={0}
             zIndex={99998}
-            animation="quick"
           />
           <Dialog.Content
             key="content"
@@ -353,7 +376,6 @@ export function Certificates({
             minWidth={340}
             maxWidth={400}
             maxHeight="90vh"
-            animation="quick"
           >
             <Dialog.Close asChild>
               <Button
@@ -361,7 +383,6 @@ export function Certificates({
                 top="$3"
                 right="$3"
                 variant="ghost"
-                size="sm"
                 zIndex={10}
               >
                 <Icon name="X" size={16} color="$textMuted" />

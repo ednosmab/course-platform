@@ -35,7 +35,7 @@ describe('useMobileProgress', () => {
     mockGetItem.mockResolvedValue(null);
     mockSetItem.mockResolvedValue(undefined);
     mockRemoveItem.mockResolvedValue(undefined);
-    mockGetSession.mockResolvedValue({ id: 'test-user' });
+    mockGetSession.mockResolvedValue({ user: { id: 'test-user' } });
   });
 
   it('should start with zero pending items', async () => {
