@@ -35,8 +35,7 @@ jobs:
       - name: Enable corepack and install pnpm
         shell: bash
         run: |
-          corepack enable
-          corepack prepare pnpm@11 --activate
+          npm install -g pnpm@11
           pnpm --version
 
       - name: Guardrail — no test env vars leaked
