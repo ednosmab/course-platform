@@ -420,6 +420,7 @@ export default function CursosPage() {
               resultLabel="cursos"
               filterLabel={filterLabel || undefined}
               onClearFilter={() => setFilter(0)}
+              showResultCount={false}
             />
             <Button
               variant="secondary"

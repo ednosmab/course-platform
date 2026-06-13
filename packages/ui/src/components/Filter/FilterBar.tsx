@@ -21,10 +21,11 @@ type FilterBarProps = {
   sortOptions: SortOption[];
   sortValue: string;
   onSortChange: (value: string) => void;
-  resultCount: number;
+  resultCount?: number;
   resultLabel?: string;
   filterLabel?: string;
   onClearFilter?: () => void;
+  showResultCount?: boolean;
 };
 
 export function FilterBar({
@@ -38,6 +39,7 @@ export function FilterBar({
   resultLabel = 'itens',
   filterLabel,
   onClearFilter,
+  showResultCount = true,
 }: FilterBarProps) {
   const hasActiveFilter = filterLabel && filterLabel !== filterOptions[0]?.label;
 
@@ -58,11 +60,13 @@ export function FilterBar({
           onChange={onSortChange}
         />
 
-        <XStack ml="auto" ai="center" gap={6}>
-          <Text fontSize={12} fontFamily="$display" fontWeight="400" color="$textMuted">
-            {resultCount} {resultCount === 1 ? resultLabel.replace(/s$/, '') : resultLabel}
-          </Text>
-        </XStack>
+        {showResultCount && resultCount !== undefined && (
+          <XStack ml="auto" ai="center" gap={6}>
+            <Text fontSize={12} fontFamily="$display" fontWeight="400" color="$textMuted">
+              {resultCount} {resultCount === 1 ? resultLabel.replace(/s$/, '') : resultLabel}
+            </Text>
+          </XStack>
+        )}
       </XStack>
 
       {hasActiveFilter && onClearFilter && (
