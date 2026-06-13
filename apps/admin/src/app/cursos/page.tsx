@@ -125,7 +125,7 @@ export default function CursosPage() {
       setTimeout(() => {
         setShowStudentOrderModal(false);
         setSavedSuccess(false);
-      }, 800);
+      }, 900);
     } catch (err) {
       console.error('Failed to save student order:', err);
     } finally {
