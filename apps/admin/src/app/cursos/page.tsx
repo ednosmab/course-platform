@@ -398,7 +398,7 @@ export default function CursosPage() {
           </YStack>
 
           {/* Filtros e Ordenação */}
-          <XStack gap={12} ai="center" flexWrap="wrap">
+          <XStack gap={12} ai="center" flexWrap="wrap" mb={16}>
             <FilterBar
               filterOptions={[
                 { value: '0', label: 'Todos' },
@@ -424,18 +424,15 @@ export default function CursosPage() {
               removeBottomMargin
             />
             <Button
-              variant="secondary"
               px={12}
               py={6}
               borderRadius={8}
               ai="center"
               gap={6}
+              borderWidth={1}
+              borderColor="#DEE1EB"
+              backgroundColor="transparent"
               onPress={openStudentOrderModal}
-              style={{
-                background: 'transparent',
-                borderWidth: 1,
-                borderColor: '$border',
-              }}
               hoverStyle={{ backgroundColor: '$secondary' }}
             >
               <Icon name="GripVertical" size={14} color="$textMuted" />
