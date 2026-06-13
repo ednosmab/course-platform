@@ -107,6 +107,7 @@ const mockCourses = [
     title: 'Desenvolvimento Web Moderno',
     description: 'Aprenda Next.js e React.',
     is_published: true,
+    order_index: 0,
     created_at: '2026-06-01T10:00:00Z',
     updated_at: '2026-06-01T11:00:00Z',
     thumbnail_url: null,
@@ -116,6 +117,7 @@ const mockCourses = [
     title: 'Liderança e Gestão Ágil',
     description: 'Gestão de times de tecnologia.',
     is_published: false,
+    order_index: 1,
     created_at: '2026-06-02T10:00:00Z',
     updated_at: '2026-06-02T10:00:00Z',
     thumbnail_url: null,
@@ -125,6 +127,7 @@ const mockCourses = [
     title: 'Introdução ao Design de Interfaces UX/UI',
     description: 'Design centrado no usuário.',
     is_published: true,
+    order_index: 2,
     created_at: '2026-06-03T10:00:00Z',
     updated_at: '2026-06-03T10:00:00Z',
     thumbnail_url: null,
@@ -134,6 +137,7 @@ const mockCourses = [
     title: 'Lógica de Programação Básica',
     description: 'Algoritmos fundamentais.',
     is_published: false,
+    order_index: 3,
     created_at: '2026-06-04T10:00:00Z',
     updated_at: '2026-06-04T10:00:00Z',
     thumbnail_url: null,
@@ -168,7 +172,7 @@ describe('CursosPage', () => {
     expect(screen.getByText('Introdução ao Design de Interfaces UX/UI')).toBeTruthy();
   });
 
-  it('sorts courses correctly: drafts first, then published, sorted by created_at desc', async () => {
+  it('sorts courses correctly: custom order by order_index', async () => {
     render(<CursosPage />);
 
     await waitFor(() => {
@@ -176,12 +180,11 @@ describe('CursosPage', () => {
     });
 
     // Na categoria Tecnologia:
-    // "Lógica de Programação Básica" (rascunho, criada em 2026-06-04)
-    // "Desenvolvimento Web Moderno" (publicado, criada em 2026-06-01)
-    // Portanto "Lógica" deve vir antes de "Desenvolvimento"
+    // "Desenvolvimento Web Moderno" (order_index=0) deve vir antes de
+    // "Lógica de Programação Básica" (order_index=3)
     const techCourses = screen.getAllByText(/Lógica de Programação Básica|Desenvolvimento Web Moderno/);
-    expect(techCourses[0].textContent).toBe('Lógica de Programação Básica');
-    expect(techCourses[1].textContent).toBe('Desenvolvimento Web Moderno');
+    expect(techCourses[0].textContent).toBe('Desenvolvimento Web Moderno');
+    expect(techCourses[1].textContent).toBe('Lógica de Programação Básica');
   });
 
   it('filters courses correctly using the search query input', async () => {

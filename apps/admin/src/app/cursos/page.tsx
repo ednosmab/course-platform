@@ -44,7 +44,7 @@ export default function CursosPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState(0);
-  const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'name-az' | 'name-za'>('recent');
+  const [sortBy, setSortBy] = useState<'custom' | 'recent' | 'oldest' | 'name-az' | 'name-za'>('custom');
   const [searchQuery, setSearchQuery] = useState('');
   const [userProfile, setUserProfile] = useState<{ full_name: string; email: string } | null>(null);
 
@@ -126,6 +126,26 @@ export default function CursosPage() {
     }
   };
 
+  // Lógica para reordenar cursos (setas up/down)
+  const moveCourse = async (id: string, direction: 'up' | 'down') => {
+    const sorted = [...courses].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
+    const idx = sorted.findIndex(c => c.id === id);
+    if (direction === 'up' && idx <= 0) return;
+    if (direction === 'down' && idx >= sorted.length - 1) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    const a = sorted[idx];
+    const b = sorted[swapIdx];
+    try {
+      await CourseService.reorderCourses([
+        { id: a.id, order_index: b.order_index ?? 0 },
+        { id: b.id, order_index: a.order_index ?? 0 },
+      ]);
+      await fetchCourses();
+    } catch (err) {
+      console.error('Failed to reorder courses:', err);
+    }
+  };
+
   // Função para inferir a categoria do curso a partir do título/descrição
   const getCourseCategory = (course: Course) => {
     const title = (course.title || '').toLowerCase();
@@ -173,6 +193,8 @@ export default function CursosPage() {
   // Ordena os cursos conforme o critério selecionado
   const sortCourses = (a: Course, b: Course) => {
     switch (sortBy) {
+      case 'custom':
+        return (a.order_index ?? 0) - (b.order_index ?? 0);
       case 'recent':
         return new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime();
       case 'oldest':
@@ -282,6 +304,7 @@ export default function CursosPage() {
             filterValue={String(filter)}
             onFilterChange={(value) => setFilter(Number(value))}
             sortOptions={[
+              { value: 'custom', label: 'Ordem personalizada' },
               { value: 'recent', label: 'Mais recentes' },
               { value: 'oldest', label: 'Mais antigos' },
               { value: 'name-az', label: 'Nome A-Z' },
@@ -467,12 +490,40 @@ export default function CursosPage() {
                             </Link>
                             
                             <XStack jc="space-between" ai="center" mt={8} px={4}>
-                              <Link href={`/configuracoes/${c.id}`} style={{ textDecoration: 'none' }}>
-                                <XStack ai="center" gap={4} cursor="pointer">
-                                  <Icon name="Settings" size={12} color="$primary" />
-                                  <Text fontSize={12} color="$primary" fontWeight="500">Configurações</Text>
-                                </XStack>
-                              </Link>
+                              <XStack ai="center" gap={6}>
+                                <Link href={`/configuracoes/${c.id}`} style={{ textDecoration: 'none' }}>
+                                  <XStack ai="center" gap={4} cursor="pointer">
+                                    <Icon name="Settings" size={12} color="$primary" />
+                                    <Text fontSize={12} color="$primary" fontWeight="500">Configurações</Text>
+                                  </XStack>
+                                </Link>
+                                {sortBy === 'custom' && (
+                                  <XStack ai="center" gap={2}>
+                                    <Button
+                                      variant="ghost"
+                                      px="$2"
+                                      py="$1"
+                                      br="$2"
+                                      disabled={(c.order_index ?? 0) === 0}
+                                      opacity={(c.order_index ?? 0) === 0 ? 0.3 : 1}
+                                      onPress={() => moveCourse(c.id, 'up')}
+                                    >
+                                      <Icon name="ChevronUp" size={14} color="$text" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      px="$2"
+                                      py="$1"
+                                      br="$2"
+                                      disabled={(c.order_index ?? 0) >= courses.length - 1}
+                                      opacity={(c.order_index ?? 0) >= courses.length - 1 ? 0.3 : 1}
+                                      onPress={() => moveCourse(c.id, 'down')}
+                                    >
+                                      <Icon name="ChevronDown" size={14} color="$text" />
+                                    </Button>
+                                  </XStack>
+                                )}
+                              </XStack>
                               
                               <Text
                                 onPress={() => handleDelete(c.id)}

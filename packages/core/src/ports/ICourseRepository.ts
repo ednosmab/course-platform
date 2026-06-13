@@ -136,6 +136,13 @@ export interface ICourseRepository {
   reorderModules(items: { id: string; order_index: number }[]): Promise<void>;
 
   /**
+   * @description Reorders courses by updating their display sort indices.
+   * @param items - Array of objects mapping course IDs to their new order_index values.
+   * @returns Promise resolving when the reorder completes.
+   */
+  reorderCourses(items: { id: string; order_index: number }[]): Promise<void>;
+
+  /**
    * @description Creates a new lesson inside a module at a specified position.
    * @param moduleId - The UUID of the parent module.
    * @param title - The display title of the lesson.

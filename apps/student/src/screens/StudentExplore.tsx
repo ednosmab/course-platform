@@ -26,7 +26,7 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState(0);
-  const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'name-az' | 'name-za'>('recent');
+  const [sortBy, setSortBy] = useState<'custom' | 'recent' | 'oldest' | 'name-az' | 'name-za'>('custom');
   const [userProfile, setUserProfile] = useState<{ full_name: string; email: string } | null>(null);
   const [studentId, setStudentId] = useState<string | null>(null);
 
@@ -116,6 +116,8 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
 
   const sortedCourses = [...filteredCourses].sort((a, b) => {
     switch (sortBy) {
+      case 'custom':
+        return (a.order_index ?? 0) - (b.order_index ?? 0);
       case 'recent':
         return new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime();
       case 'oldest':
@@ -190,6 +192,7 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
                 filterValue={String(filter)}
                 onFilterChange={(value) => setFilter(Number(value))}
                 sortOptions={[
+                  { value: 'custom', label: 'Ordem do professor' },
                   { value: 'recent', label: 'Mais recentes' },
                   { value: 'oldest', label: 'Mais antigos' },
                   { value: 'name-az', label: 'Nome A-Z' },
@@ -216,6 +219,7 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
                       key={course.id}
                       flex={1}
                       minWidth={320}
+                      maxWidth="calc(33.33% - 12px)"
                       $md={{ maxWidth: 'calc(50% - 8px)' }}
                       $sm={{ maxWidth: '100%' }}
                     >

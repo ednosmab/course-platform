@@ -24,13 +24,15 @@ export const supabaseCourseRepository: ICourseRepository = {
   async getAllCourses(): Promise<Course[]> {
     const { data, error } = await supabase.from('courses').select('*').order('created_at', { ascending: false });
     if (error) throw error;
-    return z.array(CourseSchema).parse(data ?? []);
+    const courses = z.array(CourseSchema).parse(data ?? []);
+    return courses.sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
   },
 
   async getPublishedCourses(): Promise<Course[]> {
-    const { data, error } = await supabase.from('courses').select('*').eq('is_published', true);
+    const { data, error } = await supabase.from('courses').select('*').eq('is_published', true).order('created_at', { ascending: false });
     if (error) throw error;
-    return z.array(CourseSchema).parse(data ?? []);
+    const courses = z.array(CourseSchema).parse(data ?? []);
+    return courses.sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
   },
 
   async getCourse(courseId: string): Promise<Course> {
@@ -117,6 +119,14 @@ export const supabaseCourseRepository: ICourseRepository = {
 
   async reorderModules(items: { id: string; order_index: number }[]): Promise<void> {
     const { error } = await supabase.from('modules').upsert(
+      items.map(item => ({ id: item.id, order_index: item.order_index })),
+      { onConflict: 'id' },
+    );
+    if (error) throw error;
+  },
+
+  async reorderCourses(items: { id: string; order_index: number }[]): Promise<void> {
+    const { error } = await supabase.from('courses').upsert(
       items.map(item => ({ id: item.id, order_index: item.order_index })),
       { onConflict: 'id' },
     );
@@ -282,7 +292,8 @@ export const supabaseCourseRepository: ICourseRepository = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return z.array(CourseSchema).parse(data ?? []);
+    const courses = z.array(CourseSchema).parse(data ?? []);
+    return courses.sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
   },
 
   async detectPrerequisiteCycle(courseId: string, prerequisiteId: string): Promise<boolean> {
