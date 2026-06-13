@@ -105,7 +105,7 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
   const sortedCourses = [...filteredCourses].sort((a, b) => {
     switch (sortBy) {
       case 'custom':
-        return (a.order_index ?? 0) - (b.order_index ?? 0);
+        return (a.student_order_index ?? 0) - (b.student_order_index ?? 0);
       case 'recent':
         return new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime();
       case 'oldest':

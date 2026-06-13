@@ -132,6 +132,13 @@ export const supabaseCourseRepository: ICourseRepository = {
     }
   },
 
+  async reorderCoursesForStudent(items: { id: string; student_order_index: number }[]): Promise<void> {
+    for (const item of items) {
+      const { error } = await supabase.from('courses').update({ student_order_index: item.student_order_index }).eq('id', item.id);
+      if (error) throw error;
+    }
+  },
+
   async createLesson(moduleId: string, title: string, orderIndex: number): Promise<Lesson> {
     const { data, error } = await supabase.from('lessons').insert({ module_id: moduleId, title: title.trim(), order_index: orderIndex, is_published: false, blocks: [] }).select().single();
     if (error) throw error;

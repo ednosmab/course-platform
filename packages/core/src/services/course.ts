@@ -175,6 +175,14 @@ export function createCourseService(repo: ICourseRepository) {
     },
 
     /**
+     * @description Reorders courses for student-facing display by updating student_order_index values in bulk.
+     * @param items - Array of objects each containing a course id and the new student_order_index
+     */
+    async reorderCoursesForStudent(items: { id: string; student_order_index: number }[]): Promise<void> {
+      return repo.reorderCoursesForStudent(items);
+    },
+
+    /**
      * @description Creates a new lesson within a module at the specified order index.
      * @param moduleId - The UUID of the parent module
      * @param title - The title of the new lesson

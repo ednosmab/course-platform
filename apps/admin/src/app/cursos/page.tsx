@@ -41,6 +41,29 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 export default function CursosPage() {
   const router = useRouter();
+
+  // Inject keyframe for drop indicator glow
+  if (typeof document !== 'undefined' && !document.getElementById('drop-glow-keyframes')) {
+    const style = document.createElement('style');
+    style.id = 'drop-glow-keyframes';
+    style.textContent = `
+      @keyframes dropLineColor {
+        0%   { background: linear-gradient(90deg, rgba(59,130,246,0.1), rgba(59,130,246,0.5), rgba(59,130,246,0.1)); box-shadow: 0 0 6px 1px rgba(59,130,246,0.2); opacity: 0.6; transform: scaleX(0.96); }
+        25%  { background: linear-gradient(90deg, rgba(59,130,246,0.2), rgba(59,130,246,0.8), rgba(59,130,246,0.2)); box-shadow: 0 0 10px 3px rgba(59,130,246,0.5); opacity: 1;   transform: scaleX(1); }
+        50%  { background: linear-gradient(90deg, rgba(16,185,129,0.1), rgba(16,185,129,0.5), rgba(16,185,129,0.1)); box-shadow: 0 0 6px 1px rgba(16,185,129,0.2); opacity: 0.6; transform: scaleX(0.96); }
+        75%  { background: linear-gradient(90deg, rgba(16,185,129,0.2), rgba(16,185,129,0.8), rgba(16,185,129,0.2)); box-shadow: 0 0 10px 3px rgba(16,185,129,0.5); opacity: 1;   transform: scaleX(1); }
+        100% { background: linear-gradient(90deg, rgba(59,130,246,0.1), rgba(59,130,246,0.5), rgba(59,130,246,0.1)); box-shadow: 0 0 6px 1px rgba(59,130,246,0.2); opacity: 0.6; transform: scaleX(0.96); }
+      }
+      @keyframes dropDotColor {
+        0%   { background-color: #3B82F6; box-shadow: 0 0 4px 1px rgba(59,130,246,0.3); transform: scale(0.85); }
+        25%  { background-color: #3B82F6; box-shadow: 0 0 10px 3px rgba(59,130,246,0.7); transform: scale(1.15); }
+        50%  { background-color: #10B981; box-shadow: 0 0 4px 1px rgba(16,185,129,0.3); transform: scale(0.85); }
+        75%  { background-color: #10B981; box-shadow: 0 0 10px 3px rgba(16,185,129,0.7); transform: scale(1.15); }
+        100% { background-color: #3B82F6; box-shadow: 0 0 4px 1px rgba(59,130,246,0.3); transform: scale(0.85); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState(0);
@@ -55,6 +78,13 @@ export default function CursosPage() {
   const [formThumbnail, setFormThumbnail] = useState<File | null>(null);
   const [formThumbnailPreview, setFormThumbnailPreview] = useState<string | null>(null);
 
+  // Modal de Ordenação para o Aluno
+  const [showStudentOrderModal, setShowStudentOrderModal] = useState(false);
+  const [studentOrderCourses, setStudentOrderCourses] = useState<Course[]>([]);
+  const [isSavingStudentOrder, setIsSavingStudentOrder] = useState(false);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
+
   const fetchCourses = async () => {
     try {
       setLoading(true);
@@ -65,6 +95,91 @@ export default function CursosPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Abre o modal de ordenação para o aluno
+  const openStudentOrderModal = async () => {
+    try {
+      const allCourses = await CourseService.getAllCourses();
+      const sorted = [...allCourses].sort((a, b) => (a.student_order_index ?? 0) - (b.student_order_index ?? 0));
+      setStudentOrderCourses(sorted);
+      setShowStudentOrderModal(true);
+    } catch (err) {
+      console.error('Failed to load courses for student ordering:', err);
+    }
+  };
+
+  // Salva a ordenação para o aluno
+  const saveStudentOrder = async () => {
+    try {
+      setIsSavingStudentOrder(true);
+      await CourseService.reorderCoursesForStudent(
+        studentOrderCourses.map((c, i) => ({ id: c.id, student_order_index: i }))
+      );
+      setShowStudentOrderModal(false);
+      await fetchCourses();
+    } catch (err) {
+      console.error('Failed to save student order:', err);
+    } finally {
+      setIsSavingStudentOrder(false);
+    }
+  };
+
+  // Drag-and-drop handlers para ordenação do aluno
+  const onStudentDragStart = (e: React.DragEvent, courseId: string) => {
+    setDraggedId(courseId);
+    setDropIndex(null);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', courseId);
+  };
+
+  const onStudentDragEnd = () => {
+    setDraggedId(null);
+    setDropIndex(null);
+  };
+
+  const onStudentDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const onStudentDragOverItem = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const midPoint = rect.height / 2;
+    const idx = studentOrderCourses.findIndex(c => c.id === targetId);
+    setDropIndex(y < midPoint ? idx : idx + 1);
+  };
+
+  const onStudentDragLeaveItem = () => {
+    setDropIndex(null);
+  };
+
+  const onStudentDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggedId || draggedId === targetId) {
+      setDraggedId(null);
+      setDropIndex(null);
+      return;
+    }
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const midPoint = rect.height / 2;
+    const targetIdx = studentOrderCourses.findIndex(c => c.id === targetId);
+    const insertIdx = y < midPoint ? targetIdx : targetIdx + 1;
+
+    const items = [...studentOrderCourses];
+    const dragIdx = items.findIndex(c => c.id === draggedId);
+    const [removed] = items.splice(dragIdx, 1);
+    const adjustedInsert = dragIdx < insertIdx ? insertIdx - 1 : insertIdx;
+    items.splice(adjustedInsert, 0, removed);
+
+    setStudentOrderCourses(items);
+    setDraggedId(null);
+    setDropIndex(null);
   };
 
   // Carrega perfil e cursos na inicialização
@@ -123,24 +238,6 @@ export default function CursosPage() {
       await fetchCourses();
     } catch (err) {
       console.error('Failed to delete course:', err);
-    }
-  };
-
-  // Lógica para reordenar cursos (setas up/down)
-  const moveCourse = async (id: string, direction: 'up' | 'down') => {
-    const sorted = [...courses].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
-    const idx = sorted.findIndex(c => c.id === id);
-    if (direction === 'up' && idx <= 0) return;
-    if (direction === 'down' && idx >= sorted.length - 1) return;
-    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-    [sorted[idx], sorted[swapIdx]] = [sorted[swapIdx], sorted[idx]];
-    try {
-      await CourseService.reorderCourses(
-        sorted.map((c, i) => ({ id: c.id, order_index: i }))
-      );
-      await fetchCourses();
-    } catch (err) {
-      console.error('Failed to reorder courses:', err);
     }
   };
 
@@ -293,28 +390,41 @@ export default function CursosPage() {
           </YStack>
 
           {/* Filtros e Ordenação */}
-          <FilterBar
-            filterOptions={[
-              { value: '0', label: 'Todos' },
-              { value: '1', label: 'Publicados' },
-              { value: '2', label: 'Rascunhos' },
-            ]}
-            filterValue={String(filter)}
-            onFilterChange={(value) => setFilter(Number(value))}
-            sortOptions={[
-              { value: 'custom', label: 'Ordem personalizada' },
-              { value: 'recent', label: 'Mais recentes' },
-              { value: 'oldest', label: 'Mais antigos' },
-              { value: 'name-az', label: 'Nome A-Z' },
-              { value: 'name-za', label: 'Nome Z-A' },
-            ]}
-            sortValue={sortBy}
-            onSortChange={(value) => setSortBy(value as typeof sortBy)}
-            resultCount={sortedCourses.length}
-            resultLabel="cursos"
-            filterLabel={filterLabel || undefined}
-            onClearFilter={() => setFilter(0)}
-          />
+          <XStack gap={12} ai="center" flexWrap="wrap">
+            <FilterBar
+              filterOptions={[
+                { value: '0', label: 'Todos' },
+                { value: '1', label: 'Publicados' },
+                { value: '2', label: 'Rascunhos' },
+              ]}
+              filterValue={String(filter)}
+              onFilterChange={(value) => setFilter(Number(value))}
+              sortOptions={[
+                { value: 'custom', label: 'Ordem personalizada' },
+                { value: 'recent', label: 'Mais recentes' },
+                { value: 'oldest', label: 'Mais antigos' },
+                { value: 'name-az', label: 'Nome A-Z' },
+                { value: 'name-za', label: 'Nome Z-A' },
+              ]}
+              sortValue={sortBy}
+              onSortChange={(value) => setSortBy(value as typeof sortBy)}
+              resultCount={sortedCourses.length}
+              resultLabel="cursos"
+              filterLabel={filterLabel || undefined}
+              onClearFilter={() => setFilter(0)}
+            />
+            <Button
+              variant="secondary"
+              px={12}
+              py={8}
+              ai="center"
+              gap={6}
+              onPress={openStudentOrderModal}
+            >
+              <Icon name="GripVertical" size={14} color="$textMuted" />
+              <Text fontSize={13} color="$textMuted" fontWeight="500">Ordem para o aluno</Text>
+            </Button>
+          </XStack>
 
           {loading ? (
             <YStack py={64} ai="center" jc="center" gap={12} opacity={0.7}>
@@ -495,38 +605,6 @@ export default function CursosPage() {
                                     <Text fontSize={12} color="$primary" fontWeight="500">Configurações</Text>
                                   </XStack>
                                 </Link>
-                                {sortBy === 'custom' && (() => {
-                                  const sortedAll = [...courses].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
-                                  const courseIdx = sortedAll.findIndex(sc => sc.id === c.id);
-                                  const isFirst = courseIdx === 0;
-                                  const isLast = courseIdx === sortedAll.length - 1;
-                                  return (
-                                    <XStack ai="center" gap={2}>
-                                      <Button
-                                        variant="ghost"
-                                        px="$2"
-                                        py="$1"
-                                        br="$2"
-                                        disabled={isFirst}
-                                        opacity={isFirst ? 0.3 : 1}
-                                        onPress={() => moveCourse(c.id, 'up')}
-                                      >
-                                        <Icon name="ChevronUp" size={14} color="$text" />
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        px="$2"
-                                        py="$1"
-                                        br="$2"
-                                        disabled={isLast}
-                                        opacity={isLast ? 0.3 : 1}
-                                        onPress={() => moveCourse(c.id, 'down')}
-                                      >
-                                        <Icon name="ChevronDown" size={14} color="$text" />
-                                      </Button>
-                                    </XStack>
-                                  );
-                                })()}
                               </XStack>
                               
                               <Text
@@ -667,6 +745,193 @@ export default function CursosPage() {
                   style={{ background: BRAND_GRADIENT, opacity: formTitle.trim() ? 1 : 0.5 }}
                 >
                   <Text fontSize={14} color="$white" fontWeight="500">Criar Curso</Text>
+                </Button>
+              </XStack>
+            </YStack>
+          </XStack>
+        )}
+
+        {/* Modal de Ordenação para o Aluno */}
+        {showStudentOrderModal && (
+          <XStack
+            position="fixed"
+            inset={0}
+            ai="center"
+            jc="center"
+            style={{ backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1000 }}
+            onDragOver={onStudentDragOver}
+          >
+            <YStack bg="$card" br="$4" p={32} width="80%" gap={20} borderWidth={1} borderColor="$border" style={{ overflowX: 'hidden', maxHeight: '90vh', minHeight: '90vh' }}>
+              <XStack ai="center" jc="space-between">
+                <Text fontFamily="$display" fontSize={20} fontWeight="$6">Ordem para o aluno</Text>
+                <XStack onPress={() => setShowStudentOrderModal(false)} cursor="pointer" p={4}>
+                  <Icon name="X" size={20} color="$textMuted" />
+                </XStack>
+              </XStack>
+
+              <Text fontSize={13} color="$textMuted">
+                Defina a ordem que os alunos verão na tela &quot;Explorar Cursos&quot;.
+              </Text>
+
+              <YStack gap={6} pt={10} pb={4} flex={1} style={{ overflowY: 'auto', padding: '10px 15% 4px' }}>
+                {studentOrderCourses.map((course, index) => {
+                  const isDragging = course.id === draggedId;
+                  const showDropLine = dropIndex === index;
+
+                  return (
+                    <YStack key={course.id} position="relative">
+                      {showDropLine && (
+                        <div style={{
+                          position: 'absolute',
+                          top: -6,
+                          left: -20,
+                          right: -20,
+                          height: 4,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          zIndex: 10,
+                          pointerEvents: 'none',
+                        }}>
+                          <div style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: '50%',
+                            flexShrink: 0,
+                            animation: 'dropDotColor 1.4s ease-in-out infinite',
+                          }} />
+                          <div style={{
+                            flex: 1,
+                            height: 2,
+                            borderRadius: 999,
+                            animation: 'dropLineColor 1.4s ease-in-out infinite',
+                          }} />
+                          <div style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: '50%',
+                            flexShrink: 0,
+                            animation: 'dropDotColor 1.4s ease-in-out infinite',
+                          }} />
+                        </div>
+                      )}
+                      <div
+                        draggable
+                        onDragStart={(e) => onStudentDragStart(e, course.id)}
+                        onDragOver={(e) => onStudentDragOverItem(e, course.id)}
+                        onDragLeave={onStudentDragLeaveItem}
+                        onDrop={(e) => onStudentDrop(e, course.id)}
+                        onDragEnd={onStudentDragEnd}
+                        style={{
+                          cursor: isDragging ? 'grabbing' : 'grab',
+                          transition: isDragging ? 'none' : 'transform 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 200ms ease, opacity 200ms ease',
+                          transform: isDragging ? 'scale(1.02)' : 'scale(1)',
+                          boxShadow: isDragging ? '0 8px 25px rgba(0,0,0,0.15), 0 0 0 0.5px #3B82F6' : 'none',
+                          borderRadius: 8,
+                        }}
+                      >
+                        <XStack
+                          ai="center"
+                          gap={10}
+                          p={10}
+                          br="$3"
+                          borderWidth={1}
+                          borderColor={isDragging ? '#3B82F6' : '$border'}
+                          bg={isDragging ? '$background' : '$card'}
+                          opacity={isDragging ? 0.9 : 1}
+                          style={{ transition: isDragging ? 'none' : 'border-color 200ms ease, background-color 200ms ease, opacity 200ms ease' }}
+                        >
+                          <XStack cursor="grab" flexShrink={0}>
+                            <Icon name="GripVertical" size={16} color="$textMuted" />
+                          </XStack>
+                          <Text flex={1} fontSize={14} numberOfLines={1}>
+                            {index + 1}. {course.title}
+                          </Text>
+                          <XStack ai="center" gap={2} flexShrink={0}>
+                            <Button
+                              variant="ghost"
+                              px="$2"
+                              py="$1"
+                              br="$2"
+                              disabled={index === 0}
+                              opacity={index === 0 ? 0.3 : 1}
+                              onPress={() => {
+                                const items = [...studentOrderCourses];
+                                [items[index], items[index - 1]] = [items[index - 1], items[index]];
+                                setStudentOrderCourses(items);
+                              }}
+                            >
+                              <Icon name="ChevronUp" size={14} color="$text" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              px="$2"
+                              py="$1"
+                              br="$2"
+                              disabled={index === studentOrderCourses.length - 1}
+                              opacity={index === studentOrderCourses.length - 1 ? 0.3 : 1}
+                              onPress={() => {
+                                const items = [...studentOrderCourses];
+                                [items[index], items[index + 1]] = [items[index + 1], items[index]];
+                                setStudentOrderCourses(items);
+                              }}
+                            >
+                              <Icon name="ChevronDown" size={14} color="$text" />
+                            </Button>
+                          </XStack>
+                        </XStack>
+                      </div>
+                    </YStack>
+                  );
+                })}
+                {dropIndex === studentOrderCourses.length && (
+                  <div style={{
+                    position: 'relative',
+                    height: 4,
+                    margin: '0 -20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    pointerEvents: 'none',
+                  }}>
+                    <div style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: '50%',
+                      flexShrink: 0,
+                      animation: 'dropDotColor 1.4s ease-in-out infinite',
+                    }} />
+                    <div style={{
+                      flex: 1,
+                      height: 2,
+                      borderRadius: 999,
+                      animation: 'dropLineColor 1.4s ease-in-out infinite',
+                    }} />
+                    <div style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: '50%',
+                      flexShrink: 0,
+                      animation: 'dropDotColor 1.4s ease-in-out infinite',
+                    }} />
+                  </div>
+                )}
+              </YStack>
+
+              <XStack gap={12} jc="flex-end" mt={8}>
+                <Button variant="ghost" onPress={() => setShowStudentOrderModal(false)} px={16} py={10}>
+                  <Text fontSize={14}>Cancelar</Text>
+                </Button>
+                <Button
+                  onPress={saveStudentOrder}
+                  disabled={isSavingStudentOrder}
+                  px={16}
+                  py={10}
+                  style={{ background: BRAND_GRADIENT, opacity: isSavingStudentOrder ? 0.5 : 1 }}
+                >
+                  <Text fontSize={14} color="$white" fontWeight="500">
+                    {isSavingStudentOrder ? 'Guardando...' : 'Guardar'}
+                  </Text>
                 </Button>
               </XStack>
             </YStack>

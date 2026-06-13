@@ -40,6 +40,7 @@ export const CourseSchema = z.object({
   thumbnail_url: z.string().nullable().optional(),
   is_published: z.boolean(),
   order_index: z.number().int().nonnegative().default(0),
+  student_order_index: z.number().int().nonnegative().default(0),
   certificate_blocks: z.array(CertificateBlockSchema).catch([]).nullable().optional(),
   certificate_enabled: z.boolean().optional().default(false),
   created_at: z.string().or(z.date()),
