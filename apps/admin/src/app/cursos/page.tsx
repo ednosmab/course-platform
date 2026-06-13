@@ -61,6 +61,9 @@ export default function CursosPage() {
         75%  { background-color: #10B981; box-shadow: 0 0 10px 3px rgba(16,185,129,0.7); transform: scale(1.15); }
         100% { background-color: #3B82F6; box-shadow: 0 0 4px 1px rgba(59,130,246,0.3); transform: scale(0.85); }
       }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
     `;
     document.head.appendChild(style);
   }
@@ -82,6 +85,7 @@ export default function CursosPage() {
   const [showStudentOrderModal, setShowStudentOrderModal] = useState(false);
   const [studentOrderCourses, setStudentOrderCourses] = useState<Course[]>([]);
   const [isSavingStudentOrder, setIsSavingStudentOrder] = useState(false);
+  const [savedSuccess, setSavedSuccess] = useState(false);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
 
@@ -116,8 +120,12 @@ export default function CursosPage() {
       await CourseService.reorderCoursesForStudent(
         studentOrderCourses.map((c, i) => ({ id: c.id, student_order_index: i }))
       );
-      setShowStudentOrderModal(false);
+      setSavedSuccess(true);
       await fetchCourses();
+      setTimeout(() => {
+        setShowStudentOrderModal(false);
+        setSavedSuccess(false);
+      }, 800);
     } catch (err) {
       console.error('Failed to save student order:', err);
     } finally {
@@ -924,14 +932,34 @@ export default function CursosPage() {
                 </Button>
                 <Button
                   onPress={saveStudentOrder}
-                  disabled={isSavingStudentOrder}
+                  disabled={isSavingStudentOrder || savedSuccess}
                   px={16}
                   py={10}
-                  style={{ background: BRAND_GRADIENT, opacity: isSavingStudentOrder ? 0.5 : 1 }}
+                  style={{
+                    background: savedSuccess ? '#10B981' : BRAND_GRADIENT,
+                    opacity: isSavingStudentOrder ? 0.8 : 1,
+                    transition: 'background 300ms ease, opacity 200ms ease',
+                  }}
                 >
-                  <Text fontSize={14} color="$white" fontWeight="500">
-                    {isSavingStudentOrder ? 'Guardando...' : 'Guardar'}
-                  </Text>
+                  <XStack ai="center" gap={6}>
+                    {savedSuccess ? (
+                      <Icon name="Check" size={14} color="$white" />
+                    ) : isSavingStudentOrder ? (
+                      <div style={{
+                        width: 14,
+                        height: 14,
+                        border: '2px solid rgba(255,255,255,0.3)',
+                        borderTopColor: '#fff',
+                        borderRadius: '50%',
+                        animation: 'spin 0.6s linear infinite',
+                      }} />
+                    ) : (
+                      <Icon name="Save" size={14} color="$white" />
+                    )}
+                    <Text fontSize={14} color="$white" fontWeight="500">
+                      {savedSuccess ? 'Salvo!' : isSavingStudentOrder ? 'Salvando...' : 'Salvar'}
+                    </Text>
+                  </XStack>
                 </Button>
               </XStack>
             </YStack>
