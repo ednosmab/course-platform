@@ -42,7 +42,7 @@ export function FilterBar({
   const hasActiveFilter = filterLabel && filterLabel !== filterOptions[0]?.label;
 
   return (
-    <YStack>
+    <YStack position="relative" zIndex={10}>
       <XStack gap={8} ai="center" mb={16} flexWrap="wrap">
         <FilterDropdown
           options={filterOptions}

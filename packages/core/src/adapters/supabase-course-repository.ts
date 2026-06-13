@@ -126,11 +126,10 @@ export const supabaseCourseRepository: ICourseRepository = {
   },
 
   async reorderCourses(items: { id: string; order_index: number }[]): Promise<void> {
-    const { error } = await supabase.from('courses').upsert(
-      items.map(item => ({ id: item.id, order_index: item.order_index })),
-      { onConflict: 'id' },
-    );
-    if (error) throw error;
+    for (const item of items) {
+      const { error } = await supabase.from('courses').update({ order_index: item.order_index }).eq('id', item.id);
+      if (error) throw error;
+    }
   },
 
   async createLesson(moduleId: string, title: string, orderIndex: number): Promise<Lesson> {

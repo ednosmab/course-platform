@@ -47,6 +47,7 @@ technical_debt:
   - "Botões de acesso (Livre/Progressivo/Restrito) usam hex hardcoded (#3B82F6, #DEE1EB) — migrar para tokens Tamagui quando possível"
   - "CertificateMiniature e CertificateBlockRenderer são web-only — criar versão mobile se necessário"
   - "Botões Baixar PDF e Compartilhar no modal são placeholder (onPress vazio)"
+  - "2026-06-13: NUNCA executar supabase start/reset sem autorização — projecto usa Supabase remoto (limqrpxdzxejvuqjiwpn.supabase.co). Migration course_order_index aplicada apenas localmente, precisa ser aplicada manualmente no dashboard remoto."
 
 documents_loaded:
   - "governance/WORKFLOW.md"

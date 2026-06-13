@@ -4,5 +4,5 @@
 alter table public.courses
   add column order_index integer not null default 0;
 
-create index concurrently if not exists idx_courses_order_index
+create index if not exists idx_courses_order_index
   on public.courses(order_index);

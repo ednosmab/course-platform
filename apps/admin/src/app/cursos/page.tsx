@@ -133,13 +133,11 @@ export default function CursosPage() {
     if (direction === 'up' && idx <= 0) return;
     if (direction === 'down' && idx >= sorted.length - 1) return;
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-    const a = sorted[idx];
-    const b = sorted[swapIdx];
+    [sorted[idx], sorted[swapIdx]] = [sorted[swapIdx], sorted[idx]];
     try {
-      await CourseService.reorderCourses([
-        { id: a.id, order_index: b.order_index ?? 0 },
-        { id: b.id, order_index: a.order_index ?? 0 },
-      ]);
+      await CourseService.reorderCourses(
+        sorted.map((c, i) => ({ id: c.id, order_index: i }))
+      );
       await fetchCourses();
     } catch (err) {
       console.error('Failed to reorder courses:', err);
@@ -497,32 +495,38 @@ export default function CursosPage() {
                                     <Text fontSize={12} color="$primary" fontWeight="500">Configurações</Text>
                                   </XStack>
                                 </Link>
-                                {sortBy === 'custom' && (
-                                  <XStack ai="center" gap={2}>
-                                    <Button
-                                      variant="ghost"
-                                      px="$2"
-                                      py="$1"
-                                      br="$2"
-                                      disabled={(c.order_index ?? 0) === 0}
-                                      opacity={(c.order_index ?? 0) === 0 ? 0.3 : 1}
-                                      onPress={() => moveCourse(c.id, 'up')}
-                                    >
-                                      <Icon name="ChevronUp" size={14} color="$text" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      px="$2"
-                                      py="$1"
-                                      br="$2"
-                                      disabled={(c.order_index ?? 0) >= courses.length - 1}
-                                      opacity={(c.order_index ?? 0) >= courses.length - 1 ? 0.3 : 1}
-                                      onPress={() => moveCourse(c.id, 'down')}
-                                    >
-                                      <Icon name="ChevronDown" size={14} color="$text" />
-                                    </Button>
-                                  </XStack>
-                                )}
+                                {sortBy === 'custom' && (() => {
+                                  const sortedAll = [...courses].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
+                                  const courseIdx = sortedAll.findIndex(sc => sc.id === c.id);
+                                  const isFirst = courseIdx === 0;
+                                  const isLast = courseIdx === sortedAll.length - 1;
+                                  return (
+                                    <XStack ai="center" gap={2}>
+                                      <Button
+                                        variant="ghost"
+                                        px="$2"
+                                        py="$1"
+                                        br="$2"
+                                        disabled={isFirst}
+                                        opacity={isFirst ? 0.3 : 1}
+                                        onPress={() => moveCourse(c.id, 'up')}
+                                      >
+                                        <Icon name="ChevronUp" size={14} color="$text" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        px="$2"
+                                        py="$1"
+                                        br="$2"
+                                        disabled={isLast}
+                                        opacity={isLast ? 0.3 : 1}
+                                        onPress={() => moveCourse(c.id, 'down')}
+                                      >
+                                        <Icon name="ChevronDown" size={14} color="$text" />
+                                      </Button>
+                                    </XStack>
+                                  );
+                                })()}
                               </XStack>
                               
                               <Text
