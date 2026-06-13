@@ -16,6 +16,8 @@ type StudentCoursesProps = {
 type CourseWithStatus = Course & {
   status: 'completed' | 'in_progress' | 'not_started';
   progressPercent: number;
+  hasAccess: boolean;
+  accessReason: string;
 };
 
 export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToDashboard, onNavigateToExplore, onNavigateToCertificates }: StudentCoursesProps) {
@@ -43,12 +45,13 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
         const coursesData = await CourseService.getStudentPublishedCourses();
 
         if (!profile?.id || !coursesData) {
-          setCourses((coursesData || []).map(c => ({ ...c, status: 'not_started', progressPercent: 0 })));
+          setCourses((coursesData || []).map(c => ({ ...c, status: 'not_started', progressPercent: 0, hasAccess: true, accessReason: 'unknown' })));
           return;
         }
 
         const coursesWithStatus: CourseWithStatus[] = await Promise.all(
           coursesData.map(async (course) => {
+            const accessResult = await CourseService.getStudentCourseAccess(profile.id, course.id);
             const { completed, total } = await ProgressService.getCompletedLessonCount(profile.id, course.id);
             const progressPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
@@ -59,7 +62,7 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
               status = 'in_progress';
             }
 
-            return { ...course, status, progressPercent };
+            return { ...course, status, progressPercent, hasAccess: accessResult.hasAccess, accessReason: accessResult.reason };
           })
         );
 
@@ -199,11 +202,12 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
                         p={0}
                         overflow="hidden"
                         br="$4"
-                        cursor="pointer"
+                        cursor={course.hasAccess ? 'pointer' : 'default'}
                         borderWidth={1}
                         borderColor="$border"
                         hoverStyle={{ borderColor: '$primary' }}
-                        onPress={() => onSelectCourse(course.id)}
+                        opacity={course.hasAccess ? 1 : 0.6}
+                        onPress={() => course.hasAccess && onSelectCourse(course.id)}
                       >
                         {/* Thumbnail */}
                         <YStack
@@ -232,36 +236,53 @@ export function StudentCourses({ onSelectCourse, onBack, onLogout, onNavigateToD
 
                           {/* Status Badge */}
                           <XStack position="absolute" left={12} top={12}>
-                            <XStack
-                              borderRadius={9999}
-                              px={10}
-                              py={4}
-                              ai="center"
-                              gap={6}
-                              style={{
-                                backdropFilter: 'blur(8px)',
-                                backgroundColor: course.status === 'completed'
-                                  ? 'rgba(34, 197, 94, 0.9)'
-                                  : course.status === 'in_progress'
-                                    ? 'rgba(59, 130, 246, 0.9)'
-                                    : 'rgba(107, 114, 128, 0.9)',
-                              }}
-                            >
+                            {course.hasAccess ? (
                               <XStack
-                                w={6}
-                                h={6}
-                                borderRadius={3}
-                                bg="$white"
-                                style={{ borderRadius: '50%' }}
-                              />
-                              <Text fontSize={11} fontWeight="700" color="$white">
-                                {course.status === 'completed'
-                                  ? 'Concluído'
-                                  : course.status === 'in_progress'
-                                    ? 'Em andamento'
-                                    : 'Não iniciado'}
-                              </Text>
-                            </XStack>
+                                borderRadius={9999}
+                                px={10}
+                                py={4}
+                                ai="center"
+                                gap={6}
+                                style={{
+                                  backdropFilter: 'blur(8px)',
+                                  backgroundColor: course.status === 'completed'
+                                    ? 'rgba(34, 197, 94, 0.9)'
+                                    : course.status === 'in_progress'
+                                      ? 'rgba(59, 130, 246, 0.9)'
+                                      : 'rgba(107, 114, 128, 0.9)',
+                                }}
+                              >
+                                <XStack
+                                  w={6}
+                                  h={6}
+                                  borderRadius={3}
+                                  bg="$white"
+                                  style={{ borderRadius: '50%' }}
+                                />
+                                <Text fontSize={11} fontWeight="700" color="$white">
+                                  {course.status === 'completed'
+                                    ? 'Concluído'
+                                    : course.status === 'in_progress'
+                                      ? 'Em andamento'
+                                      : 'Não iniciado'}
+                                </Text>
+                              </XStack>
+                            ) : (
+                              <XStack
+                                borderRadius={9999}
+                                px={10}
+                                py={4}
+                                ai="center"
+                                gap={6}
+                                style={{
+                                  backdropFilter: 'blur(8px)',
+                                  backgroundColor: 'rgba(156, 163, 175, 0.9)',
+                                }}
+                              >
+                                <Icon name="Lock" size={10} color="$white" />
+                                <Text fontSize={11} fontWeight="700" color="$white">Bloqueado</Text>
+                              </XStack>
+                            )}
                           </XStack>
                         </YStack>
 

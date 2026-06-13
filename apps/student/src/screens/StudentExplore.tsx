@@ -223,11 +223,12 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
                         p={0}
                         overflow="hidden"
                         br="$4"
-                        cursor="pointer"
+                        cursor={course.hasAccess ? 'pointer' : 'default'}
                         borderWidth={1}
                         borderColor="$border"
                         hoverStyle={{ borderColor: '$primary' }}
-                        onPress={() => onSelectCourse(course.id)}
+                        opacity={course.hasAccess ? 1 : 0.6}
+                        onPress={() => course.hasAccess && onSelectCourse(course.id)}
                       >
                         {/* Thumbnail */}
                         <YStack
