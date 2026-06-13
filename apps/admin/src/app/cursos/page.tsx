@@ -431,7 +431,7 @@ export default function CursosPage() {
               gap={6}
               onPress={openStudentOrderModal}
               style={{
-                background: '$card',
+                background: 'transparent',
                 borderWidth: 1,
                 borderColor: '$border',
               }}
