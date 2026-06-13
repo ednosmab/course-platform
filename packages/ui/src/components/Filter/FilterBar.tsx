@@ -26,6 +26,7 @@ type FilterBarProps = {
   filterLabel?: string;
   onClearFilter?: () => void;
   showResultCount?: boolean;
+  removeBottomMargin?: boolean;
 };
 
 export function FilterBar({
@@ -40,12 +41,13 @@ export function FilterBar({
   filterLabel,
   onClearFilter,
   showResultCount = true,
+  removeBottomMargin = false,
 }: FilterBarProps) {
   const hasActiveFilter = filterLabel && filterLabel !== filterOptions[0]?.label;
 
   return (
     <YStack position="relative" zIndex={10}>
-      <XStack gap={8} ai="center" mb={16} flexWrap="wrap">
+      <XStack gap={8} ai="center" mb={removeBottomMargin ? 0 : 16} flexWrap="wrap">
         <FilterDropdown
           options={filterOptions}
           value={filterValue}

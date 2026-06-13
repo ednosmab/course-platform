@@ -421,6 +421,7 @@ export default function CursosPage() {
               filterLabel={filterLabel || undefined}
               onClearFilter={() => setFilter(0)}
               showResultCount={false}
+              removeBottomMargin
             />
             <Button
               variant="secondary"
