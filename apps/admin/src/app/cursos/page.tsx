@@ -428,9 +428,14 @@ export default function CursosPage() {
               ai="center"
               gap={6}
               onPress={openStudentOrderModal}
+              style={{
+                background: 'transparent',
+                borderWidth: 0.5,
+                borderColor: '$border',
+              }}
             >
-              <Icon name="GripVertical" size={14} color="$textMuted" />
-              <Text fontSize={13} color="$textMuted" fontWeight="500">Ordem para o aluno</Text>
+              <Icon name="GripVertical" size={14} color="$text" />
+              <Text fontSize={13} color="$text" fontWeight="500">Ordem para o aluno</Text>
             </Button>
           </XStack>
 
