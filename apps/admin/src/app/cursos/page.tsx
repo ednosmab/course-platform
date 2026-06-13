@@ -426,11 +426,11 @@ export default function CursosPage() {
             <Button
               px={12}
               py={6}
-              borderRadius={8}
+              br={8}
               ai="center"
               gap={6}
               borderWidth={1}
-              borderColor="#DEE1EB"
+              borderColor="$border"
               backgroundColor="transparent"
               onPress={openStudentOrderModal}
               hoverStyle={{ backgroundColor: '$secondary' }}
