@@ -425,18 +425,20 @@ export default function CursosPage() {
             <Button
               variant="secondary"
               px={12}
-              py={8}
+              py={6}
+              borderRadius={8}
               ai="center"
               gap={6}
               onPress={openStudentOrderModal}
               style={{
-                background: 'transparent',
-                borderWidth: 0.5,
+                background: '$card',
+                borderWidth: 1,
                 borderColor: '$border',
               }}
+              hoverStyle={{ backgroundColor: '$secondary' }}
             >
-              <Icon name="GripVertical" size={14} color="$text" />
-              <Text fontSize={13} color="$text" fontWeight="500">Ordem para o aluno</Text>
+              <Icon name="GripVertical" size={14} color="$textMuted" />
+              <Text fontSize={13} fontFamily="$display" fontWeight="400" color="$text">Ordem para o aluno</Text>
             </Button>
           </XStack>
 
