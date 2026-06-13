@@ -112,7 +112,7 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 | 5A.2 | CertificateCanvas (render com CertificateBlockRenderer, duplex, offset) | 11 | ~3.5h | Done | Agente 3 |
 | 5A.3 | CertificateEditor refactor (compor novos componentes, testes boundary) | 7 | ~1.5h | Done | Agente 3 |
 
-**Fase 5B — In Progress (2026-06-12):**
+**Fase 5B — Done (2026-06-12):**
 
 | Item | Status | Causa raiz do adiamento |
 |---|---|---|

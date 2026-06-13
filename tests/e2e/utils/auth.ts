@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Page, BrowserContext } from '@playwright/test';
 
 const FAKE_USER_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -24,18 +24,44 @@ const MOCK_TOKEN_RESPONSE = {
 };
 
 /**
- * Logs the page in as admin (`admin@admin.com` / `123456`) by mocking
- * Supabase Auth + profiles + courses endpoints. After this resolves,
- * the page is on the dashboard (`/`).
- *
- * The route mocks persist for the lifetime of the page — they cover
- * any subsequent request to `/auth/v1/*` and `/rest/v1/profiles*` /
- * `courses*` from the dashboard data loaders.
- *
- * Each test should still mock the specific REST endpoints it needs
- * (e.g. /rest/v1/lessons) AFTER calling this helper.
+ * Extracts the Supabase project ref from the NEXT_PUBLIC_SUPABASE_URL.
+ * Returns 'localhost' as fallback for local dev.
  */
-export async function loginAsAdmin(page: Page): Promise<void> {
+function getSupabaseProjectRef(): string {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  try {
+    const hostname = new URL(url).hostname;
+    return hostname.split('.')[0];
+  } catch {
+    return 'localhost';
+  }
+}
+
+/**
+ * Sets up route mocks for Supabase Auth + profiles endpoints.
+ * Also injects a fake session cookie so client-side auth checks pass.
+ *
+ * Use this in tests that navigate directly to protected pages
+ * (e.g. dashboard, studio) without going through the login flow.
+ *
+ * @param page - Playwright page instance
+ * @param role - User role to mock (default: 'admin')
+ */
+export async function mockAdminSession(page: Page, role = 'admin'): Promise<void> {
+  const projectRef = getSupabaseProjectRef();
+  const cookieName = `sb-${projectRef}-auth-token`;
+
+  // Set the session cookie so Supabase client-side reads a valid session
+  const context: BrowserContext = page.context();
+  await context.addCookies([{
+    name: cookieName,
+    value: encodeURIComponent(JSON.stringify(MOCK_TOKEN_RESPONSE)),
+    domain: 'localhost',
+    path: '/',
+    httpOnly: false,
+    sameSite: 'Lax',
+  }]);
+
   await page.route('**/auth/v1/token*', async (route) => {
     if (route.request().method() === 'POST') {
       await route.fulfill({
@@ -60,9 +86,25 @@ export async function loginAsAdmin(page: Page): Promise<void> {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ role: 'admin' }),
+      body: JSON.stringify({ role }),
     });
   });
+}
+
+/**
+ * Logs the page in as admin (`admin@admin.com` / `123456`) by mocking
+ * Supabase Auth + profiles + courses endpoints. After this resolves,
+ * the page is on the dashboard (`/`).
+ *
+ * The route mocks persist for the lifetime of the page — they cover
+ * any subsequent request to `/auth/v1/*` and `/rest/v1/profiles*` /
+ * `courses*` from the dashboard data loaders.
+ *
+ * Each test should still mock the specific REST endpoints it needs
+ * (e.g. /rest/v1/lessons) AFTER calling this helper.
+ */
+export async function loginAsAdmin(page: Page): Promise<void> {
+  await mockAdminSession(page);
 
   await page.goto('/login');
   await page.waitForLoadState('networkidle');

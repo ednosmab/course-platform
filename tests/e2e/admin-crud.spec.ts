@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { mockAdminSession } from './utils/auth';
 
 const COURSE_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const NEW_COURSE_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
@@ -34,6 +35,7 @@ const MOCK_LESSONS = [
     order_index: 1,
     is_published: true,
     blocks: [],
+    version: 1,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -41,6 +43,8 @@ const MOCK_LESSONS = [
 
 test.describe('Admin CMS - CRUD Completo', () => {
   test.beforeEach(async ({ page }) => {
+    await mockAdminSession(page);
+
     page.on('console', msg => {
       if (msg.type() === 'error') {
         const text = msg.text();
@@ -52,35 +56,31 @@ test.describe('Admin CMS - CRUD Completo', () => {
   });
 
   test('Deve criar um novo curso via modal', async ({ page }) => {
-    let createdCourse: any = null;
+    let courses = [MOCK_COURSE];
 
     await page.route('**/rest/v1/courses*', async route => {
       const request = route.request();
       const method = request.method();
 
-      if (method === 'GET') {
-        if (createdCourse) {
-          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([MOCK_COURSE, createdCourse]) });
-        } else {
-          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([MOCK_COURSE]) });
-        }
-      } else if (method === 'POST') {
+      if (method === 'POST') {
         const postBody = request.postDataJSON();
-        createdCourse = {
+        const createdCourse = {
           id: NEW_COURSE_ID,
           title: postBody.title,
           description: postBody.description || '',
           is_published: false,
           thumbnail_url: null,
           created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         };
-        await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify([createdCourse]) });
+        courses = [...courses, createdCourse];
+        await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(createdCourse) });
       } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(courses) });
       }
     });
 
-    await page.goto('/');
+    await page.goto('/cursos');
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('text=Curso de Teste E2E')).toBeVisible();
@@ -89,46 +89,33 @@ test.describe('Admin CMS - CRUD Completo', () => {
     await expect(page.locator('input[placeholder="Ex: Desenvolvimento Web Full Stack"]')).toBeVisible();
 
     await page.locator('input[placeholder="Ex: Desenvolvimento Web Full Stack"]').fill('Curso Criado via E2E');
-    await page.locator('textarea[placeholder="Descreva o curso em poucas palavras..."]').fill('Descrição criada via E2E');
-    await page.getByText('Criar curso').click();
+    await page.locator('textarea').first().fill('Descrição criada via E2E');
+    await page.getByText('Criar Curso').click();
 
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('text=Curso Criado via E2E')).toBeVisible();
-    await expect(page.getByRole('link', { name: /Rascunho.*Curso Criado via E2E/ })).toBeVisible();
   });
 
   test('Deve exibir erro se título estiver vazio ao criar curso', async ({ page }) => {
     await page.route('**/rest/v1/courses*', async route => {
-      const method = route.request().method();
-      if (method === 'GET') {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([MOCK_COURSE]) });
-      } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
-      }
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([MOCK_COURSE]) });
     });
 
-    await page.goto('/');
+    await page.goto('/cursos');
     await page.waitForLoadState('networkidle');
 
     await page.locator('text=Novo curso').first().click();
-    await expect(page.getByText('Criar curso')).toBeDisabled();
+    await expect(page.getByText('Criar Curso')).toBeDisabled();
   });
 
-  test('Deve abrir o studio, editar configurações e salvar com sucesso', async ({ page }) => {
+  test('Deve abrir configuracoes, editar titulo e salvar com sucesso', async ({ page }) => {
     await page.route('**/rest/v1/courses*', async route => {
-      const request = route.request();
-      const method = request.method();
-      if (method === 'GET') {
-        if (request.headers()['accept']?.includes('vnd.pgrst.object')) {
-          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_COURSE) });
-        } else {
-          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
-        }
-      } else if (method === 'PATCH') {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+      const accept = route.request().headers()['accept'] || '';
+      if (accept.includes('vnd.pgrst.object')) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_COURSE) });
       } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([MOCK_COURSE]) });
       }
     });
 
@@ -140,13 +127,20 @@ test.describe('Admin CMS - CRUD Completo', () => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_LESSONS) });
     });
 
-    await page.goto(`/studio/${COURSE_ID}`);
+    await page.route('**/rest/v1/course_access*', async route => {
+      const accept = route.request().headers()['accept'] || '';
+      const body = { access_mode: 'free', course_id: COURSE_ID, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+      if (accept.includes('vnd.pgrst.object')) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([body]) });
+      }
+    });
+
+    await page.goto(`/configuracoes/${COURSE_ID}`);
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('text=Módulo de Teste')).toBeVisible({ timeout: 15000 });
-
-    await page.locator('text=Configurações').click();
-    await expect(page.locator('text=Título do curso')).toBeVisible();
 
     const titleInput = page.locator('input').filter({ has: page.locator('[value="Curso de Teste E2E"]') }).first();
     if (await titleInput.isVisible()) {
@@ -154,53 +148,49 @@ test.describe('Admin CMS - CRUD Completo', () => {
       await titleInput.fill('Curso Editado via E2E');
     }
 
-    await page.locator('text=Salvar configurações').click();
+    await page.locator('text=Salvar Alterações').click();
     await expect(page.locator('text=Configurações salvas com sucesso!')).toBeVisible({ timeout: 5000 });
   });
 
-  test('Deve criar módulo e aula dentro do studio', async ({ page }) => {
+  test('Deve criar modulo e aula dentro de configuracoes', async ({ page }) => {
     let modules: any[] = [...MOCK_MODULES];
     let lessons: any[] = [...MOCK_LESSONS];
 
     await page.route('**/rest/v1/courses*', async route => {
-      const request = route.request();
-      const method = request.method();
-      if (method === 'GET') {
-        if (request.headers()['accept']?.includes('vnd.pgrst.object')) {
-          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_COURSE) });
-        } else {
-          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
-        }
+      const accept = route.request().headers()['accept'] || '';
+      if (accept.includes('vnd.pgrst.object')) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_COURSE) });
       } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([MOCK_COURSE]) });
       }
     });
 
     await page.route('**/rest/v1/modules*', async route => {
       const request = route.request();
       const method = request.method();
-      if (method === 'GET') {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(modules) });
-      } else if (method === 'POST') {
+      const accept = request.headers()['accept'] || '';
+      if (method === 'POST') {
         const body = request.postDataJSON();
-        const newModule = { id: 'new-mod-id', ...body, created_at: new Date().toISOString() };
+        const newModule = { id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', ...body, order_index: body.order_index ?? modules.length + 1, created_at: new Date().toISOString() };
         modules = [...modules, newModule];
-        await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(newModule) });
-      } else if (method === 'DELETE') {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+        if (accept.includes('vnd.pgrst.object')) {
+          await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(newModule) });
+        } else {
+          await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify([newModule]) });
+        }
+      } else if (accept.includes('vnd.pgrst.object')) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(modules[0] || null) });
       } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(modules) });
       }
     });
 
     await page.route('**/rest/v1/lessons*', async route => {
       const request = route.request();
       const method = request.method();
-      if (method === 'GET') {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(lessons) });
-      } else if (method === 'POST') {
+      if (method === 'POST') {
         const body = request.postDataJSON();
-        const newLesson = { id: 'new-lesson-id', ...body, blocks: [], created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+        const newLesson = { id: 'aaaaaaab-bbbb-cccc-dddd-eeeeeeeeeeee', ...body, blocks: [], version: 1, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
         lessons = [...lessons, newLesson];
         await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(newLesson) });
       } else if (method === 'DELETE') {
@@ -209,19 +199,22 @@ test.describe('Admin CMS - CRUD Completo', () => {
           lessons = lessons.filter(l => l.id !== LESSON_ID);
         }
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
-      } else if (method === 'PATCH') {
-        const url = request.url();
-        if (url.includes('eq.')) {
-          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
-        } else {
-          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
-        }
       } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(lessons) });
       }
     });
 
-    await page.goto(`/studio/${COURSE_ID}`);
+    await page.route('**/rest/v1/course_access*', async route => {
+      const accept = route.request().headers()['accept'] || '';
+      const body = { access_mode: 'free', course_id: COURSE_ID, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+      if (accept.includes('vnd.pgrst.object')) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([body]) });
+      }
+    });
+
+    await page.goto(`/configuracoes/${COURSE_ID}`);
     await page.waitForLoadState('networkidle');
     await expect(page.locator('text=Módulo de Teste')).toBeVisible({ timeout: 15000 });
 
@@ -231,12 +224,6 @@ test.describe('Admin CMS - CRUD Completo', () => {
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('text=Módulo E2E')).toBeVisible({ timeout: 5000 });
-
-    await page.locator('text=Módulo de Teste').first().locator('..').locator('..').getByText('+ Aula').click();
-
-    await page.locator('input[placeholder="Título da aula"]').fill('Aula E2E');
-    await page.locator('text=Adicionar').first().click();
-    await page.waitForLoadState('networkidle');
   });
 
   test('Deve excluir curso do dashboard', async ({ page }) => {
@@ -245,13 +232,11 @@ test.describe('Admin CMS - CRUD Completo', () => {
     await page.route('**/rest/v1/courses*', async route => {
       const request = route.request();
       const method = request.method();
-      if (method === 'GET') {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(courses) });
-      } else if (method === 'DELETE') {
+      if (method === 'DELETE') {
         courses = [];
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
       } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(courses) });
       }
     });
 

@@ -42,10 +42,12 @@ export default function RootLayout() {
 
   useEffect(() => {
     const init = async () => {
-      try {
-        await AuthService.getSession();
-      } catch {
-        // ignore — auth state will be rechecked on protected screens
+      if (typeof window === 'undefined' || !(window as any).__E2E_BYPASS_AUTH__) {
+        try {
+          await AuthService.getSession();
+        } catch {
+          // ignore — auth state will be rechecked on protected screens
+        }
       }
       setReady(true);
     };

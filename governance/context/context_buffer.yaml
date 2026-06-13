@@ -31,6 +31,18 @@ last_decision:
   adr: null
   description: "Status do curso adicionado ao Explorar Cursos. StudentExplore.tsx agora mostra badges Concluído/Em andamento/Não iniciado (igual a Meus Cursos). FilterBar com filtros extras de progresso. Bloqueado mantém badge Lock. ProgressService integrado. 233/233 testes verdes."
 
+session:
+  date: "2026-06-12"
+  type: "FEATURE"
+  duration: "~1h"
+  objective: "Mostrar status do curso (Concluído/Em andamento/Não iniciado) na página Explorar Cursos"
+  last_commit: "11cbc1a"
+  result: "completed"
+  validation:
+    tests: true
+    validate_session: true
+    close_session: true
+
 technical_debt:
   - "Botões de acesso (Livre/Progressivo/Restrito) usam hex hardcoded (#3B82F6, #DEE1EB) — migrar para tokens Tamagui quando possível"
   - "CertificateMiniature e CertificateBlockRenderer são web-only — criar versão mobile se necessário"

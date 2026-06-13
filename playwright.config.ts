@@ -32,7 +32,7 @@ export default defineConfig({
     {
       command: 'pnpm --filter admin dev',
       url: 'http://localhost:3000',
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       timeout: 120 * 1000,
       /**
        * TEST-ONLY: this is the ONLY place `E2E_BYPASS_AUTH` may be set.
@@ -48,8 +48,11 @@ export default defineConfig({
     {
       command: 'pnpm --filter student web',
       url: 'http://localhost:8081',
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       timeout: 120 * 1000,
+      env: {
+        EXPO_PUBLIC_E2E_BYPASS_AUTH: '1',
+      },
     }
   ],
 });

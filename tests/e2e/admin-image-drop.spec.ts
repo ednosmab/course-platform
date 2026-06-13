@@ -26,6 +26,7 @@ const MOCK_COURSE = {
   certificate_enabled: false,
   thumbnail_url: null,
   created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
 };
 
 const MOCK_MODULE = {
@@ -42,6 +43,9 @@ const MOCK_LESSON = {
   order_index: 1,
   is_published: true,
   blocks: MOCK_BLOCKS,
+  version: 1,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
 };
 
 /**
@@ -73,17 +77,16 @@ async function dropImageOnto(page: Page, selector: string, filename: string) {
 }
 
 /**
- * Mounts the lesson editor with a single empty image block across all
- * three viewports. The `lessons` PATCH is captured (so we can verify
- * the auto-save fires) but not asserted on every test — most cases
- * just need to see the `<img data:image/png...>` render.
+ * Mounts the lesson editor using the demo lesson (which always loads via
+ * the hardcoded path in editor-modes.ts). After the demo blocks load,
+ * we add an image block via the palette so we have a target for the drop test.
  */
 async function mountLessonEditor(page: Page) {
   await loginAsAdmin(page);
 
   await page.route('**/rest/v1/courses*', async (route: Route) => {
-    const r = route.request();
-    if (r.method() === 'GET' && r.headers()['accept']?.includes('vnd.pgrst.object')) {
+    const accept = route.request().headers()['accept'] || '';
+    if (accept.includes('vnd.pgrst.object')) {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_COURSE) });
     } else {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([MOCK_COURSE]) });
@@ -91,16 +94,17 @@ async function mountLessonEditor(page: Page) {
   });
 
   await page.route('**/rest/v1/modules*', async (route: Route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify([MOCK_MODULE]),
-    });
+    const accept = route.request().headers()['accept'] || '';
+    if (accept.includes('vnd.pgrst.object')) {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_MODULE) });
+    } else {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([MOCK_MODULE]) });
+    }
   });
 
   await page.route('**/rest/v1/lessons*', async (route: Route) => {
-    const r = route.request();
-    if (r.method() === 'GET' && r.headers()['accept']?.includes('vnd.pgrst.object')) {
+    const accept = route.request().headers()['accept'] || '';
+    if (accept.includes('vnd.pgrst.object')) {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_LESSON) });
     } else {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([MOCK_LESSON]) });
@@ -111,8 +115,28 @@ async function mountLessonEditor(page: Page) {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
   });
 
-  await page.goto(`/studio/${COURSE_ID}?lessonId=${LESSON_ID}`);
-  await expect(page.locator('text=Arraste uma imagem aqui').first()).toBeVisible({ timeout: 20000 });
+  // Mock paths + path_courses + path_lessons for seedDemoData
+  await page.route('**/rest/v1/paths*', async (route: Route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+  });
+  await page.route('**/rest/v1/path_courses*', async (route: Route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+  });
+  await page.route('**/rest/v1/path_lessons*', async (route: Route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+  });
+
+  // Navigate to the demo lesson (hardcoded ID triggers demo path in editor-modes.ts)
+  const DEMO_LESSON_ID = '11111111-1111-1111-1111-111111111111';
+  await page.goto(`/studio/${COURSE_ID}?lessonId=${DEMO_LESSON_ID}`);
+  // Wait for the editor canvas to appear (demo blocks: text, video, quiz)
+  await expect(page.locator('text=Bem-vindo ao curso').first()).toBeVisible({ timeout: 20000 });
+
+  // Click "Adicionar bloco Imagem" from the palette to create a new image block
+  // Note: BlockBtn uses Tamagui YStack with role="button", not a <button> element
+  await page.locator('[role="button"][aria-label="Adicionar bloco Imagem"]').click();
+  // The new image block should show "Arraste uma imagem aqui"
+  await expect(page.locator('text=Arraste uma imagem aqui').first()).toBeVisible({ timeout: 10000 });
 }
 
 test.describe('Admin Image Drop - Lesson Editor (SDR-001 + dnd-e2e)', () => {
@@ -130,9 +154,20 @@ test.describe('Admin Image Drop - Lesson Editor (SDR-001 + dnd-e2e)', () => {
   test('desktop: drop em image block atualiza o src do <img>', async ({ page }) => {
     await mountLessonEditor(page);
 
-    const outerSelector = `[data-block-id="${IMAGE_BLOCK_ID}"]`;
-    await dropImageOnto(page, outerSelector, 'test-image.png');
+    // Find the image block dynamically (added via palette, random ID)
+    const imageBlockId = await page.evaluate(() => {
+      const blocks = document.querySelectorAll('[data-block-id]');
+      for (const block of blocks) {
+        if (block.textContent?.includes('Arraste uma imagem aqui')) {
+          return block.getAttribute('data-block-id');
+        }
+      }
+      return null;
+    });
+    expect(imageBlockId).toBeTruthy();
+    const outerSelector = `[data-block-id="${imageBlockId}"]`;
 
+    await dropImageOnto(page, outerSelector, 'test-image.png');
     await expect(page.locator(`${outerSelector} img`).first()).toHaveAttribute('src', /^data:image\/png/);
   });
 
@@ -141,9 +176,19 @@ test.describe('Admin Image Drop - Lesson Editor (SDR-001 + dnd-e2e)', () => {
 
     await page.locator('[data-testid="viewport-tablet"]').click();
 
-    const outerSelector = `[data-block-id="${IMAGE_BLOCK_ID}"]`;
-    await dropImageOnto(page, outerSelector, 'test-image.png');
+    const imageBlockId = await page.evaluate(() => {
+      const blocks = document.querySelectorAll('[data-block-id]');
+      for (const block of blocks) {
+        if (block.textContent?.includes('Arraste uma imagem aqui')) {
+          return block.getAttribute('data-block-id');
+        }
+      }
+      return null;
+    });
+    expect(imageBlockId).toBeTruthy();
+    const outerSelector = `[data-block-id="${imageBlockId}"]`;
 
+    await dropImageOnto(page, outerSelector, 'test-image.png');
     await expect(page.locator(`${outerSelector} img`).first()).toHaveAttribute('src', /^data:image\/png/);
   });
 
@@ -152,9 +197,19 @@ test.describe('Admin Image Drop - Lesson Editor (SDR-001 + dnd-e2e)', () => {
 
     await page.locator('[data-testid="viewport-mobile"]').click();
 
-    const outerSelector = `[data-block-id="${IMAGE_BLOCK_ID}"]`;
-    await dropImageOnto(page, outerSelector, 'test-image.png');
+    const imageBlockId = await page.evaluate(() => {
+      const blocks = document.querySelectorAll('[data-block-id]');
+      for (const block of blocks) {
+        if (block.textContent?.includes('Arraste uma imagem aqui')) {
+          return block.getAttribute('data-block-id');
+        }
+      }
+      return null;
+    });
+    expect(imageBlockId).toBeTruthy();
+    const outerSelector = `[data-block-id="${imageBlockId}"]`;
 
+    await dropImageOnto(page, outerSelector, 'test-image.png');
     await expect(page.locator(`${outerSelector} img`).first()).toHaveAttribute('src', /^data:image\/png/);
   });
 });
