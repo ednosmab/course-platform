@@ -1,15 +1,15 @@
 quick_board_required: true
 
 session:
-  id: "2026-06-12"
+  id: "2026-06-13"
   branch: "develop"
-  operation_type: "FEATURE"
+  operation_type: "DOCUMENTATION"
   last_commit: "a26b637"
 
 current_task:
-  id: "explore-course-status"
+  id: "p0-implementation"
   type: "FEATURE"
-  description: "Mostrar status do curso (Concluído/Em andamento/Não iniciado) na página Explorar Cursos"
+  description: "Implementar itens P0: Rate Limiting, Connection Pooling, Dev RLS Override"
   status: "completed"
   plan_file: null
   current_step: null
@@ -22,40 +22,58 @@ adr:
 blockers: []
 
 next_steps:
-  - "Investigar erros CI verify — profile validation warning + possíveis erros restantes"
-  - "Verificar se secrets SUPABASE_URL e SUPABASE_ANON_KEY estão correctos no GitHub"
-  - "Confirmar que CI passa 100% após cache invalidation (cdc547c)"
-  - "Substituir dados hardcoded no dashboard do aluno por dados reais"
+  - "P0-03 encerrado (ADR-022) — pooling invalidado, artefatos removidos"
+  - "Iniciar P1-01 (Observabilidade) ou P1-02 (Load Tests) quando autorizado"
 
 last_decision:
-  adr: null
-  description: "Status do curso adicionado ao Explorar Cursos. StudentExplore.tsx agora mostra badges Concluído/Em andamento/Não iniciado (igual a Meus Cursos). FilterBar com filtros extras de progresso. Bloqueado mantém badge Lock. ProgressService integrado. 233/233 testes verdes."
+  adr: "ADR-022"
+  description: "P0-03 encerrado: hipótese de connection pooling invalidada. Acesso via SDK HTTP — Supabase gere pool internamente. Artefatos removidos: connection-monitor.ts, migration RPC, test script. Mantido: getSupabaseAdmin(). Lição: premissa incorreta detectada por auditoria baseada em evidências."
 
 session:
-  date: "2026-06-12"
+  date: "2026-06-13"
   type: "FEATURE"
-  duration: "~1h"
-  objective: "Mostrar status do curso (Concluído/Em andamento/Não iniciado) na página Explorar Cursos"
-  last_commit: "11cbc1a"
+  duration: "~3h"
+  objective: "Implementar itens P0 de segurança e infraestrutura"
+  last_commit: null
   result: "completed"
   validation:
     tests: true
-    validate_session: true
-    close_session: true
+    validate_session: false
+    close_session: false
 
 technical_debt:
   - "Botões de acesso (Livre/Progressivo/Restrito) usam hex hardcoded (#3B82F6, #DEE1EB) — migrar para tokens Tamagui quando possível"
   - "CertificateMiniature e CertificateBlockRenderer são web-only — criar versão mobile se necessário"
   - "Botões Baixar PDF e Compartilhar no modal são placeholder (onPress vazio)"
-  - "2026-06-13: NUNCA executar supabase start/reset sem autorização — projecto usa Supabase remoto (limqrpxdzxejvuqjiwpn.supabase.co). Migration course_order_index aplicada apenas localmente, precisa ser aplicada manualmente no dashboard remoto."
+  - "2026-06-13: NUNCA executar supabase start/reset sem autorização — projecto usa Supabase remoto (limqrpxdzxejvuqjiwpn.supabase.co)."
+  - "2026-06-13: REGRA DE CONCLUSÃO — nenhum item do backlog pode ser marcado [x] sem: (1) actualização documentação, (2) actualização backlog, (3) validação critérios sucesso, (4) registo decisão quando aplicável"
+  - "2026-06-13: P0-03 ENCERRADO (ADR-022) — pooling invalidado. Acesso via SDK HTTP, Supabase gere pool internamente. Artefatos removidos."
 
 documents_loaded:
   - "governance/WORKFLOW.md"
   - "governance/context/context_buffer.yaml"
+  - "governance/SYSTEM_MAP.md"
+  - "docs/AGENTS.md"
+  - "docs/FORBIDDEN_OPERATIONS.md"
+  - "docs/DESDO.md"
+  - "docs/Requisitos_plataforma.md"
+  - "docs/INDEX.md"
+  - "docs/roadmaps/scalability-plan.md"
+  - "docs/skills/redis_caching_strategy.md"
+  - "docs/skills/connection_pooling.md"
+  - "docs/skills/rate_limiting.md"
+  - "docs/layers/infra/observability.md"
+  - "docs/skills/nextjs_performance_seo.md"
+  - "docs/layers/renderer/engine-spec.md"
+  - "docs/layers/supabase/database_schema_plan.md"
+  - "docs/layers/types/execution_plan.md"
+  - "docs/layers/ui/execution_plan.md"
+  - "docs/layers/apps/admin_canvas_plan.md"
   - "docs/layers/apps/mobile_player_plan.md"
-  - "apps/student/src/screens/Certificates.tsx"
-  - "apps/student/src/components/StudentHeader.tsx"
-  - "packages/ui/src/components/Certificate/CertificateMiniature.tsx"
-  - "packages/ui/src/index.ts"
-  - "apps/student/app/_layout.tsx"
-  - "apps/student/app/(tabs)/certificates.tsx"
+  - "docs/layers/core/domain-logic.md"
+  - "docs/layers/infra/execution_plan.md"
+  - "docs/adrs/ADR-017-version-sync-trava.md"
+  - "docs/adrs/ADR-013-realtime-subscriptions-direct.md"
+  - "docs/adrs/ADR-006-student-json-rendering.md"
+  - "docs/adrs/ADR-008-draft-published-versioning.md"
+  - "docs/adrs/ADR-010-rls-first-security.md"

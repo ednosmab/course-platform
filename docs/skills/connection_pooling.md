@@ -94,28 +94,9 @@ export async function createCourse(data: CourseInput) {
 
 ### 4. Monitoramento de Conexões
 
-```typescript
-// packages/core/src/infrastructure/connection-monitor.ts
-import { supabaseAdmin } from './supabase';
-
-/**
- * Verifica número de conexões ativas no PostgreSQL
- * Útil para monitoramento e alertas
- */
-export async function getActiveConnections(): Promise<{
-  active: number;
-  idle: number;
-  total: number;
-}> {
-  const { data, error } = await supabaseAdmin.rpc('get_connection_stats');
-
-  if (error) {
-    console.error('[ConnectionMonitor] Failed to fetch stats:', error);
-    return { active: 0, idle: 0, total: 0 };
-  }
-
-  return data;
-}
+> ⚠️ **Nota (ADR-022):** A monitoramento de pool foi removida do código.
+> O acesso é via SDK HTTP — o Supabase gere internamente o pool.
+> Para monitoring de BD, usar o Supabase Dashboard (built-in).
 
 /**
  * RPC para buscar estatísticas de conexões
