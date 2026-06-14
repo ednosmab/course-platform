@@ -22,7 +22,7 @@ Fonte: `context_buffer.yaml` → secção `current_task`.
 ### Passo 3
 Identificar o tipo de operação.
 
-Tipos possíveis: `FEATURE`, `BUG`, `REFACTOR`, `DOCUMENTATION`, `PLANNING`
+Tipos possíveis: `FEATURE`, `BUG`, `REFACTOR`, `DOCUMENTATION`, `PLANNING`, `INVESTIGATION`
 
 ---
 
@@ -133,6 +133,38 @@ Tipos possíveis: `FEATURE`, `BUG`, `REFACTOR`, `DOCUMENTATION`, `PLANNING`
 
 ---
 
+## Fluxo INVESTIGATION
+
+> Utilizado quando uma hipótese arquitetural precisa ser validada antes de implementação.
+> Exemplo: ADR-022 (Connection Pooling invalidado).
+
+```text
+1. HIPÓTESE
+   - Identificar o que se pretende validar
+   - Documentar a hipótese no buffer
+
+2. INVESTIGAÇÃO
+   - Analisar código existente
+   - Executar testes de validação
+   - Recolher evidências concretas
+
+3. EVIDÊNCIA
+   - Compilar resultados
+   - Classificar: CONFIRMADA | INVALIDADA | INCONCLUSIVA
+
+4. DECISÃO
+   - Se CONFIRMADA → avançar para implementação (fluxo FEATURE)
+   - Se INVALIDADA → registar ADR de invalidação, remover código se aplicável
+   - Se INCONCLUSIVA → adiar com data [REVISIT: YYYY-MM-DD]
+
+5. ENCERRAMENTO
+   - Actualizar documentação
+   - Actualizar backlog
+   - Criar ADR se aplicável
+```
+
+---
+
 ## Fluxo PLANNING
 
 ```text
@@ -174,6 +206,13 @@ Tipos possíveis: `FEATURE`, `BUG`, `REFACTOR`, `DOCUMENTATION`, `PLANNING`
 ├── contracts/               ← Índice de contratos (existente)
 ├── handoffs/                ← Protocolos de handoff (existente)
 └── policies/                ← Políticas operacionais (existente)
+
+/docs
+├── CURRENT_STATE.md         ← Estado real implementado (As-Built)
+├── GAP_ANALYSIS.md          ← Diferença entre documentação e implementação
+├── BACKLOG_TECHNICAL_DEBT.md ← Acções para reduzir gaps e riscos
+├── adrs/                    ← ADRs (inclui ADRs de invalidação)
+└── ...
 
 /scripts
 ├── validate-session.ts      ← Validação executável

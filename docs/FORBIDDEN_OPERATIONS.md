@@ -75,6 +75,7 @@
 | DT-02 | **PROIBIDO** declarar sessão como concluída com working tree contendo ficheiros modificados ou untracked não relacionados à tarefa | Edições concorrentes invisíveis são a causa #1 de conflitos silenciosos e drift técnico |
 | DT-03 | **PROIBIDO** adicionar item "adiado" no BACKLOG sem registar a causa raiz do adiamento | Adiar sem diagnosticar esconde o problema real |
 | DT-04 | **PROIBIDO** iniciar tarefa de prioridade inferior quando existe P0 activo, excepto com adiamento datado registado no buffer e no backlog | Respeitar a fila é pré-requisito de disciplina arquitectural |
+| DT-05 | **PROIBIDO** implementar optimização de performance, cache, escalabilidade ou infraestrutura sem métricas que a justifiquem | Excepto itens P0 (risco activo). Ver princípio "Medir antes de optimizar" em AGENTS.md |
 
 ---
 

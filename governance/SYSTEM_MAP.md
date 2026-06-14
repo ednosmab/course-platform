@@ -76,6 +76,21 @@ INÍCIO
 
 ---
 
+## 3.1 Documentação As-Built (Estado Real do Sistema)
+
+> Estes documentos representam o estado real implementado, não o estado documentado.
+> Devem ser consultados sempre que houver conflito entre documentação e código.
+
+| Documento | Caminho | Responsabilidade |
+|---|---|---|
+| Estado Actual | `docs/CURRENT_STATE.md` | Estado real implementado (As-Built) |
+| Análise de Gaps | `docs/GAP_ANALYSIS.md` | Diferença entre documentação e implementação |
+| Backlog Técnico | `docs/BACKLOG_TECHNICAL_DEBT.md` | Acções necessárias para reduzir gaps e riscos |
+
+**Princípio:** "Evidência acima da documentação" — quando houver conflito, o código e o runtime prevalecem. Actualizar a documentação para reflectir a realidade.
+
+---
+
 ## 4. Camadas Técnicas do Código (Sob Demanda)
 
 ### 4.1 Contratos de Dados (packages/types)

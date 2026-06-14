@@ -137,8 +137,35 @@ As regras não são todas do mesmo nível. Existem três camadas de dependência
    d. **Estilo correctivo em código:** crítica + exemplo + racional (modo mentor, não condescendente). Raro: 95% do feedback é no-code.
    e. **Apresentar imediatamente** ao utilizador (resumo inline curto, máximo 10 bullets).
    f. **No fim do MVP** (trigger: utilizador diz "MVP concluído"), agregar todos os ficheiros de feedback em `docs/feedback/MVP-aggregated.md` com análise de evolução longitudinal.
-    g. **Ficheiro privado** por defeito (em `.gitignore`).
+     g. **Ficheiro privado** por defeito (em `.gitignore`).
    i. **Compromisso de commit separado:** O feedback é privado e não versionado. Usar `git commit --allow-empty -m "docs(feedback): YYYY-MM-DD"` APÓS o(s) commit(s) de trabalho, para rastreabilidade sem expôr conteúdo.
+
+18. **EVIDÊNCIA ACIMA DA DOCUMENTAÇÃO (REGRA ABSOLUTA):** Quando existir conflito entre documentação, implementação e comportamento real do sistema, a decisão deve ser baseada em evidências verificáveis. A documentação deve representar a realidade, não substituí-la. Fluxo obrigatório: Documentação → Implementação → Runtime → Evidências → Actualização documental. Exemplo: ADR-022 — documentação dizia "pooling necessário", código mostrava "SDK HTTP only", evidência confirmou "pooling inexistente".
+
+19. **MEDIR ANTES DE OPTIMIZAR (REGRA ABSOLUTA):** Nenhuma optimização de performance, cache, escalabilidade ou infraestrutura pode avançar para implementação sem primeiro ter métricas que a justifiquem. Excepção: Itens P0 (risco activo e identificável por inspecção directa). Gates de decisão devem ser definidos por métricas, evidências ou critérios explícitos — valores numéricos específicos ficam no backlog e ADRs, não na governança principal.
+
+20. **ESTADOS DE ITEM DO BACKLOG (OBRIGATÓRIO):** Cada item do backlog deve estar num dos estados formais:
+
+| Estado | Significado | Transição |
+|---|---|---|
+| `planeado` | Item definido, ainda não iniciado | → em investigação / em implementação |
+| `em investigação` | Hipótese a ser validada | → em implementação / encerrado |
+| `em implementação` | Código a ser escrito | → em validação |
+| `em validação` | Testes e revisão | → concluído / em implementação |
+| `concluído` | Implementação completa e validada | Terminal |
+| `encerrado` | Hipótese invalidada ou acção obsoleta | Terminal |
+| `pausado` | Bloqueio externo | → em investigação / em implementação |
+| `adiado` | Decisão de não avançar agora | Requer [REVISIT: YYYY-MM-DD] |
+
+**Concluído** e **Encerrado** são estados terminais independentes. Concluído = implementação bem-sucedida. Encerrado = hipótese invalidada ou acção desnecessária.
+
+21. **CHECKLIST DE CONCLUSÃO DE ITEM (OBRIGATÓRIO):** Nenhum item pode ser marcado como [x] sem satisfazer TODOS os 4 requisitos:
+   1. **Actualização da documentação** — Ficheiros `.md` actualizados, JSDoc adicionado
+   2. **Actualização do backlog** — Status actualizado com data e commit
+   3. **Validação dos critérios** — Todos os critérios verificáveis e passaram
+   4. **Registo da decisão** — ADR/SDR criado quando aplicável
+
+Fluxo: Implementar → Documentar → Testar → Decidir → Actualizar → Só então marcar [x]
 
 ---
 
