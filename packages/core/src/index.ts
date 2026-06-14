@@ -2,7 +2,20 @@
  * @description Provides the lazily-initialised Supabase client singleton used across all core services.
  * Shared between login, storage, and data services so they use the same auth session.
  */
-export { getSupabaseClient, setSupabaseClient } from './supabase';
+export { getSupabaseClient, setSupabaseClient, getSupabaseAdmin } from './supabase';
+
+/**
+ * @description In-memory rate limiter using sliding window algorithm.
+ * Use checkRateLimit() to verify request limits,
+ * withRateLimit() to create rate-limited middleware,
+ * and RATE_LIMIT_CONFIGS for pre-defined configurations.
+ */
+export {
+  checkRateLimit,
+  withRateLimit,
+  cleanupRateLimitStore,
+  RATE_LIMIT_CONFIGS,
+} from './infrastructure/rate-limiter';
 
 /**
  * @description Provides the singleton CourseService instance bound to the Supabase course repository — manages course CRUD, listing, and retrieval.

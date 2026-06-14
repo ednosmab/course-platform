@@ -1,7 +1,24 @@
 -- ==========================================
--- Políticas RLS Permissivas para Desenvolvimento/Sandbox
+-- ⚠️  PERMISSÕES APENAS PARA DESENVOLVIMENTO  ⚠️
+-- ==========================================
 -- Data: 2026-05-17
 -- Autor: Antigravity
+--
+-- ⚠️  PERIGO: Este ficheiro REMOVE todas as restrições RLS!
+--
+-- ESTE FICHEIRO DEVE SER USADO APENAS EM AMBIENTE LOCAL DE DESENVOLVIMENTO.
+-- NUNCA executar em staging ou produção.
+--
+-- RISCOS:
+-- - Todos os dados ficam acessíveis publicamente
+-- - Qualquer utilizador pode ler, escrever e apagar dados
+-- - Violação de segurança se aplicado em produção
+--
+-- PARA REVERTER:
+-- 1. Eliminar as políticas "Desenvolvimento: Acesso publico total"
+-- 2. Recriar as políticas originais (ver 20260517000000_init_schema.sql)
+--
+-- CONFID-01: Este ficheiro não contém dados comerciais sensíveis
 -- ==========================================
 
 -- 1. COURSES

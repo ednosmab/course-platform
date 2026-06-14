@@ -22,6 +22,35 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
+/**
+ * @description In-memory rate limiter for Edge Runtime.
+ * Uses Map with IP-based sliding window (5 attempts per minute for login).
+ * For distributed rate limiting, use Redis-based solution.
+ */
+const rateLimitStore = new Map<string, { timestamps: number[] }>();
+
+function checkLoginRateLimit(ip: string): { allowed: boolean; remaining: number } {
+  const now = Date.now();
+  const windowMs = 60 * 1000; // 1 minute
+  const maxAttempts = 5;
+
+  let entry = rateLimitStore.get(ip);
+  if (!entry) {
+    entry = { timestamps: [] };
+    rateLimitStore.set(ip, entry);
+  }
+
+  // Clean expired timestamps
+  entry.timestamps = entry.timestamps.filter((t) => now - t < windowMs);
+
+  if (entry.timestamps.length >= maxAttempts) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  entry.timestamps.push(now);
+  return { allowed: true, remaining: maxAttempts - entry.timestamps.length };
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -34,6 +63,30 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||
     pathname === '/';
+
+  // Rate limit login endpoint
+  if (pathname === '/login' && request.method === 'POST') {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')
+      || 'unknown';
+
+    const { allowed, remaining } = checkLoginRateLimit(ip);
+
+    if (!allowed) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Too many login attempts. Please try again later.' }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-RateLimit-Limit': '5',
+            'X-RateLimit-Remaining': '0',
+            'Retry-After': '60',
+          },
+        }
+      );
+    }
+  }
 
   let supabaseResponse = NextResponse.next({ request });
 
