@@ -46,6 +46,7 @@ technical_debt:
   - "2026-06-13: NUNCA executar supabase start/reset sem autorização — projecto usa Supabase remoto."
   - "2026-06-13: REGRA DE CONCLUSÃO — nenhum item do backlog pode ser marcado [x] sem: (1) actualização documentação, (2) actualização backlog, (3) validação critérios sucesso, (4) registo decisão quando aplicável"
   - "2026-06-13: P0 FECHADO — Rate Limiting implementado, Dev RLS documentado, Connection Pooling invalidado (ADR-022)."
+  - "2026-06-13: BACKLOG ACTUALIZADO — P1-01 Observabilidade e P1-02 Testes de Carga adicionados ao BACKLOG.md principal."
   - "PENDENTE: Configurar SUPABASE_SERVICE_ROLE_KEY em .env.local para operações admin"
   - "PENDENTE: Script lint não existe — considerar adicionar ESLint no futuro"
   - "PENDENTE: 13 erros TypeScript em testes (mocks incompletos de ICourseRepository, IStorageProvider)"

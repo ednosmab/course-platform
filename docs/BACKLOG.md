@@ -162,6 +162,8 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 
 | Item | Severidade | Status | Due | Owner |
 |---|---|---|---|---|
+| P1-01: Observabilidade (métricas, logs estruturados, alertas) | 🔴 Crítico | Backlog | 2026-06-30 | unassigned |
+| P1-02: Testes de Carga (k6/artillery, validação ADR-017) | 🟠 Alto | Backlog | 2026-06-30 | unassigned |
 | Continuar construção de telas do student app | 🟠 Alto | Backlog | 2026-06-30 | unassigned |
 | Skill: TopBar/Header — padrão de cabeçalho compartilhado (admin + student) | 🟡 Médio | Backlog | 2026-06-30 | unassigned |
 | Skill: Student Screen — padrão de construção de telas do aluno | 🟡 Médio | Backlog | 2026-06-30 | unassigned |
@@ -172,6 +174,10 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 | Fix build admin — `@tamagui/constants` missing como dependência explícita | 🟠 Alto | Done | 2026-06-10 | Agente 2 |
 | Fix renderer test — `BlockRenderer.test.tsx` syntax error (XSS test) | 🟡 Médio | Done | 2026-06-15 | Agente 1 |
 | ICP-02 — Rename `uuid_bsgi` → `uuid_extranet` em código fonte (CONFID-01 follow-up) | 🔴 Crítico | Done | 2026-06-10 | Agente 3 |
+
+**P1-01 Observabilidade — Detalhe:** Sistema operando às cegas. Zero métricas de performance, zero logs estruturados, zero alertas. Impossível detectar degradação ou justificar optimizações (Redis, CDN, etc.). Critérios: library de métricas instalada, dashboard com request rate/error rate/latency P50/P95/P99, alertas para P95 > 500ms e error rate > 1%, logs estruturados JSON com requestId/userId/duration. Detalhes em `docs/BACKLOG_TECHNICAL_DEBT.md` §P1-01. Dependências: Nenhuma (condição prévia para todos os P1 de infraestrutura).
+
+**P1-02 Testes de Carga — Detalhe:** Zero testes k6/artillery no repositório. Impossível justificar Redis/CDN sem dados de performance sob carga. Critérios: script k6 ou artillery, cenários 100/500/1000/5000 users simultâneos, métricas throughput/latência P95/error rate, trigger thresholds ADR-017 validados. Detalhes em `docs/BACKLOG_TECHNICAL_DEBT.md` §P1-02. Dependências: P1-01 (métricas precisam existir).
 
 **Contexto GTM (2026-06-05):** Estes P1 bloqueiam staging push (sem build verde não há demo). Sem demo, validação MVP com cliente piloto fica comprometida. Atacar antes de qualquer trabalho em MVP Coverage.
 
