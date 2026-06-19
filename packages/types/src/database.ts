@@ -175,3 +175,76 @@ export const StudentPlanSchema = z.object({
 }).strict();
 
 export type StudentPlan = z.infer<typeof StudentPlanSchema>;
+
+// 14. MediaFile Schema & Type
+export const MediaFileSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1),
+  type: z.enum(['image', 'video', 'document']),
+  mime_type: z.string().min(1),
+  size_bytes: z.number().int().positive(),
+  url: z.string().url(),
+  bucket: z.string().default('media'),
+  path: z.string().min(1),
+  uploader_id: z.string().uuid().nullable().optional(),
+  course_id: z.string().uuid().nullable().optional(),
+  created_at: z.string().or(z.date()),
+}).strict();
+
+export type MediaFile = z.infer<typeof MediaFileSchema>;
+
+// 15. Report Schemas & Types
+export const CourseReportSchema = z.object({
+  course_id: z.string().uuid(),
+  course_title: z.string(),
+  enrollment_count: z.number().int().nonnegative(),
+  completion_count: z.number().int().nonnegative(),
+  completion_rate: z.number().min(0).max(100),
+  avg_progress: z.number().min(0).max(100),
+}).strict();
+
+export type CourseReport = z.infer<typeof CourseReportSchema>;
+
+export const EnrollmentReportSchema = z.object({
+  total: z.number().int().nonnegative(),
+  total_students: z.number().int().nonnegative(),
+  active: z.number().int().nonnegative(),
+  expired: z.number().int().nonnegative(),
+  canceled: z.number().int().nonnegative(),
+  new_in_period: z.number().int().nonnegative(),
+  by_course: z.array(z.object({
+    course_id: z.string().uuid(),
+    course_title: z.string(),
+    count: z.number().int().nonnegative(),
+  })),
+}).strict();
+
+export type EnrollmentReport = z.infer<typeof EnrollmentReportSchema>;
+
+export const CertificateReportSchema = z.object({
+  total: z.number().int().nonnegative(),
+  by_course: z.array(z.object({
+    course_id: z.string().uuid(),
+    course_title: z.string(),
+    count: z.number().int().nonnegative(),
+  })),
+  timeline: z.array(z.object({
+    date: z.string(),
+    count: z.number().int().nonnegative(),
+  })),
+}).strict();
+
+export type CertificateReport = z.infer<typeof CertificateReportSchema>;
+
+export const ProgressReportSchema = z.object({
+  total_students: z.number().int().nonnegative(),
+  avg_progress: z.number().min(0).max(100),
+  completion_rate: z.number().min(0).max(100),
+  top_lessons: z.array(z.object({
+    lesson_id: z.string().uuid(),
+    lesson_title: z.string(),
+    view_count: z.number().int().nonnegative(),
+  })),
+}).strict();
+
+export type ProgressReport = z.infer<typeof ProgressReportSchema>;

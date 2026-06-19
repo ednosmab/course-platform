@@ -11,6 +11,9 @@ const NAV_ITEMS = ['Painel', 'Cursos', 'Alunos', 'Mídia', 'Relatórios'] as con
 const NAV_ROUTES: Record<string, string> = {
   Painel: '/',
   Cursos: '/cursos',
+  Alunos: '/alunos',
+  'Mídia': '/midia',
+  'Relatórios': '/relatorios',
 };
 
 interface AdminHeaderProps {
@@ -51,7 +54,10 @@ export function AdminHeader({ userProfile, onLogout }: AdminHeaderProps) {
 
   const isActive = (label: string) => {
     if (label === 'Painel') return pathname === '/';
-    if (label === 'Cursos') return pathname.startsWith('/cursos') || pathname.startsWith('/configuracoes');
+    if (label === 'Cursos') return pathname.startsWith('/cursos') || pathname.startsWith('/configuracoes') || pathname.startsWith('/studio');
+    if (label === 'Alunos') return pathname.startsWith('/alunos');
+    if (label === 'Mídia') return pathname.startsWith('/midia');
+    if (label === 'Relatórios') return pathname.startsWith('/relatorios');
     return false;
   };
 

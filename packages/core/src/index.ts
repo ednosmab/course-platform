@@ -48,6 +48,21 @@ export { lessonService as LessonService } from './service-factory';
 export { storageService as StorageService } from './service-factory';
 
 /**
+ * @description Provides the singleton StudentService instance bound to the Supabase student repository — manages student profiles, enrollments, and progress tracking.
+ */
+export { studentService as StudentService } from './service-factory';
+
+/**
+ * @description Provides the singleton MediaService instance bound to the Supabase media repository and storage provider — manages media library uploads, listing, and deletion.
+ */
+export { mediaService as MediaService } from './service-factory';
+
+/**
+ * @description Provides the singleton ReportService instance bound to the Supabase report repository — provides analytics and metrics for the admin dashboard.
+ */
+export { reportService as ReportService } from './service-factory';
+
+/**
  * @description Re-exports all i18n symbols — internationalisation utilities, translation keys, and locale helpers used across the platform.
  */
 export * from './i18n';

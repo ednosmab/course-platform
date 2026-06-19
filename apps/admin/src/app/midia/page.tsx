@@ -13,11 +13,13 @@ import {
   Spinner,
   Input,
   color,
+  FilterBar,
 } from '@projeto/ui';
-import { FilterBar } from '@projeto/ui';
 import { AdminHeader } from '../../components/AdminHeader';
 import { MediaService, AuthService } from '@projeto/core';
 import type { MediaFile } from '@projeto/types';
+
+const BRAND_GRADIENT = `linear-gradient(135deg, ${color.cwGradientFrom}, ${color.cwGradientTo})`;
 
 /**
  * @description Admin page for managing the media library. Supports upload,
@@ -31,6 +33,7 @@ export default function MidiaPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'name-az' | 'name-za'>('recent');
   const [userProfile, setUserProfile] = useState<{ full_name: string; email: string } | null>(null);
 
   // Upload states
@@ -48,7 +51,10 @@ export default function MidiaPage() {
     async function loadData() {
       try {
         const profile = await AuthService.getCurrentProfile();
-        if (!cancelled) setUserProfile(profile);
+        if (!cancelled) setUserProfile({
+          full_name: profile?.full_name ?? 'Usuário',
+          email: profile?.email ?? '',
+        });
 
         const media = await MediaService.listMedia();
         if (!cancelled) setMediaFiles(media);
@@ -72,10 +78,26 @@ export default function MidiaPage() {
     return matchesSearch && matchesType;
   });
 
+  const sortMedia = (a: MediaFile, b: MediaFile) => {
+    switch (sortBy) {
+      case 'recent':
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      case 'oldest':
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      case 'name-az':
+        return (a.name || '').localeCompare(b.name || '');
+      case 'name-za':
+        return (b.name || '').localeCompare(a.name || '');
+      default:
+        return 0;
+    }
+  };
+
+  const sortedMedia = [...filteredMedia].sort(sortMedia);
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate size (100MB max)
       if (file.size > 100 * 1024 * 1024) {
         alert('Arquivo excede o limite de 100MB');
         return;
@@ -147,117 +169,135 @@ export default function MidiaPage() {
     }
   };
 
-  const BRAND_GRADIENT = `linear-gradient(135deg, ${color.cwGradientFrom}, ${color.cwGradientTo})`;
+  const filterLabel = typeFilter === 'all' ? null : typeFilter === 'image' ? 'Imagens' : typeFilter === 'video' ? 'Vídeos' : 'Documentos';
 
   return (
     <Theme name="cloudWhite">
       <YStack bg="$background" minHeight="100vh">
         <AdminHeader userProfile={userProfile} onLogout={handleLogout} />
 
-        <main style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 24px' }}>
+        <main style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 24px', width: '100%' }}>
           {/* Hero Header */}
-          <XStack alignItems="center" justifyContent="space-between" mb="$6">
-            <YStack>
-              <Text
-                fontSize="$8"
-                fontWeight="700"
-                color="$text"
-                style={{ background: BRAND_GRADIENT, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
-              >
-                Biblioteca de Mídias
-              </Text>
-              <Text fontSize="$4" color="$textMuted" mt="$1">
-                Gerencie imagens, vídeos e documentos
-              </Text>
-            </YStack>
+          <YStack mb={32} gap={16}>
+            <XStack ai="center" jc="space-between" flexWrap="wrap" gap={16}>
+              <YStack gap={4}>
+                <Text fontFamily="$display" fontSize={32} fontWeight="$6" letterSpacing={-0.5}>
+                  Biblioteca de Mídias
+                </Text>
+                <Text fontSize={15} color="$textMuted">
+                  Gerencie imagens, vídeos e documentos
+                </Text>
+              </YStack>
 
-            <Button
-              onPress={() => setShowUploadModal(true)}
-              style={{ background: BRAND_GRADIENT }}
-            >
-              <Icon name="Upload" size={16} color="$white" />
-              <Text color="$white" ml="$2">Upload</Text>
-            </Button>
-          </XStack>
+              <XStack gap={12} ai="center">
+                {/* Busca */}
+                <XStack position="relative" ai="center">
+                  <Icon
+                    name="Search"
+                    size={16}
+                    color="$textMuted"
+                    style={{ position: 'absolute', left: 12, top: 10, pointerEvents: 'none' }}
+                  />
+                  <Input
+                    placeholder="Buscar por nome..."
+                    w={280}
+                    h={36}
+                    br="$3"
+                    borderColor="$border"
+                    backgroundColor="$background"
+                    paddingLeft={40}
+                    fontSize="$3"
+                    color="$text"
+                    value={search}
+                    onChangeText={setSearch}
+                  />
+                </XStack>
 
-          {/* Search */}
-          <XStack position="relative" ai="center" mb={16}>
-            <Icon
-              name="Search"
-              size={16}
-              color="$textMuted"
-              style={{ position: 'absolute', left: 12, top: 10, pointerEvents: 'none' }}
+                {/* Botão Upload */}
+                <Button
+                  onPress={() => setShowUploadModal(true)}
+                  px={16}
+                  py={10}
+                  ai="center"
+                  gap={6}
+                  style={{ background: BRAND_GRADIENT }}
+                >
+                  <Icon name="Upload" size={16} color="$white" />
+                  <Text fontSize={14} color="$white" fontWeight="500">Upload</Text>
+                </Button>
+              </XStack>
+            </XStack>
+          </YStack>
+
+          {/* Filtros e Ordenação */}
+          <XStack gap={12} ai="center" flexWrap="wrap" mb={16}>
+            <FilterBar
+              filterOptions={[
+                { value: 'all', label: 'Todos' },
+                { value: 'image', label: 'Imagens' },
+                { value: 'video', label: 'Vídeos' },
+                { value: 'document', label: 'Documentos' },
+              ]}
+              filterValue={typeFilter}
+              onFilterChange={setTypeFilter}
+              sortOptions={[
+                { value: 'recent', label: 'Mais recentes' },
+                { value: 'oldest', label: 'Mais antigos' },
+                { value: 'name-az', label: 'Nome A-Z' },
+                { value: 'name-za', label: 'Nome Z-A' },
+              ]}
+              sortValue={sortBy}
+              onSortChange={(value) => setSortBy(value as typeof sortBy)}
+              resultCount={sortedMedia.length}
+              resultLabel="mídias"
+              filterLabel={filterLabel || undefined}
+              onClearFilter={() => setTypeFilter('all')}
+              showResultCount={false}
+              removeBottomMargin
             />
-            <Input
-              placeholder="Buscar por nome..."
-              w={280}
-              h={36}
-              br="$3"
-              borderColor="$border"
-              backgroundColor="$background"
-              paddingLeft={40}
-              fontSize="$3"
-              color="$text"
-              value={search}
-              onChangeText={setSearch}
-            />
           </XStack>
-
-          {/* Filters */}
-          <FilterBar
-            filterOptions={[
-              { value: 'all', label: 'Todos' },
-              { value: 'image', label: 'Imagens' },
-              { value: 'video', label: 'Vídeos' },
-              { value: 'document', label: 'Documentos' },
-            ]}
-            filterValue={typeFilter}
-            onFilterChange={setTypeFilter}
-            sortOptions={[
-              { value: 'recent', label: 'Mais recentes' },
-              { value: 'oldest', label: 'Mais antigos' },
-              { value: 'name-az', label: 'Nome A-Z' },
-              { value: 'name-za', label: 'Nome Z-A' },
-            ]}
-            sortValue="recent"
-            onSortChange={() => {}}
-            resultCount={filteredMedia.length}
-            resultLabel="mídias"
-            showResultCount={false}
-            removeBottomMargin
-          />
 
           {/* Content */}
           {loading ? (
-            <YStack alignItems="center" justifyContent="center" py="$10">
+            <YStack py={64} ai="center" jc="center" gap={12} opacity={0.7}>
               <Spinner size="large" color="$primary" />
-              <Text color="$textMuted" mt="$4">Carregando mídias...</Text>
+              <Text color="$textMuted" fontSize={14}>Carregando mídias…</Text>
             </YStack>
-          ) : filteredMedia.length === 0 ? (
-            <Card variant="outlined" py="$10" alignItems="center">
+          ) : sortedMedia.length === 0 ? (
+            <YStack ai="center" jc="center" py={64} gap={8} borderWidth={1} borderColor="$border" borderRadius={12} borderStyle="dashed" bg="$card">
               <Icon name="FolderOpen" size={48} color="$textMuted" />
-              <Text color="$textMuted" mt="$4" fontSize="$4">
+              <Text color="$textMuted" fontSize={16} fontWeight="600">
                 {search ? 'Nenhuma mídia encontrada' : 'Nenhuma mídia cadastrada'}
               </Text>
-            </Card>
+              <Text color="$textMuted" fontSize={14}>
+                {search ? 'Ajuste a busca ou filtro.' : 'Clique em "Upload" para adicionar.'}
+              </Text>
+            </YStack>
           ) : (
-            <YStack gap="$3">
-              {filteredMedia.map((media) => (
+            <YStack gap={12}>
+              {sortedMedia.map((media) => (
                 <Card
                   key={media.id}
-                  variant="elevated"
+                  p={0}
+                  br="$4"
+                  cursor="pointer"
+                  interactive
+                  borderWidth={1}
+                  borderColor="$border"
                   pressStyle={{ opacity: 0.9 }}
                   onPress={() => setPreviewFile(media)}
                 >
-                  <XStack alignItems="center" p="$4" gap="$4">
+                  <XStack ai="center" p={20} gap={16}>
                     {/* Icon/Preview */}
                     <YStack
                       width={56}
                       height={56}
                       borderRadius={8}
                       bg="$background"
-                      alignItems="center"
-                      justifyContent="center"
+                      ai="center"
+                      jc="center"
+                      flexShrink={0}
+                      overflow="hidden"
                     >
                       {media.type === 'image' ? (
                         <img
@@ -276,27 +316,29 @@ export default function MidiaPage() {
                     </YStack>
 
                     {/* Info */}
-                    <YStack flex={1} gap="$1">
-                      <Text fontSize="$4" fontWeight="600" color="$text" numberOfLines={1}>
+                    <YStack flex={1} gap={4}>
+                      <Text fontFamily="$display" fontSize={16} fontWeight="$6" numberOfLines={1}>
                         {media.name}
                       </Text>
-                      <Text fontSize="$3" color="$textMuted">
+                      <Text fontSize={13} color="$textMuted">
                         {media.mime_type} • {formatFileSize(media.size_bytes)}
                       </Text>
                     </YStack>
 
                     {/* Date */}
-                    <YStack alignItems="flex-end" mr="$4">
-                      <Text fontSize="$3" color="$textMuted">
+                    <YStack ai="flex-end" mr={16}>
+                      <Text fontSize={13} color="$textMuted">
                         {new Date(media.created_at).toLocaleDateString('pt-BR')}
                       </Text>
                     </YStack>
 
                     {/* Actions */}
-                    <XStack gap="$2">
-                      <Button
-                        size="small"
-                        variant="ghost"
+                    <XStack gap={8}>
+                      <XStack
+                        p={8}
+                        borderRadius={8}
+                        cursor="pointer"
+                        hoverStyle={{ backgroundColor: '$secondary' }}
                         onPress={(e) => {
                           e.stopPropagation();
                           navigator.clipboard.writeText(media.url);
@@ -304,17 +346,19 @@ export default function MidiaPage() {
                         }}
                       >
                         <Icon name="Copy" size={16} color="$textMuted" />
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="ghost"
+                      </XStack>
+                      <XStack
+                        p={8}
+                        borderRadius={8}
+                        cursor="pointer"
+                        hoverStyle={{ backgroundColor: '$secondary' }}
                         onPress={(e) => {
                           e.stopPropagation();
                           handleDelete(media.id);
                         }}
                       >
                         <Icon name="Trash2" size={16} color="$danger" />
-                      </Button>
+                      </XStack>
                     </XStack>
                   </XStack>
                 </Card>
@@ -328,105 +372,124 @@ export default function MidiaPage() {
           <XStack
             position="fixed"
             inset={0}
-            bg="rgba(0,0,0,0.5)"
-            alignItems="center"
-            justifyContent="center"
-            zIndex={1000}
+            ai="center"
+            jc="center"
+            style={{ backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1000 }}
           >
-            <Card variant="elevated" p="$6" width={480} mx="$4">
-              <YStack gap="$4">
-                <Text fontSize="$6" fontWeight="700" color="$text">
-                  Upload de Mídia
-                </Text>
-
-                <YStack
-                  borderWidth={2}
-                  borderColor="$border"
-                  borderStyle="dashed"
-                  borderRadius={8}
-                  p="$8"
-                  alignItems="center"
-                  onPress={() => fileInputRef.current?.click()}
-                  hoverStyle={{ borderColor: '$primary' }}
+            <YStack bg="$card" br="$4" p={32} width={480} gap={20} borderWidth={1} borderColor="$border">
+              <XStack ai="center" jc="space-between">
+                <Text fontFamily="$display" fontSize={20} fontWeight="$6">Upload de Mídia</Text>
+                <XStack
+                  onPress={() => {
+                    setShowUploadModal(false);
+                    setSelectedFile(null);
+                  }}
+                  cursor="pointer"
+                  p={4}
                 >
-                  <Icon name="Upload" size={48} color="$textMuted" />
-                  <Text color="$textMuted" mt="$4" fontSize="$4">
-                    Clique para selecionar um arquivo
-                  </Text>
-                  <Text color="$textMuted" mt="$2" fontSize="$3">
-                    Imagens, vídeos ou documentos (máx. 100MB)
-                  </Text>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*,video/*,application/pdf"
-                    onChange={handleFileSelect}
-                    style={{ display: 'none' }}
-                  />
-                </YStack>
+                  <Icon name="X" size={20} color="$textMuted" />
+                </XStack>
+              </XStack>
 
-                {selectedFile && (
-                  <Card variant="outlined" p="$3">
-                    <XStack alignItems="center" gap="$3">
-                      <Icon name={getFileIcon(selectedFile.type.startsWith('image/') ? 'image' : selectedFile.type.startsWith('video/') ? 'video' : 'document') as any} size={20} color="$primary" />
-                      <YStack flex={1}>
-                        <Text fontSize="$3" fontWeight="600" color="$text" numberOfLines={1}>
-                          {selectedFile.name}
-                        </Text>
-                        <Text fontSize="$2" color="$textMuted">
-                          {formatFileSize(selectedFile.size)}
-                        </Text>
-                      </YStack>
-                      <Button
-                        size="small"
-                        variant="ghost"
-                        onPress={() => setSelectedFile(null)}
-                      >
-                        <Icon name="X" size={16} color="$textMuted" />
-                      </Button>
-                    </XStack>
-                  </Card>
-                )}
+              <YStack
+                borderWidth={2}
+                borderColor="$border"
+                borderStyle="dashed"
+                borderRadius={8}
+                p={32}
+                ai="center"
+                onPress={() => fileInputRef.current?.click()}
+                hoverStyle={{ borderColor: '$primary' }}
+              >
+                <Icon name="Upload" size={48} color="$textMuted" />
+                <Text color="$textMuted" mt={16} fontSize={14}>
+                  Clique para selecionar um arquivo
+                </Text>
+                <Text color="$textMuted" mt={8} fontSize={13}>
+                  Imagens, vídeos ou documentos (máx. 100MB)
+                </Text>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,video/*,application/pdf"
+                  onChange={handleFileSelect}
+                  style={{ display: 'none' }}
+                />
+              </YStack>
 
-                {uploading && (
-                  <YStack gap="$2">
-                    <Text fontSize="$3" color="$textMuted">Enviando...</Text>
-                    <YStack height={4} bg="$border" borderRadius={2} overflow="hidden">
-                      <YStack
-                        height={4}
-                        bg={BRAND_GRADIENT}
-                        width={`${uploadProgress}%`}
-                      />
+              {selectedFile && (
+                <YStack
+                  borderWidth={1}
+                  borderColor="$border"
+                  borderRadius={8}
+                  p={12}
+                >
+                  <XStack ai="center" gap={12}>
+                    <Icon name={getFileIcon(selectedFile.type.startsWith('image/') ? 'image' : selectedFile.type.startsWith('video/') ? 'video' : 'document') as any} size={20} color="$primary" />
+                    <YStack flex={1}>
+                      <Text fontSize={13} fontWeight="600" numberOfLines={1}>
+                        {selectedFile.name}
+                      </Text>
+                      <Text fontSize={12} color="$textMuted">
+                        {formatFileSize(selectedFile.size)}
+                      </Text>
                     </YStack>
-                  </YStack>
-                )}
+                    <XStack
+                      p={4}
+                      borderRadius={4}
+                      cursor="pointer"
+                      hoverStyle={{ backgroundColor: '$secondary' }}
+                      onPress={() => setSelectedFile(null)}
+                    >
+                      <Icon name="X" size={16} color="$textMuted" />
+                    </XStack>
+                  </XStack>
+                </YStack>
+              )}
 
-                <XStack gap="$3" mt="$4">
-                  <Button
-                    flex={1}
-                    variant="secondary"
-                    onPress={() => {
-                      setShowUploadModal(false);
-                      setSelectedFile(null);
-                    }}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    flex={1}
-                    onPress={handleUpload}
-                    disabled={!selectedFile || uploading}
-                    style={{ background: BRAND_GRADIENT }}
-                  >
+              {uploading && (
+                <YStack gap={8}>
+                  <Text fontSize={13} color="$textMuted">Enviando...</Text>
+                  <YStack height={4} bg="$border" borderRadius={2} overflow="hidden">
+                    <YStack
+                      height={4}
+                      bg={BRAND_GRADIENT}
+                      width={`${uploadProgress}%`}
+                    />
+                  </YStack>
+                </YStack>
+              )}
+
+              <XStack gap={12} jc="flex-end" mt={8}>
+                <Button
+                  variant="ghost"
+                  onPress={() => {
+                    setShowUploadModal(false);
+                    setSelectedFile(null);
+                  }}
+                  px={16}
+                  py={10}
+                >
+                  <Text fontSize={14}>Cancelar</Text>
+                </Button>
+                <Button
+                  onPress={handleUpload}
+                  disabled={!selectedFile || uploading}
+                  px={16}
+                  py={10}
+                  style={{ background: BRAND_GRADIENT }}
+                >
+                  <XStack ai="center" gap={6}>
                     {uploading ? (
                       <Spinner size="small" color="$white" />
                     ) : (
-                      <Text color="$white">Enviar</Text>
+                      <Icon name="Upload" size={14} color="$white" />
                     )}
-                  </Button>
-                </XStack>
-              </YStack>
-            </Card>
+                    <Text fontSize={14} color="$white" fontWeight="500">Enviar</Text>
+                  </XStack>
+                </Button>
+              </XStack>
+            </YStack>
           </XStack>
         )}
 
@@ -435,110 +498,118 @@ export default function MidiaPage() {
           <XStack
             position="fixed"
             inset={0}
-            bg="rgba(0,0,0,0.8)"
-            alignItems="center"
-            justifyContent="center"
-            zIndex={1000}
+            ai="center"
+            jc="center"
+            style={{ backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 1000 }}
             onPress={() => setPreviewFile(null)}
           >
-            <Card
-              variant="elevated"
-              p="$6"
+            <YStack
+              bg="$card"
+              br="$4"
+              p={32}
               width={640}
-              mx="$4"
+              gap={20}
+              borderWidth={1}
+              borderColor="$border"
               onPress={(e) => e.stopPropagation()}
             >
-              <YStack gap="$4">
-                <XStack alignItems="center" justifyContent="space-between">
-                  <Text fontSize="$5" fontWeight="700" color="$text" numberOfLines={1}>
-                    {previewFile.name}
-                  </Text>
-                  <Button
-                    size="small"
-                    variant="ghost"
-                    onPress={() => setPreviewFile(null)}
-                  >
-                    <Icon name="X" size={20} color="$textMuted" />
-                  </Button>
+              <XStack ai="center" jc="space-between">
+                <Text fontFamily="$display" fontSize={20} fontWeight="$6" numberOfLines={1} flex={1}>
+                  {previewFile.name}
+                </Text>
+                <XStack
+                  p={4}
+                  borderRadius={4}
+                  cursor="pointer"
+                  hoverStyle={{ backgroundColor: '$secondary' }}
+                  onPress={() => setPreviewFile(null)}
+                >
+                  <Icon name="X" size={20} color="$textMuted" />
                 </XStack>
+              </XStack>
 
-                {/* Preview content */}
-                {previewFile.type === 'image' && (
-                  <img
-                    src={previewFile.url}
-                    alt={previewFile.name}
-                    style={{
-                      width: '100%',
-                      maxHeight: 400,
-                      objectFit: 'contain',
-                      borderRadius: 8,
-                    }}
-                  />
-                )}
+              {/* Preview content */}
+              {previewFile.type === 'image' && (
+                <img
+                  src={previewFile.url}
+                  alt={previewFile.name}
+                  style={{
+                    width: '100%',
+                    maxHeight: 400,
+                    objectFit: 'contain',
+                    borderRadius: 8,
+                  }}
+                />
+              )}
 
-                {previewFile.type === 'video' && (
-                  <video
-                    src={previewFile.url}
-                    controls
-                    style={{
-                      width: '100%',
-                      maxHeight: 400,
-                      borderRadius: 8,
-                    }}
-                  />
-                )}
+              {previewFile.type === 'video' && (
+                <video
+                  src={previewFile.url}
+                  controls
+                  style={{
+                    width: '100%',
+                    maxHeight: 400,
+                    borderRadius: 8,
+                  }}
+                />
+              )}
 
-                {previewFile.type === 'document' && (
-                  <YStack alignItems="center" py="$8">
-                    <Icon name="FileText" size={64} color="$textMuted" />
-                    <Text color="$textMuted" mt="$4">
-                      Preview não disponível para este tipo de arquivo
-                    </Text>
-                  </YStack>
-                )}
-
-                {/* Metadata */}
-                <YStack gap="$2" pt="$4" borderTopWidth={1} borderColor="$border">
-                  <XStack justifyContent="space-between">
-                    <Text fontSize="$3" color="$textMuted">Tipo:</Text>
-                    <Text fontSize="$3" color="$text">{previewFile.mime_type}</Text>
-                  </XStack>
-                  <XStack justifyContent="space-between">
-                    <Text fontSize="$3" color="$textMuted">Tamanho:</Text>
-                    <Text fontSize="$3" color="$text">{formatFileSize(previewFile.size_bytes)}</Text>
-                  </XStack>
-                  <XStack justifyContent="space-between">
-                    <Text fontSize="$3" color="$textMuted">Enviado em:</Text>
-                    <Text fontSize="$3" color="$text">
-                      {new Date(previewFile.created_at).toLocaleDateString('pt-BR')}
-                    </Text>
-                  </XStack>
+              {previewFile.type === 'document' && (
+                <YStack ai="center" py={32}>
+                  <Icon name="FileText" size={64} color="$textMuted" />
+                  <Text color="$textMuted" mt={16} fontSize={14}>
+                    Preview não disponível para este tipo de arquivo
+                  </Text>
                 </YStack>
+              )}
 
-                {/* Actions */}
-                <XStack gap="$3" mt="$4">
-                  <Button
-                    flex={1}
-                    variant="secondary"
-                    onPress={() => {
-                      navigator.clipboard.writeText(previewFile.url);
-                      alert('URL copiada!');
-                    }}
-                  >
-                    <Icon name="Copy" size={16} />
-                    <Text ml="$2">Copiar URL</Text>
-                  </Button>
-                  <Button
-                    flex={1}
-                    variant="secondary"
-                    onPress={() => handleDelete(previewFile.id)}
-                  >
-                    <Icon name="Trash2" size={16} color="$danger" />
-                    <Text ml="$2" color="$danger">Excluir</Text>
-                  </Button>
+              {/* Metadata */}
+              <YStack gap={8} pt={16} borderTopWidth={1} borderColor="$border">
+                <XStack jc="space-between">
+                  <Text fontSize={13} color="$textMuted">Tipo:</Text>
+                  <Text fontSize={13}>{previewFile.mime_type}</Text>
+                </XStack>
+                <XStack jc="space-between">
+                  <Text fontSize={13} color="$textMuted">Tamanho:</Text>
+                  <Text fontSize={13}>{formatFileSize(previewFile.size_bytes)}</Text>
+                </XStack>
+                <XStack jc="space-between">
+                  <Text fontSize={13} color="$textMuted">Enviado em:</Text>
+                  <Text fontSize={13}>
+                    {new Date(previewFile.created_at).toLocaleDateString('pt-BR')}
+                  </Text>
                 </XStack>
               </YStack>
-            </Card>
+
+              {/* Actions */}
+              <XStack gap={12} jc="flex-end" mt={8}>
+                <Button
+                  variant="ghost"
+                  onPress={() => {
+                    navigator.clipboard.writeText(previewFile.url);
+                    alert('URL copiada!');
+                  }}
+                  px={16}
+                  py={10}
+                >
+                  <XStack ai="center" gap={6}>
+                    <Icon name="Copy" size={14} />
+                    <Text fontSize={14}>Copiar URL</Text>
+                  </XStack>
+                </Button>
+                <Button
+                  onPress={() => handleDelete(previewFile.id)}
+                  px={16}
+                  py={10}
+                  style={{ background: 'rgba(239, 68, 68, 0.1)' }}
+                >
+                  <XStack ai="center" gap={6}>
+                    <Icon name="Trash2" size={14} color="$danger" />
+                    <Text fontSize={14} color="$danger">Excluir</Text>
+                  </XStack>
+                </Button>
+              </XStack>
+            </YStack>
           </XStack>
         )}
       </YStack>

@@ -45,3 +45,7 @@ export * from './database';
 // Course Access Control types
 export type { CourseAccess, Plan, PlanCourse, StudentPlan } from './database';
 export { CourseAccessSchema, PlanSchema, PlanCourseSchema, StudentPlanSchema } from './database';
+
+// Media and Report types
+export type { MediaFile, CourseReport, EnrollmentReport, CertificateReport, ProgressReport } from './database';
+export { MediaFileSchema, CourseReportSchema, EnrollmentReportSchema, CertificateReportSchema, ProgressReportSchema } from './database';
