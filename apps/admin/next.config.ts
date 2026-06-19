@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 import { createRequire } from "node:module";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 const require = createRequire(import.meta.url);
 const rnWebStubAbs = require.resolve("./.rn-web-stub.cjs");
@@ -27,6 +31,7 @@ const nextConfig: NextConfig = {
    * aliasamos para stubs CommonJS puros.
    */
   turbopack: {
+    root: path.resolve(rootDir, "../.."),
     resolveAlias: {
       "react-native": "./.rn-web-stub.cjs",
       "expo-asset": "./.expo-asset-stub.cjs",
