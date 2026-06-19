@@ -14,7 +14,7 @@ session:
   branch: "develop"
   operation_type: "FEATURE"
   last_commit: "5d92e43"
-  status: "closed"
+  status: "completed"
 
 current_task:
   id: "TEST-001"
@@ -56,6 +56,9 @@ technical_debt:
   - "PENDENTE: Configurar SUPABASE_SERVICE_ROLE_KEY em .env.local para operações admin"
   - "PENDENTE: Script lint não existe — considerar adicionar ESLint no futuro"
   - "PENDENTE: 13 erros TypeScript em testes (mocks incompletos de ICourseRepository, IStorageProvider)"
+
+reminders:
+  - "2026-06-19: Criar gráfico na secção de Matrículas em /relatorios — usar cores verde (ativas), amarelo (expiradas), vermelho (canceladas)"
 
 documents_loaded:
   - "governance/WORKFLOW.md"
