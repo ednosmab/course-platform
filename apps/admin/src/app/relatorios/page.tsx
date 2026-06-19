@@ -39,7 +39,16 @@ function KPICard({ title, value, subtitle, icon }: {
       }}
     >
       <XStack ai="center" gap={14}>
-        <Icon name={icon as any} size={22} color="$primary" />
+        <YStack
+          width={36}
+          height={36}
+          borderRadius={10}
+          ai="center"
+          jc="center"
+          bg="linear-gradient(135deg, #5B8DEF, #6E5AE8)"
+        >
+          <Icon name={icon as any} size={18} color="$white" />
+        </YStack>
         <YStack flex={1} gap={2}>
           <Text fontSize={12} fontWeight="500" color="$textMuted" letterSpacing={0.3}>
             {title}
@@ -140,7 +149,7 @@ export default function RelatoriosPage() {
 
               {/* Period selector — frosted glass pills */}
               <XStack
-                gap={6}
+                gap={4}
                 p={4}
                 borderRadius={12}
                 borderWidth={1}
@@ -159,23 +168,24 @@ export default function RelatoriosPage() {
                       py={7}
                       borderRadius={8}
                       borderWidth={1}
-                      borderColor={isActive ? 'rgba(59, 130, 246, 0.3)' : 'transparent'}
+                      borderColor={isActive ? 'rgba(204, 208, 220, 0.6)' : 'transparent'}
                       style={{
                         backgroundColor: isActive
-                          ? 'rgba(59, 130, 246, 0.1)'
+                          ? 'rgba(247, 248, 252, 0.8)'
                           : 'transparent',
                       }}
                       hoverStyle={{
-                        backgroundColor: isActive
-                          ? 'rgba(59, 130, 246, 0.15)'
-                          : 'rgba(222, 225, 235, 0.5)',
+                        backgroundColor: 'rgba(222, 225, 235, 0.4)',
+                      }}
+                      pressStyle={{
+                        backgroundColor: 'rgba(222, 225, 235, 0.5)',
                       }}
                       onPress={() => setPeriod(p)}
                     >
                       <Text
                         fontSize={13}
                         fontWeight={isActive ? '600' : '400'}
-                        color={isActive ? '$primary' : '$textMuted'}
+                        color={isActive ? '$text' : '$textMuted'}
                       >
                         {p === 'all' ? 'Tudo' : p}
                       </Text>
@@ -242,8 +252,8 @@ export default function RelatoriosPage() {
                     mb={16}
                     borderRadius={10}
                     borderWidth={1}
-                    borderColor="rgba(245, 158, 11, 0.3)"
-                    style={{ backgroundColor: 'rgba(254, 243, 199, 0.5)' }}
+                    borderColor="rgba(245, 158, 11, 0.25)"
+                    style={{ backgroundColor: 'rgba(254, 243, 199, 0.35)' }}
                   >
                     <XStack ai="center" gap={8}>
                       <Icon name="AlertTriangle" size={18} color="$warning" />
@@ -342,14 +352,22 @@ export default function RelatoriosPage() {
                   </XStack>
                 </XStack>
 
-                <YStack gap={12}>
+                <YStack>
                   {courseReports.length === 0 ? (
                     <Text color="$textMuted" textAlign="center" py={16}>
                       Nenhum dado disponível
                     </Text>
                   ) : (
                     courseReports.map((course, index) => (
-                      <XStack key={course.course_id} ai="center" gap={12}>
+                      <XStack
+                        key={course.course_id}
+                        ai="center"
+                        gap={12}
+                        py={12}
+                        borderBottomWidth={index < courseReports.length - 1 ? 1 : 0}
+                        borderBottomColor="rgba(204, 208, 220, 0.6)"
+                        style={index < courseReports.length - 1 ? { borderBottomStyle: 'dotted' } : undefined}
+                      >
                         <YStack flex={1} gap={4}>
                           <Text fontSize={14} fontWeight="600" color="$text">
                             {course.course_title}
@@ -360,7 +378,7 @@ export default function RelatoriosPage() {
                         </YStack>
 
                         <YStack ai="flex-end">
-                          <Text fontSize={14} fontWeight="700" color="$primary">
+                          <Text fontSize={14} fontWeight="700" color="$text">
                             {course.avg_progress}%
                           </Text>
                           <Text fontSize={12} color="$textMuted">progresso médio</Text>
