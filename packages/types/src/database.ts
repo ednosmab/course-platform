@@ -248,3 +248,44 @@ export const ProgressReportSchema = z.object({
 }).strict();
 
 export type ProgressReport = z.infer<typeof ProgressReportSchema>;
+
+export const LessonRevisitEventSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  lesson_id: z.string().uuid(),
+  course_id: z.string().uuid(),
+  student_level: z.string().nullable(),
+  completed_before: z.boolean(),
+  revisit_number: z.number().int().positive(),
+  created_at: z.string().datetime(),
+}).strict();
+
+export type LessonRevisitEvent = z.infer<typeof LessonRevisitEventSchema>;
+
+export const LessonRevisitReportSchema = z.object({
+  top_revisited_lessons: z.array(z.object({
+    lesson_id: z.string().uuid(),
+    lesson_title: z.string(),
+    course_title: z.string(),
+    revisit_count: z.number().int().nonnegative(),
+  })),
+  top_revisiting_students: z.array(z.object({
+    user_id: z.string().uuid(),
+    student_name: z.string(),
+    total_revisits: z.number().int().nonnegative(),
+    lessons_revisited: z.number().int().nonnegative(),
+  })),
+  timeline: z.array(z.object({
+    date: z.string(),
+    count: z.number().int().nonnegative(),
+  })),
+  by_course: z.array(z.object({
+    course_id: z.string().uuid(),
+    course_title: z.string(),
+    revisit_count: z.number().int().nonnegative(),
+  })),
+  total_revisits: z.number().int().nonnegative(),
+  unique_students_revisiting: z.number().int().nonnegative(),
+}).strict();
+
+export type LessonRevisitReport = z.infer<typeof LessonRevisitReportSchema>;

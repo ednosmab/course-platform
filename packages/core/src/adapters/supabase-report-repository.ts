@@ -8,6 +8,8 @@ import {
   CertificateReportSchema,
   ProgressReport,
   ProgressReportSchema,
+  LessonRevisitReport,
+  LessonRevisitReportSchema,
 } from '@projeto/types';
 import { z } from 'zod';
 import type { IReportRepository } from '../ports/IReportRepository';
@@ -276,5 +278,127 @@ export const supabaseReportRepository: IReportRepository = {
     return reports
       .sort((a, b) => b.enrollment_count - a.enrollment_count)
       .slice(0, limit);
+  },
+
+  async getLessonRevisitReport(period?: string): Promise<LessonRevisitReport> {
+    const now = new Date();
+    const daysMap: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90 };
+    const days = period && period !== 'all' ? (daysMap[period] ?? 30) : 0;
+    const startDate = days > 0 ? new Date(now.getTime() - days * 24 * 60 * 60 * 1000) : null;
+
+    // Query 1: Fetch all revisit events with joins
+    let eventsQuery = supabase
+      .from('lesson_revisit_events')
+      .select(`
+        id,
+        user_id,
+        lesson_id,
+        course_id,
+        student_level,
+        completed_before,
+        revisit_number,
+        created_at,
+        lessons (title),
+        courses (title),
+        profiles (full_name)
+      `);
+
+    if (startDate) {
+      eventsQuery = eventsQuery.gte('created_at', startDate.toISOString());
+    }
+
+    const { data: events, error } = await eventsQuery;
+    if (error) throw error;
+
+    const allEvents = events ?? [];
+
+    // Aggregate: top revisited lessons
+    const lessonMap = new Map<string, { lesson_id: string; lesson_title: string; course_title: string; revisit_count: number }>();
+    allEvents.forEach((e: any) => {
+      const key = e.lesson_id;
+      const existing = lessonMap.get(key);
+      if (existing) {
+        existing.revisit_count++;
+      } else {
+        lessonMap.set(key, {
+          lesson_id: e.lesson_id,
+          lesson_title: e.lessons?.title ?? 'Unknown',
+          course_title: e.courses?.title ?? 'Unknown',
+          revisit_count: 1,
+        });
+      }
+    });
+    const topRevisitedLessons = Array.from(lessonMap.values())
+      .sort((a, b) => b.revisit_count - a.revisit_count)
+      .slice(0, 10);
+
+    // Aggregate: top revisiting students
+    const studentMap = new Map<string, { user_id: string; student_name: string; total_revisits: number; lessons_revisited: Set<string> }>();
+    allEvents.forEach((e: any) => {
+      const key = e.user_id;
+      const existing = studentMap.get(key);
+      if (existing) {
+        existing.total_revisits++;
+        existing.lessons_revisited.add(e.lesson_id);
+      } else {
+        studentMap.set(key, {
+          user_id: e.user_id,
+          student_name: e.profiles?.full_name ?? 'Unknown',
+          total_revisits: 1,
+          lessons_revisited: new Set([e.lesson_id]),
+        });
+      }
+    });
+    const topRevisitingStudents = Array.from(studentMap.values())
+      .map(s => ({
+        user_id: s.user_id,
+        student_name: s.student_name,
+        total_revisits: s.total_revisits,
+        lessons_revisited: s.lessons_revisited.size,
+      }))
+      .sort((a, b) => b.total_revisits - a.total_revisits)
+      .slice(0, 10);
+
+    // Aggregate: timeline (last 30 days)
+    const timelineMap = new Map<string, number>();
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const key = d.toISOString().split('T')[0];
+      timelineMap.set(key, 0);
+    }
+    allEvents.forEach((e: any) => {
+      const dateKey = e.created_at.split('T')[0];
+      if (timelineMap.has(dateKey)) {
+        timelineMap.set(dateKey, (timelineMap.get(dateKey) ?? 0) + 1);
+      }
+    });
+    const timeline = Array.from(timelineMap.entries()).map(([date, count]) => ({ date, count }));
+
+    // Aggregate: by course
+    const courseMap = new Map<string, { course_id: string; course_title: string; revisit_count: number }>();
+    allEvents.forEach((e: any) => {
+      const key = e.course_id;
+      const existing = courseMap.get(key);
+      if (existing) {
+        existing.revisit_count++;
+      } else {
+        courseMap.set(key, {
+          course_id: e.course_id,
+          course_title: e.courses?.title ?? 'Unknown',
+          revisit_count: 1,
+        });
+      }
+    });
+    const byCourse = Array.from(courseMap.values())
+      .sort((a, b) => b.revisit_count - a.revisit_count);
+
+    return LessonRevisitReportSchema.parse({
+      top_revisited_lessons: topRevisitedLessons,
+      top_revisiting_students: topRevisitingStudents,
+      timeline,
+      by_course: byCourse,
+      total_revisits: allEvents.length,
+      unique_students_revisiting: studentMap.size,
+    });
   },
 };

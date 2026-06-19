@@ -1,4 +1,4 @@
-import { CourseReport, EnrollmentReport, CertificateReport, ProgressReport } from '@projeto/types';
+import { CourseReport, EnrollmentReport, CertificateReport, ProgressReport, LessonRevisitReport } from '@projeto/types';
 
 /**
  * @description Repository interface for reporting and analytics operations.
@@ -38,4 +38,12 @@ export interface IReportRepository {
    * @returns Promise resolving to array of CourseReport objects sorted by enrollment.
    */
   getTopCourses(limit?: number): Promise<CourseReport[]>;
+
+  /**
+   * @description Retrieves lesson revisit analytics.
+   * Shows which lessons are re-watched, by whom, and revisit patterns.
+   * @param period - Time period filter: '7d', '30d', '90d', or 'all'.
+   * @returns Promise resolving to LessonRevisitReport with aggregates.
+   */
+  getLessonRevisitReport(period?: string): Promise<LessonRevisitReport>;
 }

@@ -26,22 +26,30 @@ function KPICard({ title, value, subtitle, icon }: {
   icon: string;
 }) {
   return (
-    <Card elevated p={16} flex={1} borderWidth={1} borderColor="$border" borderRadius={12}>
-      <XStack ai="center" gap={12}>
-        <YStack
-          width={48}
-          height={48}
-          borderRadius={12}
-          bg={BRAND_GRADIENT}
-          ai="center"
-          jc="center"
-        >
-          <Icon name={icon as any} size={24} color="$white" />
-        </YStack>
+    <Card
+      p={20}
+      flex={1}
+      borderWidth={1}
+      borderColor="rgba(204, 208, 220, 0.6)"
+      borderRadius={12}
+      style={{
+        backgroundColor: 'rgba(247, 248, 252, 0.55)',
+        backdropFilter: 'blur(12px)',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03)',
+      }}
+    >
+      <XStack ai="center" gap={14}>
+        <Icon name={icon as any} size={22} color="$primary" />
         <YStack flex={1} gap={2}>
-          <Text fontSize={13} color="$textMuted">{title}</Text>
-          <Text fontSize={24} fontWeight="700" color="$text">{value}</Text>
-          {subtitle && <Text fontSize={12} color="$textMuted">{subtitle}</Text>}
+          <Text fontSize={12} fontWeight="500" color="$textMuted" letterSpacing={0.3}>
+            {title}
+          </Text>
+          <Text fontSize={22} fontWeight="700" color="$text" letterSpacing={-0.3}>
+            {value}
+          </Text>
+          <Text fontSize={11} color="$textMuted" mt={1} h={16}>
+            {subtitle ?? '\u00A0'}
+          </Text>
         </YStack>
       </XStack>
     </Card>
@@ -117,7 +125,7 @@ export default function RelatoriosPage() {
       <YStack bg="$background" minHeight="100vh">
         <AdminHeader userProfile={userProfile} onLogout={handleLogout} />
 
-        <main style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 24px' }}>
+        <main style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 24px', width: '100%' }}>
           {/* Hero Header */}
           <YStack mb={32} gap={16}>
             <XStack ai="center" jc="space-between" flexWrap="wrap" gap={16}>
@@ -130,21 +138,50 @@ export default function RelatoriosPage() {
                 </Text>
               </YStack>
 
-              {/* Period selector */}
-              <XStack gap={8}>
-                {['7d', '30d', '90d', 'all'].map((p) => (
-                  <Button
-                    key={p}
-                    variant={period === p ? 'primary' : 'ghost'}
-                    px={12}
-                    py={6}
-                    onPress={() => setPeriod(p)}
-                  >
-                    <Text fontSize={13} fontWeight={period === p ? '600' : '400'}>
-                      {p === 'all' ? 'Tudo' : p}
-                    </Text>
-                  </Button>
-                ))}
+              {/* Period selector — frosted glass pills */}
+              <XStack
+                gap={6}
+                p={4}
+                borderRadius={12}
+                borderWidth={1}
+                borderColor="rgba(204, 208, 220, 0.5)"
+                style={{
+                  backgroundColor: 'rgba(247, 248, 252, 0.45)',
+                  backdropFilter: 'blur(10px)',
+                }}
+              >
+                {['7d', '30d', '90d', 'all'].map((p) => {
+                  const isActive = period === p;
+                  return (
+                    <Button
+                      key={p}
+                      px={14}
+                      py={7}
+                      borderRadius={8}
+                      borderWidth={1}
+                      borderColor={isActive ? 'rgba(59, 130, 246, 0.3)' : 'transparent'}
+                      style={{
+                        backgroundColor: isActive
+                          ? 'rgba(59, 130, 246, 0.1)'
+                          : 'transparent',
+                      }}
+                      hoverStyle={{
+                        backgroundColor: isActive
+                          ? 'rgba(59, 130, 246, 0.15)'
+                          : 'rgba(222, 225, 235, 0.5)',
+                      }}
+                      onPress={() => setPeriod(p)}
+                    >
+                      <Text
+                        fontSize={13}
+                        fontWeight={isActive ? '600' : '400'}
+                        color={isActive ? '$primary' : '$textMuted'}
+                      >
+                        {p === 'all' ? 'Tudo' : p}
+                      </Text>
+                    </Button>
+                  );
+                })}
               </XStack>
             </XStack>
           </YStack>
@@ -157,7 +194,7 @@ export default function RelatoriosPage() {
           ) : (
             <YStack gap={24}>
               {/* KPIs Row */}
-              <XStack gap={16} flexWrap="wrap">
+              <XStack gap={16} ai="stretch">
                 <KPICard
                   title="Total de Alunos"
                   value={enrollmentReport?.total_students ?? 0}
@@ -183,14 +220,31 @@ export default function RelatoriosPage() {
               </XStack>
 
               {/* Matrículas Section */}
-              <Card elevated p={24} borderWidth={1} borderColor="$border" borderRadius={12}>
+              <Card
+                p={28}
+                borderWidth={1}
+                borderColor="rgba(204, 208, 220, 0.55)"
+                borderRadius={14}
+                style={{
+                  backgroundColor: 'rgba(247, 248, 252, 0.45)',
+                  backdropFilter: 'blur(14px)',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.03), 0 4px 12px rgba(0,0,0,0.02)',
+                }}
+              >
                 <Text fontSize={20} fontWeight="700" color="$text" mb={16}>
                   Matrículas
                 </Text>
 
                 {/* Warning: students without enrollments */}
                 {(enrollmentReport?.total_students ?? 0) > 0 && (enrollmentReport?.total ?? 0) === 0 && (
-                  <Card p={16} mb={16} borderRadius={8} borderWidth={1} borderColor="$warning">
+                  <Card
+                    p={14}
+                    mb={16}
+                    borderRadius={10}
+                    borderWidth={1}
+                    borderColor="rgba(245, 158, 11, 0.3)"
+                    style={{ backgroundColor: 'rgba(254, 243, 199, 0.5)' }}
+                  >
                     <XStack ai="center" gap={8}>
                       <Icon name="AlertTriangle" size={18} color="$warning" />
                       <Text fontSize={13} color="$warning" fontWeight="500">
@@ -249,7 +303,7 @@ export default function RelatoriosPage() {
                             borderRadius={4}
                           />
                         </YStack>
-                        <Text fontSize={13} fontWeight="600" color="$text" width={40} ta="right">
+                        <Text fontSize={13} fontWeight="600" color="$text" width={40} textAlign="right">
                           {item.count}
                         </Text>
                       </XStack>
@@ -259,36 +313,43 @@ export default function RelatoriosPage() {
               </Card>
 
               {/* Ranking de Cursos */}
-              <Card elevated p={24} borderWidth={1} borderColor="$border" borderRadius={12}>
-                <Text fontSize={20} fontWeight="700" color="$text" mb={16}>
-                  Ranking de Cursos
-                </Text>
+              <Card
+                p={28}
+                borderWidth={1}
+                borderColor="rgba(204, 208, 220, 0.55)"
+                borderRadius={14}
+                style={{
+                  backgroundColor: 'rgba(247, 248, 252, 0.45)',
+                  backdropFilter: 'blur(14px)',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.03), 0 4px 12px rgba(0,0,0,0.02)',
+                }}
+              >
+                <XStack ai="center" gap={10} mb={16}>
+                  <Text fontSize={20} fontWeight="700" color="$text">
+                    Ranking de Cursos
+                  </Text>
+                  <XStack
+                    width={24}
+                    height={24}
+                    borderRadius={12}
+                    bg="rgba(204, 208, 220, 0.5)"
+                    ai="center"
+                    jc="center"
+                  >
+                    <Text fontSize={11} fontWeight="600" color="$textMuted">
+                      {courseReports.length}
+                    </Text>
+                  </XStack>
+                </XStack>
 
                 <YStack gap={12}>
                   {courseReports.length === 0 ? (
-                    <Text color="$textMuted" ta="center" py={16}>
+                    <Text color="$textMuted" textAlign="center" py={16}>
                       Nenhum dado disponível
                     </Text>
                   ) : (
                     courseReports.map((course, index) => (
                       <XStack key={course.course_id} ai="center" gap={12}>
-                        <YStack
-                          width={32}
-                          height={32}
-                          borderRadius={16}
-                          bg={index < 3 ? BRAND_GRADIENT : '$border'}
-                          ai="center"
-                          jc="center"
-                        >
-                          <Text
-                            fontSize={13}
-                            fontWeight="700"
-                            color={index < 3 ? '$white' : '$textMuted'}
-                          >
-                            {index + 1}
-                          </Text>
-                        </YStack>
-
                         <YStack flex={1} gap={4}>
                           <Text fontSize={14} fontWeight="600" color="$text">
                             {course.course_title}
@@ -311,23 +372,33 @@ export default function RelatoriosPage() {
               </Card>
 
               {/* Certificados */}
-              <Card elevated p="$6">
-                <Text fontSize="$6" fontWeight="700" color="$text" mb="$4">
+              <Card
+                p={28}
+                borderWidth={1}
+                borderColor="rgba(204, 208, 220, 0.55)"
+                borderRadius={14}
+                style={{
+                  backgroundColor: 'rgba(247, 248, 252, 0.45)',
+                  backdropFilter: 'blur(14px)',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.03), 0 4px 12px rgba(0,0,0,0.02)',
+                }}
+              >
+                <Text fontSize={20} fontWeight="700" color="$text" mb={16}>
                   Certificados Emitidos
                 </Text>
 
-                <XStack gap="$6">
+                <XStack gap={24}>
                   {/* By course */}
-                  <YStack flex={1} gap="$2">
-                    <Text fontSize="$4" fontWeight="600" color="$text" mb="$2">
+                  <YStack flex={1} gap={8}>
+                    <Text fontSize={14} fontWeight="600" color="$text" mb={8}>
                       Por Curso
                     </Text>
                     {(certificateReport?.by_course ?? []).slice(0, 5).map((item) => (
-                      <XStack key={item.course_id} justifyContent="space-between" alignItems="center">
-                        <Text fontSize="$3" color="$text" numberOfLines={1} flex={1}>
+                      <XStack key={item.course_id} jc="space-between" ai="center">
+                        <Text fontSize={13} color="$text" numberOfLines={1} flex={1}>
                           {item.course_title}
                         </Text>
-                        <Text fontSize="$3" fontWeight="600" color="$text">
+                        <Text fontSize={13} fontWeight="600" color="$text">
                           {item.count}
                         </Text>
                       </XStack>
@@ -335,12 +406,12 @@ export default function RelatoriosPage() {
                   </YStack>
 
                   {/* Timeline */}
-                  <YStack flex={2} gap="$2">
-                    <Text fontSize="$4" fontWeight="600" color="$text" mb="$2">
+                  <YStack flex={2} gap={8}>
+                    <Text fontSize={14} fontWeight="600" color="$text" mb={8}>
                       Últimos 30 Dias
                     </Text>
-                    <XStack gap="$1" alignItems="flex-end" height={80}>
-                      {(certificateReport?.timeline ?? []).slice(-30).map((item, index) => {
+                    <XStack gap={4} ai="flex-end" height={80}>
+                      {(certificateReport?.timeline ?? []).slice(-30).map((item) => {
                         const maxCount = Math.max(...(certificateReport?.timeline ?? []).map(t => t.count), 1);
                         const height = (item.count / maxCount) * 100;
                         return (
@@ -360,30 +431,37 @@ export default function RelatoriosPage() {
               </Card>
 
               {/* Top Aulas */}
-              <Card elevated p="$6">
-                <Text fontSize="$6" fontWeight="700" color="$text" mb="$4">
+              <Card
+                p={28}
+                borderWidth={1}
+                borderColor="rgba(204, 208, 220, 0.55)"
+                borderRadius={14}
+                style={{
+                  backgroundColor: 'rgba(247, 248, 252, 0.45)',
+                  backdropFilter: 'blur(14px)',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.03), 0 4px 12px rgba(0,0,0,0.02)',
+                }}
+              >
+                <Text fontSize={20} fontWeight="700" color="$text" mb={16}>
                   Aulas Mais Assistidas
                 </Text>
 
-                <YStack gap="$3">
+                <YStack gap={12}>
                   {(progressReport?.top_lessons ?? []).slice(0, 10).map((lesson, index) => (
-                    <XStack key={lesson.lesson_id} alignItems="center" gap="$3">
-                      <YStack
-                        width={24}
-                        alignItems="center"
-                      >
-                        <Text fontSize="$3" fontWeight="600" color="$textMuted">
+                    <XStack key={lesson.lesson_id} ai="center" gap={12}>
+                      <YStack width={24} ai="center">
+                        <Text fontSize={13} fontWeight="600" color="$textMuted">
                           {index + 1}
                         </Text>
                       </YStack>
 
-                      <YStack flex={1} gap="$1">
-                        <Text fontSize="$4" color="$text">
+                      <YStack flex={1} gap={4}>
+                        <Text fontSize={14} color="$text">
                           {lesson.lesson_title}
                         </Text>
                       </YStack>
 
-                      <Text fontSize="$4" fontWeight="600" color="$primary">
+                      <Text fontSize={14} fontWeight="600" color="$primary">
                         {lesson.view_count} assistidas
                       </Text>
                     </XStack>

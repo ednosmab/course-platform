@@ -47,5 +47,5 @@ export type { CourseAccess, Plan, PlanCourse, StudentPlan } from './database';
 export { CourseAccessSchema, PlanSchema, PlanCourseSchema, StudentPlanSchema } from './database';
 
 // Media and Report types
-export type { MediaFile, CourseReport, EnrollmentReport, CertificateReport, ProgressReport } from './database';
-export { MediaFileSchema, CourseReportSchema, EnrollmentReportSchema, CertificateReportSchema, ProgressReportSchema } from './database';
+export type { MediaFile, CourseReport, EnrollmentReport, CertificateReport, ProgressReport, LessonRevisitEvent, LessonRevisitReport } from './database';
+export { MediaFileSchema, CourseReportSchema, EnrollmentReportSchema, CertificateReportSchema, ProgressReportSchema, LessonRevisitEventSchema, LessonRevisitReportSchema } from './database';
