@@ -57,9 +57,6 @@ technical_debt:
   - "PENDENTE: Script lint não existe — considerar adicionar ESLint no futuro"
   - "PENDENTE: 13 erros TypeScript em testes (mocks incompletos de ICourseRepository, IStorageProvider)"
 
-reminders:
-  - "2026-06-19: Criar gráfico na secção de Matrículas em /relatorios — usar cores verde (ativas), amarelo (expiradas), vermelho (canceladas)"
-
 documents_loaded:
   - "governance/WORKFLOW.md"
   - "governance/context/context_buffer.yaml"
