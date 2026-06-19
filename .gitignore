@@ -42,3 +42,6 @@ tests/ladle-vrt/test-results/
 # Feedback privado do tech lead em formação
 docs/feedback/
 
+supabase/.temp/
+supabase/.branches/
+image.png
