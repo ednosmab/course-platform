@@ -24,7 +24,7 @@
 | **Due** | 2026-06-26 |
 | **Criado** | 2026-06-19 |
 | **Descrição** | Testar manualmente as 3 novas telas admin: (1) **Alunos** — criar, editar, listar, ver detalhe com matrículas e progresso; (2) **Mídia** — upload, preview, eliminar, filtros por tipo; (3) **Relatórios** — validar KPIs, matrículas, ranking de cursos, certificados, top aulas, e a nova secção de **Revisitas de Aulas**. Requer aluno a interagir nos cursos para gerar dados reais de progresso e revisitas. Cenários: assistir aula completa (≥85%), reassistir aula já completa (verificar tracking de revisita), submeter quiz, verificar certificado emitido. |
-| **Critérios de sucesso** | (1) Todas as telas carregam sem erros; (2) CRUD de alunos funciona; (3) Upload/eliminação de mídia funciona; (4) KPIs nos relatórios reflectem dados reais; (5) Revisitas aparecem no relatório quando aluno reassiste aula completa; (6) Timeline de revisitas mostra dados; (7) Alunos sem matrícula mostram aviso; (8) Período filtrado mostra dados consistentes |
+| **Critérios de sucesso** | (1) Todas as telas carregam sem erros; (2) CRUD de alunos funciona; (3) Upload/eliminação de mídia funciona; (4) KPIs nos relatórios reflectem dados reais; (5) Revisitas aparecem no relatório quando aluno reassiste aula completa; (6) Timeline de revisitas mostra dados; (7) Alunos sem matrícula mostram aviso; (8) Período filtrado mostra dados consistentes; (9) **Gráfico de torre** na secção Matrículas — barras empilhadas verde (ativas), amarelo (expiradas), vermelho (canceladas) por curso |
 
 ### 🚦 Definir critério de push para origin (desbloqueia G-01)
 

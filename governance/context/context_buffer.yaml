@@ -56,6 +56,7 @@ technical_debt:
   - "PENDENTE: Configurar SUPABASE_SERVICE_ROLE_KEY em .env.local para operações admin"
   - "PENDENTE: Script lint não existe — considerar adicionar ESLint no futuro"
   - "PENDENTE: 13 erros TypeScript em testes (mocks incompletos de ICourseRepository, IStorageProvider)"
+  - "PENDENTE: Gráfico de torre na secção Matrículas (/relatorios) — barras empilhadas verde (ativas), amarelo (expiradas), vermelho (canceladas) por curso. Referência: image.png na raiz do projecto."
 
 documents_loaded:
   - "governance/WORKFLOW.md"
