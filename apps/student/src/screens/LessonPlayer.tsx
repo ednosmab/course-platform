@@ -3,15 +3,18 @@ import { StatusBar } from 'react-native';
 import { YStack, XStack, Text, Button, ScrollView, Spinner, Icon } from '@projeto/ui';
 import { useMobileProgress } from '../hooks/useMobileProgress';
 import { BlockRenderer } from '../components/BlockRenderer';
+import { StudentHeader } from '../components/StudentHeader';
 import { CourseService, LessonService, ProgressService, AuthService } from '@projeto/core';
 
 type LessonPlayerProps = {
   courseId?: string | null;
   lessonId?: string | null;
   onBack: () => void;
+  onLogout: () => void;
+  onTabAction: (action: string) => void;
 };
 
-export function LessonPlayer({ courseId, lessonId, onBack }: LessonPlayerProps) {
+export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction }: LessonPlayerProps) {
   const { saveProgressMobile } = useMobileProgress();
   const [lessons, setLessons] = useState<any[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(lessonId ?? null);
@@ -22,6 +25,13 @@ export function LessonPlayer({ courseId, lessonId, onBack }: LessonPlayerProps) 
   const [videoPositions, setVideoPositions] = useState<Record<string, number>>({});
   const [userId, setUserId] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
+  const [userProfile, setUserProfile] = useState<{ full_name: string } | null>(null);
+
+  useEffect(() => {
+    AuthService.getCurrentProfile().then((profile) => {
+      setUserProfile(profile);
+    }).catch(() => {});
+  }, []);
 
   const getErrorMessage = (err: any): string => {
     if (!err) return 'Erro desconhecido';
@@ -201,41 +211,42 @@ export function LessonPlayer({ courseId, lessonId, onBack }: LessonPlayerProps) 
     }
   };
 
-  if (error) {
-    return (
-      <YStack flex={1} jc="center" ai="center" p="$6" bg="$background">
-        <StatusBar barStyle="light-content" />
-        <Icon name="AlertCircle" size={48} color="$danger" />
-        <Text color="$danger" fontSize={16} fontWeight="700" mt="$4" textAlign="center">
-          Erro ao Conectar ao Supabase
-        </Text>
-        <Text color="$textMuted" fontSize={12} mt="$2" textAlign="center" lineHeight={18}>
-          {error}
-        </Text>
-        <Button variant="secondary" mt="$6" onPress={loadCourseData}>
-          Tentar Novamente
-        </Button>
-      </YStack>
-    );
-  }
-
-  if (loading || !activeLesson) {
-    return (
-      <YStack flex={1} jc="center" ai="center" bg="$background">
-        <StatusBar barStyle="light-content" />
-        <Spinner size="large" color="$primary" />
-        <Text color="$textMuted" mt="$4" fontSize={13} fontWeight="600">
-          Carregando plataforma de alunos real...
-        </Text>
-      </YStack>
-    );
-  }
-
   const completedCount = Object.values(completions).filter(Boolean).length;
   const progressPercent = lessons.length > 0 ? Math.round((completedCount / lessons.length) * 100) : 0;
 
   return (
     <YStack flex={1} bg="$background">
+      <StudentHeader
+        userProfile={userProfile}
+        onLogout={onLogout}
+        onTabAction={onTabAction}
+        activeTab="courses"
+      />
+
+      {error ? (
+        <YStack flex={1} jc="center" ai="center" p="$6">
+          <StatusBar barStyle="light-content" />
+          <Icon name="AlertCircle" size={48} color="$danger" />
+          <Text color="$danger" fontSize={16} fontWeight="700" mt="$4" textAlign="center">
+            Erro ao Conectar ao Supabase
+          </Text>
+          <Text color="$textMuted" fontSize={12} mt="$2" textAlign="center" lineHeight={18}>
+            {error}
+          </Text>
+          <Button variant="secondary" mt="$6" onPress={loadCourseData}>
+            Tentar Novamente
+          </Button>
+        </YStack>
+      ) : loading || !activeLesson ? (
+        <YStack flex={1} jc="center" ai="center">
+          <StatusBar barStyle="light-content" />
+          <Spinner size="large" color="$primary" />
+          <Text color="$textMuted" mt="$4" fontSize={13} fontWeight="600">
+            Carregando plataforma de alunos real...
+          </Text>
+        </YStack>
+      ) : (
+        <>
       <StatusBar barStyle="dark-content" />
 
       <XStack
@@ -291,6 +302,8 @@ export function LessonPlayer({ courseId, lessonId, onBack }: LessonPlayerProps) 
           </Button>
         )}
       </XStack>
+      </>
+      )}
     </YStack>
   );
 }

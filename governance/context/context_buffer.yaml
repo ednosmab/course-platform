@@ -10,20 +10,23 @@ milestone:
   next_phase: "P1-01 Observabilidade"
 
 session:
-  id: "2026-06-19"
+  id: "2026-06-20"
   branch: "develop"
-  operation_type: "FEATURE"
+  operation_type: "BUG"
   last_commit: "5d92e43"
-  status: "completed"
+  status: "in_progress"
 
 current_task:
-  id: "TEST-001"
-  type: "VALIDATION"
-  description: "Validação manual das telas Alunos, Mídia e Relatórios com dados reais"
-  status: "pending"
+  id: "BUG-STUDENT-HEADER"
+  type: "BUG"
+  description: "StudentHeader não aparece nas telas CourseLessons e LessonPlayer"
+  status: "completed"
   plan_file: null
   current_step: null
-  model_assignments: []
+  model_assignments:
+    - "Adicionar StudentHeader ao CourseLessons.tsx"
+    - "Adicionar StudentHeader ao LessonPlayer.tsx"
+    - "Passar props onLogout/onTabAction das routes"
 
 adr:
   last: "ADR-022"

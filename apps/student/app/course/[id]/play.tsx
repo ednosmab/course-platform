@@ -55,12 +55,31 @@ export default function LessonPlayerRoute() {
     );
   }
 
+  const handleTabAction = (action: string) => {
+    switch (action) {
+      case 'dashboard':
+        router.push('/');
+        break;
+      case 'courses':
+        router.push('/courses');
+        break;
+      case 'explore':
+        router.push('/explore');
+        break;
+      case 'certificates':
+        router.push('/certificates');
+        break;
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <LessonPlayer
         courseId={courseId}
         lessonId={resolvedLessonId}
         onBack={() => router.push(`/course/${courseId}`)}
+        onLogout={() => router.replace('/login')}
+        onTabAction={handleTabAction}
       />
     </SafeAreaView>
   );

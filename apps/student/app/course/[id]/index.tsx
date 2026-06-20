@@ -54,6 +54,23 @@ export default function CourseLessonsRoute() {
     );
   }
 
+  const handleTabAction = (action: string) => {
+    switch (action) {
+      case 'dashboard':
+        router.push('/');
+        break;
+      case 'courses':
+        router.push('/courses');
+        break;
+      case 'explore':
+        router.push('/explore');
+        break;
+      case 'certificates':
+        router.push('/certificates');
+        break;
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <CourseLessons
@@ -61,6 +78,8 @@ export default function CourseLessonsRoute() {
         onSelectLesson={(lessonId) => router.push(`/course/${courseId}/play?lessonId=${lessonId}`)}
         onBack={() => router.back()}
         onViewCertificate={() => router.push('/certificates')}
+        onLogout={() => router.replace('/login')}
+        onTabAction={handleTabAction}
       />
     </SafeAreaView>
   );

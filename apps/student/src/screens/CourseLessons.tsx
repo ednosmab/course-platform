@@ -2,12 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input } from '@projeto/ui';
 import { CourseService, ProgressService, AuthService } from '@projeto/core';
 import { Course, Module, Lesson } from '@projeto/types';
+import { StudentHeader } from '../components/StudentHeader';
 
 type CourseLessonsProps = {
   courseId: string;
   onSelectLesson: (lessonId: string) => void;
   onBack: () => void;
   onViewCertificate?: () => void;
+  onLogout: () => void;
+  onTabAction: (action: string) => void;
 };
 
 type LessonStatus = 'done' | 'current' | 'todo' | 'locked';
@@ -38,7 +41,7 @@ const typeConfig = {
   audio: { icon: 'Headphones' as const, label: 'Áudio', color: '$textMuted' },
 };
 
-export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertificate }: CourseLessonsProps) {
+export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertificate, onLogout, onTabAction }: CourseLessonsProps) {
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<ModuleWithLessons[]>([]);
   const [loading, setLoading] = useState(true);
@@ -172,36 +175,37 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
       ? () => onViewCertificate?.()
       : () => nextLesson && onSelectLesson(nextLesson.id);
 
-  if (error) {
-    return (
-      <YStack flex={1} jc="center" ai="center" p="$6" bg="$background">
-        <Icon name="AlertCircle" size={48} color="$danger" />
-        <Text color="$danger" fontSize={16} fontWeight="700" mt="$4" textAlign="center">
-          Erro ao carregar aulas
-        </Text>
-        <Text color="$gray4" fontSize={12} mt="$2" textAlign="center" lineHeight={18}>
-          {error}
-        </Text>
-        <Button variant="secondary" mt="$6" onPress={loadData}>
-          Tentar Novamente
-        </Button>
-      </YStack>
-    );
-  }
-
-  if (loading) {
-    return (
-      <YStack flex={1} jc="center" ai="center" bg="$background">
-        <Spinner size="large" color="$primary" />
-        <Text color="$gray4" mt="$4" fontSize={13} fontWeight="600">
-          Carregando aulas do curso...
-        </Text>
-      </YStack>
-    );
-  }
-
   return (
     <YStack flex={1} bg="$background">
+      <StudentHeader
+        userProfile={userProfile}
+        onLogout={onLogout}
+        onTabAction={onTabAction}
+        activeTab="courses"
+      />
+
+      {error ? (
+        <YStack flex={1} jc="center" ai="center" p="$6">
+          <Icon name="AlertCircle" size={48} color="$danger" />
+          <Text color="$danger" fontSize={16} fontWeight="700" mt="$4" textAlign="center">
+            Erro ao carregar aulas
+          </Text>
+          <Text color="$gray4" fontSize={12} mt="$2" textAlign="center" lineHeight={18}>
+            {error}
+          </Text>
+          <Button variant="secondary" mt="$6" onPress={loadData}>
+            Tentar Novamente
+          </Button>
+        </YStack>
+      ) : loading ? (
+        <YStack flex={1} jc="center" ai="center">
+          <Spinner size="large" color="$primary" />
+          <Text color="$gray4" mt="$4" fontSize={13} fontWeight="600">
+            Carregando aulas do curso...
+          </Text>
+        </YStack>
+      ) : (
+        <>
       {/* Header */}
       <YStack
         bg="$background"
@@ -610,6 +614,8 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
           </YStack>
         </YStack>
       </ScrollView>
+        </>
+      )}
     </YStack>
   );
 }
