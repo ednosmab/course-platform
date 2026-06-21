@@ -10,4 +10,8 @@ config.watchFolders = [
 
 config.resolver.unstable_enablePackageExports = true;
 
+// Exclude expo-sqlite from web builds (it requires native WASM support)
+config.resolver.platforms = ['native', 'web'];
+config.resolver.unstable_conditionNames = ['browser', 'require', 'import'];
+
 module.exports = config;

@@ -167,6 +167,8 @@ As regras não são todas do mesmo nível. Existem três camadas de dependência
 
 Fluxo: Implementar → Documentar → Testar → Decidir → Actualizar → Só então marcar [x]
 
+22. **BLOCOS INTERACTIVOS — SAVE PATTERN (OBRIGATÓRIO):** Ao criar ou modificar componentes de bloco no CMS, verificar se o bloco é interactivo (guarda estado do utilizador). Se sim: (a) adicionar `interactive: z.literal(true).optional()` + `stateSchema` ao Zod schema em `packages/types/src/`, (b) o componente UI DEVE implementar `InteractiveBlockProps<TState>` com `defaultState`/`onStateChange`, (c) registar o branch de renderização no `SharedBlockRenderer`. Consulte `docs/skills/block-extensibility.md` para o protocolo completo.
+
 ---
 
 ## 🧬 MODELO PREFERIDO

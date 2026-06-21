@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import { YStack, XStack, Text } from 'tamagui';
-import { QuizBlock } from '@projeto/types';
+import { QuizBlock, InteractiveBlockProps } from '@projeto/types';
 import { renderSimpleMarkdown } from '../utils/markdown';
 import { Icon } from '../components/Icon';
 
-type Props = {
-  block: QuizBlock;
+type QuizState = {
+  selectedOptionId: string | null;
+  submitted: boolean;
 };
 
-export const QuizBlockRenderer: React.FC<Props> = ({ block }) => {
-  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+type Props = {
+  block: QuizBlock;
+} & InteractiveBlockProps<QuizState>;
+
+export const QuizBlockRenderer: React.FC<Props> = ({ block, defaultState, onStateChange }) => {
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(
+    defaultState?.selectedOptionId ?? null
+  );
+  const [submitted, setSubmitted] = useState(
+    defaultState?.submitted ?? false
+  );
 
   const activeOption = block.options.find((o) => o.id === selectedOptionId);
 
@@ -25,6 +34,7 @@ export const QuizBlockRenderer: React.FC<Props> = ({ block }) => {
   const handleSubmit = () => {
     if (selectedOptionId) {
       setSubmitted(true);
+      onStateChange?.(block.id, { selectedOptionId, submitted: true });
     }
   };
 
@@ -61,7 +71,10 @@ export const QuizBlockRenderer: React.FC<Props> = ({ block }) => {
               borderRadius="$3"
               p="$3"
               pointerEvents={submitted ? 'none' : 'auto'}
-              onPress={() => setSelectedOptionId(opt.id)}
+              onPress={() => {
+                setSelectedOptionId(opt.id);
+                onStateChange?.(block.id, { selectedOptionId: opt.id, submitted: false });
+              }}
               pressStyle={{ opacity: 0.8 }}
             >
               <Text
@@ -115,6 +128,7 @@ export const QuizBlockRenderer: React.FC<Props> = ({ block }) => {
             onPress={() => {
               setSubmitted(false);
               setSelectedOptionId(null);
+              onStateChange?.(block.id, { selectedOptionId: null, submitted: false });
             }}
             pressStyle={{ opacity: 0.8 }}
             mt="$2"

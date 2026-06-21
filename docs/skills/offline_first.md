@@ -4,13 +4,24 @@
 Garantir que a plataforma seja resiliente a falhas de conexão e permita o consumo de conteúdos (especialmente no mobile) sem internet.
 
 ## 🛠️ Pilares da Estratégia
-1. **Cache Local (TanStack Query):** Use `staleTime` e `gcTime` agressivos para manter dados de cursos e aulas disponíveis localmente.
-2. **Persistência de Estado:** Utilize plugins de persistência (ex: `AsyncStorage` no mobile) para salvar o cache do Query Client entre sessões.
-3. **Sincronização em Background:** Mudanças feitas offline (ex: marcar aula como concluída) devem ser enfileiradas e sincronizadas assim que a conexão retornar.
-4. **Download de Mídia:** Para vídeos, implemente suporte a download via `Expo FileSystem` ou APIs nativas, salvando metadados no banco local.
-5. **UI de Estado de Conexão:** Informe claramente ao usuário quando ele está offline e quais conteúdos estão disponíveis.
+1. **SQLite Local (expo-sqlite):** Banco de dados SQLite para armazenar progresso de aulas, módulos cacheados e metadados de mídia. Consultas SQL completas, suporte a concorrência, funciona em ambientes mobile e web.
+2. **Cache de Mídia (expo-file-system):** Sistema de download e cache de imagens e binários para acesso offline. Retry com timeout, controle de versão, limpeza automática.
+3. **Sincronização Bidirecional (syncService):** Push de pendências locais para Supabase + pull de dados do servidor. Sincronização automática a cada 30 segundos quando online.
+4. **Estado de Conexão (useConnectionStatus):** Monitoramento em tempo real do estado da rede. Badge "Offline" no StudentHeader, auto-sync ao reconectar.
+5. **Download de Conteúdo (contentCacheService):** Botão "Baixar para offline" nos módulos. Download completo da estrutura do módulo + mídia associada.
 
 ## 📂 Onde Aplicar
-- `apps/student/`
-- `packages/core/hooks/`
-- Estratégias de Service Workers no Web.
+- `apps/student/src/services/offlineDb.ts` — Schema e funções SQLite
+- `apps/student/src/services/progressOfflineStore.ts` — Cache de progresso local
+- `apps/student/src/services/mediaCacheService.ts` — Cache de mídia
+- `apps/student/src/services/contentCacheService.ts` — Download de módulos
+- `apps/student/src/services/syncService.ts` — Sincronização bidirecional
+- `apps/student/src/hooks/useConnectionStatus.ts` — Monitor de conectividade
+- `apps/student/src/hooks/useCachedImage.ts` — Resolução de imagens offline
+
+## 🔒 Regras
+- **Plataforma:** expo-sqlite funciona em Expo Go (SDK 54+). localForage (IndexedDB) é web-only e foi removido.
+- **Concorrência:** expo-sqlite async API serializa writes automaticamente.
+- **Fallback Web:** Todas as funções offline são no-op no web (Platform.OS === 'web').
+- **Conflict Resolution:** Last-write-wins. Server `updated_at` é source of truth quando disponível.
+- **Retry:** Máximo 3 tentativas, timeout de 30s. Falha → registro `partial=1` no cache.

@@ -12,21 +12,21 @@ milestone:
 session:
   id: "2026-06-20"
   branch: "develop"
-  operation_type: "BUG"
-  last_commit: "5d92e43"
-  status: "in_progress"
+  operation_type: "FEATURE"
+  last_commit: "pending"
+  status: "completed"
+  reminder: "TEST-OFFLINE-001: Testar feature offline-first no Expo Go antes de commit final"
 
 current_task:
-  id: "BUG-STUDENT-HEADER"
-  type: "BUG"
-  description: "StudentHeader não aparece nas telas CourseLessons e LessonPlayer"
+  id: "SAVE-PROGRESS"
+  type: "FEATURE"
+  description: "Salvar progresso da aula: video position, quiz answers, interactive block states via expo-sqlite"
   status: "completed"
-  plan_file: null
-  current_step: null
+  plan_file: "docs/plans/2026-06-20-offline-first-sqlite.md"
+  current_step: "Migração expo-sqlite completa (21 steps)"
   model_assignments:
-    - "Adicionar StudentHeader ao CourseLessons.tsx"
-    - "Adicionar StudentHeader ao LessonPlayer.tsx"
-    - "Passar props onLogout/onTabAction das routes"
+    - "Steps 0-20: Implementação completa e validada"
+  adr: "ADR-023-offline-first-sqlite"
 
 adr:
   last: "ADR-022"
@@ -38,15 +38,25 @@ next_steps:
   - "TEST-001: Validar telas Alunos, Mídia e Relatórios"
   - "├─ Criar aluno de teste via /alunos"
   - "├─ Upload imagem via /midia"
-  - "├─ Matricular aluno num curso"
   - "├─ Aluno assistir aula completa (≥85%)"
   - "├─ Aluno reassistir aula completa (verificar revisita)"
   - "├─ Verificar KPIs em /relatorios"
   - "└─ Verificar secção Revisitas de Aulas"
+  - "TEST-OFFLINE-001: Testar feature offline-first (expo-sqlite)"
+  - "├─ Abrir Expo Go no device/emulador"
+  - "├─ Fazer login e navegar até uma aula"
+  - "├─ Assistir vídeo por alguns segundos → verificar que progresso é salvo"
+  - "├─ Fechar e reabrir a aula → verificar que posição é restaurada"
+  - "├─ Responder quiz → clicar Salvar → verificar toast"
+  - "├─ Desligar Wi-Fi/dados → verificar badge 'Offline' no header"
+  - "├─ Assistir mais conteúdo offline → verificar save local"
+  - "├─ Reconectar → verificar sync automático"
+  - "├─ Testar botão 'Baixar para offline' nos módulos"
+  - "└─ Verificar imagens cacheadas aparecem offline"
 
 last_decision:
-  adr: "ADR-022"
-  description: "Fase P0 encerrada (2026-06-13). 3 itens concluídos: Rate Limiting (in-memory), Dev RLS Override (documentado), Connection Pooling (invalidado via ADR-022). Commits: 8e7a1b2, 0679541. Próxima fase: P1-01 Observabilidade."
+  adr: "ADR-023"
+  description: "Migração offline-first de localForage para expo-sqlite (2026-06-20). ADR-023 supersedes ADR-011. Sistema completo: SQLite progress store, media cache, content download, bidirectional sync, connection monitor. Student build validado (web)."
 
 technical_debt:
   - "Botões de acesso (Livre/Progressivo/Restrito) usam hex hardcoded (#3B82F6, #DEE1EB) — migrar para tokens Tamagui quando possível"
@@ -60,6 +70,10 @@ technical_debt:
   - "PENDENTE: Script lint não existe — considerar adicionar ESLint no futuro"
   - "PENDENTE: 13 erros TypeScript em testes (mocks incompletos de ICourseRepository, IStorageProvider)"
   - "PENDENTE: Gráfico de torre na secção Matrículas (/relatorios) — barras empilhadas verde (ativas), amarelo (expiradas), vermelho (canceladas) por curso. Referência: image.png na raiz do projecto."
+  - "2026-06-20: SAVE-PROGRESS — Implementação completa: InteractiveBlockProps contract, block_states schema, localForage service, ProgressService.saveLessonState(), LessonPlayer save/restore, Toast component, block-extensibility.md skill, rule #22 AGENTS.md"
+  - "2026-06-20: Migration 20260620000001_add_block_states.sql aplicada via supabase db push"
+  - "2026-06-20: MIGRAÇÃO EXPO-SQLITE — localForage removido, substituído por expo-sqlite + expo-file-system. ADR-023 criada. Arquivos: offlineDb.ts, progressOfflineStore.ts, mediaCacheService.ts, contentCacheService.ts, syncService.ts, useCachedImage.ts, useConnectionStatus.ts, ImageWithCache.tsx. StudentHeader badge offline. Botão download módulos."
+  - "TEST-OFFLINE-001: Lembrete para testar feature offline-first no Expo Go (device/emulador) — ver next_steps"
 
 documents_loaded:
   - "governance/WORKFLOW.md"

@@ -133,4 +133,39 @@ export const supabaseProgressRepository: IProgressRepository = {
     const { data: progress } = await supabase.from('student_progress').select('lesson_id, completed, tests_completed, percentage_watched, last_played_seconds').eq('user_id', userId).in('lesson_id', lessonIds);
     return progress ?? [];
   },
+
+  /**
+   * @description Full upsert of all progress fields including block_states, revisit_count, and last_revisited_at.
+   * Business rule: Same composite key as regular upsert (user_id, lesson_id), but persists the complete lesson state
+   * in a single atomic write — video position, block states, revisit metadata.
+   * @param {string} userId - The UUID of the student.
+   * @param {string} lessonId - The UUID of the lesson.
+   * @param {object} data - All progress fields to persist.
+   * @returns {Promise<StudentProgress>} The updated progress record validated against StudentProgressSchema.
+   */
+  async upsertFull(userId: string, lessonId: string, data: {
+    last_played_seconds?: number;
+    percentage_watched?: number;
+    completed?: boolean;
+    completed_at?: string | null;
+    tests_completed?: Record<string, number>;
+    block_states?: Record<string, any>;
+    revisit_count?: number;
+    last_revisited_at?: string | null;
+    updated_at: string;
+  }): Promise<StudentProgress> {
+    const payload: any = { user_id: userId, lesson_id: lessonId, updated_at: data.updated_at };
+    if (data.last_played_seconds !== undefined) payload.last_played_seconds = data.last_played_seconds;
+    if (data.percentage_watched !== undefined) payload.percentage_watched = data.percentage_watched;
+    if (data.completed !== undefined) payload.completed = data.completed;
+    if (data.completed_at !== undefined) payload.completed_at = data.completed_at;
+    if (data.tests_completed !== undefined) payload.tests_completed = data.tests_completed;
+    if (data.block_states !== undefined) payload.block_states = data.block_states;
+    if (data.revisit_count !== undefined) payload.revisit_count = data.revisit_count;
+    if (data.last_revisited_at !== undefined) payload.last_revisited_at = data.last_revisited_at;
+
+    const { data: result, error } = await supabase.from('student_progress').upsert(payload, { onConflict: 'user_id,lesson_id' }).select('*').single();
+    if (error) throw error;
+    return StudentProgressSchema.parse(result);
+  },
 };

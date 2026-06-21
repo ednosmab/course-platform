@@ -14,6 +14,21 @@
 
 ## 🏆 P0 — Sprint Actual (≤ 7 dias)
 
+### 💾 Salvar Progresso da Aula (Video + Quiz + Blocos Interactivos)
+
+| Campo | Valor |
+|---|---|
+| **Status** | Done |
+| **Severidade** | 🔴 Crítico |
+| **Owner** | Agente |
+| **Due** | 2026-06-25 |
+| **Criado** | 2026-06-20 |
+| **Concluído** | 2026-06-20 |
+| **Descrição** | Sistema de save de progresso da aula do aluno via expo-sqlite: (1) Botão "Salvar" no sub-header de CourseLessons e LessonPlayer; (2) SQLite para save imediato client-side; (3) ProgressService para persistência no Supabase; (4) Restauração automática ao reabrir aula (cross-device); (5) Auto-save como rede de segurança (debounce 5s); (6) Sistema extensível via schema auto-declarativo para novos blocos interactivos; (7) Toast de feedback visual; (8) Sincronização bidirecional (syncService); (9) Download de módulos offline (contentCacheService); (10) Cache de mídia (mediaCacheService); (11) Monitor de conexão (useConnectionStatus); (12) Badge offline no StudentHeader. |
+| **Critérios de sucesso** | (1) Botão Salvar funciona em CourseLessons e LessonPlayer; (2) Progresso do vídeo é salvo e restaurado; (3) Respostas de quiz são salvas e restauradas; (4) Cross-device sync funciona (login noutro dispositivo); (5) Offline: save fica em SQLite, sync ao reconectar; (6) Toast aparece e desaparece após 3s; (7) Auto-save dispara após 5s; (8) Schema auto-declarativo funciona para novos blocos; (9) Download de módulos funciona; (10) Badge offline aparece quando sem conexão |
+| **Plano** | `docs/plans/2026-06-20-save-progress.md` |
+| **ADR** | `docs/adrs/ADR-023-offline-first-sqlite.md` (superseded ADR-011) |
+
 ### 🧪 Validação Manual — Telas Alunos, Mídia e Relatórios
 
 | Campo | Valor |
@@ -205,6 +220,7 @@ Causa raiz: refactor 5A.1-5A.3 não é pré-requisito técnico do fix da linha 1
 
 | Item | Severidade | Status | Due | Owner |
 |---|---|---|---|---|
+| Concorrência de progresso multi-dispositivo (version check + merge inteligente) | 🟡 Médio | Backlog [REVISIT: 2026-08-01] | 2026-08-01 | unassigned |
 | Student app — Alinhar layout com design reference | 🟢 Baixo | Backlog | 2026-07-15 | Agente 3 |
 | BUG: Student app — Dashed border cor errada | 🟢 Baixo | Paused [REVISIT: 2026-07-01] | 2026-07-01 | Agente 3 |
 | Admin — seção de exercícios extras | 🟢 Baixo | Backlog | 2026-07-30 | Agente 2 |

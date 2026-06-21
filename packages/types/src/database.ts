@@ -118,6 +118,9 @@ export const StudentProgressSchema = z.object({
   completed_at: z.string().or(z.date()).nullable().optional(),
   updated_at: z.string().or(z.date()),
   tests_completed: z.record(z.string(), z.number()).optional().default({}),
+  block_states: z.record(z.string(), z.any()).optional().default({}),
+  revisit_count: z.number().int().nonnegative().optional().default(0),
+  last_revisited_at: z.string().or(z.date()).nullable().optional(),
 }).strict();
 
 export type StudentProgress = z.infer<typeof StudentProgressSchema>;

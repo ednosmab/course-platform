@@ -17,6 +17,7 @@ export * from './quote';
 export * from './heading';
 export * from './divider';
 export * from './layout';
+export * from './blocks';
 
 // União discriminada baseada na propriedade 'type'
 export const AnyBlockSchema = z.discriminatedUnion('type', [

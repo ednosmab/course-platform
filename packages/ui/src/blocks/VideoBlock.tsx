@@ -109,7 +109,7 @@ export const VideoBlockRenderer: React.FC<Props> = ({ block, onVideoProgress, sa
       )}
 
       <XStack ai="center" gap="$1.5" p="$3" borderTopWidth={1} borderTopColor="$gray2">
-        <BookOpen size={12} color="$secondary" />
+        <Icon name="BookOpen" size={12} color="$secondary" />
         <Text color="$gray5" fontSize={10} flex={1}>Source: {block.provider || 'Direct Video'} | {block.url}</Text>
       </XStack>
     </YStack>

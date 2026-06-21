@@ -91,4 +91,24 @@ export interface IProgressRepository {
    * @returns Array of progress records (lesson_id, completed, tests_completed, percentage_watched, last_played_seconds).
    */
   getProgressByLessons(userId: string, lessonIds: string[]): Promise<any[]>;
+
+  /**
+   * @description Full upsert of all progress fields including block_states, revisit_count, and last_revisited_at.
+   * Used by the save-progress flow to persist the complete lesson state in a single write.
+   * @param userId - The UUID of the student.
+   * @param lessonId - The UUID of the lesson.
+   * @param data - All progress fields to persist.
+   * @returns The updated StudentProgress object.
+   */
+  upsertFull(userId: string, lessonId: string, data: {
+    last_played_seconds?: number;
+    percentage_watched?: number;
+    completed?: boolean;
+    completed_at?: string | null;
+    tests_completed?: Record<string, number>;
+    block_states?: Record<string, any>;
+    revisit_count?: number;
+    last_revisited_at?: string | null;
+    updated_at: string;
+  }): Promise<StudentProgress>;
 }

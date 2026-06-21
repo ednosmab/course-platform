@@ -3,6 +3,12 @@ import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input } 
 import { CourseService, ProgressService, AuthService } from '@projeto/core';
 import { Course, Module, Lesson } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
+import {
+  progressOfflineStore,
+  type LocalProgressData,
+} from '../services/progressOfflineStore';
+import { syncService } from '../services/syncService';
+import { contentCacheService } from '../services/contentCacheService';
 
 type CourseLessonsProps = {
   courseId: string;
@@ -49,6 +55,8 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
   const [openModules, setOpenModules] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [userProfile, setUserProfile] = useState<{ full_name: string } | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [downloadingModules, setDownloadingModules] = useState<Record<string, boolean>>({});
   const scrollViewRef = useRef<ScrollView>(null);
 
   const loadData = async () => {
@@ -128,6 +136,30 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
       lesson.title.toLowerCase().includes(searchQuery.toLowerCase())
     ),
   })).filter(mod => mod.lessons.length > 0 || searchQuery === '');
+
+  const handleSyncPendingSaves = async () => {
+    if (!userProfile?.id) return;
+    try {
+      setSyncing(true);
+      await syncService.pushPendingProgress();
+    } catch (err) {
+      console.error('Failed to sync pending saves:', err);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleDownloadModule = async (moduleId: string) => {
+    if (!courseId) return;
+    try {
+      setDownloadingModules(prev => ({ ...prev, [moduleId]: true }));
+      await contentCacheService.downloadModule(courseId, moduleId);
+    } catch (err) {
+      console.error('Failed to download module:', err);
+    } finally {
+      setDownloadingModules(prev => ({ ...prev, [moduleId]: false }));
+    }
+  };
 
   const totalLessons = modules.reduce((acc, mod) => acc + mod.lessons.length, 0);
   const completedLessons = modules.reduce(
@@ -250,6 +282,24 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
                 />
               </YStack>
             </YStack>
+            <Button
+              variant="ghost"
+              px="$3"
+              py="$2"
+              br="$3"
+              hoverStyle={{ bg: '$secondary' }}
+              onPress={handleSyncPendingSaves}
+              disabled={syncing}
+            >
+              {syncing ? (
+                <Spinner size="small" color="$text" />
+              ) : (
+                <Icon name="RefreshCw" size={16} color="$text" />
+              )}
+              <Text fontSize={12} fontWeight="600" color="$text" ml="$1">
+                Sincronizar
+              </Text>
+            </Button>
           </XStack>
         </XStack>
       </YStack>
@@ -480,6 +530,21 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
                     </XStack>
 
                     <XStack ai="center" gap="$3">
+                      {/* Download button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onPress={() => handleDownloadModule(mod.id)}
+                        disabled={downloadingModules[mod.id]}
+                        hoverStyle={{ bg: '$secondary' }}
+                      >
+                        {downloadingModules[mod.id] ? (
+                          <Spinner size="sm" color="$textMuted" />
+                        ) : (
+                          <Icon name="Download" size={16} color="$textMuted" />
+                        )}
+                      </Button>
+
                       {/* Module progress indicator */}
                       <YStack w={48} h={48} ai="center" jc="center">
                         <Text fontSize={14} fontWeight="bold" color={moduleProgress === 100 ? '$success' : '$primary'}>

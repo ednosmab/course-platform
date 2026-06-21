@@ -21,6 +21,11 @@ export const QuizBlockSchema = z.object({
     height: z.string().optional(),
   }).optional(),
   layouts: BlockLayoutsSchema,
+  interactive: z.literal(true).optional(),
+  stateSchema: z.object({
+    selectedOptionId: z.string().nullable().default(null),
+    submitted: z.boolean().default(false),
+  }).optional(),
 }).strict();
 
 export type QuizOption = z.infer<typeof QuizOptionSchema>;

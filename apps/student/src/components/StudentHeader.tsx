@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, XStack, YStack, Text, Icon, useMedia, BrandMark } from '@projeto/ui';
 import { AuthService } from '@projeto/core';
+import { useConnectionStatus } from '../hooks/useConnectionStatus';
 
 const NAV_TABS = [
   { label: 'Meu painel', action: 'dashboard' },
@@ -20,6 +21,7 @@ export function StudentHeader({ userProfile, onLogout, onTabAction, activeTab }:
   const media = useMedia();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<any>(null);
+  const { isOnline } = useConnectionStatus();
 
   const initials = userProfile?.full_name
     ? userProfile.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
@@ -99,6 +101,20 @@ export function StudentHeader({ userProfile, onLogout, onTabAction, activeTab }:
         </XStack>
 
         <XStack ai="center" gap={12}>
+          {!isOnline && (
+            <XStack
+              px={8}
+              py={4}
+              borderRadius={4}
+              backgroundColor="$warning"
+              opacity={0.9}
+            >
+              <Text fontSize={11} fontWeight="600" color="$warningForeground">
+                Offline
+              </Text>
+            </XStack>
+          )}
+
           <XStack position="relative" p={8} borderRadius={6} cursor="pointer">
             <Icon name="Bell" size={16} color="$textMuted" />
             <XStack position="absolute" right={6} top={6} w={6} h={6} borderRadius={3} bg="$primary" />

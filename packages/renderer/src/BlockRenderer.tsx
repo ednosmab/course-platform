@@ -1,6 +1,9 @@
 import React from 'react';
 import { YStack, XStack, Text, color, sanitizeHtml } from '@projeto/ui';
+import { VideoBlockRenderer } from '@projeto/ui';
+import { QuizBlockRenderer } from '@projeto/ui';
 import { AnyBlock } from '@projeto/types';
+import { ImageWithCache } from './ImageWithCache';
 
 /**
  * Design tokens derived from the UI package's color palette.
@@ -118,6 +121,16 @@ export interface BlockRendererProps {
   isEditing?: boolean;
   isInteracting?: boolean;
   onEditComplete?: (content: string) => void;
+  /** Saved states for interactive blocks (keyed by block ID) */
+  savedStates?: Record<string, any>;
+  /** Callback when an interactive block changes state */
+  onBlockStateChange?: (blockId: string, state: any) => void;
+  /** Saved video playback position (seconds) */
+  savedPosition?: number;
+  /** Callback for video playback progress */
+  onVideoProgress?: (progressSec: number, durationSec: number) => void;
+  /** Optional URL resolver for offline image caching */
+  imageResolver?: (url: string) => Promise<string>;
 }
 
 /**
@@ -131,6 +144,11 @@ export function BlockRenderer({
   isEditing = false,
   isInteracting = false,
   onEditComplete,
+  savedStates = {},
+  onBlockStateChange,
+  savedPosition = 0,
+  onVideoProgress,
+  imageResolver,
 }: BlockRendererProps): React.ReactNode {
   if (block.type === 'text') {
     const styles = (block.styles || {}) as Record<string, string>;
@@ -197,12 +215,11 @@ export function BlockRenderer({
 
   if (block.type === 'video') {
     return (
-      <YStack w="100%" h="100%" bg="$surface" borderRadius="$3" ai="center" jc="center" position="relative" overflow="hidden">
-        <XStack w={44} h={44} borderRadius={22} bg="white" ai="center" jc="center">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="#1e293b" style={{ marginLeft: 3 }}><path d="M5 3l14 9-14 9V3z" /></svg>
-        </XStack>
-        <Text position="absolute" bottom="$2" left="$3" color="white" fontSize={11} opacity={0.6}>{block.provider}</Text>
-      </YStack>
+      <VideoBlockRenderer
+        block={block}
+        onVideoProgress={onVideoProgress}
+        savedPosition={savedPosition}
+      />
     );
   }
 
@@ -210,7 +227,12 @@ export function BlockRenderer({
     return (
       <YStack w="100%" h="100%">
         {block.url ? (
-          <img src={block.url} alt={block.alt || ''} style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, borderRadius: block.styles?.isBackground ? '0px' : '6px', display: 'block' }} />
+          <ImageWithCache
+            src={block.url}
+            alt={block.alt || ''}
+            resolveUrl={imageResolver}
+            style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, borderRadius: block.styles?.isBackground ? '0px' : '6px', display: 'block' }}
+          />
         ) : (
           <YStack w="100%" h="100%" borderWidth={2} borderColor="$info" borderRadius="$3" borderStyle="dashed" ai="center" jc="center" gap="$2" bg="#eff6ff">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg>
@@ -314,45 +336,12 @@ export function BlockRenderer({
   }
 
   if (block.type === 'quiz') {
-    const styles = ((block as any).styles || {}) as Record<string, string>;
-    const fs = styles.fontSize || 'medium';
-    const fontSize = isMobile ? FONT_MOBILE[fs] : FONT_DESKTOP[fs];
-
-    const cardStyle: React.CSSProperties = {
-      backgroundColor: styles.backgroundColor || COLORS.bgCanvas,
-      backgroundImage: styles.backgroundImage ? `url(${styles.backgroundImage})` : 'none',
-      backgroundSize: 'cover', backgroundPosition: 'center',
-      borderRadius: '8px', padding: '12px',
-      border: styles.backgroundColor || styles.backgroundImage ? 'none' : `1px solid ${COLORS.borderLight}`,
-      height: '100%', overflow: 'auto',
-      color: styles.color || COLORS.textPrimary,
-      fontFamily: styles.fontFamily || 'inherit',
-    };
-
-    let questionElement: React.ReactNode = <>{parseSimpleMarkdown(block.question)}</>;
-    if (styles.bold) questionElement = <strong>{questionElement}</strong>;
-    if (styles.italic) questionElement = <em>{questionElement}</em>;
-
     return (
-      <div style={cardStyle}>
-        <div style={{ fontSize, fontWeight: 600, marginBottom: 12 }}>{questionElement}</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {(block.options || []).map((opt, i) => (
-            <div
-              key={opt.id}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '8px 12px', borderRadius: 6,
-                border: `1px solid ${COLORS.borderLight}`,
-                backgroundColor: 'white',
-              }}
-            >
-              <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textMuted }}>{String.fromCharCode(65 + i)}.</span>
-              <span style={{ fontSize }}>{opt.text}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <QuizBlockRenderer
+        block={block}
+        defaultState={savedStates[block.id] ?? null}
+        onStateChange={onBlockStateChange}
+      />
     );
   }
 

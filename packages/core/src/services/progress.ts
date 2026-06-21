@@ -209,7 +209,7 @@ export function createProgressService(
      * @param percentageWatched - The current watch percentage (0–100)
      * @param onSuccess - Optional callback invoked with the saved StudentProgress on success
      */
-    saveProgressDebounced(
+      saveProgressDebounced(
       userId: string,
       lessonId: string,
       lastPlayedSeconds: number,
@@ -245,6 +245,44 @@ export function createProgressService(
           console.error('Debounced progress processing failed:', err);
         }
       }, 5000);
+    },
+
+    /**
+     * @description Saves the complete lesson state: video position, block states, revisit count, and tests.
+     * Used by the explicit "Save" button to persist everything in a single atomic write.
+     * Business rule: Combines video progress + interactive block states + revisit metadata into one upsert.
+     * @param userId - The UUID of the student
+     * @param lessonId - The UUID of the lesson
+     * @param data - Complete state to persist
+     * @returns The updated StudentProgress object
+     */
+    async saveLessonState(
+      userId: string,
+      lessonId: string,
+      data: {
+        lastPlayedSeconds: number;
+        percentageWatched: number;
+        blockStates: Record<string, any>;
+        revisitCount?: number;
+        lastRevisitedAt?: string | null;
+      },
+    ): Promise<StudentProgress> {
+      const now = new Date().toISOString();
+
+      const progress = await progressRepo.upsertFull(userId, lessonId, {
+        last_played_seconds: data.lastPlayedSeconds,
+        percentage_watched: data.percentageWatched,
+        block_states: data.blockStates,
+        revisit_count: data.revisitCount,
+        last_revisited_at: data.lastRevisitedAt,
+        updated_at: now,
+      });
+
+      await evaluateLessonCompletion(userId, lessonId).catch((err) => {
+        console.error('Error evaluating lesson completion:', err);
+      });
+
+      return progress;
     },
   };
 }

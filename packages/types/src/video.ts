@@ -11,6 +11,11 @@ export const VideoBlockSchema = z.object({
     height: z.string().optional(),
   }).optional(),
   layouts: BlockLayoutsSchema,
+  interactive: z.literal(true).optional(),
+  stateSchema: z.object({
+    position: z.number().int().nonnegative().default(0),
+    duration: z.number().int().nonnegative().default(0),
+  }).optional(),
 }).strict();
 
 export type VideoBlock = z.infer<typeof VideoBlockSchema>;

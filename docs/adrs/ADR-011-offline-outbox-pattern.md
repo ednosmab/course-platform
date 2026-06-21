@@ -1,6 +1,6 @@
 # ADR-011: Offline outbox pattern — AsyncStorage + flush síncrono
 
-**Status:** Accepted  
+**Status:** Superseded by ADR-023  
 **Data:** 2026-05-23  
 **Contexto:** Student mobile app (Expo) precisa funcionar offline durante o consumo de aulas
 
