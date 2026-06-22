@@ -18,6 +18,8 @@ export default tseslint.config(
       "**/expo-router/**",
       "next-env.d.ts",
       "apps/admin/**",
+      "design/**",
+      "desing_old/**",
     ],
   },
 
