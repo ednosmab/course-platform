@@ -9,6 +9,7 @@ import {
   type LocalProgressData,
 } from '../services/progressOfflineStore';
 import { syncService } from '../services/syncService';
+import { useConnectionStatus } from '../hooks/useConnectionStatus';
 
 type LessonPlayerProps = {
   courseId?: string | null;
@@ -19,6 +20,7 @@ type LessonPlayerProps = {
 };
 
 export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction }: LessonPlayerProps) {
+  const { isOnline } = useConnectionStatus();
   const [lessons, setLessons] = useState<any[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(lessonId ?? null);
   const [loading, setLoading] = useState(true);
@@ -234,18 +236,20 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
 
       await progressOfflineStore.saveProgressLocal(userId, activeLessonId, localData);
 
-      await ProgressService.saveLessonState(userId, activeLessonId, {
-        lastPlayedSeconds: position,
-        percentageWatched: percentage,
-        blockStates: blockStates[activeLessonId] || {},
-      });
+      if (isOnline) {
+        await ProgressService.saveLessonState(userId, activeLessonId, {
+          lastPlayedSeconds: position,
+          percentageWatched: percentage,
+          blockStates: blockStates[activeLessonId] || {},
+        });
+      }
       setShowToast(true);
     } catch (err) {
       console.error('Failed to save progress:', err);
     } finally {
       setSaving(false);
     }
-  }, [activeLessonId, userId, videoPositions, blockStates, activeLesson]);
+  }, [activeLessonId, userId, videoPositions, blockStates, activeLesson, isOnline]);
 
   // Restore saved progress on mount
   useEffect(() => {

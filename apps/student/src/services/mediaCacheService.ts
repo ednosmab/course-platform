@@ -133,7 +133,7 @@ export const mediaCacheService = {
     const all = await db.getAllAsync<{ local_path: string }>('SELECT local_path FROM cached_media');
     for (const item of all) {
       try {
-        await FileSystem.deleteAsync(item.localPath, { idempotent: true });
+        await FileSystem.deleteAsync(item.local_path, { idempotent: true });
       } catch {}
     }
     await db.execAsync('DELETE FROM cached_media');

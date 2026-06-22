@@ -80,17 +80,21 @@ export const syncService = {
 
   /**
    * Inicia sincronização automática a cada 30 segundos.
+   * @param getUserId — callback que retorna o userId actual (ou null se não autenticado)
+   * @param getLessonIds — callback que retorna as lessonIds visíveis
    */
-  startAutoSync(getLessonIds: () => string[]): void {
+  startAutoSync(getUserId: () => string | null, getLessonIds: () => string[]): void {
     if (Platform.OS === 'web') return;
 
     syncService.stopAutoSync();
 
     syncTimer = setInterval(async () => {
       try {
-        // Auto sync needs userId, but it's not available here.
-        // The caller should provide a way to get the userId.
-        // For now, we skip auto-sync if userId is not available.
+        const userId = getUserId();
+        if (!userId) return;
+        const lessonIds = getLessonIds();
+        if (lessonIds.length === 0) return;
+        await syncService.syncAll(userId, lessonIds);
       } catch {
         // Silent fail for auto-sync
       }
