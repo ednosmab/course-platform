@@ -57,7 +57,7 @@
     "./docs/session-template.md"
   ],
   "skills": {
-    "paths": [".opencode/skills"]
+    "paths": ["docs/skills"]
   },
   "mcp": {
     "local-filesystem": {

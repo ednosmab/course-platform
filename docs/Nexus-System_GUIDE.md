@@ -171,7 +171,7 @@ PASSO 4: CONSOLIDAÇÃO E PURGA (After-Code)
      → Exibir estado resumido
 ```
 
-**Referência:** `docs/AGENTS.md` (linhas 216-231), `.opencode/skills/document-loader/SKILL.md`
+**Referência:** `docs/AGENTS.md` (linhas 216-231), `docs/skills/document-loader.md`
 
 ---
 
@@ -508,7 +508,7 @@ O agente **nunca** decide o que ler. O protocolo é:
 | ADR-004 | `docs/adrs/ADR-004-mcp-server-governance.md` | Sandboxing e governança MCP |
 | ADR-003 | `docs/adrs/ADR-003-memory-architecture.md` | Arquitectura de memória RAM/ROM |
 | CONTEXT_HIERARCHY | `cognition/context/CONTEXT_HIERARCHY.md` | Hierarquia de leitura P0-P4 |
-| document-loader SKILL | `.opencode/skills/document-loader/SKILL.md` | Protocolo de leitura obrigatório |
+| document-loader SKILL | `docs/skills/document-loader.md` | Protocolo de leitura obrigatório |
 | WORKFLOW | `governance/WORKFLOW.md` | Fluxo de sessão (entrada única) |
 | SYSTEM_MAP | `governance/SYSTEM_MAP.md` | Mapa centralizado do sistema |
 
