@@ -42,9 +42,11 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [prerequisiteError, setPrerequisiteError] = useState<string | null>(null);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setMounted(true);
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const certMeta = (course?.certificate_blocks || []).find((b: any) => b.type === '__meta__') as any;
   const certDesignWidth = certMeta?.designWidth ?? 1100;
@@ -248,9 +250,11 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
     }
   };
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     fetchData();
   }, [courseId]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     const onShow = (e: PageTransitionEvent) => {

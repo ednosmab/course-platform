@@ -488,6 +488,7 @@ export const BlockSettings: React.FC<{
   const activeBlock = blocks.find((b) => b.id === activeBlockId);
   const [htmlDraft, setHtmlDraft] = useState('');
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (activeBlock) setHtmlDraft(getHtmlFromBlock(activeBlock));
   }, [activeBlock]);
@@ -495,6 +496,7 @@ export const BlockSettings: React.FC<{
   useEffect(() => {
     if (activeBlock) setCollapsed(false);
   }, [activeBlockId]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (collapsed) {
     return (
@@ -600,7 +602,7 @@ export const BlockSettings: React.FC<{
           {activeBlock.type !== 'html' && activeBlock.type !== 'text' && (
             <YStack p="$3" borderRadius="$3" bg="$secondary" mt={0}>
               <Text fontSize={11} fontWeight="600">SOMENTE LEITURA</Text>
-              <Text fontSize={11} color="$textMuted">Edite pelo painel "Propriedades". Para código livre, use o bloco HTML.</Text>
+              <Text fontSize={11} color="$textMuted">Edite pelo painel &quot;Propriedades&quot;. Para código livre, use o bloco HTML.</Text>
             </YStack>
           )}
         </YStack>
@@ -811,7 +813,7 @@ export const BlockSettings: React.FC<{
           <YStack p="$3" borderRadius="$3" bg="$secondary">
             <Text fontSize={11} fontWeight="600">FEEDBACK ESTRUTURADO</Text>
             <Text fontSize={11} color="$textMuted">
-              O texto preenchido no "Feedback" só aparecerá para o aluno após ele responder a questão.
+              O texto preenchido no &quot;Feedback&quot; só aparecerá para o aluno após ele responder a questão.
             </Text>
           </YStack>
 

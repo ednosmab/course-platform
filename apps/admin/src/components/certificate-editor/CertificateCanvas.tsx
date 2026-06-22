@@ -80,11 +80,14 @@ export const CertificateCanvas: React.FC<{
   );
 
   const blocksRef = useRef(blocks);
-  blocksRef.current = blocks;
   const filteredBlocksRef = useRef(filteredBlocks);
-  filteredBlocksRef.current = filteredBlocks;
   const marqueeRectRef = useRef(marqueeRect);
-  marqueeRectRef.current = marqueeRect;
+
+  useEffect(() => {
+    blocksRef.current = blocks;
+    filteredBlocksRef.current = filteredBlocks;
+    marqueeRectRef.current = marqueeRect;
+  });
 
   const handleImageDrop = useCallback(async (file: File) => {
     if (!courseId || !activeBlockId) return;

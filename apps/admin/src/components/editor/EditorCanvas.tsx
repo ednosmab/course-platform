@@ -748,6 +748,7 @@ export const EditorCanvas: React.FC = () => {
     aspectRatio?: number;
   } | null>(null);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- safe: mount-only, no cascade
   useEffect(() => { setMounted(true); }, []);
 
   const handleImageDrop = useCallback((blockId: string, file: File) => {

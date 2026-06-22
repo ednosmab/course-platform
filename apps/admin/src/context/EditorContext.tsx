@@ -496,9 +496,8 @@ export const EditorProvider: React.FC<{
       return;
     }
 
-    setSaveStatus('saving');
-
     const timer = setTimeout(async () => {
+      setSaveStatus('saving');
       try {
         await modeConfig.save({
           entityId,
