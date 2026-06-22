@@ -1,14 +1,15 @@
 import { supabase } from '../supabase';
-import {
+import type {
   CourseReport,
-  CourseReportSchema,
   EnrollmentReport,
-  EnrollmentReportSchema,
   CertificateReport,
-  CertificateReportSchema,
   ProgressReport,
+  LessonRevisitReport} from '@projeto/types';
+import {
+  CourseReportSchema,
+  EnrollmentReportSchema,
+  CertificateReportSchema,
   ProgressReportSchema,
-  LessonRevisitReport,
   LessonRevisitReportSchema,
 } from '@projeto/types';
 import { z } from 'zod';

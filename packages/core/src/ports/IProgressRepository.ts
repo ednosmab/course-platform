@@ -1,4 +1,4 @@
-import { StudentProgress } from '@projeto/types';
+import type { StudentProgress } from '@projeto/types';
 
 /**
  * @description Repository interface for student lesson progress operations.

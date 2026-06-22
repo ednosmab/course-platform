@@ -1,5 +1,5 @@
 import React from 'react';
-import { CertificateBlock } from '@projeto/types';
+import type { CertificateBlock } from '@projeto/types';
 import { useA4Scale, DESIGN_W, DESIGN_H } from './useA4Scale';
 import { CertificateBlockRenderer } from './CertificateBlockRenderer';
 

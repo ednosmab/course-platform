@@ -1,12 +1,13 @@
-import {
+import type {
   Course,
   CourseAccess,
-  CourseSchema,
   Module,
-  ModuleSchema,
   Lesson,
-  LessonSchema,
-  Path,
+  Path} from '@projeto/types';
+import {
+  CourseSchema,
+  ModuleSchema,
+  LessonSchema
 } from '@projeto/types';
 import { z } from 'zod';
 import type { ICourseRepository } from '../ports/ICourseRepository';

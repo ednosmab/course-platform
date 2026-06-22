@@ -1,8 +1,9 @@
 import { supabase } from '../supabase';
-import {
+import type {
   Profile,
+  Enrollment} from '@projeto/types';
+import {
   ProfileSchema,
-  Enrollment,
   EnrollmentSchema,
   StudentProgress,
   StudentProgressSchema,

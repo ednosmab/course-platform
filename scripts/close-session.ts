@@ -6,7 +6,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const GOV = resolve(ROOT, 'governance');
 
 let exitCode = 0;
-let warnings: string[] = [];
+const warnings: string[] = [];
 
 function fail(check: string, detail: string) {
   console.error(`❌ [${check}] ${detail}`);

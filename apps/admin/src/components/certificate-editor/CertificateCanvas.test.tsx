@@ -6,7 +6,7 @@ import type { AnyBlock } from '@projeto/types';
 const mockSetActiveBlockId = vi.fn();
 let mockActiveBlockIdVal: string | null = null;
 let mockSelectedBlockIdsVal: string[] = [];
-let mockCourseIdVal = 'course-1';
+const mockCourseIdVal = 'course-1';
 
 const mockDuplicateBlock = vi.fn();
 const mockRemoveBlock = vi.fn();

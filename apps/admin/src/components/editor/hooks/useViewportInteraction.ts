@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnyBlock } from '@projeto/types';
+import type { AnyBlock } from '@projeto/types';
 import { useEditor } from '../../../context/EditorContext';
-import { Layout, HandleDir, MeasureGuide, MIN_W, MIN_H, getLayout, computeBlockGuides } from './editor-types';
+import type { Layout, HandleDir, MeasureGuide} from './editor-types';
+import { MIN_W, MIN_H, getLayout, computeBlockGuides } from './editor-types';
 
 export function useViewportInteraction(scale: number) {
   const { blocks, activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent, viewportMode } = useEditor();

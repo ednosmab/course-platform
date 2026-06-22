@@ -1,6 +1,7 @@
 import { supabase } from '../supabase';
+import type {
+  MediaFile} from '@projeto/types';
 import {
-  MediaFile,
   MediaFileSchema,
 } from '@projeto/types';
 import { z } from 'zod';

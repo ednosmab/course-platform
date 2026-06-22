@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { YStack, XStack, Text, Button, Icon, Spinner } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
-import { AnyBlock } from '@projeto/types';
+import type { AnyBlock } from '@projeto/types';
 import { StorageService } from '@projeto/core';
 import ImageCropOverlay from './ImageCropOverlay';
 

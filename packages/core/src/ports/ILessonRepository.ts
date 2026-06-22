@@ -1,4 +1,4 @@
-import { Lesson, AnyBlock } from '@projeto/types';
+import type { Lesson, AnyBlock } from '@projeto/types';
 
 /**
  * @description Repository interface for lesson content operations.

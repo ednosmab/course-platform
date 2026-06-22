@@ -1,5 +1,6 @@
 import { supabase } from '../supabase';
-import { StudentProgress, StudentProgressSchema } from '@projeto/types';
+import type { StudentProgress} from '@projeto/types';
+import { StudentProgressSchema } from '@projeto/types';
 import type { IProgressRepository } from '../ports/IProgressRepository';
 
 /**

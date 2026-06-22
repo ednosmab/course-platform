@@ -1,14 +1,15 @@
 import { supabase } from '../supabase';
-import {
+import type {
   Course,
   CourseAccess,
+  Module,
+  Lesson,
+  Path} from '@projeto/types';
+import {
   CourseAccessSchema,
   CourseSchema,
-  Module,
   ModuleSchema,
-  Lesson,
   LessonSchema,
-  Path,
   PathSchema,
 } from '@projeto/types';
 import { z } from 'zod';

@@ -2,7 +2,7 @@ import React from 'react';
 import { YStack, XStack, Text, color, sanitizeHtml } from '@projeto/ui';
 import { VideoBlockRenderer } from '@projeto/ui';
 import { QuizBlockRenderer } from '@projeto/ui';
-import { AnyBlock } from '@projeto/types';
+import type { AnyBlock } from '@projeto/types';
 import { ImageWithCache } from './ImageWithCache';
 
 /**

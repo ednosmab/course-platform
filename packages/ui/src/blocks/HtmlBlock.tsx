@@ -1,7 +1,7 @@
 import React from 'react';
 import { Platform } from 'react-native';
 import { YStack, Text } from 'tamagui';
-import { HtmlBlock } from '@projeto/types';
+import type { HtmlBlock } from '@projeto/types';
 import { sanitizeHtml } from '../utils/sanitize';
 
 type Props = {

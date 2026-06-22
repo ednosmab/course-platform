@@ -1,7 +1,7 @@
 import React from 'react';
 import { YStack } from 'tamagui';
 import { Image } from 'react-native';
-import { ImageBlock } from '@projeto/types';
+import type { ImageBlock } from '@projeto/types';
 
 type Props = {
   block: ImageBlock;

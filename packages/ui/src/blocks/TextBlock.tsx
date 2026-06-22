@@ -1,6 +1,6 @@
 import React from 'react';
 import { YStack, Text } from 'tamagui';
-import { TextBlock } from '@projeto/types';
+import type { TextBlock } from '@projeto/types';
 import { renderSimpleMarkdown } from '../utils/markdown';
 
 type Props = {

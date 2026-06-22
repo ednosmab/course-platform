@@ -1,4 +1,4 @@
-import { AnyBlock } from '@projeto/types';
+import type { AnyBlock } from '@projeto/types';
 import type { ILessonRepository } from '../ports/ILessonRepository';
 import type { ICourseRepository } from '../ports/ICourseRepository';
 

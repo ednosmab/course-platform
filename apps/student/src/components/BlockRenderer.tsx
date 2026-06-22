@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { YStack, color } from '@projeto/ui';
-import { AnyBlock } from '@projeto/types';
+import type { AnyBlock } from '@projeto/types';
 import { getBlockLayout, calcPageHeight, getDesignWidth } from '@projeto/core';
 import { BlockRenderer as SharedBlockRenderer } from '@projeto/renderer';
 import { useCachedImage } from '../hooks/useCachedImage';

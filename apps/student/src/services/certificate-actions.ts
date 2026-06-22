@@ -1,6 +1,6 @@
 import { openURL } from 'expo-linking';
 import { Share } from 'react-native';
-import { CertificateBlock } from '@projeto/types';
+import type { CertificateBlock } from '@projeto/types';
 
 /**
  * @description Prints the certificate via an isolated iframe, matching the admin's

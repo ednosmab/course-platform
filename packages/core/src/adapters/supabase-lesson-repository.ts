@@ -1,5 +1,6 @@
 import { supabase } from '../supabase';
-import { Lesson, LessonSchema, AnyBlock } from '@projeto/types';
+import type { Lesson, AnyBlock } from '@projeto/types';
+import { LessonSchema } from '@projeto/types';
 import type { ILessonRepository } from '../ports/ILessonRepository';
 
 /**

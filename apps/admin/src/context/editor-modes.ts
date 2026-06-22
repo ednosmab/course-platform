@@ -8,7 +8,8 @@
  * as well as which block types are available in the palette.
  */
 
-import { AnyBlock, CertificateMetaBlock } from '@projeto/types';
+import type { AnyBlock} from '@projeto/types';
+import { CertificateMetaBlock } from '@projeto/types';
 import { LessonService, CourseService } from '@projeto/core';
 
 export type EditorBlockType = 'text' | 'video' | 'quiz' | 'image' | 'html' | 'quote' | 'heading' | 'divider';

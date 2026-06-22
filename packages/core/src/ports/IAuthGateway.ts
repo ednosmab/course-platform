@@ -1,4 +1,4 @@
-import { Profile } from '@projeto/types';
+import type { Profile } from '@projeto/types';
 
 /**
  * @description Gateway interface for authentication and authorization operations.

@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { YStack, XStack, Text, Icon, Spinner, color, sanitizeHtml } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
-import { AnyBlock } from '@projeto/types';
+import type { AnyBlock } from '@projeto/types';
 import { useViewportInteraction } from './hooks/useViewportInteraction';
 
 const CANVAS_W = 1100;

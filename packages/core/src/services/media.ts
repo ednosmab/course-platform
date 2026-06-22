@@ -1,4 +1,4 @@
-import {
+import type {
   MediaFile,
 } from '@projeto/types';
 import type { IMediaRepository } from '../ports/IMediaRepository';

@@ -8,9 +8,11 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input, Dialog, CertificateMiniature } from '@projeto/ui';
 import { CertificateService, AuthService } from '@projeto/core';
-import { Certificate, Course } from '@projeto/types';
+import type { Course } from '@projeto/types';
+import { Certificate } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
-import { CertificateDetailCard, CertificateWithCourse } from '../components/CertificateDetailCard';
+import type { CertificateWithCourse } from '../components/CertificateDetailCard';
+import { CertificateDetailCard } from '../components/CertificateDetailCard';
 import { printCertificate, openCertificateValidation, shareCertificate } from '../services/certificate-actions';
 
 type CertificatesProps = {

@@ -6,7 +6,8 @@
  * custom fallback and an onError callback for external error reporting.
  */
 
-import React, { Component, ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import React, { Component } from 'react';
 import { YStack, Text, Button } from '@projeto/ui';
 
 interface ErrorBoundaryProps {

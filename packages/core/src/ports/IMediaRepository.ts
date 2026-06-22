@@ -1,4 +1,4 @@
-import { MediaFile } from '@projeto/types';
+import type { MediaFile } from '@projeto/types';
 
 /**
  * @description Repository interface for Media library operations.

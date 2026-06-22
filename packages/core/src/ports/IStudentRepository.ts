@@ -1,4 +1,4 @@
-import { Profile, Enrollment, StudentProgress } from '@projeto/types';
+import type { Profile, Enrollment, StudentProgress } from '@projeto/types';
 
 /**
  * @description Repository interface for Student management operations.

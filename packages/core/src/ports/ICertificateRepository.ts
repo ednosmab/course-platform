@@ -1,4 +1,4 @@
-import { Certificate } from '@projeto/types';
+import type { Certificate } from '@projeto/types';
 
 /**
  * @description Repository interface for certificate persistence operations.

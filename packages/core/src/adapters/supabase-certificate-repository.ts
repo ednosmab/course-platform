@@ -1,5 +1,6 @@
 import { supabase } from '../supabase';
-import { Certificate, CertificateSchema } from '@projeto/types';
+import type { Certificate} from '@projeto/types';
+import { CertificateSchema } from '@projeto/types';
 import { z } from 'zod';
 import type { ICertificateRepository } from '../ports/ICertificateRepository';
 

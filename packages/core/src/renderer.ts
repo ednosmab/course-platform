@@ -1,4 +1,4 @@
-import { AnyBlock } from '@projeto/types';
+import type { AnyBlock } from '@projeto/types';
 
 /**
  * @description Reference width (in pixels) for the mobile breakpoint. Used by layout calculations and responsive design utilities to determine positioning and sizing at viewport widths ≤ 480px.

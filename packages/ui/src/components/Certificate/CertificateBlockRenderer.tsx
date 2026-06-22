@@ -1,6 +1,6 @@
 import React from 'react';
 import { YStack, XStack, Text } from 'tamagui';
-import { CertificateBlock } from '@projeto/types';
+import type { CertificateBlock } from '@projeto/types';
 
 type Props = {
   block: CertificateBlock;
@@ -143,7 +143,6 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale, fillCo
           width="100%"
           jc={align === 'left' ? 'flex-start' : align === 'right' ? 'flex-end' : 'center'}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={block.url}
             alt={block.alt || ''}

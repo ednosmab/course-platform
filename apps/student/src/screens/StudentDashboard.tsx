@@ -3,7 +3,7 @@ import { Image } from 'react-native';
 import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, GridBackground } from '@projeto/ui';
 import flexedLogo from '../../assets/flexed-logo.png';
 import { AuthService, CourseService, ProgressService } from '@projeto/core';
-import { Course } from '@projeto/types';
+import type { Course } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
 
 type StudentDashboardProps = {

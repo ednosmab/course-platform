@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { YStack, XStack, Text, Button, Card, Icon } from '@projeto/ui';
-import { Certificate, Course, CertificateBlock } from '@projeto/types';
+import type { Certificate, Course, CertificateBlock } from '@projeto/types';
 import { CertificateMiniature } from '@projeto/ui';
 import { printCertificate } from '../services/certificate-actions';
 

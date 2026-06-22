@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { YStack, XStack, Text } from 'tamagui';
-import { QuizBlock, InteractiveBlockProps } from '@projeto/types';
+import type { QuizBlock, InteractiveBlockProps } from '@projeto/types';
 import { renderSimpleMarkdown } from '../utils/markdown';
 import { Icon } from '../components/Icon';
 

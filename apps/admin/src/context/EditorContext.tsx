@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useState, useEffect, useCallback, useMemo } from 'react';
-import { AnyBlock } from '@projeto/types';
+import type { AnyBlock } from '@projeto/types';
 import { LessonService } from '@projeto/core';
 import type { EditorModeConfig, EditorBlockType } from './editor-modes';
 import { DEFAULT_CERT_WIDTH, DEFAULT_CERT_HEIGHT } from './editor-modes';

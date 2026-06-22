@@ -1,4 +1,5 @@
-import { test, expect, Page, Route } from '@playwright/test';
+import type { Page, Route } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from './utils/auth';
 
 const COURSE_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';

@@ -109,7 +109,7 @@ export default function ImageCropOverlay({ imageUrl, blockId, courseId, onCrop, 
       if (resizing && rect) {
         const dx = e.clientX - resizeStart.x;
         const dy = e.clientY - resizeStart.y;
-        let r = { ...resizeStart.rect };
+        const r = { ...resizeStart.rect };
 
         const isCorner = resizing === 'nw' || resizing === 'ne' || resizing === 'sw' || resizing === 'se';
         const isHorizontal = resizing === 'e' || resizing === 'w';

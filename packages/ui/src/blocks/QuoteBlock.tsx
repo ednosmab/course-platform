@@ -1,6 +1,6 @@
 import React from 'react';
 import { YStack, XStack, Text } from 'tamagui';
-import { QuoteBlock } from '@projeto/types';
+import type { QuoteBlock } from '@projeto/types';
 
 type Props = {
   block: QuoteBlock;

@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { XStack, YStack, Text, Button, Icon } from '@projeto/ui';
 import { useEditor } from '../../context/EditorContext';
-import { AnyBlock, BlockLayouts, ViewportLayout } from '@projeto/types';
+import type { AnyBlock, BlockLayouts, ViewportLayout } from '@projeto/types';
 
 interface PositionPanelProps {
   onClose: () => void;

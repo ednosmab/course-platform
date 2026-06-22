@@ -1,6 +1,6 @@
 'use client';
 
-import { AnyBlock } from '@projeto/types';
+import type { AnyBlock } from '@projeto/types';
 
 export type HandleDir = 'n' | 's' | 'e' | 'w' | 'nw' | 'ne' | 'sw' | 'se';
 

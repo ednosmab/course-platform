@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input } from '@projeto/ui';
 import { CourseService, ProgressService, AuthService } from '@projeto/core';
-import { Course, Module, Lesson } from '@projeto/types';
+import type { Course, Module, Lesson } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
 import {
   progressOfflineStore,

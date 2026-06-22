@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, XStack, YStack, Text, Card, Icon, Spinner, FilterBar, GridBackground } from '@projeto/ui';
 import { CourseService, ProgressService, AuthService } from '@projeto/core';
-import { Course, CourseAccess } from '@projeto/types';
+import type { Course, CourseAccess } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
 
 type CourseWithAccessAndStatus = Course & {

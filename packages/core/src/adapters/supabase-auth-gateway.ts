@@ -1,5 +1,6 @@
 import { supabase } from '../supabase';
-import { Profile, ProfileSchema } from '@projeto/types';
+import type { Profile} from '@projeto/types';
+import { ProfileSchema } from '@projeto/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { IAuthGateway } from '../ports/IAuthGateway';
 

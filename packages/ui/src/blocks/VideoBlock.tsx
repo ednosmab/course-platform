@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Platform, Dimensions } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import { YStack, XStack, Text } from 'tamagui';
-import { VideoBlock } from '@projeto/types';
+import type { VideoBlock } from '@projeto/types';
 import { Icon } from '../components/Icon';
 
 type Props = {

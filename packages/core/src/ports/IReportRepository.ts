@@ -1,4 +1,4 @@
-import { CourseReport, EnrollmentReport, CertificateReport, ProgressReport, LessonRevisitReport } from '@projeto/types';
+import type { CourseReport, EnrollmentReport, CertificateReport, ProgressReport, LessonRevisitReport } from '@projeto/types';
 
 /**
  * @description Repository interface for reporting and analytics operations.

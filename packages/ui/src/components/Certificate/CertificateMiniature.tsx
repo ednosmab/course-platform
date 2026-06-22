@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { YStack, Text } from 'tamagui';
-import { CertificateBlock } from '@projeto/types';
+import type { CertificateBlock } from '@projeto/types';
 import { CertificateBlockRenderer } from './CertificateBlockRenderer';
 
 export interface CertificateMiniatureProps {

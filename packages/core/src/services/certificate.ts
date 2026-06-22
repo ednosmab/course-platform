@@ -1,4 +1,4 @@
-import { Certificate, Course } from '@projeto/types';
+import type { Certificate, Course } from '@projeto/types';
 import type { ICertificateRepository } from '../ports/ICertificateRepository';
 import type { ICourseRepository } from '../ports/ICourseRepository';
 import type { ILessonRepository } from '../ports/ILessonRepository';
