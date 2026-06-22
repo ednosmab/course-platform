@@ -101,6 +101,7 @@ INÍCIO
 | Governança JSONB | `docs/skills/jsonb_governance.md` |
 | Type safety Supabase | `docs/skills/supabase_type_safety.md` |
 | Data lifecycle | `docs/layers/types/data-lifecycle.md` |
+| Extensibilidade de blocos | `docs/skills/block-extensibility.md` |
 
 ### 4.2 Design System (packages/ui)
 | Arquivo | Caminho |
@@ -112,6 +113,8 @@ INÍCIO
 | Token governance | `docs/layers/ui/token-governance.md` |
 | Student header | `docs/skills/student-header.md` |
 | Admin header | `docs/skills/admin-header.md` |
+| Responsividade cross-platform | `docs/skills/responsividade.md` |
+| Protocolo de animação | `docs/skills/animation_protocol.md` |
 
 ### 4.3 Banco de Dados e Segurança (Supabase)
 | Arquivo | Caminho |
@@ -177,6 +180,7 @@ INÍCIO
 | Test strategy | `docs/layers/testing/estratégia_de_testes.md` |
 | Test files | `tests/e2e/*.spec.ts` |
 | Config | `playwright.config.ts` |
+| E2E testing skill | `docs/skills/e2e_testing.md` |
 
 ### 4.10 Escalabilidade e Performance
 | Arquivo | Caminho |
@@ -198,6 +202,7 @@ INÍCIO
 |---|---|---|
 | Senior Engineer | `docs/skills/senior-engineer.md` | Toda sessão com escrita/modificação de código |
 | TDD Agent | `docs/skills/tdd-agent.md` | Toda sessão com testes ou implementação |
+| Document Loader | `docs/skills/document-loader.md` | Toda sessão com implementação/alteração de código |
 
 ---
 
