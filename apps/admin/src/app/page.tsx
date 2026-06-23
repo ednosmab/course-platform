@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { YStack, XStack, Text, Icon, Theme, Button, Card, Spinner, ProgressBar, color, lineHeightHeading, lineHeightCardTitle } from '@projeto/ui';
+import { YStack, XStack, Text, Icon, Theme, Button, Card, Spinner, ProgressBar, Toast, color, lineHeightHeading, lineHeightCardTitle } from '@projeto/ui';
 
 const BRAND_GRADIENT = `linear-gradient(135deg, ${color.cwGradientFrom}, ${color.cwGradientTo})`;
 const PROGRESS_GRADIENT = `linear-gradient(90deg, ${color.cwSuccess}, ${color.cwGradientFrom})`;
@@ -17,6 +17,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<{ full_name: string; email: string } | null>(null);
   const [initialTimestamp] = useState(() => Date.now());
+  const [creatingCourse, setCreatingCourse] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -65,6 +67,21 @@ export default function Dashboard() {
       await fetchCourses();
     } catch (err) {
       console.error('Failed to delete course:', err);
+    }
+  };
+
+  const handleCreateCourse = async () => {
+    if (creatingCourse) return;
+    try {
+      setCreatingCourse(true);
+      const course = await CourseService.createCourse('Novo Curso', '');
+      setToast({ message: 'Curso criado com sucesso', type: 'success' });
+      router.push(`/configuracoes/${course.id}`);
+    } catch (err) {
+      console.error('Failed to create course:', err);
+      setToast({ message: 'Erro ao criar curso', type: 'error' });
+    } finally {
+      setCreatingCourse(false);
     }
   };
 
@@ -172,9 +189,13 @@ export default function Dashboard() {
                 <Button variant="ghost" borderWidth={1} borderColor="$border" bg="$card" px={16} py={10}>
                   <Text fontSize={14}>Importar conteúdo</Text>
                 </Button>
-                <Button onPress={() => router.push('/cursos')} px={16} py={10} ai="center" gap={6} style={{ background: BRAND_GRADIENT }}>
-                  <Icon name="Plus" size={16} color="$white" />
-                  <Text fontSize={14} color="$white" fontWeight="500">Novo curso</Text>
+                <Button onPress={handleCreateCourse} disabled={creatingCourse} px={16} py={10} ai="center" gap={6} style={{ background: BRAND_GRADIENT, opacity: creatingCourse ? 0.7 : 1 }}>
+                  {creatingCourse ? (
+                    <Spinner size="small" color="$white" />
+                  ) : (
+                    <Icon name="Plus" size={16} color="$white" />
+                  )}
+                  <Text fontSize={14} color="$white" fontWeight="500">{creatingCourse ? 'Criando…' : 'Novo curso'}</Text>
                 </Button>
               </XStack>
             </YStack>
@@ -353,6 +374,14 @@ export default function Dashboard() {
             )}
           </YStack>
         </main>
+
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onDismiss={() => setToast(null)}
+          />
+        )}
 
       </YStack>
     </Theme>
