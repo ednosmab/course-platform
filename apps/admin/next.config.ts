@@ -8,6 +8,7 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const rnWebStubAbs = require.resolve("./.rn-web-stub.cjs");
 const expoAssetStubAbs = require.resolve("./.expo-asset-stub.cjs");
+const expoAvStubAbs = require.resolve("./.expo-av-stub.cjs");
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@projeto/core"],
@@ -22,19 +23,24 @@ const nextConfig: NextConfig = {
     ];
   },
   /**
-   * Alias `react-native` → stub web e `expo-asset` → stub web.
+   * Alias `react-native` → stub web, `expo-asset` → stub web
+   * e `expo-av` → stub web.
    *
-   * Necessário porque `packages/ui` (BrandMark, etc.) é partilhado entre
-   * web (Next.js) e native (Expo). O Turbopack do Next.js 16 não
-   * consegue parsear `react-native/index.js` (Flow syntax) nem
-   * `expo-modules-core/src/index.ts` (TypeScript sem loader), portanto
-   * aliasamos para stubs CommonJS puros.
+   * Necessário porque `packages/ui` (BrandMark, VideoBlock, etc.) é
+   * partilhado entre web (Next.js) e native (Expo). O Turbopack do
+   * Next.js 16 não consegue parsear `react-native/index.js`
+   * (Flow syntax) nem `expo-modules-core/src/index.ts` (TypeScript
+   * sem loader). Aliasamos para stubs CommonJS puros.
+   *
+   * `expo-av` é aliasado para impedir que a cadeia
+   * expo-av → expo-modules-core seja resolvida pelo bundler.
    */
   turbopack: {
     root: path.resolve(rootDir, "../.."),
     resolveAlias: {
       "react-native": "./.rn-web-stub.cjs",
       "expo-asset": "./.expo-asset-stub.cjs",
+      "expo-av": "./.expo-av-stub.cjs",
     },
   },
   webpack: (config) => {
@@ -43,6 +49,7 @@ const nextConfig: NextConfig = {
       ...(config.resolve.alias as Record<string, string> | undefined),
       "react-native$": rnWebStubAbs,
       "expo-asset$": expoAssetStubAbs,
+      "expo-av$": expoAvStubAbs,
     };
     return config;
   },
