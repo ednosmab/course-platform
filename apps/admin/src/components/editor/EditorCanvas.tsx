@@ -183,6 +183,18 @@ const HANDLES: { id: HandleDir; cursor: string; style: React.CSSProperties }[] =
 const FONT_DESKTOP: Record<string, string> = { small: '13px', medium: '16px', large: '24px', xlarge: '32px' };
 const FONT_MOBILE: Record<string, string> = { small: '12px', medium: '15px', large: '19px', xlarge: '24px' };
 
+function getYoutubeId(url: string): string | null {
+  if (!url) return null;
+  const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
+  return match && match[2].length === 11 ? match[2] : null;
+}
+
+function getVimeoId(url: string): string | null {
+  if (!url) return null;
+  const match = url.match(/vimeo\.com\/(\d+)/);
+  return match ? match[1] : null;
+}
+
 function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = false, isEditing = false, onEditComplete }: {
   block: AnyBlock;
   onImageDrop?: (blockId: string, file: File) => void;
@@ -250,6 +262,33 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     return <div style={style}>{textElement}</div>;
   }
   if (block.type === 'video') {
+    const youtubeId = getYoutubeId(block.url);
+    const vimeoId = !youtubeId ? getVimeoId(block.url) : null;
+
+    if (youtubeId) {
+      return (
+        <iframe
+          src={`https://www.youtube.com/embed/${youtubeId}`}
+          title="YouTube video"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          style={{ width: '100%', height: '100%', border: 'none', display: 'block', pointerEvents: isInteracting ? 'none' : 'auto' }}
+        />
+      );
+    }
+
+    if (vimeoId) {
+      return (
+        <iframe
+          src={`https://player.vimeo.com/video/${vimeoId}`}
+          title="Vimeo video"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+          style={{ width: '100%', height: '100%', border: 'none', display: 'block', pointerEvents: isInteracting ? 'none' : 'auto' }}
+        />
+      );
+    }
+
     return (
       <YStack w="100%" h="100%" bg="$surface" borderRadius="$3" ai="center" jc="center" position="relative" overflow="hidden">
         <XStack w={44} h={44} borderRadius={22} bg="white" ai="center" jc="center">
@@ -455,7 +494,7 @@ function renderViewportBlocks(args: {
             <div style={{ position: 'absolute', inset: 0, border: isActive ? '2px solid #3B82F6' : '2px solid transparent', borderRadius: '6px', pointerEvents: 'none', zIndex: 2 }} />
             <div style={{ position: 'absolute', inset: 2, borderRadius: '4px', overflow: 'hidden', zIndex: 1 }}>
               <BlockContent block={block} onImageDrop={args.onImageDrop} isMobile isInteracting={args.isInteracting} />
-              {(block.type === 'html' || block.type === 'video') && (
+              {block.type === 'html' && (
                 <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'move', backgroundColor: 'transparent' }} />
               )}
             </div>

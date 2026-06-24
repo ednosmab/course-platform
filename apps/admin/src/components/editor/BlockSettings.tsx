@@ -708,7 +708,16 @@ export const BlockSettings: React.FC<{
             <input
               type="text"
               value={activeBlock.url}
-              onChange={(e) => updateBlock(activeBlock.id, { url: e.target.value })}
+              onChange={(e) => {
+                const url = e.target.value;
+                const updates: Record<string, any> = { url };
+                if (url.match(/youtu\.be\/|youtube\.com\/watch|youtube\.com\/embed|youtube\.com\/v\//)) {
+                  updates.provider = 'youtube';
+                } else if (url.match(/vimeo\.com\/\d+/)) {
+                  updates.provider = 'vimeo';
+                }
+                updateBlock(activeBlock.id, updates);
+              }}
               placeholder="Ex: https://youtube.com/watch?v=..."
               style={{ height: 34, borderRadius: '6px', border: '1px solid var(--border-light)', padding: '0 10px', fontSize: 12, outline: 'none', width: '100%' }}
             />
