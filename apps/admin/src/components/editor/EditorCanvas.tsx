@@ -14,7 +14,22 @@ const TABLET_W = 650;
 const MOBILE_H = 720;
 const MIN_W = 80;
 const MIN_H = 40;
-const ALIGN_THRESHOLD = 5;
+const ALIGN_THRESHOLD = 8;
+const GRID_SIZE = 8;
+
+const GUIDE_COLORS = {
+  center: '#3B82F6',
+  edge: '#10B981',
+  page: '#94A3B8',
+  grid: '#CBD5E1',
+  measure: '#F59E0B',
+} as const;
+
+type SnapType = 'center' | 'edge' | 'page' | 'grid' | null;
+
+interface GuideLine { pos: number; color: string; type: SnapType; }
+interface MeasureGuide { pos: number; start: number; end: number; value: number; orientation: 'h' | 'v'; }
+interface SnapResult { snappedX: number; snappedY: number; guides: { v: GuideLine[]; h: GuideLine[] }; m: MeasureGuide[]; snapType: SnapType; }
 
 function isOutOfBounds(block: AnyBlock, pageW: number): boolean {
   const l = getLayout(block);
@@ -109,25 +124,117 @@ function getLayout(block: AnyBlock, viewport?: 'desktop' | 'tablet' | 'mobile'):
   };
 }
 
-function computeBlockGuides(
+function snapValue(value: number, targets: number[], threshold: number): { snapped: number; hit: boolean } {
+  let bestDist = Infinity;
+  let bestTarget = value;
+  let hit = false;
+  for (const t of targets) {
+    const dist = Math.abs(value - t);
+    if (dist <= threshold && dist < bestDist) {
+      bestDist = dist;
+      bestTarget = t;
+      hit = true;
+    }
+  }
+  return { snapped: bestTarget, hit };
+}
+
+function computeBlockGuidesWithSnap(
   draggedLayout: Layout, draggedBlockId: string,
   blocks: AnyBlock[], viewportMode: 'desktop' | 'tablet' | 'mobile',
-): { v: number[]; h: number[]; m: MeasureGuide[] } {
+): SnapResult {
   const pageH = Math.max(800, ...blocks.map(b => {
     const l = getLayout(b, viewportMode);
     return l.y + l.h + 120;
   }));
+
   const dcx = draggedLayout.x + draggedLayout.w / 2;
   const dcy = draggedLayout.y + draggedLayout.h / 2;
   const dr = draggedLayout.x + draggedLayout.w;
   const db = draggedLayout.y + draggedLayout.h;
 
-  const vSet = new Set<number>();
-  const hSet = new Set<number>();
-  const measurements: MeasureGuide[] = [];
+  const xTargets: { pos: number; color: string; type: SnapType }[] = [];
+  const yTargets: { pos: number; color: string; type: SnapType }[] = [];
 
-  if (Math.abs(dcx - CANVAS_W / 2) < ALIGN_THRESHOLD) vSet.add(CANVAS_W / 2);
-  if (Math.abs(dcy - pageH / 2) < ALIGN_THRESHOLD) hSet.add(pageH / 2);
+  xTargets.push({ pos: 0, color: GUIDE_COLORS.page, type: 'page' });
+  xTargets.push({ pos: CANVAS_W / 2, color: GUIDE_COLORS.page, type: 'page' });
+  xTargets.push({ pos: CANVAS_W, color: GUIDE_COLORS.page, type: 'page' });
+  yTargets.push({ pos: 0, color: GUIDE_COLORS.page, type: 'page' });
+  yTargets.push({ pos: pageH / 2, color: GUIDE_COLORS.page, type: 'page' });
+
+  for (const block of blocks) {
+    if (block.id === draggedBlockId) continue;
+    const l = getLayout(block, viewportMode);
+    const br = l.x + l.w;
+    const bb = l.y + l.h;
+    const cx = l.x + l.w / 2;
+    const cy = l.y + l.h / 2;
+
+    xTargets.push({ pos: cx, color: GUIDE_COLORS.center, type: 'center' });
+    xTargets.push({ pos: l.x, color: GUIDE_COLORS.edge, type: 'edge' });
+    xTargets.push({ pos: br, color: GUIDE_COLORS.edge, type: 'edge' });
+    yTargets.push({ pos: cy, color: GUIDE_COLORS.center, type: 'center' });
+    yTargets.push({ pos: l.y, color: GUIDE_COLORS.edge, type: 'edge' });
+    yTargets.push({ pos: bb, color: GUIDE_COLORS.edge, type: 'edge' });
+  }
+
+  const xTargetValues = xTargets.map(t => t.pos);
+  const yTargetValues = yTargets.map(t => t.pos);
+
+  const snapCx = snapValue(dcx, xTargetValues, ALIGN_THRESHOLD);
+  const snapLeft = snapValue(draggedLayout.x, xTargetValues, ALIGN_THRESHOLD);
+  const snapRight = snapValue(dr, xTargetValues, ALIGN_THRESHOLD);
+
+  let snappedX = draggedLayout.x;
+  let snapTypeX: SnapType = null;
+  if (snapCx.hit) {
+    snappedX = snapCx.snapped - draggedLayout.w / 2;
+    snapTypeX = xTargets.find(t => t.pos === snapCx.snapped)?.type || null;
+  } else if (snapLeft.hit) {
+    snappedX = snapLeft.snapped;
+    snapTypeX = xTargets.find(t => t.pos === snapLeft.snapped)?.type || null;
+  } else if (snapRight.hit) {
+    snappedX = snapRight.snapped - draggedLayout.w;
+    snapTypeX = xTargets.find(t => t.pos === snapRight.snapped)?.type || null;
+  }
+
+  const snapCy = snapValue(dcy, yTargetValues, ALIGN_THRESHOLD);
+  const snapTop = snapValue(draggedLayout.y, yTargetValues, ALIGN_THRESHOLD);
+  const snapBottom = snapValue(db, yTargetValues, ALIGN_THRESHOLD);
+
+  let snappedY = draggedLayout.y;
+  let snapTypeY: SnapType = null;
+  if (snapCy.hit) {
+    snappedY = snapCy.snapped - draggedLayout.h / 2;
+    snapTypeY = yTargets.find(t => t.pos === snapCy.snapped)?.type || null;
+  } else if (snapTop.hit) {
+    snappedY = snapTop.snapped;
+    snapTypeY = yTargets.find(t => t.pos === snapTop.snapped)?.type || null;
+  } else if (snapBottom.hit) {
+    snappedY = snapBottom.snapped - draggedLayout.h;
+    snapTypeY = yTargets.find(t => t.pos === snapBottom.snapped)?.type || null;
+  }
+
+  const finalDcx = snappedX + draggedLayout.w / 2;
+  const finalDcy = snappedY + draggedLayout.h / 2;
+  const finalDr = snappedX + draggedLayout.w;
+  const finalDb = snappedY + draggedLayout.h;
+
+  const vGuides: GuideLine[] = [];
+  const hGuides: GuideLine[] = [];
+
+  if (snapTypeX) {
+    const snapPos = snapTypeX === 'center' ? finalDcx : snapTypeX === 'edge' && snapCx.hit ? finalDcx : snapLeft.hit ? snappedX : finalDr;
+    const color = snapTypeX === 'page' ? GUIDE_COLORS.page : snapTypeX === 'center' ? GUIDE_COLORS.center : GUIDE_COLORS.edge;
+    vGuides.push({ pos: snapLeft.hit ? snappedX : finalDr, color, type: snapTypeX });
+  }
+
+  if (snapTypeY) {
+    const color = snapTypeY === 'page' ? GUIDE_COLORS.page : snapTypeY === 'center' ? GUIDE_COLORS.center : GUIDE_COLORS.edge;
+    hGuides.push({ pos: snapTop.hit ? snappedY : finalDb, color, type: snapTypeY });
+  }
+
+  const measurements: MeasureGuide[] = [];
 
   interface Nearest { edge: number; oStart: number; oEnd: number; }
   let left: Nearest | null = null;
@@ -141,32 +248,25 @@ function computeBlockGuides(
     const br = l.x + l.w;
     const bb = l.y + l.h;
 
-    if (Math.abs(dcx - (l.x + l.w / 2)) < ALIGN_THRESHOLD) vSet.add(l.x + l.w / 2);
-    if (Math.abs(draggedLayout.x - l.x) < ALIGN_THRESHOLD) vSet.add(l.x);
-    if (Math.abs(dr - br) < ALIGN_THRESHOLD) vSet.add(br);
-    if (Math.abs(dcy - (l.y + l.h / 2)) < ALIGN_THRESHOLD) hSet.add(l.y + l.h / 2);
-    if (Math.abs(draggedLayout.y - l.y) < ALIGN_THRESHOLD) hSet.add(l.y);
-    if (Math.abs(db - bb) < ALIGN_THRESHOLD) hSet.add(bb);
+    const vyOverlap = Math.min(finalDb, bb) - Math.max(snappedY, l.y);
+    const vxOverlap = Math.min(finalDr, br) - Math.max(snappedX, l.x);
 
-    const vyOverlap = Math.min(db, bb) - Math.max(draggedLayout.y, l.y);
-    const vxOverlap = Math.min(dr, br) - Math.max(draggedLayout.x, l.x);
-
-    if (vyOverlap > 0 && br <= draggedLayout.x && (!left || br > left.edge))
-      left = { edge: br, oStart: Math.max(draggedLayout.y, l.y), oEnd: Math.min(db, bb) };
-    if (vyOverlap > 0 && l.x >= dr && (!right || l.x < right.edge))
-      right = { edge: l.x, oStart: Math.max(draggedLayout.y, l.y), oEnd: Math.min(db, bb) };
-    if (vxOverlap > 0 && bb <= draggedLayout.y && (!above || bb > above.edge))
-      above = { edge: bb, oStart: Math.max(draggedLayout.x, l.x), oEnd: Math.min(dr, br) };
-    if (vxOverlap > 0 && l.y >= db && (!below || l.y < below.edge))
-      below = { edge: l.y, oStart: Math.max(draggedLayout.x, l.x), oEnd: Math.min(dr, br) };
+    if (vyOverlap > 0 && br <= snappedX && (!left || br > left.edge))
+      left = { edge: br, oStart: Math.max(snappedY, l.y), oEnd: Math.min(finalDb, bb) };
+    if (vyOverlap > 0 && l.x >= finalDr && (!right || l.x < right.edge))
+      right = { edge: l.x, oStart: Math.max(snappedY, l.y), oEnd: Math.min(finalDb, bb) };
+    if (vxOverlap > 0 && bb <= snappedY && (!above || bb > above.edge))
+      above = { edge: bb, oStart: Math.max(snappedX, l.x), oEnd: Math.min(finalDr, br) };
+    if (vxOverlap > 0 && l.y >= finalDb && (!below || l.y < below.edge))
+      below = { edge: l.y, oStart: Math.max(snappedX, l.x), oEnd: Math.min(finalDr, br) };
   }
 
-  if (left) measurements.push({ orientation: 'h', pos: (left.oStart + left.oEnd) / 2, start: left.edge, end: draggedLayout.x, value: Math.round(draggedLayout.x - left.edge) });
-  if (right) measurements.push({ orientation: 'h', pos: (right.oStart + right.oEnd) / 2, start: dr, end: right.edge, value: Math.round(right.edge - dr) });
-  if (above) measurements.push({ orientation: 'v', pos: (above.oStart + above.oEnd) / 2, start: above.edge, end: draggedLayout.y, value: Math.round(draggedLayout.y - above.edge) });
-  if (below) measurements.push({ orientation: 'v', pos: (below.oStart + below.oEnd) / 2, start: db, end: below.edge, value: Math.round(below.edge - db) });
+  if (left) measurements.push({ orientation: 'h', pos: (left.oStart + left.oEnd) / 2, start: left.edge, end: snappedX, value: Math.round(snappedX - left.edge) });
+  if (right) measurements.push({ orientation: 'h', pos: (right.oStart + right.oEnd) / 2, start: finalDr, end: right.edge, value: Math.round(right.edge - finalDr) });
+  if (above) measurements.push({ orientation: 'v', pos: (above.oStart + above.oEnd) / 2, start: above.edge, end: snappedY, value: Math.round(snappedY - above.edge) });
+  if (below) measurements.push({ orientation: 'v', pos: (below.oStart + below.oEnd) / 2, start: finalDb, end: below.edge, value: Math.round(below.edge - finalDb) });
 
-  return { v: Array.from(vSet), h: Array.from(hSet), m: measurements };
+  return { snappedX, snappedY, guides: { v: vGuides, h: hGuides }, snapType: snapTypeX || snapTypeY || null, m: measurements };
 }
 
 const HANDLES: { id: HandleDir; cursor: string; style: React.CSSProperties }[] = [
@@ -513,7 +613,8 @@ function renderViewportBlocks(args: {
   isInteracting: boolean;
   onBlockMouseDown: (e: React.MouseEvent, block: AnyBlock) => void;
   onHandleMouseDown: (e: React.MouseEvent, block: AnyBlock, handle: HandleDir) => void;
-  guides?: { v: number[]; h: number[]; m: MeasureGuide[] };
+  guides?: { v: GuideLine[]; h: GuideLine[]; m: MeasureGuide[] };
+  snapType?: SnapType;
 }) {
   const scale = args.viewportW / CANVAS_W;
   const pageH = Math.max(800, ...args.blocks.map(b => { const l = getLayout(b, args.viewportMode); return l.y + l.h + 120; }));
@@ -546,6 +647,16 @@ function renderViewportBlocks(args: {
             style={{ position: 'absolute', left: layout.x * scale, top: layout.y * scale, width: layout.w * scale, height: layout.h * scale, zIndex: layout.zIndex + 1, cursor: 'move', boxSizing: 'border-box', userSelect: 'none', isolation: 'isolate' }}
           >
             <div style={{ position: 'absolute', inset: 0, border: isActive ? '2px solid #3B82F6' : '2px solid transparent', borderRadius: '6px', pointerEvents: 'none', zIndex: 2 }} />
+            {isActive && args.snapType && args.isInteracting && (
+              <div style={{
+                position: 'absolute', inset: -4,
+                border: '2px solid #3B82F6',
+                borderRadius: '8px',
+                opacity: 0.5,
+                animation: 'snapPulse 0.4s ease-out',
+                pointerEvents: 'none', zIndex: 25,
+              }} />
+            )}
             <div style={{ position: 'absolute', inset: 2, borderRadius: '4px', overflow: 'hidden', zIndex: 1 }}>
               <BlockContent block={block} onImageDrop={args.onImageDrop} isMobile isInteracting={args.isInteracting} />
               {block.type === 'html' && (
@@ -592,30 +703,60 @@ function renderViewportBlocks(args: {
           </div>
         );
       })}
-      {args.guides?.v.map((x, i) => (
-        <div key={`gv-${i}`} style={{ position: 'absolute', left: x * scale, top: 0, width: 0, height: pageH * scale, borderLeft: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+      {args.guides?.v.map((guide, i) => (
+        <div key={`gv-${i}`} style={{
+          position: 'absolute', left: guide.pos * scale, top: 0,
+          width: 0, height: pageH * scale,
+          borderLeft: `1px solid ${guide.color}`,
+          boxShadow: `0 0 8px ${guide.color}50`,
+          pointerEvents: 'none', zIndex: 999,
+        }} />
       ))}
-      {args.guides?.h.map((y, i) => (
-        <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y * scale, width: args.viewportW, height: 0, borderTop: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+      {args.guides?.h.map((guide, i) => (
+        <div key={`gh-${i}`} style={{
+          position: 'absolute', left: 0, top: guide.pos * scale,
+          width: args.viewportW, height: 0,
+          borderTop: `1px solid ${guide.color}`,
+          boxShadow: `0 0 8px ${guide.color}50`,
+          pointerEvents: 'none', zIndex: 999,
+        }} />
       ))}
       {args.guides?.m.map((m, i) => {
         const s = scale;
         if (m.orientation === 'h') {
           return (
             <React.Fragment key={`gm-${i}`}>
-              <div style={{ position: 'absolute', left: m.start * s, top: m.pos * s, width: (m.end - m.start) * s, height: 0, borderTop: '1px dashed #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.start * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.end * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: (m.start + m.end) / 2 * s, top: m.pos * s, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#7C3AED', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #7C3AED', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+              <div style={{ position: 'absolute', left: m.start * s, top: m.pos * s, width: (m.end - m.start) * s, height: 0, borderTop: `1px dashed ${GUIDE_COLORS.measure}`, pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.start * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: `1px solid ${GUIDE_COLORS.measure}`, pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.end * s, top: (m.pos * s) - 3, width: 0, height: 6, borderLeft: `1px solid ${GUIDE_COLORS.measure}`, pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{
+                position: 'absolute', left: (m.start + m.end) / 2 * s, top: m.pos * s,
+                transform: 'translate(-50%, -50%)',
+                background: '#1e293b', color: 'white',
+                padding: '2px 6px', borderRadius: 4,
+                fontSize: 10, fontWeight: 600,
+                whiteSpace: 'nowrap', lineHeight: '14px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                pointerEvents: 'none', zIndex: 1001,
+              }}>↔ {m.value}px</div>
             </React.Fragment>
           );
         }
         return (
           <React.Fragment key={`gm-${i}`}>
-            <div style={{ position: 'absolute', left: m.pos * s, top: m.start * s, width: 0, height: (m.end - m.start) * s, borderLeft: '1px dashed #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
-            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.start * s, width: 6, height: 0, borderTop: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
-            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.end * s, width: 6, height: 0, borderTop: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
-            <div style={{ position: 'absolute', left: m.pos * s, top: (m.start + m.end) / 2 * s, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#7C3AED', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #7C3AED', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+            <div style={{ position: 'absolute', left: m.pos * s, top: m.start * s, width: 0, height: (m.end - m.start) * s, borderLeft: `1px dashed ${GUIDE_COLORS.measure}`, pointerEvents: 'none', zIndex: 998 }} />
+            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.start * s, width: 6, height: 0, borderTop: `1px solid ${GUIDE_COLORS.measure}`, pointerEvents: 'none', zIndex: 998 }} />
+            <div style={{ position: 'absolute', left: (m.pos * s) - 3, top: m.end * s, width: 6, height: 0, borderTop: `1px solid ${GUIDE_COLORS.measure}`, pointerEvents: 'none', zIndex: 998 }} />
+            <div style={{
+              position: 'absolute', left: m.pos * s, top: (m.start + m.end) / 2 * s,
+              transform: 'translate(-50%, -50%)',
+              background: '#1e293b', color: 'white',
+              padding: '2px 6px', borderRadius: 4,
+              fontSize: 10, fontWeight: 600,
+              whiteSpace: 'nowrap', lineHeight: '14px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+              pointerEvents: 'none', zIndex: 1001,
+            }}>↕ {m.value}px</div>
           </React.Fragment>
         );
       })}
@@ -755,6 +896,7 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
             onBlockMouseDown: viewInteraction.onBlockMouseDown,
             onHandleMouseDown: viewInteraction.onHandleMouseDown,
             guides: viewInteraction.guides,
+            snapType: viewInteraction.snapType,
           })}
         </YStack>
         <XStack bg="white" height={20} ai="center" jc="center" flexShrink={0}>
@@ -785,6 +927,7 @@ function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDro
             onBlockMouseDown: viewInteraction.onBlockMouseDown,
             onHandleMouseDown: viewInteraction.onHandleMouseDown,
             guides: viewInteraction.guides,
+            snapType: viewInteraction.snapType,
           })}
         </YStack>
         <XStack bg="white" height={16} ai="center" jc="center" flexShrink={0}>
@@ -799,10 +942,13 @@ export const EditorCanvas: React.FC = () => {
   const { blocks, activeBlockId, selectedBlockIds, setActiveBlockId, removeBlock, removeBlocks, duplicateBlock, toggleSelectBlock, clearSelection, updateBlock, updateBlockSilent, previewMode, viewportMode } = useEditor();
   const [mounted, setMounted] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
-  const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
+  const [guides, setGuides] = useState<{ v: GuideLine[]; h: GuideLine[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
+  const [snapType, setSnapType] = useState<SnapType>(null);
   const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
   const [floatToolbar, setFloatToolbar] = useState<{ x: number; y: number } | null>(null);
   const floatToolbarRef = useRef<HTMLDivElement>(null);
+  const blocksRef = useRef(blocks);
+  blocksRef.current = blocks;
 
   const handleFloatFormat = (command: string, value?: string) => {
     const sel = window.getSelection();
@@ -866,7 +1012,7 @@ export const EditorCanvas: React.FC = () => {
       : [];
 
     const multiLayouts = moveIds.map((id) => {
-      const b = blocks.find((b2) => b2.id === id);
+      const b = blocksRef.current.find((b2) => b2.id === id);
       return b ? { id, entry: { layout: getLayout(b, viewportMode), layouts: b.layouts || {} } } : null;
     }).filter(Boolean) as { id: string; entry: { layout: Layout; layouts: Record<string, any> } }[];
 
@@ -877,7 +1023,7 @@ export const EditorCanvas: React.FC = () => {
       currentLayouts: block.layouts || {},
       multiLayouts: multiLayouts.length > 0 ? multiLayouts : undefined,
     };
-  }, [setActiveBlockId, viewportMode, inlineEditingId, selectedBlockIds, blocks]);
+  }, [setActiveBlockId, viewportMode, inlineEditingId, selectedBlockIds]);
 
   const onHandleMouseDown = useCallback((e: React.MouseEvent, block: AnyBlock, handle: HandleDir) => {
     e.preventDefault();
@@ -895,7 +1041,7 @@ export const EditorCanvas: React.FC = () => {
     const layout = getLayout(block, viewportMode);
 
     const multiLayouts = resizeIds.map((id) => {
-      const b = blocks.find((b2) => b2.id === id);
+      const b = blocksRef.current.find((b2) => b2.id === id);
       return b ? { id, entry: { layout: getLayout(b, viewportMode), layouts: b.layouts || {} } } : null;
     }).filter(Boolean) as { id: string; entry: { layout: Layout; layouts: Record<string, any> } }[];
 
@@ -907,7 +1053,7 @@ export const EditorCanvas: React.FC = () => {
       multiLayouts: multiLayouts.length > 0 ? multiLayouts : undefined,
       aspectRatio: block.type === 'image' && layout.w > 0 && layout.h > 0 ? layout.w / layout.h : undefined,
     };
-  }, [viewportMode, selectedBlockIds, blocks]);
+  }, [viewportMode, selectedBlockIds]);
 
   useEffect(() => {
     const applyLayout = (e: MouseEvent): Layout | null => {
@@ -973,20 +1119,33 @@ export const EditorCanvas: React.FC = () => {
       const { mode, handle, multiLayouts, blockId: mainBlockId } = interactionRef.current;
       const layout = applyLayout(e);
       if (layout) {
-        updateBlockSilent(mainBlockId, buildUpdate(layout));
-        if (multiLayouts?.length) {
-          const dx = e.clientX - interactionRef.current.startMouseX;
-          const dy = e.clientY - interactionRef.current.startMouseY;
-          for (const { id, entry } of multiLayouts) {
-            const newL = mode === 'move'
-              ? { ...entry.layout, x: Math.max(0, entry.layout.x + dx), y: Math.max(0, entry.layout.y + dy) }
-              : applyResizeToEntry(entry, dx, dy, handle!);
-            updateBlockSilent(id, {
-              layouts: { ...entry.layouts, [viewportMode]: newL },
-            } as Partial<AnyBlock>);
+        if (mode === 'move') {
+          const result = computeBlockGuidesWithSnap(layout, mainBlockId, blocksRef.current, viewportMode);
+          const snappedLayout = { ...layout, x: result.snappedX, y: result.snappedY };
+          updateBlockSilent(mainBlockId, buildUpdate(snappedLayout));
+          setGuides({ v: result.guides.v, h: result.guides.h, m: result.m });
+          setSnapType(result.snapType);
+          if (multiLayouts?.length) {
+            const dx = e.clientX - interactionRef.current.startMouseX;
+            const dy = e.clientY - interactionRef.current.startMouseY;
+            for (const { id, entry } of multiLayouts) {
+              const newL = { ...entry.layout, x: Math.max(0, entry.layout.x + dx), y: Math.max(0, entry.layout.y + dy) };
+              updateBlockSilent(id, { layouts: { ...entry.layouts, [viewportMode]: newL } } as Partial<AnyBlock>);
+            }
           }
+        } else {
+          updateBlockSilent(mainBlockId, buildUpdate(layout));
+          if (multiLayouts?.length) {
+            const dx = e.clientX - interactionRef.current.startMouseX;
+            const dy = e.clientY - interactionRef.current.startMouseY;
+            for (const { id, entry } of multiLayouts) {
+              const newL = applyResizeToEntry(entry, dx, dy, handle!);
+              updateBlockSilent(id, { layouts: { ...entry.layouts, [viewportMode]: newL } } as Partial<AnyBlock>);
+            }
+          }
+          setGuides({ v: [], h: [], m: [] });
+          setSnapType(null);
         }
-        setGuides(computeBlockGuides(layout, mainBlockId, blocks, viewportMode));
       }
     };
 
@@ -995,7 +1154,13 @@ export const EditorCanvas: React.FC = () => {
       const { mode, handle, multiLayouts, blockId: mainBlockId } = interactionRef.current;
       const layout = applyLayout(e);
       if (layout) {
-        updateBlock(mainBlockId, buildUpdate(layout));
+        if (mode === 'move') {
+          const result = computeBlockGuidesWithSnap(layout, mainBlockId, blocksRef.current, viewportMode);
+          const snappedLayout = { ...layout, x: result.snappedX, y: result.snappedY };
+          updateBlock(mainBlockId, buildUpdate(snappedLayout));
+        } else {
+          updateBlock(mainBlockId, buildUpdate(layout));
+        }
         if (multiLayouts?.length) {
           const dx = e.clientX - interactionRef.current.startMouseX;
           const dy = e.clientY - interactionRef.current.startMouseY;
@@ -1014,6 +1179,7 @@ export const EditorCanvas: React.FC = () => {
       if (cursorStyle) cursorStyle.remove();
       setIsInteracting(false);
       setGuides({ v: [], h: [], m: [] });
+      setSnapType(null);
     };
 
     document.addEventListener('mousemove', onMouseMove);
@@ -1130,6 +1296,13 @@ export const EditorCanvas: React.FC = () => {
       data-editor-root
       ai="center"
     >
+      <style>{`
+        @keyframes snapPulse {
+          0% { opacity: 0.6; transform: scale(1); }
+          50% { opacity: 0.3; transform: scale(1.01); }
+          100% { opacity: 0; transform: scale(1.02); }
+        }
+      `}</style>
       <div
         ref={pageRootRef}
         data-page-root
@@ -1304,29 +1477,59 @@ export const EditorCanvas: React.FC = () => {
           });
         })()}
 
-        {guides.v.map((x, i) => (
-          <div key={`gv-${i}`} style={{ position: 'absolute', left: x, top: 0, width: 0, height: pageH, borderLeft: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+        {guides.v.map((guide, i) => (
+          <div key={`gv-${i}`} style={{
+            position: 'absolute', left: guide.pos, top: 0,
+            width: 0, height: pageH,
+            borderLeft: `1px solid ${guide.color}`,
+            boxShadow: `0 0 8px ${guide.color}50`,
+            pointerEvents: 'none', zIndex: 999,
+          }} />
         ))}
-        {guides.h.map((y, i) => (
-          <div key={`gh-${i}`} style={{ position: 'absolute', left: 0, top: y, width: PAGE_W, height: 0, borderTop: '1.5px dashed #3B82F6', opacity: 0.7, pointerEvents: 'none', zIndex: 999 }} />
+        {guides.h.map((guide, i) => (
+          <div key={`gh-${i}`} style={{
+            position: 'absolute', left: 0, top: guide.pos,
+            width: PAGE_W, height: 0,
+            borderTop: `1px solid ${guide.color}`,
+            boxShadow: `0 0 8px ${guide.color}50`,
+            pointerEvents: 'none', zIndex: 999,
+          }} />
         ))}
         {guides.m.map((m, i) => {
           if (m.orientation === 'h') {
             return (
               <React.Fragment key={`gm-${i}`}>
-                <div style={{ position: 'absolute', left: m.start, top: m.pos, width: m.end - m.start, height: 0, borderTop: '1px dashed #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
-                <div style={{ position: 'absolute', left: m.start, top: m.pos - 3, width: 0, height: 6, borderLeft: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
-                <div style={{ position: 'absolute', left: m.end, top: m.pos - 3, width: 0, height: 6, borderLeft: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
-                <div style={{ position: 'absolute', left: (m.start + m.end) / 2, top: m.pos, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#7C3AED', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #7C3AED', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+                <div style={{ position: 'absolute', left: m.start, top: m.pos, width: m.end - m.start, height: 0, borderTop: `1px dashed ${GUIDE_COLORS.measure}`, pointerEvents: 'none', zIndex: 998 }} />
+                <div style={{ position: 'absolute', left: m.start, top: m.pos - 3, width: 0, height: 6, borderLeft: `1px solid ${GUIDE_COLORS.measure}`, pointerEvents: 'none', zIndex: 998 }} />
+                <div style={{ position: 'absolute', left: m.end, top: m.pos - 3, width: 0, height: 6, borderLeft: `1px solid ${GUIDE_COLORS.measure}`, pointerEvents: 'none', zIndex: 998 }} />
+                <div style={{
+                  position: 'absolute', left: (m.start + m.end) / 2, top: m.pos,
+                  transform: 'translate(-50%, -50%)',
+                  background: '#1e293b', color: 'white',
+                  padding: '2px 6px', borderRadius: 4,
+                  fontSize: 10, fontWeight: 600,
+                  whiteSpace: 'nowrap', lineHeight: '14px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                  pointerEvents: 'none', zIndex: 1001,
+                }}>↔ {m.value}px</div>
               </React.Fragment>
             );
           }
           return (
             <React.Fragment key={`gm-${i}`}>
-              <div style={{ position: 'absolute', left: m.pos, top: m.start, width: 0, height: m.end - m.start, borderLeft: '1px dashed #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.pos - 3, top: m.start, width: 6, height: 0, borderTop: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.pos - 3, top: m.end, width: 6, height: 0, borderTop: '1px solid #7C3AED', pointerEvents: 'none', zIndex: 998 }} />
-              <div style={{ position: 'absolute', left: m.pos, top: (m.start + m.end) / 2, transform: 'translate(-50%, -50%)', fontSize: 10, color: '#7C3AED', backgroundColor: 'white', padding: '1px 5px', borderRadius: 3, border: '1px solid #7C3AED', fontWeight: 600, zIndex: 1001, whiteSpace: 'nowrap', lineHeight: '14px', pointerEvents: 'none' }}>{m.value}px</div>
+              <div style={{ position: 'absolute', left: m.pos, top: m.start, width: 0, height: m.end - m.start, borderLeft: `1px dashed ${GUIDE_COLORS.measure}`, pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.pos - 3, top: m.start, width: 6, height: 0, borderTop: `1px solid ${GUIDE_COLORS.measure}`, pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{ position: 'absolute', left: m.pos - 3, top: m.end, width: 6, height: 0, borderTop: `1px solid ${GUIDE_COLORS.measure}`, pointerEvents: 'none', zIndex: 998 }} />
+              <div style={{
+                position: 'absolute', left: m.pos, top: (m.start + m.end) / 2,
+                transform: 'translate(-50%, -50%)',
+                background: '#1e293b', color: 'white',
+                padding: '2px 6px', borderRadius: 4,
+                fontSize: 10, fontWeight: 600,
+                whiteSpace: 'nowrap', lineHeight: '14px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                pointerEvents: 'none', zIndex: 1001,
+              }}>↕ {m.value}px</div>
             </React.Fragment>
           );
         })}

@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AnyBlock } from '@projeto/types';
 import { useEditor } from '../../../context/EditorContext';
-import type { Layout, HandleDir, MeasureGuide} from './editor-types';
-import { MIN_W, MIN_H, getLayout, computeBlockGuides } from './editor-types';
+import type { Layout, HandleDir, MeasureGuide, GuideLine, SnapType } from './editor-types';
+import { MIN_W, MIN_H, getLayout, computeBlockGuidesWithSnap } from './editor-types';
 
 export function useViewportInteraction(scale: number) {
   const { blocks, activeBlockId, setActiveBlockId, removeBlock, updateBlock, updateBlockSilent, viewportMode } = useEditor();
   const [isInteracting, setIsInteracting] = useState(false);
-  const [guides, setGuides] = useState<{ v: number[]; h: number[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
+  const [guides, setGuides] = useState<{ v: GuideLine[]; h: GuideLine[]; m: MeasureGuide[] }>({ v: [], h: [], m: [] });
+  const [snapType, setSnapType] = useState<SnapType>(null);
   const interactionRef = useRef<{
     mode: 'move' | 'resize';
     blockId: string;
@@ -76,7 +77,9 @@ export function useViewportInteraction(scale: number) {
       const newLayout = applyLayout(e);
       if (newLayout) {
         updateBlockSilent(interactionRef.current.blockId, buildUpdate(newLayout));
-        setGuides(computeBlockGuides(newLayout, interactionRef.current.blockId, blocks, viewportMode));
+        const result = computeBlockGuidesWithSnap(newLayout, interactionRef.current.blockId, blocks, viewportMode);
+        setGuides({ v: result.vGuides, h: result.hGuides, m: result.mGuides });
+        setSnapType(result.snapType);
       }
     };
 
@@ -87,6 +90,7 @@ export function useViewportInteraction(scale: number) {
       interactionRef.current = null;
       setIsInteracting(false);
       setGuides({ v: [], h: [], m: [] });
+      setSnapType(null);
     };
 
     document.addEventListener('mousemove', onMouseMove);
@@ -97,5 +101,5 @@ export function useViewportInteraction(scale: number) {
     };
   }, [updateBlock, updateBlockSilent, scale, viewportMode]);
 
-  return { activeBlockId, setActiveBlockId, removeBlock, updateBlock, isInteracting, onBlockMouseDown, onHandleMouseDown, guides };
+  return { activeBlockId, setActiveBlockId, removeBlock, updateBlock, isInteracting, onBlockMouseDown, onHandleMouseDown, guides, snapType };
 }
