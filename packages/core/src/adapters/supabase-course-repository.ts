@@ -156,6 +156,52 @@ export const supabaseCourseRepository: ICourseRepository = {
     if (error) throw error;
   },
 
+  async duplicateLesson(lessonId: string): Promise<Lesson> {
+    const { data: original, error: fetchError } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('id', lessonId)
+      .single();
+    if (fetchError) throw fetchError;
+
+    const draftId = lessonId.substring(0, 24) + 'dddddddddddd';
+    const { data: draft } = await supabase
+      .from('lessons')
+      .select('blocks, title')
+      .eq('id', draftId)
+      .single();
+
+    const blocksToCopy = draft?.blocks ?? original.blocks;
+    const titleToCopy = draft?.title ?? original.title;
+
+    const { data: maxOrder } = await supabase
+      .from('lessons')
+      .select('order_index')
+      .eq('module_id', original.module_id)
+      .order('order_index', { ascending: false })
+      .limit(1)
+      .single();
+
+    const newOrderIndex = (maxOrder?.order_index ?? 0) + 1;
+    const newTitle = `${titleToCopy} (Cópia)`;
+
+    const { data, error: insertError } = await supabase
+      .from('lessons')
+      .insert({
+        module_id: original.module_id,
+        title: newTitle,
+        order_index: newOrderIndex,
+        blocks: blocksToCopy,
+        is_published: false,
+        schema_version: original.schema_version,
+      })
+      .select()
+      .single();
+    if (insertError) throw insertError;
+
+    return LessonSchema.parse(data);
+  },
+
   async reorderLessons(items: { id: string; order_index: number }[]): Promise<void> {
     const { error } = await supabase.from('lessons').upsert(
       items.map(item => ({ id: item.id, order_index: item.order_index })),

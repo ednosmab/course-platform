@@ -335,6 +335,15 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
     fetchData();
   };
 
+  const duplicateLesson = async (id: string) => {
+    try {
+      await CourseService.duplicateLesson(id);
+    } catch {
+      // Silently handle
+    }
+    fetchData();
+  };
+
   const moveModule = async (id: string, direction: 'up' | 'down') => {
     const sorted = [...modules].sort((a, b) => a.order_index - b.order_index);
     const idx = sorted.findIndex(m => m.id === id);
@@ -629,6 +638,7 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
                               <Text onPress={(e: any) => { e.stopPropagation(); moveLesson(lesson.id, 'up'); }} fontSize={12} color="$textMuted" style={{ cursor: 'pointer' }}>↑</Text>
                               <Text onPress={(e: any) => { e.stopPropagation(); moveLesson(lesson.id, 'down'); }} fontSize={12} color="$textMuted" style={{ cursor: 'pointer' }}>↓</Text>
                               <Text onPress={(e: any) => { e.stopPropagation(); setEditLessonTitle(lesson.title); setEditingLessonId(lesson.id); }} fontSize={11} color="$primary" style={{ cursor: 'pointer' }}>Renomear</Text>
+                              <Text onPress={(e: any) => { e.stopPropagation(); duplicateLesson(lesson.id); }} fontSize={11} color="$primary" style={{ cursor: 'pointer' }}>Duplicar</Text>
                               <Text onPress={(e: any) => { e.stopPropagation(); deleteLesson(lesson.id); }} fontSize={11} color="$danger" style={{ cursor: 'pointer' }}>Excluir</Text>
                             </XStack>
                           )}

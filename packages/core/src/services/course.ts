@@ -212,6 +212,15 @@ export function createCourseService(repo: ICourseRepository) {
     },
 
     /**
+     * @description Duplicates a lesson with its content blocks, placing the copy after the original.
+     * @param lessonId - The UUID of the lesson to duplicate
+     * @returns The newly created lesson (copy)
+     */
+    async duplicateLesson(lessonId: string): Promise<Lesson> {
+      return repo.duplicateLesson(lessonId);
+    },
+
+    /**
      * @description Reorders lessons within a module by updating their order_index values in bulk.
      * @param items - Array of objects each containing an id and the new order_index
      */

@@ -174,6 +174,13 @@ export interface ICourseRepository {
   deleteLesson(lessonId: string): Promise<void>;
 
   /**
+   * @description Duplicates a lesson with its content blocks, placing the copy after the original.
+   * @param lessonId - The UUID of the lesson to duplicate.
+   * @returns Promise resolving to the newly created lesson (copy).
+   */
+  duplicateLesson(lessonId: string): Promise<Lesson>;
+
+  /**
    * @description Reorders lessons within a module by updating their sort indices.
    * @param items - Array of objects mapping lesson IDs to their new order_index values.
    * @returns Promise resolving when the reorder completes.

@@ -35,6 +35,7 @@ function makeCourseRepo() {
     createLesson: vi.fn(),
     updateLesson: vi.fn(),
     deleteLesson: vi.fn(),
+    duplicateLesson: vi.fn(),
     reorderLessons: vi.fn(),
     getModuleTitle: vi.fn(),
     getCourseTitle: vi.fn(),
