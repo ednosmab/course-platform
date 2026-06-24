@@ -295,30 +295,40 @@ function getVimeoId(url: string): string | null {
   return match ? match[1] : null;
 }
 
-function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = false, isEditing = false, onEditComplete }: {
+function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = false, isEditing = false, onEditComplete, onAutoResize, blockHeight }: {
   block: AnyBlock;
   onImageDrop?: (blockId: string, file: File) => void;
   isMobile?: boolean;
   isInteracting?: boolean;
   isEditing?: boolean;
   onEditComplete?: (content: string) => void;
+  onAutoResize?: (h: number) => void;
+  blockHeight?: number;
 }) {
   if (block.type === 'text') {
     const styles = (block.styles || {}) as Record<string, string>;
     const fs = styles.fontSize as string || 'medium';
     const fontSize = isMobile ? FONT_MOBILE[fs] : FONT_DESKTOP[fs];
 
-    const style: React.CSSProperties = {
+    const measureAndResize = (el: HTMLElement) => {
+      const minH = el.scrollHeight + 8;
+      if (blockHeight && Math.abs(minH - blockHeight) > 1) {
+        onAutoResize?.(minH);
+      }
+    };
+
+    const baseStyle: React.CSSProperties = {
       fontSize, fontFamily: styles.fontFamily as string || 'inherit',
       color: styles.color as string || color.cwForeground,
       backgroundColor: styles.backgroundColor as string || 'transparent',
       backgroundImage: styles.backgroundImage ? `url(${styles.backgroundImage})` : 'none',
       backgroundSize: 'cover', backgroundPosition: 'center',
       textAlign: (styles.align as React.CSSProperties['textAlign']) || 'left', lineHeight: 1.6,
-      width: '100%', height: '100%',
+      width: '100%',
+      overflowWrap: 'break-word',
+      wordBreak: 'break-word',
       padding: styles.backgroundColor || styles.backgroundImage ? '16px' : '0',
       borderRadius: styles.backgroundColor || styles.backgroundImage ? '8px' : '0',
-      overflow: isMobile ? 'visible' : 'hidden',
     };
 
     if (isEditing) {
@@ -327,7 +337,9 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
           contentEditable
           suppressContentEditableWarning
           style={{
-            ...style,
+            ...baseStyle,
+            height: 'auto',
+            overflow: 'visible',
             cursor: 'text',
             outline: 'none',
             userSelect: 'text',
@@ -336,8 +348,23 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
             borderRadius: '4px',
             padding: '8px',
           }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              const el = e.currentTarget;
+              requestAnimationFrame(() => measureAndResize(el));
+            }
+          }}
+          onPaste={(e) => {
+            e.preventDefault();
+            const html = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
+            document.execCommand('insertHTML', false, html);
+            const el = e.currentTarget;
+            requestAnimationFrame(() => measureAndResize(el));
+          }}
           onBlur={(e) => {
             const html = e.currentTarget.innerHTML.replace(/&nbsp;/g, ' ');
+            const minH = e.currentTarget.scrollHeight + 8;
+            onAutoResize?.(minH);
             onEditComplete?.(html);
           }}
           onMouseDown={(e) => e.stopPropagation()}
@@ -346,6 +373,12 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
         </div>
       );
     }
+
+    const style: React.CSSProperties = {
+      ...baseStyle,
+      height: '100%',
+      overflow: 'visible',
+    };
 
     let textElement: React.ReactNode;
     // Match single- and multi-character HTML tags so sanitization covers
@@ -1390,7 +1423,7 @@ export const EditorCanvas: React.FC = () => {
                 tabIndex={0}
                 role="button"
                 aria-label={`Bloco ${block.type}${(block as any).content ? `: ${(block as any).content.substring(0, 40)}` : ''}${isActive ? ' (selecionado)' : ''}`}
-                style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.zIndex + 1, cursor: isEditing ? 'text' : 'move', boxSizing: 'border-box', userSelect: isEditing ? 'text' : 'none', isolation: 'isolate', outline: isActive ? 'none' : undefined }}
+                style={{ position: 'absolute', left: layout.x, top: layout.y, width: layout.w, height: isEditing ? 'auto' : layout.h, zIndex: layout.zIndex + 1, cursor: isEditing ? 'text' : 'move', boxSizing: 'border-box', userSelect: isEditing ? 'text' : 'none', isolation: 'isolate', outline: isActive ? 'none' : undefined }}
               >
                 <div style={{
                   position: 'absolute', inset: 0,
@@ -1405,12 +1438,19 @@ export const EditorCanvas: React.FC = () => {
                   </XStack>
                 )}
 
-                <div style={{ position: 'absolute', inset: 2, borderRadius: '4px', overflow: 'hidden', zIndex: 1 }}>
+                <div style={isEditing
+                  ? { position: 'absolute', top: 2, left: 2, right: 2, borderRadius: '4px', overflow: 'visible', zIndex: 1 }
+                  : { position: 'absolute', inset: 2, borderRadius: '4px', overflow: 'hidden', zIndex: 1 }
+                }>
                   <BlockContent
                     block={block}
                     onImageDrop={handleImageDrop}
                     isInteracting={isInteracting}
                     isEditing={isEditing}
+                    blockHeight={layout.h}
+                    onAutoResize={(newH) => {
+                      updateBlockSilent(block.id, { layouts: { ...block.layouts, desktop: { ...layout, h: newH } } } as Partial<AnyBlock>);
+                    }}
                     onEditComplete={(content) => {
                       updateBlock(block.id, { content } as Partial<AnyBlock>);
                       setInlineEditingId(null);

@@ -6,7 +6,7 @@ import DOMPurify from 'dompurify';
  * Anything outside this list is stripped on the client.
  */
 const ALLOWED_TAGS = [
-  'a', 'b', 'blockquote', 'br', 'code', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'a', 'b', 'blockquote', 'br', 'code', 'div', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
   'i', 'li', 'mark', 'ol', 'p', 'pre', 's', 'span', 'strong', 'sub', 'sup', 'u', 'ul',
 ];
 
