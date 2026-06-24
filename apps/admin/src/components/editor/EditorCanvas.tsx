@@ -265,37 +265,91 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     const youtubeId = getYoutubeId(block.url);
     const vimeoId = !youtubeId ? getVimeoId(block.url) : null;
 
+    const iframeStyle: React.CSSProperties = {
+      position: 'absolute',
+      inset: 0,
+      width: '100%',
+      height: '100%',
+      border: 'none',
+      borderRadius: '8px',
+      pointerEvents: isInteracting ? 'none' : 'auto',
+    };
+
+    const wrapperStyle: React.CSSProperties = {
+      position: 'relative',
+      width: '100%',
+      height: '100%',
+      borderRadius: '8px',
+      overflow: 'hidden',
+      backgroundColor: '#0f0f0f',
+      boxShadow: '0 4px 24px rgba(0,0,0,0.18), 0 1px 4px rgba(0,0,0,0.08)',
+    };
+
+    const labelStyle: React.CSSProperties = {
+      position: 'absolute',
+      bottom: '8px',
+      left: '8px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '5px',
+      padding: '3px 8px',
+      borderRadius: '4px',
+      backgroundColor: 'rgba(0,0,0,0.65)',
+      backdropFilter: 'blur(4px)',
+      color: 'white',
+      fontSize: '10px',
+      fontWeight: 600,
+      letterSpacing: '0.3px',
+      zIndex: 5,
+      pointerEvents: 'none',
+    };
+
     if (youtubeId) {
       return (
-        <iframe
-          src={`https://www.youtube.com/embed/${youtubeId}`}
-          title="YouTube video"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          style={{ width: '100%', height: '100%', border: 'none', display: 'block', pointerEvents: isInteracting ? 'none' : 'auto' }}
-        />
+        <div style={wrapperStyle}>
+          <iframe
+            src={`https://www.youtube.com/embed/${youtubeId}`}
+            title="YouTube video"
+            allow="accelelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={iframeStyle}
+          />
+          <div style={labelStyle}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#FF0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            YouTube
+          </div>
+        </div>
       );
     }
 
     if (vimeoId) {
       return (
-        <iframe
-          src={`https://player.vimeo.com/video/${vimeoId}`}
-          title="Vimeo video"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowFullScreen
-          style={{ width: '100%', height: '100%', border: 'none', display: 'block', pointerEvents: isInteracting ? 'none' : 'auto' }}
-        />
+        <div style={wrapperStyle}>
+          <iframe
+            src={`https://player.vimeo.com/video/${vimeoId}`}
+            title="Vimeo video"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            style={iframeStyle}
+          />
+          <div style={labelStyle}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#1AB7EA"><path d="M23.977 6.416c-.105 2.338-1.739 5.543-4.894 9.609-3.268 4.247-6.026 6.37-8.29 6.37-1.409 0-2.578-1.294-3.553-3.881L5.322 11.4C4.603 8.816 3.834 7.522 3.01 7.522c-.179 0-.806.378-1.881 1.132L0 7.197a315.065 315.065 0 0 0 3.501-3.128C5.08 2.701 6.266 1.984 7.055 1.91c1.867-.18 3.016 1.1 3.447 3.838.465 2.953.789 4.789.971 5.507.539 2.45 1.131 3.674 1.776 3.674.502 0 1.256-.796 2.265-2.385 1.004-1.589 1.54-2.797 1.612-3.628.144-1.371-.395-2.061-1.614-2.061-.574 0-1.167.121-1.777.391 1.186-3.868 3.434-5.757 6.762-5.637 2.473.06 3.628 1.664 3.493 4.797l-.013.018z"/></svg>
+            Vimeo
+          </div>
+        </div>
       );
     }
 
     return (
-      <YStack w="100%" h="100%" bg="$surface" borderRadius="$3" ai="center" jc="center" position="relative" overflow="hidden">
-        <XStack w={44} h={44} borderRadius={22} bg="white" ai="center" jc="center">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="#1e293b" style={{ marginLeft: 3 }}><path d="M5 3l14 9-14 9V3z" /></svg>
-        </XStack>
-        <Text position="absolute" bottom="$2" left="$3" color="white" fontSize={11} opacity={0.6}>{block.provider}</Text>
-      </YStack>
+      <div style={{ ...wrapperStyle, background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+          <div style={{ width: '52px', height: '52px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid rgba(255,255,255,0.2)' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="white" style={{ marginLeft: 2 }}><path d="M5 3l14 9-14 9V3z" /></svg>
+          </div>
+          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 500, letterSpacing: '0.5px' }}>Cole a URL no painel →</span>
+        </div>
+        <div style={labelStyle}>{block.provider || 'Vídeo'}</div>
+      </div>
     );
   }
   if (block.type === 'image') {
