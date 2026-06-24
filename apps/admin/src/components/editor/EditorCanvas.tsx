@@ -988,6 +988,7 @@ export const EditorCanvas: React.FC = () => {
   const floatToolbarRef = useRef<HTMLDivElement>(null);
   const blocksRef = useRef(blocks);
   blocksRef.current = blocks;
+  const pendingLayoutRef = useRef<{ blockId: string; layout: Layout; multiUpdates?: { id: string; layout: Layout }[] } | null>(null);
 
   const handleFloatFormat = (command: string, value?: string) => {
     const sel = window.getSelection();
@@ -1184,14 +1185,20 @@ export const EditorCanvas: React.FC = () => {
             if (mode === 'move') {
               const result = computeBlockGuidesWithSnap(layout, mainBlockId, blocksRef.current, viewportMode);
               const snappedLayout = { ...layout, x: result.snappedX, y: result.snappedY };
-              updateBlockSilent(mainBlockId, buildUpdate(snappedLayout));
+              pendingLayoutRef.current = { blockId: mainBlockId, layout: snappedLayout };
+              const el = document.querySelector(`[data-block-id="${mainBlockId}"]`) as HTMLElement;
+              if (el) { el.style.left = `${snappedLayout.x}px`; el.style.top = `${snappedLayout.y}px`; }
               if (multiLayouts?.length) {
                 const dx = lastMouseRef.current.clientX - interactionRef.current.startMouseX;
                 const dy = lastMouseRef.current.clientY - interactionRef.current.startMouseY + scrollOffsetRef.current;
+                const multiUpdates: { id: string; layout: Layout }[] = [];
                 for (const { id, entry } of multiLayouts) {
                   const newL = { ...entry.layout, x: Math.max(0, entry.layout.x + dx), y: Math.max(0, entry.layout.y + dy) };
-                  updateBlockSilent(id, { layouts: { ...entry.layouts, [viewportMode]: newL } } as Partial<AnyBlock>);
+                  multiUpdates.push({ id, layout: newL });
+                  const mEl = document.querySelector(`[data-block-id="${id}"]`) as HTMLElement;
+                  if (mEl) { mEl.style.left = `${newL.x}px`; mEl.style.top = `${newL.y}px`; }
                 }
+                pendingLayoutRef.current.multiUpdates = multiUpdates;
               }
             }
           }
@@ -1241,29 +1248,39 @@ export const EditorCanvas: React.FC = () => {
         if (mode === 'move') {
           const result = computeBlockGuidesWithSnap(layout, mainBlockId, blocksRef.current, viewportMode);
           const snappedLayout = { ...layout, x: result.snappedX, y: result.snappedY };
-          updateBlockSilent(mainBlockId, buildUpdate(snappedLayout));
+          pendingLayoutRef.current = { blockId: mainBlockId, layout: snappedLayout };
+          const el = document.querySelector(`[data-block-id="${mainBlockId}"]`) as HTMLElement;
+          if (el) { el.style.left = `${snappedLayout.x}px`; el.style.top = `${snappedLayout.y}px`; }
           setGuides({ v: result.guides.v, h: result.guides.h, m: result.m });
           setSnapType(result.snapType);
           if (multiLayouts?.length) {
             const dx = e.clientX - interactionRef.current.startMouseX;
             const dy = e.clientY - interactionRef.current.startMouseY + scrollOffsetRef.current;
+            const multiUpdates: { id: string; layout: Layout }[] = [];
             for (const { id, entry } of multiLayouts) {
               const newL = { ...entry.layout, x: Math.max(0, entry.layout.x + dx), y: Math.max(0, entry.layout.y + dy) };
-              updateBlockSilent(id, { layouts: { ...entry.layouts, [viewportMode]: newL } } as Partial<AnyBlock>);
+              multiUpdates.push({ id, layout: newL });
+              const mEl = document.querySelector(`[data-block-id="${id}"]`) as HTMLElement;
+              if (mEl) { mEl.style.left = `${newL.x}px`; mEl.style.top = `${newL.y}px`; }
             }
+            pendingLayoutRef.current.multiUpdates = multiUpdates;
           }
         } else {
-          updateBlockSilent(mainBlockId, buildUpdate(layout));
+          pendingLayoutRef.current = { blockId: mainBlockId, layout };
+          const el = document.querySelector(`[data-block-id="${mainBlockId}"]`) as HTMLElement;
+          if (el) { el.style.left = `${layout.x}px`; el.style.top = `${layout.y}px`; el.style.width = `${layout.w}px`; el.style.height = `${layout.h}px`; }
           if (multiLayouts?.length) {
             const dx = e.clientX - interactionRef.current.startMouseX;
             const dy = e.clientY - interactionRef.current.startMouseY;
+            const multiUpdates: { id: string; layout: Layout }[] = [];
             for (const { id, entry } of multiLayouts) {
               const newL = applyResizeToEntry(entry, dx, dy, handle!);
-              updateBlockSilent(id, { layouts: { ...entry.layouts, [viewportMode]: newL } } as Partial<AnyBlock>);
+              multiUpdates.push({ id, layout: newL });
+              const mEl = document.querySelector(`[data-block-id="${id}"]`) as HTMLElement;
+              if (mEl) { mEl.style.left = `${newL.x}px`; mEl.style.top = `${newL.y}px`; mEl.style.width = `${newL.w}px`; mEl.style.height = `${newL.h}px`; }
             }
+            pendingLayoutRef.current.multiUpdates = multiUpdates;
           }
-          setGuides({ v: [], h: [], m: [] });
-          setSnapType(null);
         }
       }
     };
@@ -1273,27 +1290,48 @@ export const EditorCanvas: React.FC = () => {
       if (autoScrollRef.current.rafId) cancelAnimationFrame(autoScrollRef.current.rafId);
       autoScrollRef.current = { rafId: null, direction: null, speed: 0 };
       const { mode, handle, multiLayouts, blockId: mainBlockId } = interactionRef.current;
-      const layout = applyLayout(e);
       scrollOffsetRef.current = 0;
       lastMouseRef.current = null;
-      if (layout) {
-        if (mode === 'move') {
-          const result = computeBlockGuidesWithSnap(layout, mainBlockId, blocksRef.current, viewportMode);
-          const snappedLayout = { ...layout, x: result.snappedX, y: result.snappedY };
-          updateBlock(mainBlockId, buildUpdate(snappedLayout));
+      if (mode === 'move') {
+        const pending = pendingLayoutRef.current;
+        if (pending && pending.blockId === mainBlockId) {
+          updateBlock(mainBlockId, buildUpdate(pending.layout));
+          if (pending.multiUpdates?.length) {
+            for (const mu of pending.multiUpdates) {
+              const entry = multiLayouts?.find(m => m.id === mu.id);
+              if (entry) {
+                updateBlock(mu.id, { layouts: { ...entry.entry.layouts, [viewportMode]: mu.layout } } as Partial<AnyBlock>);
+              }
+            }
+          }
         } else {
+          const layout = applyLayout(e);
+          if (layout) {
+            const result = computeBlockGuidesWithSnap(layout, mainBlockId, blocksRef.current, viewportMode);
+            const snappedLayout = { ...layout, x: result.snappedX, y: result.snappedY };
+            updateBlock(mainBlockId, buildUpdate(snappedLayout));
+          }
+          if (multiLayouts?.length) {
+            const dx = e.clientX - interactionRef.current.startMouseX;
+            const dy = e.clientY - interactionRef.current.startMouseY + scrollOffsetRef.current;
+            for (const { id, entry } of multiLayouts) {
+              const newL = { ...entry.layout, x: Math.max(0, entry.layout.x + dx), y: Math.max(0, entry.layout.y + dy) };
+              updateBlock(id, { layouts: { ...entry.layouts, [viewportMode]: newL } } as Partial<AnyBlock>);
+            }
+          }
+        }
+        pendingLayoutRef.current = null;
+      } else {
+        const layout = applyLayout(e);
+        if (layout) {
           updateBlock(mainBlockId, buildUpdate(layout));
         }
         if (multiLayouts?.length) {
           const dx = e.clientX - interactionRef.current.startMouseX;
           const dy = e.clientY - interactionRef.current.startMouseY;
           for (const { id, entry } of multiLayouts) {
-            const newL = mode === 'move'
-              ? { ...entry.layout, x: Math.max(0, entry.layout.x + dx), y: Math.max(0, entry.layout.y + dy) }
-              : applyResizeToEntry(entry, dx, dy, handle!);
-            updateBlock(id, {
-              layouts: { ...entry.layouts, [viewportMode]: newL },
-            } as Partial<AnyBlock>);
+            const newL = applyResizeToEntry(entry, dx, dy, handle!);
+            updateBlock(id, { layouts: { ...entry.layouts, [viewportMode]: newL } } as Partial<AnyBlock>);
           }
         }
       }
@@ -1314,8 +1352,9 @@ export const EditorCanvas: React.FC = () => {
       autoScrollRef.current = { rafId: null, direction: null, speed: 0 };
       scrollOffsetRef.current = 0;
       lastMouseRef.current = null;
+      pendingLayoutRef.current = null;
     };
-  }, [updateBlock, updateBlockSilent, viewportMode]);
+  }, [updateBlock, viewportMode]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
