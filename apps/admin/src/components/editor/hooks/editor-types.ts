@@ -19,9 +19,9 @@ export const ALIGN_THRESHOLD = 8;
 export const GRID_SIZE = 8;
 
 export const GUIDE_COLORS = {
-  center: '#3B82F6',
-  edge: '#10B981',
-  page: '#94A3B8',
+  center: '#8B5CF6',
+  edge: '#8B5CF6',
+  page: '#8B5CF6',
   measure: '#F59E0B',
 };
 

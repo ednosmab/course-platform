@@ -18,9 +18,9 @@ const ALIGN_THRESHOLD = 8;
 const GRID_SIZE = 8;
 
 const GUIDE_COLORS = {
-  center: '#3B82F6',
-  edge: '#10B981',
-  page: '#94A3B8',
+  center: '#8B5CF6',
+  edge: '#8B5CF6',
+  page: '#8B5CF6',
   grid: '#CBD5E1',
   measure: '#F59E0B',
 } as const;
@@ -744,7 +744,7 @@ function renderViewportBlocks(args: {
         <div key={`gv-${i}`} style={{
           position: 'absolute', left: guide.pos * scale, top: 0,
           width: 0, height: pageH * scale,
-          borderLeft: `1px solid ${guide.color}`,
+          borderLeft: `1px dashed ${guide.color}`,
           boxShadow: `0 0 8px ${guide.color}50`,
           pointerEvents: 'none', zIndex: 999,
         }} />
@@ -753,7 +753,7 @@ function renderViewportBlocks(args: {
         <div key={`gh-${i}`} style={{
           position: 'absolute', left: 0, top: guide.pos * scale,
           width: args.viewportW, height: 0,
-          borderTop: `1px solid ${guide.color}`,
+          borderTop: `1px dashed ${guide.color}`,
           boxShadow: `0 0 8px ${guide.color}50`,
           pointerEvents: 'none', zIndex: 999,
         }} />
@@ -915,9 +915,10 @@ function PreviewCanvas({ blocks, viewportMode }: {
 
 function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDrop: (id: string, file: File) => void }) {
   const { duplicateBlock: dupBlock } = useEditor();
-  const viewInteraction = useViewportInteraction(MOBILE_W / CANVAS_W);
+  const mobileScrollRef = useRef<any>(null);
+  const viewInteraction = useViewportInteraction(MOBILE_W / CANVAS_W, mobileScrollRef);
   return (
-    <YStack flex={1} ai="center" p="$5" overflowY="auto">
+    <YStack ref={mobileScrollRef} flex={1} ai="center" p="$5" overflowY="auto">
       <YStack borderWidth={6} borderColor="$surface" borderRadius={36} overflow="hidden" style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.25)' }} bg="$background" w={MOBILE_W} flexShrink={0}>
         <XStack bg="$surface" height={28} ai="center" jc="center" flexShrink={0}>
           <XStack w={60} height={6} borderRadius={3} bg="$gray6" />
@@ -946,9 +947,10 @@ function MobileViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDr
 
 function TableViewport({ blocks, onImageDrop }: { blocks: AnyBlock[]; onImageDrop: (id: string, file: File) => void }) {
   const { duplicateBlock: dupBlock } = useEditor();
-  const viewInteraction = useViewportInteraction(TABLET_W / CANVAS_W);
+  const tabletScrollRef = useRef<any>(null);
+  const viewInteraction = useViewportInteraction(TABLET_W / CANVAS_W, tabletScrollRef);
   return (
-    <YStack flex={1} ai="center" p="$5" overflowY="auto">
+    <YStack ref={tabletScrollRef} flex={1} ai="center" p="$5" overflowY="auto">
       <YStack borderWidth={6} borderColor="$surface" borderRadius={12} overflow="hidden" style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} bg="$background" w={TABLET_W} flexShrink={0}>
         <XStack bg="$surface" height={8} ai="center" jc="center" flexShrink={0}>
           <XStack w={8} h={8} borderRadius={4} bg="$background" borderWidth={1} borderColor="$gray7" />
@@ -1011,6 +1013,11 @@ export const EditorCanvas: React.FC = () => {
   const [clipboardBlockId, setClipboardBlockId] = useState<string | null>(null);
   const [marqueeRect, setMarqueeRect] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
   const isMarqueeSelecting = useRef(false);
+
+  const scrollContainerRef = useRef<any>(null);
+  const autoScrollRef = useRef<{ rafId: number | null; direction: 'up' | 'down' | null; speed: number }>({ rafId: null, direction: null, speed: 0 });
+  const scrollOffsetRef = useRef(0);
+  const lastMouseRef = useRef<{ clientX: number; clientY: number } | null>(null);
 
   const interactionRef = useRef<{
     mode: 'move' | 'resize';
@@ -1097,7 +1104,7 @@ export const EditorCanvas: React.FC = () => {
       if (!interactionRef.current) return null;
       const { mode, handle, startMouseX, startMouseY, startLayout, aspectRatio } = interactionRef.current;
       const dx = e.clientX - startMouseX;
-      const dy = e.clientY - startMouseY;
+      const dy = e.clientY - startMouseY + scrollOffsetRef.current;
       if (mode === 'move') {
         return { ...startLayout, x: startLayout.x + dx, y: startLayout.y + dy };
       }
@@ -1151,8 +1158,83 @@ export const EditorCanvas: React.FC = () => {
       return { x, y, w, h, zIndex: sl.zIndex };
     };
 
+    const SCROLL_THRESHOLD = 50;
+    const SCROLL_MIN_SPEED = 2;
+    const SCROLL_MAX_SPEED = 12;
+
+    const startAutoScroll = (direction: 'up' | 'down') => {
+      const container = scrollContainerRef.current;
+      if (!container || autoScrollRef.current.rafId) return;
+
+      const tick = () => {
+        if (!interactionRef.current || !container) {
+          autoScrollRef.current = { rafId: null, direction: null, speed: 0 };
+          return;
+        }
+        const { direction: dir } = autoScrollRef.current;
+        if (!dir) { autoScrollRef.current.rafId = null; return; }
+        const prevScrollTop = container.scrollTop;
+        container.scrollBy(0, dir === 'up' ? -autoScrollRef.current.speed : autoScrollRef.current.speed);
+        scrollOffsetRef.current += container.scrollTop - prevScrollTop;
+        if (lastMouseRef.current) {
+          const mockEvent = { clientX: lastMouseRef.current.clientX, clientY: lastMouseRef.current.clientY } as MouseEvent;
+          const { mode, multiLayouts, blockId: mainBlockId } = interactionRef.current;
+          const layout = applyLayout(mockEvent);
+          if (layout) {
+            if (mode === 'move') {
+              const result = computeBlockGuidesWithSnap(layout, mainBlockId, blocksRef.current, viewportMode);
+              const snappedLayout = { ...layout, x: result.snappedX, y: result.snappedY };
+              updateBlockSilent(mainBlockId, buildUpdate(snappedLayout));
+              if (multiLayouts?.length) {
+                const dx = lastMouseRef.current.clientX - interactionRef.current.startMouseX;
+                const dy = lastMouseRef.current.clientY - interactionRef.current.startMouseY + scrollOffsetRef.current;
+                for (const { id, entry } of multiLayouts) {
+                  const newL = { ...entry.layout, x: Math.max(0, entry.layout.x + dx), y: Math.max(0, entry.layout.y + dy) };
+                  updateBlockSilent(id, { layouts: { ...entry.layouts, [viewportMode]: newL } } as Partial<AnyBlock>);
+                }
+              }
+            }
+          }
+        }
+        autoScrollRef.current.rafId = requestAnimationFrame(tick);
+      };
+      autoScrollRef.current.rafId = requestAnimationFrame(tick);
+    };
+
+    const updateAutoScroll = (e: MouseEvent) => {
+      const container = scrollContainerRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const mouseY = e.clientY;
+      const distToTop = mouseY - rect.top;
+      const distToBottom = rect.bottom - mouseY;
+
+      let newDir: 'up' | 'down' | null = null;
+      let newSpeed = 0;
+
+      if (distToTop > 0 && distToTop < SCROLL_THRESHOLD) {
+        newDir = 'up';
+        newSpeed = Math.round(SCROLL_MIN_SPEED + (SCROLL_MAX_SPEED - SCROLL_MIN_SPEED) * (1 - distToTop / SCROLL_THRESHOLD));
+      } else if (distToBottom > 0 && distToBottom < SCROLL_THRESHOLD) {
+        newDir = 'down';
+        newSpeed = Math.round(SCROLL_MIN_SPEED + (SCROLL_MAX_SPEED - SCROLL_MIN_SPEED) * (1 - distToBottom / SCROLL_THRESHOLD));
+      }
+
+      const prev = autoScrollRef.current.direction;
+      autoScrollRef.current.direction = newDir;
+      autoScrollRef.current.speed = newSpeed;
+
+      if (newDir && !prev) startAutoScroll(newDir);
+      else if (!newDir && prev) {
+        if (autoScrollRef.current.rafId) cancelAnimationFrame(autoScrollRef.current.rafId);
+        autoScrollRef.current.rafId = null;
+      }
+    };
+
     const onMouseMove = (e: MouseEvent) => {
+      lastMouseRef.current = { clientX: e.clientX, clientY: e.clientY };
       if (!interactionRef.current) return;
+      updateAutoScroll(e);
       const { mode, handle, multiLayouts, blockId: mainBlockId } = interactionRef.current;
       const layout = applyLayout(e);
       if (layout) {
@@ -1164,7 +1246,7 @@ export const EditorCanvas: React.FC = () => {
           setSnapType(result.snapType);
           if (multiLayouts?.length) {
             const dx = e.clientX - interactionRef.current.startMouseX;
-            const dy = e.clientY - interactionRef.current.startMouseY;
+            const dy = e.clientY - interactionRef.current.startMouseY + scrollOffsetRef.current;
             for (const { id, entry } of multiLayouts) {
               const newL = { ...entry.layout, x: Math.max(0, entry.layout.x + dx), y: Math.max(0, entry.layout.y + dy) };
               updateBlockSilent(id, { layouts: { ...entry.layouts, [viewportMode]: newL } } as Partial<AnyBlock>);
@@ -1188,8 +1270,12 @@ export const EditorCanvas: React.FC = () => {
 
     const onMouseUp = (e: MouseEvent) => {
       if (!interactionRef.current) return;
+      if (autoScrollRef.current.rafId) cancelAnimationFrame(autoScrollRef.current.rafId);
+      autoScrollRef.current = { rafId: null, direction: null, speed: 0 };
       const { mode, handle, multiLayouts, blockId: mainBlockId } = interactionRef.current;
       const layout = applyLayout(e);
+      scrollOffsetRef.current = 0;
+      lastMouseRef.current = null;
       if (layout) {
         if (mode === 'move') {
           const result = computeBlockGuidesWithSnap(layout, mainBlockId, blocksRef.current, viewportMode);
@@ -1224,6 +1310,10 @@ export const EditorCanvas: React.FC = () => {
     return () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
+      if (autoScrollRef.current.rafId) cancelAnimationFrame(autoScrollRef.current.rafId);
+      autoScrollRef.current = { rafId: null, direction: null, speed: 0 };
+      scrollOffsetRef.current = 0;
+      lastMouseRef.current = null;
     };
   }, [updateBlock, updateBlockSilent, viewportMode]);
 
@@ -1323,16 +1413,22 @@ export const EditorCanvas: React.FC = () => {
   if (viewportMode === 'tablet') return <TableViewport blocks={blocks} onImageDrop={handleImageDrop} />;
 
   const sortedBlocks = [...blocks].sort((a, b) => getLayout(a).zIndex - getLayout(b).zIndex);
-  const pageH = Math.max(800, ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; }));
+  const pageH = Math.max(
+    isInteracting ? window.innerHeight + 200 : 800,
+    ...blocks.map(b => { const l = getLayout(b); return l.y + l.h + 120; })
+  );
 
   return (
     <YStack
-      flex={1} p="$5" style={{ overflow: 'auto' }}
+      flex={1}
       bg="$background"
       onPress={() => setActiveBlockId(null)}
       data-editor-root
-      ai="center"
     >
+      <div
+        ref={scrollContainerRef}
+        style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+      >
       <style>{`
         @keyframes snapPulse {
           0% { opacity: 0.6; transform: scale(1); }
@@ -1535,7 +1631,7 @@ export const EditorCanvas: React.FC = () => {
           <div key={`gv-${i}`} style={{
             position: 'absolute', left: guide.pos, top: 0,
             width: 0, height: pageH,
-            borderLeft: `1px solid ${guide.color}`,
+            borderLeft: `1px dashed ${guide.color}`,
             boxShadow: `0 0 8px ${guide.color}50`,
             pointerEvents: 'none', zIndex: 999,
           }} />
@@ -1544,7 +1640,7 @@ export const EditorCanvas: React.FC = () => {
           <div key={`gh-${i}`} style={{
             position: 'absolute', left: 0, top: guide.pos,
             width: PAGE_W, height: 0,
-            borderTop: `1px solid ${guide.color}`,
+            borderTop: `1px dashed ${guide.color}`,
             boxShadow: `0 0 8px ${guide.color}50`,
             pointerEvents: 'none', zIndex: 999,
           }} />
@@ -1653,6 +1749,7 @@ export const EditorCanvas: React.FC = () => {
           />
         </div>
       )}
+      </div>
     </YStack>
   );
 };
