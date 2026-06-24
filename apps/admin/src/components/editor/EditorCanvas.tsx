@@ -312,7 +312,7 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
 
     const measureAndResize = (el: HTMLElement) => {
       const minH = el.scrollHeight + 8;
-      if (blockHeight && Math.abs(minH - blockHeight) > 1) {
+      if (!blockHeight || Math.abs(minH - blockHeight) > 1) {
         onAutoResize?.(minH);
       }
     };
@@ -347,6 +347,10 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
             border: '1px solid #3B82F6',
             borderRadius: '4px',
             padding: '8px',
+          }}
+          onInput={(e) => {
+            const el = e.currentTarget;
+            requestAnimationFrame(() => measureAndResize(el));
           }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -1449,7 +1453,17 @@ export const EditorCanvas: React.FC = () => {
                     isEditing={isEditing}
                     blockHeight={layout.h}
                     onAutoResize={(newH) => {
-                      updateBlockSilent(block.id, { layouts: { ...block.layouts, desktop: { ...layout, h: newH } } } as Partial<AnyBlock>);
+                      const updatedLayouts = { ...block.layouts };
+                      if (updatedLayouts.desktop) {
+                        updatedLayouts.desktop = { ...updatedLayouts.desktop, h: newH };
+                      }
+                      if (updatedLayouts.tablet) {
+                        updatedLayouts.tablet = { ...updatedLayouts.tablet, h: newH };
+                      }
+                      if (updatedLayouts.mobile) {
+                        updatedLayouts.mobile = { ...updatedLayouts.mobile, h: newH };
+                      }
+                      updateBlockSilent(block.id, { layouts: updatedLayouts } as Partial<AnyBlock>);
                     }}
                     onEditComplete={(content) => {
                       updateBlock(block.id, { content } as Partial<AnyBlock>);

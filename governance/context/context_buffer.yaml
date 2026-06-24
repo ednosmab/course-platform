@@ -75,6 +75,7 @@ technical_debt:
   - "2026-06-20: Migration 20260620000001_add_block_states.sql aplicada via supabase db push"
   - "2026-06-20: MIGRAÇÃO EXPO-SQLITE — localForage removido, substituído por expo-sqlite + expo-file-system. ADR-023 criada. Arquivos: offlineDb.ts, progressOfflineStore.ts, mediaCacheService.ts, contentCacheService.ts, syncService.ts, useCachedImage.ts, useConnectionStatus.ts, ImageWithCache.tsx. StudentHeader badge offline. Botão download módulos."
   - "TEST-OFFLINE-001: Lembrete para testar feature offline-first no Expo Go (device/emulador) — ver next_steps"
+  - "2026-06-24: BUG-FIX-TEXT-BLOCK — Texto cortado ao sair de foco no bloco de texto do editor. Causa: overflow:hidden no container + falta de onInput para auto-resize durante digitação. Correcção: (1) adicionado onInput handler para chamar measureAndResize, (2) removida condição blockHeight que impedia actualizações em blocos novos, (3) actualização de altura propagada para desktop+tablet+mobile. Ficheiro: apps/admin/src/components/editor/EditorCanvas.tsx"
 
 documents_loaded:
   - "governance/WORKFLOW.md"
