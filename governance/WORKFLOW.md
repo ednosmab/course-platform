@@ -230,7 +230,8 @@ Ao detectar keyword de fim de sessão:
 3. GERAR feedback baseado no que observou (max 10 bullets)
 4. APRESENTAR inline no chat — BLOCO ISOLADO, sem info técnica ao lado
 5. SALVAR em docs/feedback/YYYY-MM-DD.md (append se ficheiro já existe)
-6. SÓ DEPOIS continuar com encerramento normal (close-session)
+6. AGUARDAR confirmação do utilizador
+7. SÓ DEPOIS continuar com encerramento normal (close-session)
 ```
 
 ### Regra de Separação (ABSOLUTA)
@@ -243,9 +244,19 @@ O feedback DEVE ser apresentado como BLOCO ÚNICO e ISOLADO, sem:
 
 **Ordem correcta:**
 ```
-1. Feedback inline (bloco isolado)
-2. [linha em branco]
-3. Encerramento (close-session, commits, etc.)
+RESPOSTA 1 (só feedback):
+📊 Feedback da Sessão — YYYY-MM-DD
+🎯 O que fizeste bem: ...
+⚠️ O que podes melhorar: ...
+💡 Próxima sessão: ...
+
+[linha em branco]
+
+RESPOSTA 2 (depois do utilizador ver o feedback):
+🔒 Encerramento da sessão
+- close-session executado
+- commits realizados
+- estado do working tree
 ```
 
 **Ordem INCORRECTA (não fazer):**
@@ -253,6 +264,7 @@ O feedback DEVE ser apresentado como BLOCO ÚNICO e ISOLADO, sem:
 ❌ Feedback misturado com git status
 ❌ Feedback no meio do close-session
 ❌ Feedback como nota de rodapé
+❌ Feedback + encerramento na mesma resposta
 ```
 
 ### Formato do Output Inline
