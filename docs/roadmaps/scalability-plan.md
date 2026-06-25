@@ -1,7 +1,8 @@
 # Plano de Escalabilidade — Unificado (3k → 50k+ Conexões Simultâneas)
 
 > **Status:** Documento de referência estratégica. Implementação condicionada ao aceite do cliente.
-> **Última atualização:** 2026-05-30
+> **Última atualização:** 2026-06-25
+> **Revisão V2:** Alinhado com ADR-022 (connection pooling removido), BACKLOG_TECHNICAL_DEBT.md (prioridades P0-P3) e princípios "Medir → Validar → Justificar → Implementar".
 
 ---
 
@@ -20,7 +21,7 @@ Garantir que a plataforma sustente **3.000 usuários simultâneos (média)** com
          │
 [Camada 3: Cache]        → Vercel CDN (SWR) | Redis (Server) | localStorage | Cache Storage
          │
-[Camada 4: Banco]        → Supabase Único (Pooler 6543 + RLS + Write-Behind via Redis)
+[Camada 4: Banco]        → Supabase Único (SDK HTTP + RLS + Write-Behind via Redis)
          │
 [Camada 5: Mídia]        → Bunny.net / Cloudflare Stream (HLS Adaptativo)
          │
@@ -118,10 +119,9 @@ ALTER TABLE student_progress ADD COLUMN tenant_id uuid REFERENCES tenants(id);
 
 ### 5.3 Connection Pooling
 
-| Porta | Modo | Quando usar |
-|---|---|---|
-| `5432` | Direta | Migrations, operações admin |
-| `6543` | Transaction (PgBouncer) | App do aluno, Edge Functions, writes de progresso |
+> ⚠️ **Nota (ADR-022):** O acesso à BD é exclusivamente via SDK HTTP (`supabase-js`). O Supabase gere internamente o pool de conexões PostgreSQL. Não há pool client-side. A task SCL-05 foi removida. Ver `docs/adrs/ADR-022-connection-pooling-removal.md` para detalhes.
+>
+> **Referência histórica** (não requer acção): A porta 6543 do Supabase usa PgBouncer internamente, mas a aplicação não precisa de a gerir — o SDK HTTP já a utiliza automaticamente quando a URL do Supabase aponta para o Pooler.
 
 ### 5.4 Índices Obrigatórios
 
@@ -186,43 +186,60 @@ console.log(JSON.stringify({
 
 | Fase | Alunos Simultâneos | Ações | Custos Estimados |
 |---|---|---|---|
-| **1. MVP** | Até 3.000 | Supabase Pro, Redis Upstash free tier, Vercel Hobby | $25-50/mês |
-| **2. Tração** | 3.000 - 15.000 | Upgrade Supabase Compute Small/Medium, Redis Pro | $80-130/mês |
-| **3. Alta Escala** | 15.000 - 50.000 | Supabase Large, Read Replicas, WebSocket próprio | $345-505/mês |
+| **1. Fundação** | Até 3.000 | Supabase Pro, Vercel Hobby, observabilidade básica | $25-50/mês |
+| **2. Tração** | 3.000 - 15.000 | Upgrade Supabase Compute, Redis Upstash, cache layer | $80-130/mês |
+| **3. Alta Escala** | 15.000 - 50.000 | Supabase Large, Read Replicas, WebSocket, CDN | $345-505/mês |
 | **4. Massiva** | 50.000+ | Sharding por tenant, CDN multi-região, Auto-scaling | $500+/mês |
 
 ---
 
 ## 9. Plano de Execução (Tasks)
 
-### Fase 1 — Fundação (MVP)
-- [x] **SCL-01:** Configurar índices PostgreSQL para consultas frequentes
-- [ ] **SCL-02:** Implementar rate limiting com Redis ⏭️ *Pendente — pro MVP (~35%) não é necessário*
-- [ ] **SCL-03:** Adicionar cache headers em todas as rotas GET públicas ⏭️ *Adiado — sem SSR/API pública no momento*
-- [ ] **SCL-04:** Configurar ISR para páginas de catálogo ⏭️ *Adiado — student é Expo, admin é CSR*
-- [ ] **SCL-17:** Adicionar `tenant_id` em todas as tabelas (multitenancy)
-- [ ] **SCL-18:** Middleware de resolução de tenant via hostname
+> ⚠️ **Autoridade de Priorização:** As tasks abaixo são alinhadas com `BACKLOG_TECHNICAL_DEBT.md` (fonte de verdade para priorização operacional). Itens marcados com ⏭️ estão adiados por falta de pré-condições (métricas, gate de dados).
 
-### Fase 2 — 3.000 Alunos
-- [ ] **SCL-05:** Implementar connection pooling (PgBouncer porta 6543)
+### Fase 1 — Segurança e Fundação (sem gate)
+- [x] **SCL-01:** Configurar índices PostgreSQL para consultas frequentes
+- [x] **P0-01:** Rate limiting in-memory (sliding window) — *Feito 2026-06-13*
+- [x] **P0-02:** Dev RLS override — advertência de segurança — *Feito 2026-06-13*
+- [x] **P0-03:** Database connectivity — ENCERRADO (ADR-022) — *Concluído 2026-06-13*
+- [ ] **P1-01:** Observabilidade (logs JSON, métricas P95, alertas) ⏭️ *Pendente — pré-requisito para Fase 3*
+- [ ] **P1-02:** Testes de carga (k6/artillery) ⏭️ *Pendente — depende de P1-01*
+
+### Fase 2 — 3.000 Alunos (gate: métricas P1-01 colectadas)
 - [ ] **SCL-06:** Otimizar RLS policies (remover subqueries, índices compostos)
 - [ ] **SCL-07:** Estratégia de fallback Realtime-to-polling
 - [ ] **SCL-08:** Backoff exponencial no mobile
-- [ ] **SCL-19:** Write-Behind para progresso (Redis → bulk upsert)
 - [ ] **SCL-20:** Cache client-side (SWR + localStorage + Cache Storage)
+- [ ] **P1-03:** Cache invalidation (SWR, cache headers) — *gate: hit rate < 80%*
+- [ ] **P2-01:** Cache Redis (cache-aside) — *gate: queries > 50/s (ADR-017)*
+- [ ] **P2-02:** Write-Behind para progresso — *gate: writes > 100/s (substitui SCL-19)*
+- [ ] **P1-04:** Monitoramento de conexões (RPC + dashboard) — *gate: P1-01 funcional*
 
-### Fase 3 — 10.000+ Alunos
+### Fase 3 — 10.000+ Alunos (gate: 1.000+ users activos mensais)
 - [ ] **SCL-09:** Migrar para Edge Runtime em rotas críticas
-- [ ] **SCL-10:** Implementar read replicas do PostgreSQL
-- [ ] **SCL-11:** WebSocket próprio para realtime (alternativa ao Supabase Realtime)
-- [ ] **SCL-12:** Cache distribuído com Redis Cluster
-- [ ] **SCL-21:** Observabilidade completa (métricas P95, alertas, logs estruturados)
+- [ ] **SCL-10:** Implementar read replicas do PostgreSQL — *gate: 5k+ users*
+- [ ] **SCL-11:** WebSocket próprio para realtime — *gate: >80% limite Supabase Realtime*
+- [ ] **SCL-12:** Cache distribuído com Redis Cluster — *evolução de P2-01 para escala*
+- [ ] **P3-01:** CDN para vídeo (Bunny.net) — *gate: 1k+ users activos*
 
-### Fase 4 — 50.000+ Alunos
+### Fase 4 — 50.000+ Alunos (gate: escala extrema)
 - [ ] **SCL-13:** Auto-scaling de instâncias Next.js
 - [ ] **SCL-14:** Sharding de banco de dados por organização/tenant
 - [ ] **SCL-15:** CDN multi-região para vídeos
 - [ ] **SCL-16:** Service Workers para cache offline avançado
+- [ ] **P3-03:** Read Replicas — *gate: 5k+ users simultâneos*
+- [ ] **P3-04:** WebSocket próprio — *gate: >500 users Realtime*
+- [ ] **P3-05:** Service Workers — *gate: 10k+ users*
+
+### Multitenancy — Condicional ao Modelo de Negócio
+> A implementação de multitenancy depende do modelo de comercialização:
+> - **B2B SaaS (white-label):** Multitenancy é pré-requisito → atacar em Fase 1/2
+> - **Marketplace (tipo Hotmart):** Multitenancy NÃO é necessário → remover SCL-17/SCL-18
+>
+> **Referência:** `BACKLOG_TECHNICAL_DEBT.md` §P3-02 (gate: >1 cliente formal)
+
+- [ ] **SCL-17:** Adicionar `tenant_id` em todas as tabelas ⏭️ *Adiado — aguarda decisão de modelo de negócio*
+- [ ] **SCL-18:** Middleware de resolução de tenant via hostname ⏭️ *Adiado — aguarda SCL-17*
 
 ---
 
@@ -233,7 +250,11 @@ console.log(JSON.stringify({
 - [`docs/skills/optimistic_ui.md`](../skills/optimistic_ui.md) — Optimistic updates
 - [`docs/skills/postgresql_performance.md`](../skills/postgresql_performance.md) — Performance PostgreSQL
 - [`docs/skills/supabase_rls.md`](../skills/supabase_rls.md) — Segurança RLS
+- [`docs/BACKLOG_TECHNICAL_DEBT.md`](../BACKLOG_TECHNICAL_DEBT.md) — Fonte de verdade para priorização P0-P3
+- [`docs/adrs/ADR-017-version-sync-trava.md`](../adrs/ADR-017-version-sync-trava.md) — Trava contra refatoração prematura
+- [`docs/adrs/ADR-022-connection-pooling-removal.md`](../adrs/ADR-022-connection-pooling-removal.md) — Remoção de connection pooling code
+- [`docs/adrs/ADR-023-offline-first-sqlite.md`](../adrs/ADR-023-offline-first-sqlite.md) — Offline-first com expo-sqlite
 
 ---
 
-> ⚠️ **Nota:** Este plano é um documento de referência. A implementação será iniciada apenas após aceite do cliente e confirmação do orçamento para infraestrutura.
+> ⚠️ **Nota:** Este plano é um documento de referência. As prioridades operacionais seguem `BACKLOG_TECHNICAL_DEBT.md`. A implementação é condicionada ao princípio "Medir → Validar → Justificar → Implementar".
