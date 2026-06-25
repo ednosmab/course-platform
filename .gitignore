@@ -39,9 +39,7 @@ test-results-ladle/
 playwright-report/
 tests/ladle-vrt/test-results/
 
-# Feedback privado do tech lead em formação
-docs/feedback/
-
 supabase/.temp/
 supabase/.branches/
 .opencode/plans/
+docs/feedback/

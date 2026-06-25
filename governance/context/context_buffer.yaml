@@ -55,6 +55,8 @@ next_steps:
   - "├─ Testar botão 'Baixar para offline' nos módulos"
   - "└─ Verificar imagens cacheadas aparecem offline"
 
+  - "PENDENTE-DRAG-CANVAS-EXPAND: Canvas não acompanha arrasto do elemento pra baixo — pageH só é recalculado no React render, mas durante drag não há re-renders (refs+DOM direct). Solução: expandir pageRootRef via DOM direct (el.style.minHeight) durante tick() do auto-scroll, proporcionalmente à posição Y do bloco arrastado"
+
 last_decision:
   adr: "ADR-023"
   description: "Migração offline-first de localForage para expo-sqlite (2026-06-20). ADR-023 supersedes ADR-011. Sistema completo: SQLite progress store, media cache, content download, bidirectional sync, connection monitor. Student build validado (web)."
@@ -76,6 +78,8 @@ technical_debt:
   - "2026-06-20: MIGRAÇÃO EXPO-SQLITE — localForage removido, substituído por expo-sqlite + expo-file-system. ADR-023 criada. Arquivos: offlineDb.ts, progressOfflineStore.ts, mediaCacheService.ts, contentCacheService.ts, syncService.ts, useCachedImage.ts, useConnectionStatus.ts, ImageWithCache.tsx. StudentHeader badge offline. Botão download módulos."
   - "TEST-OFFLINE-001: Lembrete para testar feature offline-first no Expo Go (device/emulador) — ver next_steps"
   - "2026-06-24: BUG-FIX-TEXT-BLOCK — Texto cortado ao sair de foco no bloco de texto do editor. Causa: overflow:hidden no container + falta de onInput para auto-resize durante digitação. Correcção: (1) adicionado onInput handler para chamar measureAndResize, (2) removida condição blockHeight que impedia actualizações em blocos novos, (3) actualização de altura propagada para desktop+tablet+mobile. Ficheiro: apps/admin/src/components/editor/EditorCanvas.tsx"
+  - "2026-06-24: FEATURE-AUTO-SCROLL-DRAG — Auto-scroll durante drag-and-drop no editor. Causa: inexistência de lógica de scroll automático ao arrastar blocos para bordas. Correcção: (1) scrollContainerRef no container scrollável desktop, (2) requestAnimationFrame loop com threshold 50px e velocidade proporcional 2-12px/frame, (3) auto-scroll no useViewportInteraction para tablet/mobile. Ficheiros: EditorCanvas.tsx, useViewportInteraction.ts"
+  - "PENDENTE-DRAG-CANVAS-EXPAND: Canvas não acompanha arrasto do elemento pra baixo — pageH só é recalculado no React render, mas durante drag não há re-renders (refs+DOM direct). Solução: expandir pageRootRef via DOM direct (el.style.minHeight) durante tick() do auto-scroll, proporcionalmente à posição Y do bloco arrastado"
 
 documents_loaded:
   - "governance/WORKFLOW.md"

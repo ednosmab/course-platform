@@ -131,14 +131,33 @@ As regras não são todas do mesmo nível. Existem três camadas de dependência
     f. **Respeitar modelo do step:** O executor DEVE usar exactamente o modelo indicado no campo `[Modelo]` de cada step do plano. Violações configuram G-05 em FORBIDDEN_OPERATIONS.md.
 
 17. **FEEDBACK DE DESEMPENHO POR SESSÃO (TECH LEAD EM FORMAÇÃO):** Para developers com conhecimento arquitectural sênior mas código júnior/pleno, em desenvolvimento como tech lead, ao sinal de "fim de sessão" (keywords: "vamos parar", "sessão fechada", "até amanhã", "feedback da sessão"), o agente DEVE:
-   a. **Detectar** o sinal de fim automaticamente.
-   b. **Calibrar tom** ao perfil T-shaped: vocabulário pleno em arquitectura, vocabulário explicado brevemente em código, foco principal em visão/leadership.
-   c. **Gerar feedback estruturado** em `docs/feedback/YYYY-MM-DD.md` (1 ficheiro por dia, múltiplas sessões). Cada sessão é uma secção "### Sessão N (HH:MM)". Múltiplas sessões no mesmo dia são acrescentadas ao ficheiro existente (append) com sumário do dia no fim.
-   d. **Estilo correctivo em código:** crítica + exemplo + racional (modo mentor, não condescendente). Raro: 95% do feedback é no-code.
-   e. **Apresentar imediatamente** ao utilizador (resumo inline curto, máximo 10 bullets).
-   f. **No fim do MVP** (trigger: utilizador diz "MVP concluído"), agregar todos os ficheiros de feedback em `docs/feedback/MVP-aggregated.md` com análise de evolução longitudinal.
-     g. **Ficheiro privado** por defeito (em `.gitignore`).
-   i. **Compromisso de commit separado:** O feedback é privado e não versionado. Usar `git commit --allow-empty -m "docs(feedback): YYYY-MM-DD"` APÓS o(s) commit(s) de trabalho, para rastreabilidade sem expôr conteúdo.
+    a. **Detectar** o sinal de fim automaticamente.
+    b. **Calibrar tom** ao perfil T-shaped: vocabulário pleno em arquitectura, vocabulário explicado brevemente em código, foco principal em visão/leadership.
+    c. **Gerar feedback estruturado** em `docs/feedback/YYYY-MM-DD.md` (1 ficheiro por dia, múltiplas sessões). Cada sessão é uma secção "### Sessão N (HH:MM)". Múltiplas sessões no mesmo dia são acrescentadas ao ficheiro existente (append) com sumário do dia no fim.
+    d. **Estilo correctivo em código:** crítica + exemplo + racional (modo mentor, não condescendente). Raro: 95% do feedback é no-code.
+    e. **Apresentar imediatamente** ao utilizador (resumo inline curto, máximo 10 bullets).
+    f. **No fim do MVP** (trigger: utilizador diz "MVP concluído"), agregar todos os ficheiros de feedback em `docs/feedback/MVP-aggregated.md` com análise de evolução longitudinal.
+      g. **Ficheiro privado** por defeito (em `.gitignore`).
+    i. **Compromisso de commit separado:** O feedback é privado e não versionado. Usar `git commit --allow-empty -m "docs(feedback): YYYY-MM-DD"` APÓS o(s) commit(s) de trabalho, para rastreabilidade sem expôr conteúdo.
+
+    **Exemplos concretos de feedback:**
+
+    ```text
+    📊 Feedback da Sessão — 2026-06-24
+
+    🎯 O que fizeste bem:
+    1. Boa decisão ao usar pendingLayoutRef em vez de state durante drag — evita re-renders desnecessários
+    2. Identificaste correctamente a causa do "Maximum update depth exceeded" — sabes onde procurar
+    3. Sequenciaste bem as correcções (primeiro tick, depois onMouseMove) — abordagem metódica
+
+    ⚠️ O que podes melhorar:
+    1. Poderias ter testado o auto-scroll antes de commitar — tiveste de fazer 3 commits para chegar ao resultado
+    2. A abordagem de direct DOM mutation é poderosa mas arriscada — considera adicionar safeguards no futuro
+
+    💡 Próxima sessão:
+    - Foco no canvas expand durante drag (PENDENTE-DRAG-CANVAS-EXPAND)
+    - Testar tudo antes de commitar (TDD estrito)
+    ```
 
 18. **EVIDÊNCIA ACIMA DA DOCUMENTAÇÃO (REGRA ABSOLUTA):** Quando existir conflito entre documentação, implementação e comportamento real do sistema, a decisão deve ser baseada em evidências verificáveis. A documentação deve representar a realidade, não substituí-la. Fluxo obrigatório: Documentação → Implementação → Runtime → Evidências → Actualização documental. Exemplo: ADR-022 — documentação dizia "pooling necessário", código mostrava "SDK HTTP only", evidência confirmou "pooling inexistente".
 

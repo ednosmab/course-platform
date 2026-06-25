@@ -193,6 +193,70 @@ Tipos possíveis: `FEATURE`, `BUG`, `REFACTOR`, `DOCUMENTATION`, `PLANNING`, `IN
 
 ---
 
+## Protocolo de Feedback de Sessão
+
+> O agente DEVE observar o comportamento do utilizador durante toda a sessão e gerar feedback ao detectar keywords de fim.
+> Referência completa: `docs/AGENTS.md` regra #17.
+
+### Trigger Keywords
+
+O agente DEVE detectar automaticamente qualquer uma destas keywords e activar o protocolo de feedback:
+
+```
+"fim de sessão", "sessão fechada", "até amanhã", "feedback da sessão",
+"vamos parar", "encerrar", "por hoje é só", "próxima sessão",
+"feedback", "para aqui", "paremos"
+```
+
+### Observer Protocol (o que observar durante a sessão)
+
+Durante toda a sessão, o agente DEVE observar e registar internamente:
+
+1. **Decisões arquitecturais** — Que escolhas o utilizador fez? Porquê?
+2. **Padrões de código** — Que abordagens o utilizador preferiu?
+3. **Alternativas rejeitadas** — O que o utilizador descartou e porquê?
+4. **Erros e correcções** — O que o utilizador errou e como resolveu?
+5. **Comunicação de requisitos** — O utilizador foi claro ou ambíguo?
+6. **Sequenciação** — O utilizador correctou bem a ordem das tarefas?
+7. **Gestão de risco** — O utilizador considerou impactos antes de agir?
+
+### Output Protocol (como apresentar o feedback)
+
+Ao detectar keyword de fim de sessão:
+
+```text
+1. PARAR trabalho actual imediatamente
+2. LER docs/feedback/feedback-template.md
+3. GERAR feedback baseado no que observou (max 10 bullets)
+4. APRESENTAR inline no chat (formato resumido)
+5. SALVAR em docs/feedback/YYYY-MM-DD.md (append se ficheiro já existe)
+6. CONTINUAR com encerramento normal (close-session)
+```
+
+### Formato do Output Inline
+
+```text
+📊 Feedback da Sessão — YYYY-MM-DD
+
+🎯 O que fizeste bem:
+1. [decisão/padrão concreto com evidência]
+2. ...
+
+⚠️ O que podes melhorar:
+1. [área com racional — se for código, estilo mentor]
+2. ...
+
+💡 Próxima sessão:
+- [foco sugerido]
+- [padrão a praticar]
+```
+
+### Privacidade
+
+A pasta `docs/feedback/` está em `.gitignore`. O feedback é privado e não versionado.
+
+---
+
 ## Estrutura do Repositório
 
 ```text
