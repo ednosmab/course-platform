@@ -10,10 +10,10 @@ milestone:
   next_phase: "P1-01 Observabilidade"
 
 session:
-  id: "2026-06-24"
+  id: "2026-06-24-sessao-2"
   branch: "develop"
-  operation_type: "FEATURE"
-  last_commit: "70ae54c"
+  operation_type: "GOVERNANCE"
+  last_commit: "70cbc1b"
   status: "closed"
   closed_at: "2026-06-24"
   reminder: "PENDENTE-DRAG-CANVAS-EXPAND: Canvas não acompanha arrasto — expandir pageRootRef via DOM direct durante drag"
