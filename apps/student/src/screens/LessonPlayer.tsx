@@ -9,6 +9,7 @@ import {
   type LocalProgressData,
 } from '../services/progressOfflineStore';
 import { syncService } from '../services/syncService';
+import { contentCacheService } from '../services/contentCacheService';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 
 type LessonPlayerProps = {
@@ -86,7 +87,39 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
         syncService.pushPendingProgress().catch(() => {});
       }
     } catch (err) {
-      console.error('Failed to load course data:', err);
+      console.error('Failed to load course data from server, trying offline cache:', err);
+
+      // OFFLINE FALLBACK: try loading from cached modules
+      if (courseId) {
+        try {
+          const cachedModules = await contentCacheService.listCachedModules(courseId);
+          if (cachedModules.length > 0) {
+            const allLessons: any[] = [];
+            for (const mod of cachedModules) {
+              const cached = await contentCacheService.getCachedModule(mod.moduleId);
+              if (cached?.lessons) {
+                allLessons.push(...cached.lessons.map((l: any) => ({
+                  ...l,
+                  moduleTitle: mod.title,
+                })));
+              }
+            }
+
+            if (allLessons.length > 0) {
+              setLessons(allLessons);
+              if (allLessons.length > 0) {
+                setActiveLessonId(allLessons[0].id);
+              }
+              setError(null);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (cacheErr) {
+          console.error('Offline cache also failed:', cacheErr);
+        }
+      }
+
       setError(getErrorMessage(err));
     } finally {
       setLoading(false);
@@ -107,6 +140,20 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
     loadUser();
   }, []);
 
+  // Start auto-sync when userId is available (pushes pending progress every 30s)
+  useEffect(() => {
+    if (!userId) return;
+
+    syncService.startAutoSync(
+      () => userId,
+      () => lessons.map(l => l.id),
+    );
+
+    return () => {
+      syncService.stopAutoSync();
+    };
+  }, [userId, lessons]);
+
   const refreshActiveLesson = async () => {
     if (!activeLessonId) return;
     try {
@@ -126,7 +173,36 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
         }));
       }
     } catch (err) {
-      console.error('Failed to reload active lesson blocks:', err);
+      console.error('Failed to reload active lesson from server, trying offline cache:', err);
+
+      // OFFLINE FALLBACK: find lesson blocks from cached modules
+      if (courseId) {
+        try {
+          const cachedModules = await contentCacheService.listCachedModules(courseId);
+          for (const mod of cachedModules) {
+            const cached = await contentCacheService.getCachedModule(mod.moduleId);
+            if (cached?.lessons) {
+              const cachedLesson = cached.lessons.find((l: any) => l.id === activeLessonId);
+              if (cachedLesson) {
+                setLessons(prev => prev.map(les => {
+                  if (les.id === activeLessonId) {
+                    return {
+                      ...les,
+                      blocks: cachedLesson.blocks || [],
+                    };
+                  }
+                  return les;
+                }));
+                setError(null);
+                return;
+              }
+            }
+          }
+        } catch (cacheErr) {
+          console.error('Offline cache also failed for lesson:', cacheErr);
+        }
+      }
+
       setError(getErrorMessage(err));
     }
   };
@@ -292,7 +368,29 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
 
     try {
       setCompleting(true);
-      await ProgressService.markLessonComplete(userId, activeLessonId);
+
+      const position = videoPositions[activeLessonId] || 0;
+      const lessonBlocks = activeLesson?.blocks || [];
+      const videoBlock = lessonBlocks.find((b: any) => b.type === 'video');
+      const duration = videoBlock?.duration || 1;
+      const percentage = Math.min(100, Math.round((position / duration) * 100));
+
+      // Always save to local SQLite first (works offline)
+      const localData: LocalProgressData = {
+        videoPosition: position,
+        percentageWatched: 100,
+        blockStates: blockStates[activeLessonId] || {},
+        savedAt: new Date().toISOString(),
+      };
+      await progressOfflineStore.saveProgressLocal(userId, activeLessonId, localData);
+
+      // Try server (may fail offline — queued for sync)
+      try {
+        await ProgressService.markLessonComplete(userId, activeLessonId);
+      } catch {
+        // Server unavailable — lesson is saved locally, will sync later
+      }
+
       setCompletions((prev) => ({
         ...prev,
         [activeLessonId]: true,

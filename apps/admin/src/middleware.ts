@@ -109,9 +109,16 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user: { id: string } | null = null;
+
+  try {
+    const {
+      data: { user: fetchedUser },
+    } = await supabase.auth.getUser();
+    user = fetchedUser;
+  } catch (err) {
+    console.warn('[middleware] supabase.auth.getUser() fetch failed:', err);
+  }
 
   if (!isPublic && !user) {
     const loginUrl = new URL('/login', request.url);

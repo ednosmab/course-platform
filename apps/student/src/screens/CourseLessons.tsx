@@ -115,7 +115,53 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
       }, 300);
 
     } catch (err: any) {
-      console.error('Failed to load course data:', err);
+      console.error('Failed to load course data from server, trying offline cache:', err);
+
+      // OFFLINE FALLBACK: try loading from cached modules
+      try {
+        const cachedModules = await contentCacheService.listCachedModules(courseId);
+        if (cachedModules.length > 0) {
+          const modulesWithStatus: ModuleWithLessons[] = [];
+
+          for (const mod of cachedModules) {
+            const cached = await contentCacheService.getCachedModule(mod.moduleId);
+            if (cached?.lessons) {
+              modulesWithStatus.push({
+                id: mod.moduleId,
+                courseId,
+                title: mod.title || cached.title,
+                order_index: 0,
+                lessons: cached.lessons.map((l: any) => ({
+                  ...l,
+                  status: 'todo' as LessonStatus,
+                  moduleTitle: mod.title || cached.title,
+                  duration: `${Math.floor(Math.random() * 20 + 5)} min`,
+                  type: l.blocks?.some((b: any) => b.type === 'video') ? 'video' :
+                        l.blocks?.some((b: any) => b.type === 'text') ? 'leitura' : 'audio',
+                })),
+                summary: mod.title,
+              });
+            }
+          }
+
+          if (modulesWithStatus.length > 0) {
+            setModules(modulesWithStatus);
+            setCourse({ id: courseId, title: 'Curso (offline)', description: '' } as any);
+
+            const initialOpenState: Record<string, boolean> = {};
+            modulesWithStatus.forEach(mod => {
+              initialOpenState[mod.id] = true;
+            });
+            setOpenModules(initialOpenState);
+
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (cacheErr) {
+        console.error('Offline cache also failed:', cacheErr);
+      }
+
       setError(err.message || 'Failed to load course data');
     } finally {
       setLoading(false);

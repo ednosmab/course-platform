@@ -292,3 +292,94 @@ O aluno pode filtrar os cursos por:
 ### Plano de implementação
 
 Ver `docs/plans/2026-06-10-controle-acesso.md` para detalhes completos da implementação (migration SQL, UI admin, UI student, testes).
+
+---
+
+## 📥 12. Restrições de Cache Offline
+
+> O app do aluno cacheia automaticamente módulos para acesso offline.
+> O admin DEVE respeitar os limites abaixo para garantir que o cache cabe no dispositivo do aluno.
+
+### Limite Global de Armazenamento
+
+| Parâmetro | Valor | Justificativa |
+|-----------|-------|---------------|
+| **Armazenamento máximo por curso** | **500 MB** | Espaço total para cache de 2 módulos no dispositivo do aluno |
+| **Módulos em cache simultâneos** | **2** (actual + anterior) | Permite revisão do módulo anterior |
+
+### Conteúdo por Aula (Peso Estimado)
+
+| Componente | Peso Máximo | Notas |
+|------------|-------------|-------|
+| **Estrutura JSON** | ~50 KB | Blocos, metadados, ordem |
+| **Imagens** | ~5 MB | Todas as imagens da aula |
+| **Vídeo (360p)** | ~37.5 MB | 10 min × 3.75 MB/min (360p) |
+| **Total por aula** | **~42.5 MB** | Máximo permitido |
+
+### Regras por Configuração de Cache
+
+| Cenário | Máximo de Aulas | Máximo por Módulo | Armazenamento Estimado |
+|---------|-----------------|-------------------|------------------------|
+| **2 módulos em cache** | 5 aulas por módulo | 10 aulas total | ~425 MB (dentro de 500 MB) |
+| **1 módulo em cache** | 10 aulas no máximo | 10 aulas | ~425 MB (dentro de 500 MB) |
+
+### Restrições de Vídeo
+
+| Regra | Valor | Obrigatório |
+|-------|-------|-------------|
+| **Duração máxima por vídeo** | **10 minutos** | Sim |
+| **Vídeos por aula** | **1** (um único vídeo) | Sim |
+| **Resolução para cache** | **360p** | Automático (via CDN) |
+| **Upload permitido** | MP4, WebM | Formatos aceites |
+
+### Configuração no Admin
+
+O admin configura estas restrições nas **Configurações do Curso**:
+
+```
+Configurações do Curso
+├─ [toggle] Permitir cache offline (ativo por padrão)
+├─ [input] Máximo de aulas por módulo: [5] (padrão)
+├─ [input] Duração máxima por vídeo (min): [10] (padrão)
+├─ [input] Vídeos por aula: [1] (fixo, não editável)
+└─ [texto] Armazenamento estimado: ~XX MB por módulo
+```
+
+### Validação no Editor
+
+Quando o admin adiciona um vídeo a uma aula:
+
+1. **Se vídeo > 10 minutos:** O sistema exibe aviso:
+   > "Vídeo excede o limite de 10 minutos para cache offline. Considere dividir em aulas menores."
+
+2. **Se 2º vídeo na mesma aula:** O sistema bloqueia:
+   > "Apenas 1 vídeo por aula é permitido para cache offline."
+
+3. **Se módulo > 5 aulas (cache duplo):** O sistema exibe aviso:
+   > "Módulo com mais de 5 aulas — apenas as 5 primeiras serão cacheadas quando 2 módulos estiverem em cache."
+
+### Cálculo de Armazenamento
+
+Para o admin estimar o peso do curso:
+
+| Aulas por Módulo | Módulos em Cache | Vídeos (10min) | Imagens | Total Estimado |
+|------------------|------------------|----------------|---------|----------------|
+| 5 aulas | 2 | 10 × 37.5 MB = 375 MB | ~25 MB | **~400 MB** |
+| 10 aulas | 1 | 10 × 37.5 MB = 375 MB | ~50 MB | **~425 MB** |
+| 3 aulas | 2 | 6 × 37.5 MB = 225 MB | ~15 MB | **~240 MB** |
+
+### Fluxo de Validação
+
+```
+Admin cria aula
+  ↓
+Adiciona bloco de vídeo
+  ↓
+Sistema valida:
+  ├─ Duração ≤ 10 min? ✅/❌
+  ├─ Já existe vídeo na aula? ✅/❌
+  └─ Peso total ≤ 42.5 MB? ✅/❌
+  ↓
+Se inválido → mostra aviso/erro
+Se válido → permite salvar
+```

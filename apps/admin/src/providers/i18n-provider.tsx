@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
-import { i18n } from '@projeto/core';
+import i18n from '@projeto/core/i18n';
 
 export function AdminI18nProvider({ children }: { children: React.ReactNode }) {
   return (

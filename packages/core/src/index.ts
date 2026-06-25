@@ -63,11 +63,6 @@ export { mediaService as MediaService } from './service-factory';
 export { reportService as ReportService } from './service-factory';
 
 /**
- * @description Re-exports all i18n symbols — internationalisation utilities, translation keys, and locale helpers used across the platform.
- */
-export * from './i18n';
-
-/**
  * @description Re-exports all renderer symbols — block-to-HTML conversion, layout calculation utilities, and responsive breakpoint constants for the visual canvas.
  */
 export * from './renderer';
