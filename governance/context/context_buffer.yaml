@@ -10,10 +10,10 @@ milestone:
   next_phase: "P1-01 Observabilidade"
 
 session:
-  id: "2026-06-24-sessao-2"
+  id: "2026-06-24-sessao-3"
   branch: "develop"
   operation_type: "GOVERNANCE"
-  last_commit: "70cbc1b"
+  last_commit: "978895b"
   status: "closed"
   closed_at: "2026-06-24"
   reminder: "PENDENTE-DRAG-CANVAS-EXPAND: Canvas não acompanha arrasto — expandir pageRootRef via DOM direct durante drag"
@@ -56,6 +56,7 @@ next_steps:
   - "└─ Verificar imagens cacheadas aparecem offline"
 
   - "PENDENTE-DRAG-CANVAS-EXPAND: Canvas não acompanha arrasto do elemento pra baixo — pageH só é recalculado no React render, mas durante drag não há re-renders (refs+DOM direct). Solução: expandir pageRootRef via DOM direct (el.style.minHeight) durante tick() do auto-scroll, proporcionalmente à posição Y do bloco arrastado"
+  - "2026-06-24: FEEDBACK-PROTOCOL — Sistema de feedback de mentorship implementado. Trigger keywords, observer protocol, output isolado. Regra #17 AGENTS.md reforçada com exemplos. WORKFLOW.md actualizado com protocolo de separação absoluta. pasta docs/feedback/ adicionada ao .gitignore."
 
 last_decision:
   adr: "ADR-023"
