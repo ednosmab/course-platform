@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StatusBar } from 'react-native';
-import { YStack, XStack, Text, Button, ScrollView, Spinner, Icon, Toast } from '@projeto/ui';
+import { YStack, XStack, Text, Button, ScrollView, Spinner, Icon } from '@projeto/ui';
 import { BlockRenderer } from '../components/BlockRenderer';
 import { StudentHeader } from '../components/StudentHeader';
 import { CourseService, LessonService, ProgressService, AuthService } from '@projeto/core';
@@ -33,8 +33,8 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
   const [userId, setUserId] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
   const [userProfile, setUserProfile] = useState<{ full_name: string } | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+
+
 
   useEffect(() => {
     AuthService.getCurrentProfile().then((profile) => {
@@ -293,40 +293,6 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
     }));
   }, [activeLessonId]);
 
-  const handleSaveProgress = useCallback(async () => {
-    if (!activeLessonId || !userId) return;
-    try {
-      setSaving(true);
-      const position = videoPositions[activeLessonId] || 0;
-      const lessonBlocks = activeLesson?.blocks || [];
-      const videoBlock = lessonBlocks.find((b: any) => b.type === 'video');
-      const duration = videoBlock?.duration || 1;
-      const percentage = Math.min(100, Math.round((position / duration) * 100));
-
-      const localData: LocalProgressData = {
-        videoPosition: position,
-        percentageWatched: percentage,
-        blockStates: blockStates[activeLessonId] || {},
-        savedAt: new Date().toISOString(),
-      };
-
-      await progressOfflineStore.saveProgressLocal(userId, activeLessonId, localData);
-
-      if (isOnline) {
-        await ProgressService.saveLessonState(userId, activeLessonId, {
-          lastPlayedSeconds: position,
-          percentageWatched: percentage,
-          blockStates: blockStates[activeLessonId] || {},
-        });
-      }
-      setShowToast(true);
-    } catch (err) {
-      console.error('Failed to save progress:', err);
-    } finally {
-      setSaving(false);
-    }
-  }, [activeLessonId, userId, videoPositions, blockStates, activeLesson, isOnline]);
-
   // Restore saved progress on mount
   useEffect(() => {
     if (!activeLessonId || !userId) return;
@@ -472,25 +438,6 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
       </ScrollView>
 
       <XStack px="$4" py="$3" bg="$background" borderTopWidth={1} borderTopColor="$border" gap="$3">
-        {!completions[activeLessonId] && (
-          <Button
-            flex={1}
-            variant="secondary"
-            onPress={handleSaveProgress}
-            disabled={saving}
-            opacity={saving ? 0.7 : 1}
-          >
-            {saving ? (
-              <Spinner size="small" color="$text" />
-            ) : (
-              <>
-                <Icon name="Save" size={16} color="$text" />
-                <Text color="$text" fontWeight="600">Salvar</Text>
-              </>
-            )}
-          </Button>
-        )}
-
         {completions[activeLessonId] ? (
           <Button
             flex={1}
@@ -522,13 +469,6 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
       </>
       )}
 
-      {showToast && (
-        <Toast
-          message="Progresso salvo"
-          type="success"
-          onDismiss={() => setShowToast(false)}
-        />
-      )}
     </YStack>
   );
 }

@@ -7,7 +7,7 @@ import {
   progressOfflineStore,
   type LocalProgressData,
 } from '../services/progressOfflineStore';
-import { syncService } from '../services/syncService';
+
 import { contentCacheService } from '../services/contentCacheService';
 
 type CourseLessonsProps = {
@@ -55,8 +55,9 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
   const [openModules, setOpenModules] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [userProfile, setUserProfile] = useState<{ full_name: string } | null>(null);
-  const [syncing, setSyncing] = useState(false);
+
   const [downloadingModules, setDownloadingModules] = useState<Record<string, boolean>>({});
+  const [cachedModules, setCachedModules] = useState<Record<string, boolean>>({});
   const scrollViewRef = useRef<ScrollView>(null);
 
   const loadData = async () => {
@@ -101,6 +102,14 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
       }));
 
       setModules(modulesWithStatus);
+
+      // Check which modules are cached
+      const cachedMods = await contentCacheService.listCachedModules(courseId);
+      const cachedMap: Record<string, boolean> = {};
+      cachedMods.forEach(mod => {
+        cachedMap[mod.moduleId] = true;
+      });
+      setCachedModules(cachedMap);
 
       const initialOpenState: Record<string, boolean> = {};
       modulesWithStatus.forEach(mod => {
@@ -183,23 +192,13 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
     ),
   })).filter(mod => mod.lessons.length > 0 || searchQuery === '');
 
-  const handleSyncPendingSaves = async () => {
-    if (!userProfile?.id) return;
-    try {
-      setSyncing(true);
-      await syncService.pushPendingProgress();
-    } catch (err) {
-      console.error('Failed to sync pending saves:', err);
-    } finally {
-      setSyncing(false);
-    }
-  };
-
   const handleDownloadModule = async (moduleId: string) => {
     if (!courseId) return;
     try {
       setDownloadingModules(prev => ({ ...prev, [moduleId]: true }));
       await contentCacheService.downloadModule(courseId, moduleId);
+      // Update cached state after successful download
+      setCachedModules(prev => ({ ...prev, [moduleId]: true }));
     } catch (err) {
       console.error('Failed to download module:', err);
     } finally {
@@ -328,24 +327,6 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
                 />
               </YStack>
             </YStack>
-            <Button
-              variant="ghost"
-              px="$3"
-              py="$2"
-              br="$3"
-              hoverStyle={{ bg: '$secondary' }}
-              onPress={handleSyncPendingSaves}
-              disabled={syncing}
-            >
-              {syncing ? (
-                <Spinner size="small" color="$text" />
-              ) : (
-                <Icon name="RefreshCw" size={16} color="$text" />
-              )}
-              <Text fontSize={12} fontWeight="600" color="$text" ml="$1">
-                Sincronizar
-              </Text>
-            </Button>
           </XStack>
         </XStack>
       </YStack>
@@ -576,20 +557,34 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
                     </XStack>
 
                     <XStack ai="center" gap="$3">
-                      {/* Download button */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onPress={() => handleDownloadModule(mod.id)}
-                        disabled={downloadingModules[mod.id]}
-                        hoverStyle={{ bg: '$secondary' }}
-                      >
-                        {downloadingModules[mod.id] ? (
-                          <Spinner size="sm" color="$textMuted" />
-                        ) : (
-                          <Icon name="Download" size={16} color="$textMuted" />
-                        )}
-                      </Button>
+                      {/* Download/cache indicator */}
+                      {cachedModules[mod.id] ? (
+                        <YStack
+                          w={32}
+                          h={32}
+                          ai="center"
+                          jc="center"
+                          borderRadius="$3"
+                          bg="$success"
+                          opacity={0.9}
+                        >
+                          <Icon name="Check" size={16} color="$white" />
+                        </YStack>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onPress={() => handleDownloadModule(mod.id)}
+                          disabled={downloadingModules[mod.id]}
+                          hoverStyle={{ bg: '$secondary' }}
+                        >
+                          {downloadingModules[mod.id] ? (
+                            <Spinner size="sm" color="$textMuted" />
+                          ) : (
+                            <Icon name="Download" size={16} color="$textMuted" />
+                          )}
+                        </Button>
+                      )}
 
                       {/* Module progress indicator */}
                       <YStack w={48} h={48} ai="center" jc="center">

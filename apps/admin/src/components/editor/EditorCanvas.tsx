@@ -478,13 +478,13 @@ function BlockContent({ block, onImageDrop, isMobile = false, isInteracting = fa
     }
 
     return (
-      <div style={{ ...wrapperStyle, background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' }}>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-          <div style={{ width: '52px', height: '52px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid rgba(255,255,255,0.2)' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="white" style={{ marginLeft: 2 }}><path d="M5 3l14 9-14 9V3z" /></svg>
-          </div>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 500, letterSpacing: '0.5px' }}>Cole a URL no painel →</span>
-        </div>
+      <div style={wrapperStyle}>
+        <video
+          src={block.url}
+          controls
+          preload="metadata"
+          style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }}
+        />
         <div style={labelStyle}>{block.provider || 'Vídeo'}</div>
       </div>
     );

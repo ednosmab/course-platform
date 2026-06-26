@@ -307,7 +307,10 @@ export default function CourseConfigPage({ params }: { params: Promise<{ courseI
   const renameLesson = async (id: string) => {
     if (!editLessonTitle.trim()) { setEditingLessonId(null); return; }
     try {
-      await CourseService.updateLesson(id, { title: editLessonTitle.trim() });
+      const newTitle = editLessonTitle.trim();
+      await CourseService.updateLesson(id, { title: newTitle });
+      const draftId = id.substring(0, 24) + 'dddddddddddd';
+      await CourseService.updateLesson(draftId, { title: newTitle });
     } catch {
       // Silently handle
     }
