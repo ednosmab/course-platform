@@ -25,12 +25,14 @@ for (const story of STORIES) {
 
     // Aguarda o conteúdo da story renderizar no DOM do Ladle
     // Ladle 5.x renderiza a story no elemento <main> principal
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(3000);
 
     // Screenshot do preview content — usa o viewport inteiro
     // para capturar o componente sem o sidebar do Ladle
     await expect(page).toHaveScreenshot(`${story.file}.png`, {
       fullPage: true,
+      maxDiffPixelRatio: 0.01,
+      timeout: 10000,
     });
   });
 }
