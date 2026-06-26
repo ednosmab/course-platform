@@ -43,3 +43,4 @@ supabase/.temp/
 supabase/.branches/
 .opencode/plans/
 docs/feedback/
+videos/*
