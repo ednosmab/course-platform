@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { XStack, YStack, Text } from 'tamagui';
 import { FilterDropdown } from './FilterDropdown';
 import { SortDropdown } from './SortDropdown';
@@ -79,8 +80,7 @@ export function FilterBar({
             px={8}
             py={4}
             borderRadius={16}
-            cursor="pointer"
-            hoverStyle={{ backgroundColor: '$secondary' }}
+            hoverStyle={Platform.OS === 'web' ? { backgroundColor: '$secondary' } : undefined}
             onPress={onClearFilter}
           >
             <Text fontSize={12} fontFamily="$display" fontWeight="400" color="$danger">Limpar tudo</Text>

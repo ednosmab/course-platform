@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { ScrollView, XStack, YStack, Text, Card, Icon, Spinner, FilterBar, GridBackground } from '@projeto/ui';
 import { CourseService, ProgressService, AuthService } from '@projeto/core';
 import type { Course, CourseAccess } from '@projeto/types';
@@ -207,7 +208,7 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
               />
 
               {sortedCourses.length === 0 ? (
-                <YStack ai="center" jc="center" py={64} gap={8} borderWidth={1} borderColor="$border" borderRadius={12} borderStyle="dashed" bg="$card">
+                <YStack ai="center" jc="center" py={64} gap={8} borderWidth={1} borderColor="$border" borderRadius={12} bg="$card">
                   <Icon name="BookOpen" size={48} color="$textMuted" />
                   <Text color="$textMuted" fontSize={16} fontWeight="600">Nenhum curso encontrado</Text>
                   <Text color="$textMuted" fontSize={14}>Ajuste os filtros ou volte mais tarde.</Text>
@@ -227,10 +228,10 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
                         p={0}
                         overflow="hidden"
                         br="$4"
-                        cursor={course.hasAccess ? 'pointer' : 'default'}
+
                         borderWidth={1}
                         borderColor="$border"
-                        hoverStyle={{ borderColor: '$primary' }}
+                        hoverStyle={Platform.OS === 'web' ? { borderColor: '$primary' } : undefined}
                         opacity={course.hasAccess ? 1 : 0.6}
                         onPress={() => course.hasAccess && onSelectCourse(course.id)}
                       >
@@ -269,15 +270,15 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
                                 ai="center"
                                 gap={6}
                                 style={{
-                                  backdropFilter: 'blur(8px)',
+                                  ...(Platform.OS === 'web' ? { backdropFilter: 'blur(8px)' } : {}),
                                   backgroundColor: course.status === 'completed'
                                     ? 'rgba(34, 197, 94, 0.9)'
                                     : course.status === 'in_progress'
                                       ? 'rgba(59, 130, 246, 0.9)'
-                                      : 'rgba(107, 114, 128, 0.9)',
+                                      : 'rgba(107, 114, 118, 0.9)',
                                 }}
                               >
-                                <XStack w={6} h={6} borderRadius={3} bg="$white" style={{ borderRadius: '50%' }} />
+                                <XStack w={6} h={6} borderRadius={9999} bg="$white" />
                                 <Text fontSize={11} fontWeight="700" color="$white">
                                   {course.status === 'completed'
                                     ? 'Concluído'
@@ -294,7 +295,7 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
                                 ai="center"
                                 gap={6}
                                 style={{
-                                  backdropFilter: 'blur(8px)',
+                                  ...(Platform.OS === 'web' ? { backdropFilter: 'blur(8px)' } : {}),
                                   backgroundColor: 'rgba(156, 163, 175, 0.9)',
                                 }}
                               >

@@ -234,7 +234,7 @@ export function BlockRenderer({
             style={{ width: '100%', height: '100%', objectFit: (block.styles?.objectFit || (block.styles?.isBackground ? 'cover' : 'fill')) as any, borderRadius: block.styles?.isBackground ? '0px' : '6px', display: 'block' }}
           />
         ) : (
-          <YStack w="100%" h="100%" borderWidth={2} borderColor="$info" borderRadius="$3" borderStyle="dashed" ai="center" jc="center" gap="$2" bg="#eff6ff">
+          <YStack w="100%" h="100%" borderWidth={2} borderColor="$info" borderRadius="$3" ai="center" jc="center" gap="$2" bg="#eff6ff">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg>
             <Text fontSize={12} color="$info" fontWeight="500">Arraste uma imagem aqui</Text>
             <Text fontSize={11}>ou cole a URL no painel →</Text>

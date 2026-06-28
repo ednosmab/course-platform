@@ -73,7 +73,10 @@ export function getSupabaseAdmin(): SupabaseClient {
     const supabaseUrl = resolveEnv('url');
     const serviceRoleKey = resolveEnv('service_role');
 
-    if (!serviceRoleKey) {
+    const isNodeServer = typeof process !== 'undefined'
+      && typeof process.versions !== 'undefined'
+      && typeof process.versions.node !== 'undefined';
+    if (!serviceRoleKey && isNodeServer) {
       console.warn(
         '[Supabase] SUPABASE_SERVICE_ROLE_KEY not configured. ' +
         'Admin operations will fail. See .env.example for setup.'

@@ -1,5 +1,6 @@
 import React from 'react';
 import { XStack, YStack, Text } from 'tamagui';
+import { Platform } from 'react-native';
 
 const logoAsset: { uri?: string } | string = (() => {
   try {
@@ -35,7 +36,7 @@ export function BrandMark({ small = false, onPress }: BrandMarkProps) {
     <XStack
       ai="center"
       gap="$2"
-      cursor={onPress ? 'pointer' : undefined}
+      cursor={onPress && Platform.OS === 'web' ? 'pointer' : undefined}
       onPress={onPress}
     >
       <YStack

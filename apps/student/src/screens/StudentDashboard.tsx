@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Image } from 'react-native';
+import { Image, Platform } from 'react-native';
 import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, GridBackground } from '@projeto/ui';
 import flexedLogo from '../../assets/flexed-logo.png';
 import { AuthService, CourseService, ProgressService } from '@projeto/core';
@@ -200,7 +200,6 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                         ai="center"
                         jc="center"
                         pressStyle={{ scale: 0.95 }}
-                        cursor="pointer"
                         onPress={() => onPlay(activeProgress.courseId)}
                       >
                         <Icon name="Play" size={24} color="$primary" />
@@ -335,14 +334,16 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                     <Text fontFamily="$display" fontSize={20} fontWeight="$6">Últimos cursos</Text>
                     <Text fontSize={14} color="$textMuted">Seus cursos mais recentes.</Text>
                   </YStack>
-                  <XStack ai="center" gap={6} px={12} py={6} borderRadius={6} borderWidth={1} borderColor="$border" cursor="pointer" hoverStyle={{ backgroundColor: '$secondary' }} onPress={onNavigateToCourses}>
+                  <XStack ai="center" gap={6} px={12} py={6} borderRadius={6} borderWidth={1} borderColor="$border"
+                    hoverStyle={Platform.OS === 'web' ? { backgroundColor: '$secondary' } : undefined}
+                    onPress={onNavigateToCourses}>
                     <Text fontSize={13} fontWeight="500">Ver todos</Text>
                     <Icon name="ArrowRight" size={14} color="$textMuted" />
                   </XStack>
                 </XStack>
 
                 {courses.length === 0 ? (
-                  <YStack ai="center" jc="center" py={64} gap={8} borderWidth={1} borderColor="$border" borderRadius={12} borderStyle="dashed" bg="$card">
+                  <YStack ai="center" jc="center" py={64} gap={8} borderWidth={1} borderColor="$border" borderRadius={12} bg="$card">
                     <Icon name="BookOpen" size={40} color="$textMuted" />
                     <Text color="$textMuted" fontSize={16} fontWeight="600">Nenhum curso encontrado</Text>
                     <Text color="$textMuted" fontSize={14}>Explore o catálogo para começar.</Text>
@@ -367,10 +368,9 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                               p={0}
                               overflow="hidden"
                               br="$4"
-                              cursor="pointer"
                               borderWidth={1}
                               borderColor={courseStatus === 'in_progress' ? 'rgba(59, 130, 246, 0.35)' : courseStatus === 'completed' ? 'rgba(16, 185, 129, 0.35)' : '$border'}
-                              hoverStyle={{ borderColor: '$primary' }}
+                              hoverStyle={Platform.OS === 'web' ? { borderColor: '$primary' } : undefined}
                               onPress={() => onNavigateToCourseLessons(course.id)}
                             >
                               <YStack
@@ -405,7 +405,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                                     ai="center"
                                     gap={6}
                                     style={{
-                                      backdropFilter: 'blur(8px)',
+                                      ...(Platform.OS === 'web' ? { backdropFilter: 'blur(8px)' } : {}),
                                       backgroundColor: courseStatus === 'completed'
                                         ? 'rgba(16, 185, 129, 0.9)'
                                         : courseStatus === 'in_progress'
@@ -414,7 +414,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                                     }}
                                   >
                                     {courseStatus === 'completed' && (
-                                      <XStack w={6} h={6} borderRadius={3} bg="$white" style={{ borderRadius: '50%' }} />
+                                      <XStack w={6} h={6} borderRadius={9999} bg="$white" />
                                     )}
                                     <Text fontSize={11} fontWeight="700" color="$white">
                                       {courseStatus === 'completed' ? 'Concluído' : courseStatus === 'in_progress' ? 'Em andamento' : 'Não iniciado'}

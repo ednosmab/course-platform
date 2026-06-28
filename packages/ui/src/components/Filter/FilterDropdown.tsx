@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { XStack, YStack, Text } from 'tamagui';
 import { Icon } from '../Icon';
 
@@ -49,8 +50,9 @@ export function FilterDropdown({
         ai="center"
         borderColor={hasSelection ? '$primary' : '$border'}
         backgroundColor={hasSelection ? '$primary' : '$card'}
-        cursor="pointer"
-        hoverStyle={{ backgroundColor: hasSelection ? '$primary' : '$secondary' }}
+        hoverStyle={Platform.OS === 'web'
+          ? { backgroundColor: hasSelection ? '$primary' : '$secondary' }
+          : undefined}
         onPress={() => setIsOpen(!isOpen)}
       >
         <Icon name={icon as any} size={14} color={hasSelection ? '$white' : '$textMuted'} />
@@ -87,8 +89,7 @@ export function FilterDropdown({
                 px={10}
                 py={6}
                 borderRadius={4}
-                cursor="pointer"
-                hoverStyle={{ backgroundColor: '$secondary' }}
+                hoverStyle={Platform.OS === 'web' ? { backgroundColor: '$secondary' } : undefined}
                 onPress={() => {
                   onChange(opt.value);
                   setIsOpen(false);

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { XStack, YStack, Text } from 'tamagui';
 import { Icon } from '../Icon';
 
@@ -40,8 +41,7 @@ export function SortDropdown({ options, value, onChange }: SortDropdownProps) {
         ai="center"
         borderColor="$border"
         backgroundColor="$card"
-        cursor="pointer"
-        hoverStyle={{ backgroundColor: '$secondary' }}
+        hoverStyle={Platform.OS === 'web' ? { backgroundColor: '$secondary' } : undefined}
         onPress={() => setIsOpen(!isOpen)}
       >
         <Icon name="ArrowUpDown" size={14} color="$textMuted" />
@@ -71,8 +71,7 @@ export function SortDropdown({ options, value, onChange }: SortDropdownProps) {
                 px={10}
                 py={6}
                 borderRadius={4}
-                cursor="pointer"
-                hoverStyle={{ backgroundColor: '$secondary' }}
+                hoverStyle={Platform.OS === 'web' ? { backgroundColor: '$secondary' } : undefined}
                 onPress={() => {
                   onChange(opt.value);
                   setIsOpen(false);

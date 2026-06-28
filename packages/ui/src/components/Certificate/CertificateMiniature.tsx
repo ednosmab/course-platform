@@ -52,7 +52,6 @@ export const CertificateMiniature: React.FC<CertificateMiniatureProps> = ({
         borderRadius={8}
         borderWidth={1}
         borderColor="$border"
-        borderStyle="dashed"
         ai="center"
         jc="center"
       >

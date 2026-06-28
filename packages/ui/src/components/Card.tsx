@@ -1,4 +1,5 @@
 import { styled, YStack } from 'tamagui';
+import { Platform } from 'react-native';
 
 export const Card = styled(YStack, {
   name: 'Card',
@@ -22,11 +23,9 @@ export const Card = styled(YStack, {
     },
     interactive: {
       true: {
-        cursor: 'pointer',
-        hoverStyle: {
-          scale: 1.01,
-          borderColor: '$primary',
-        },
+        hoverStyle: Platform.OS === 'web'
+          ? { scale: 1.01, borderColor: '$primary' }
+          : undefined,
         pressStyle: {
           scale: 0.99,
           opacity: 0.9,
@@ -41,7 +40,7 @@ export const Card = styled(YStack, {
       },
       glass: {
         backgroundColor: 'rgba(30, 41, 59, 0.7)',
-        backdropFilter: 'blur(10px)',
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(10px)' } : {}),
       },
     },
   } as const,

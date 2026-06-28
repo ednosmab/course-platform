@@ -72,7 +72,7 @@ export const CertificateBlockRenderer: React.FC<Props> = ({ block, scale, fillCo
           return (
             <YStack
               w="100%" h="100%"
-              borderWidth={2} borderColor="$info" borderRadius="$3" borderStyle="dashed"
+              borderWidth={2} borderColor="$info" borderRadius="$3"
               ai="center" jc="center" gap="$2" bg="#eff6ff"
               {...dropHandlers}
             >

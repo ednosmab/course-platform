@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, XStack, YStack, Text, Icon, useMedia, BrandMark } from '@projeto/ui';
 import { AuthService } from '@projeto/core';
+import { Platform } from 'react-native';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 
 const NAV_TABS = [
@@ -70,16 +71,15 @@ export function StudentHeader({ userProfile, onLogout, onTabAction, activeTab }:
                   px={12}
                   py={6}
                   borderRadius={6}
-                  cursor="pointer"
-                  hoverStyle={{ backgroundColor: '$secondary' }}
                   position="relative"
+                  hoverStyle={Platform.OS === 'web' ? { backgroundColor: '$secondary' } : undefined}
                   onPress={() => onTabAction(tab.action)}
                 >
                   <Text
                     fontSize={14}
                     color={isActive ? '$text' : '$textMuted'}
                     fontWeight={isActive ? '600' : '400'}
-                    style={{ userSelect: 'none' }}
+                    style={Platform.OS === 'web' ? { userSelect: 'none' } : undefined}
                   >
                     {tab.label}
                   </Text>
@@ -115,7 +115,7 @@ export function StudentHeader({ userProfile, onLogout, onTabAction, activeTab }:
             </XStack>
           )}
 
-          <XStack position="relative" p={8} borderRadius={6} cursor="pointer">
+          <XStack position="relative" p={8} borderRadius={6}>
             <Icon name="Bell" size={16} color="$textMuted" />
             <XStack position="absolute" right={6} top={6} w={6} h={6} borderRadius={3} bg="$primary" />
           </XStack>
@@ -130,8 +130,7 @@ export function StudentHeader({ userProfile, onLogout, onTabAction, activeTab }:
               borderWidth={1}
               borderColor="$border"
               backgroundColor="$background"
-              cursor="pointer"
-              hoverStyle={{ backgroundColor: '$secondary' }}
+              hoverStyle={Platform.OS === 'web' ? { backgroundColor: '$secondary' } : undefined}
               pressStyle={{ scale: 0.97 }}
               onPress={() => setShowUserMenu(!showUserMenu)}
             >
@@ -164,8 +163,7 @@ export function StudentHeader({ userProfile, onLogout, onTabAction, activeTab }:
                   px="$3"
                   py="$2"
                   br="$2"
-                  cursor="pointer"
-                  hoverStyle={{ bg: '$surface' }}
+                  hoverStyle={Platform.OS === 'web' ? { bg: '$surface' } : undefined}
                   pressStyle={{ bg: '$surface', opacity: 0.9 }}
                   onPress={handleLogout}
                 >
@@ -188,16 +186,15 @@ export function StudentHeader({ userProfile, onLogout, onTabAction, activeTab }:
                 px={12}
                 py={6}
                 borderRadius={6}
-                cursor="pointer"
-                hoverStyle={{ backgroundColor: '$secondary' }}
                 position="relative"
+                hoverStyle={Platform.OS === 'web' ? { backgroundColor: '$secondary' } : undefined}
                 onPress={() => onTabAction(tab.action)}
               >
                 <Text
                   fontSize={14}
                   fontWeight={isActive ? '600' : '400'}
                   color={isActive ? '$text' : '$textMuted'}
-                  style={{ userSelect: 'none' }}
+                  style={Platform.OS === 'web' ? { userSelect: 'none' } : undefined}
                 >
                   {tab.label}
                 </Text>

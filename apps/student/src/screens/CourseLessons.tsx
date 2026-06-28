@@ -9,6 +9,7 @@ import {
 } from '../services/progressOfflineStore';
 
 import { contentCacheService } from '../services/contentCacheService';
+import { Platform } from 'react-native';
 
 type CourseLessonsProps = {
   courseId: string;
@@ -298,7 +299,7 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
               px="$3"
               py="$2"
               br="$3"
-              hoverStyle={{ bg: '$secondary' }}
+              hoverStyle={Platform.OS === 'web' ? { bg: '$secondary' } : undefined}
               onPress={onBack}
             >
               <Icon name="ArrowLeft" size={18} color="$text" />
@@ -393,7 +394,7 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
               <XStack mt="$4" gap="$3" flexWrap="wrap">
                 <Button
                   bg="$white"
-                  hoverStyle={{ bg: '$secondary' }}
+                  hoverStyle={Platform.OS === 'web' ? { bg: '$secondary' } : undefined}
                   onPress={heroButtonAction}
                 >
                   <Icon
@@ -429,7 +430,7 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
               br="$4"
               px="$4"
               py="$3"
-              hoverStyle={{ borderColor: '$primary' }}
+              hoverStyle={Platform.OS === 'web' ? { borderColor: '$primary' } : undefined}
             >
               <Icon name="Search" size={16} color="$textMuted" />
               <Input
@@ -524,7 +525,7 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
                     ai="center"
                     px="$5"
                     py="$4"
-                    hoverStyle={{ bg: '$secondary' }}
+                    hoverStyle={Platform.OS === 'web' ? { bg: '$secondary' } : undefined}
                     onPress={() => toggleModule(mod.id)}
                   >
                     <XStack ai="center" gap="$4" flex={1}>
@@ -576,7 +577,7 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
                           size="sm"
                           onPress={() => handleDownloadModule(mod.id)}
                           disabled={downloadingModules[mod.id]}
-                          hoverStyle={{ bg: '$secondary' }}
+                          hoverStyle={Platform.OS === 'web' ? { bg: '$secondary' } : undefined}
                         >
                           {downloadingModules[mod.id] ? (
                             <Spinner size="sm" color="$textMuted" />
@@ -621,7 +622,9 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
                             py="$3.5"
                             opacity={isLocked ? 0.5 : 1}
                             bg={isCurrent ? config.bg : 'transparent'}
-                            hoverStyle={{ bg: isCurrent ? config.bg : '$secondary' }}
+                            hoverStyle={Platform.OS === 'web'
+                              ? { bg: isCurrent ? config.bg : '$secondary' }
+                              : undefined}
                             onPress={() => !isLocked && onSelectLesson(lesson.id)}
                             disabled={isLocked}
                             borderBottomWidth={lessonIdx < mod.lessons.length - 1 ? 1 : 0}

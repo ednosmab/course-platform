@@ -1,5 +1,6 @@
 import { styled, YStack, Text } from 'tamagui';
 import React from 'react';
+import { Platform } from 'react-native';
 
 export const ButtonFrame = styled(YStack, {
   name: 'Button',
@@ -13,18 +14,15 @@ export const ButtonFrame = styled(YStack, {
   paddingHorizontal: '$4',
   paddingVertical: '$3',
   borderRadius: '$4',
-  cursor: 'pointer',
   
   // Estados Reativos
   pressStyle: {
     scale: 0.96,
     opacity: 0.9,
   },
-  
-  hoverStyle: {
-    opacity: 0.95,
-  },
-  
+  hoverStyle: Platform.OS === 'web' ? { opacity: 0.95 } : undefined,
+  cursor: Platform.OS === 'web' ? 'pointer' : undefined,
+
   variants: {
     variant: {
       primary: {
@@ -41,9 +39,7 @@ export const ButtonFrame = styled(YStack, {
       },
       ghost: {
         backgroundColor: 'transparent',
-        hoverStyle: {
-          backgroundColor: '$surface',
-        },
+        hoverStyle: Platform.OS === 'web' ? { backgroundColor: '$surface' } : undefined,
         pressStyle: {
           backgroundColor: '$surface',
           opacity: 0.8,
@@ -53,8 +49,8 @@ export const ButtonFrame = styled(YStack, {
     disabled: {
       true: {
         opacity: 0.5,
-        cursor: 'not-allowed',
         pointerEvents: 'none',
+        cursor: Platform.OS === 'web' ? 'not-allowed' : undefined,
       },
     },
   } as const,

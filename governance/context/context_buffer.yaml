@@ -7,43 +7,42 @@ milestone:
   next_phase: "P1-01 Observabilidade"
 
 session:
-  id: "2026-06-26-sessao-4"
-  branch: "develop"
+  id: "2026-06-27-sessao-5"
+  branch: "feat/offline-first"
   operation_type: "FEATURE"
-  last_commit: "3e2b74a"
-  status: "closed"
-  closed_at: "2026-06-26"
+  last_commit: "pending"
+  status: "in_progress"
+  started_at: "2026-06-27"
   reminder: "TEST-OFFLINE-001: Testar feature offline-first no Expo Go"
 
 current_task:
-  id: "DEMO-VIDEOS"
+  id: "OFFLINE-FIRST-ARCHITECTURE"
   type: "FEATURE"
-  description: "Setup de vídeos demo no Supabase Storage + fixes de UI"
+  description: "Arquitectura Offline-First com Repository Pattern e TelemetryProvider"
   status: "completed"
-  current_step: "Sessão encerrada"
-  adr: null
+  current_step: "Implementação concluída — aguarda validação Android"
+  adr: "ADR-024"
 
 adr:
-  last: "ADR-022"
-  created: "2026-06-13"
+  last: "ADR-024"
+  created: "2026-06-27"
 
 blockers: []
 
 next_steps:
-  - "TEST-001: Validar telas Alunos, Mídia e Relatórios"
-  - "TEST-OFFLINE-001: Testar feature offline-first (expo-sqlite)"
+  - "FASE-2-WEB: DexieDatabase + Service Worker + PWA (após validação Android)"
+  - "TEST-OFFLINE-001: Testar fluxo offline completo no Expo Go"
   - "PENDENTE-DRAG-CANVAS-EXPAND: Canvas não acompanha arrasto — expandir via DOM direct"
 
 last_decision:
-  adr: "ADR-023"
-  description: "Migração offline-first de localForage para expo-sqlite (2026-06-20)."
+  adr: "ADR-024"
+  description: "Arquitectura de persistência com Repository Pattern, IDatabase simplificada, ITelemetryProvider e migrações atómicas."
 
 technical_debt:
   - "Botões de acesso usam hex hardcoded — migrar para tokens Tamagui"
   - "CertificateMiniature web-only — criar versão mobile se necessário"
   - "Botões Baixar PDF e Compartilhar são placeholder"
   - "PENDENTE: Script lint não existe"
-  - "PENDENTE: 13 erros TypeScript em testes (mocks incompletos)"
   - "PENDENTE: Gráfico de torre nas Matrículas (/relatorios)"
   - "2026-06-26: DEMO-VIDEOS — 5 vídeos em Supabase Storage (bucket público videos-demo). Config: apps/student/src/config/demo-videos.ts"
   - "2026-06-26: VIDEO-PLACEHOLDER-FIX — <video> HTML5 no admin. Ficheiro: EditorCanvas.tsx"
@@ -52,6 +51,8 @@ technical_debt:
   - "2026-06-26: README-UPDATE — Roadmap substituiu cronograma de 8 semanas"
   - "2026-06-24: BUG-FIX-TEXT-BLOCK + FEATURE-AUTO-SCROLL-DRAG — EditorCanvas.tsx"
   - "2026-06-25: BUG-FIX-MIDDLEWARE-AUTH + BUG-FIX-I18N-BARREL"
+  - "2026-06-28: SUPABASE-ADMIN-WARN — Warning SUPABASE_SERVICE_ROLE_KEY suprimido em client-side (Expo/React Native). Ficheiro: packages/core/src/supabase.ts. Admin .env.local atualizado com service role keys."
+  - "2026-06-28: ANDROID-CRASH-FIX — Corrigido crash java.lang.String→Boolean no Android (Fabric+Tamagui RC). Props web-only removidas: position=fixed (Toast, Certificates Dialog), borderStyle=dashed (7 ficheiros), cursor=pointer (Button, Card, StudentHeader, telas). Ficheiros: Toast.tsx, Certificates.tsx, StudentCourses.tsx, StudentExplore.tsx, StudentDashboard.tsx, StudentHeader.tsx, Button.tsx, Card.tsx, CertificateMiniature.tsx, CertificateBlockRenderer.tsx, BlockRenderer.tsx"
 
 documents_loaded:
   - "governance/WORKFLOW.md"
@@ -59,3 +60,4 @@ documents_loaded:
   - "docs/AGENTS.md"
   - "docs/FORBIDDEN_OPERATIONS.md"
   - "docs/DESDO.md"
+  - "docs/adrs/ADR-024-persistence-architecture.md"

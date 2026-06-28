@@ -276,7 +276,7 @@ export function Certificates({
 
           {/* Certificates Grid - Cards 200x141px (proporção A4) */}
           {filteredCertificates.length === 0 ? (
-            <YStack p="$8" ai="center" jc="center" bg="$surface" br="$4" borderWidth={1} borderColor="$border" borderStyle="dashed">
+            <YStack p="$8" ai="center" jc="center" bg="$surface" br="$4" borderWidth={1} borderColor="$border">
               <Icon name="Award" size={48} color="$textMuted" />
               <Text variant="h3" mt="$4" textAlign="center">
                 Nenhum certificado encontrado
@@ -295,7 +295,6 @@ export function Certificates({
                   p={0}
                   overflow="hidden"
                   br="$3"
-                  cursor="pointer"
                   pressStyle={{ scale: 0.98, opacity: 0.9 }}
                   onPress={() => setSelectedCertificate(cert)}
                 >
@@ -360,8 +359,11 @@ export function Certificates({
           <Dialog.Overlay
             key="overlay"
             bg="rgba(0,0,0,0.5)"
-            position="fixed"
-            inset={0}
+            position="absolute"
+            top={0}
+            left={0}
+            right={0}
+            bottom={0}
             zIndex={99998}
           />
           <Dialog.Content
@@ -371,14 +373,12 @@ export function Certificates({
             borderColor="$border"
             br="$4"
             p="$4"
-            position="fixed"
-            top="50%"
-            left="50%"
-            transform="translate(-50%, -50%)"
+            position="absolute"
+            top="30%"
+            alignSelf="center"
             zIndex={99999}
             minWidth={340}
             maxWidth={400}
-            maxHeight="90vh"
           >
             <Dialog.Close asChild>
               <Button

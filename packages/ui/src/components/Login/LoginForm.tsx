@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Platform } from 'react-native';
 import { YStack, XStack, Text, Spinner } from 'tamagui';
 import { Button } from '../Button';
 import { Icon } from '../Icon';
@@ -89,7 +90,9 @@ export function LoginForm({ onLogin }: LoginFormProps) {
           <YStack gap="$2">
             <XStack ai="center" jc="space-between">
               <Text fontSize={14} fontWeight="500" color="$foreground">Senha</Text>
-              <Text fontSize={12} fontWeight="500" color="$primary" cursor="pointer" hoverStyle={{ textDecorationLine: 'underline' }}>Esqueci a senha</Text>
+              <Text fontSize={12} fontWeight="500" color="$primary"
+                style={Platform.OS === 'web' ? { cursor: 'pointer' } : undefined}
+              >Esqueci a senha</Text>
             </XStack>
             <XStack ai="center" borderWidth={1} borderColor="$border" br="$3" px="$3" h={44} bg="$white">
               <Icon name="Lock" size={16} color="$textMuted" />
@@ -102,7 +105,11 @@ export function LoginForm({ onLogin }: LoginFormProps) {
                 required
                 style={{ border: 'none', outline: 'none', flex: 1, marginLeft: 8, fontSize: 14, background: 'transparent', color: '#282836' }}
               />
-              <XStack cursor="pointer" onPress={() => setShowPwd(!showPwd)} p="$1" br="$2" hoverStyle={{ bg: '$secondary' }} aria-label={showPwd ? 'Ocultar senha' : 'Mostrar senha'}>
+              <XStack
+                hoverStyle={Platform.OS === 'web' ? { bg: '$secondary' } : undefined}
+                onPress={() => setShowPwd(!showPwd)} p="$1" br="$2"
+                aria-label={showPwd ? 'Ocultar senha' : 'Mostrar senha'}
+              >
                 <Icon name={showPwd ? 'EyeOff' : 'Eye'} size={16} color="$textMuted" />
               </XStack>
             </XStack>
@@ -161,7 +168,9 @@ export function LoginForm({ onLogin }: LoginFormProps) {
             <Text fontSize={14} fontWeight="500">Primeira vez por aqui?</Text>
             <Text fontSize={12} color="$textMuted">Crie sua conta em menos de 1 minuto.</Text>
           </YStack>
-          <Text fontSize={14} fontWeight="500" color="$primary" cursor="pointer" hoverStyle={{ textDecorationLine: 'underline' }} style={{ whiteSpace: 'nowrap' }}>
+          <Text fontSize={14} fontWeight="500" color="$primary"
+            style={Platform.OS === 'web' ? { whiteSpace: 'nowrap', cursor: 'pointer' } : undefined}
+          >
             Criar conta
           </Text>
         </XStack>

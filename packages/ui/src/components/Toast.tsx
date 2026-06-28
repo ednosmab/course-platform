@@ -39,10 +39,9 @@ export function Toast({ message, type = 'success', duration = 3000, onDismiss }:
 
   return (
     <XStack
-      position="fixed"
+      position="absolute"
       bottom="$6"
-      left="50%"
-      transform="translateX(-50%)"
+      alignSelf="center"
       bg="$surface"
       borderWidth={1}
       borderColor="$border"
