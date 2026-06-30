@@ -1,113 +1,110 @@
-import { Platform } from 'react-native';
-import { progressOfflineStore } from './progressOfflineStore';
-import { ProgressService } from '@projeto/core';
+import type { ILessonProgressRepository } from '../persistence/repos/types'
+import type { ITelemetryProvider } from '../telemetry/types'
+import { ProgressService } from '@projeto/core'
 
-const AUTO_SYNC_INTERVAL_MS = 30000;
-let syncTimer: ReturnType<typeof setInterval> | null = null;
+const AUTO_SYNC_INTERVAL_MS = 30000
+let syncTimer: ReturnType<typeof setInterval> | null = null
 
 /**
- * Serviço de sincronização bidireccional entre SQLite local e Supabase.
- * No web, todas as operações são no-op (dados ficam apenas no servidor).
+ * @description Service for bidirectional sync between local SQLite and Supabase.
+ * Delegates all persistence to ILessonProgressRepository.
+ * No Platform.OS checks — platform decisions live in the repository layer.
  */
-export const syncService = {
-  /**
-   * Envia pendências locais para o Supabase.
-   */
-  async pushPendingProgress(): Promise<number> {
-    if (Platform.OS === 'web') return 0;
-
-    const pending = await progressOfflineStore.getPendingSaves();
-    let synced = 0;
+export function createSyncService(
+  progressRepo: ILessonProgressRepository,
+  telemetry: ITelemetryProvider,
+) {
+  async function pushPendingProgress(): Promise<number> {
+    const pending = await progressRepo.getUnsynced()
+    let synced = 0
 
     for (const item of pending) {
       try {
         await ProgressService.saveLessonState(item.userId, item.lessonId, {
-          lastPlayedSeconds: item.data.videoPosition,
-          percentageWatched: item.data.percentageWatched,
-          blockStates: item.data.blockStates,
-        });
-        await progressOfflineStore.clearPendingSave(item.lessonId);
-        synced++;
+          lastPlayedSeconds: item.videoPosition,
+          percentageWatched: item.percentageWatched,
+          blockStates: item.blockStates,
+        })
+        await progressRepo.markSynced(item.lessonId)
+        synced++
       } catch {
         // Item remains queued for next attempt
       }
     }
 
-    return synced;
-  },
+    telemetry.event('sync.completed', { pushed: synced })
+    return synced
+  }
 
-  /**
-   * Busca progresso do servidor e actualiza o SQLite.
-   */
-  async pullServerProgress(userId: string, lessonIds: string[]): Promise<number> {
-    if (Platform.OS === 'web') return 0;
-
-    let updated = 0;
+  async function pullServerProgress(
+    userId: string,
+    lessonIds: string[],
+  ): Promise<number> {
+    let updated = 0
 
     for (const lessonId of lessonIds) {
       try {
-        const serverProgress = await ProgressService.getProgressByLessons(userId, [lessonId]);
+        const serverProgress = await ProgressService.getProgressByLessons(userId, [lessonId])
         if (serverProgress && serverProgress.length > 0) {
-          const p = serverProgress[0];
-          await progressOfflineStore.saveProgressLocal(userId, lessonId, {
+          const p = serverProgress[0]
+          await progressRepo.upsert(userId, lessonId, {
             videoPosition: p.lastPlayedSeconds || 0,
             percentageWatched: p.percentageWatched || 0,
             blockStates: p.blockStates || {},
             savedAt: p.updatedAt || new Date().toISOString(),
-          });
-          await progressOfflineStore.markSynced(lessonId);
-          updated++;
+          })
+          await progressRepo.markSynced(lessonId)
+          updated++
         }
       } catch {
         // Continue with next lesson
       }
     }
 
-    return updated;
-  },
+    telemetry.event('sync.completed', { pulled: updated })
+    return updated
+  }
 
-  /**
-   * Sincronização completa: push local → pull remoto.
-   */
-  async syncAll(userId: string, lessonIds: string[]): Promise<{ pushed: number; pulled: number }> {
-    if (Platform.OS === 'web') return { pushed: 0, pulled: 0 };
+  async function syncAll(
+    userId: string,
+    lessonIds: string[],
+  ): Promise<{ pushed: number; pulled: number }> {
+    const pushed = await pushPendingProgress()
+    const pulled = await pullServerProgress(userId, lessonIds)
+    return { pushed, pulled }
+  }
 
-    const pushed = await syncService.pushPendingProgress();
-    const pulled = await syncService.pullServerProgress(userId, lessonIds);
-
-    return { pushed, pulled };
-  },
-
-  /**
-   * Inicia sincronização automática a cada 30 segundos.
-   * @param getUserId — callback que retorna o userId actual (ou null se não autenticado)
-   * @param getLessonIds — callback que retorna as lessonIds visíveis
-   */
-  startAutoSync(getUserId: () => string | null, getLessonIds: () => string[]): void {
-    if (Platform.OS === 'web') return;
-
-    syncService.stopAutoSync();
+  function startAutoSync(
+    getUserId: () => string | null,
+    getLessonIds: () => string[],
+  ): void {
+    stopAutoSync()
 
     syncTimer = setInterval(async () => {
       try {
-        const userId = getUserId();
-        if (!userId) return;
-        const lessonIds = getLessonIds();
-        if (lessonIds.length === 0) return;
-        await syncService.syncAll(userId, lessonIds);
+        const userId = getUserId()
+        if (!userId) return
+        const lessonIds = getLessonIds()
+        if (lessonIds.length === 0) return
+        await syncAll(userId, lessonIds)
       } catch {
         // Silent fail for auto-sync
       }
-    }, AUTO_SYNC_INTERVAL_MS);
-  },
+    }, AUTO_SYNC_INTERVAL_MS)
+  }
 
-  /**
-   * Para a sincronização automática.
-   */
-  stopAutoSync(): void {
+  function stopAutoSync(): void {
     if (syncTimer) {
-      clearInterval(syncTimer);
-      syncTimer = null;
+      clearInterval(syncTimer)
+      syncTimer = null
     }
-  },
-};
+  }
+
+  return {
+    pushPendingProgress,
+    pullServerProgress,
+    syncAll,
+    startAutoSync,
+    stopAutoSync,
+  }
+}

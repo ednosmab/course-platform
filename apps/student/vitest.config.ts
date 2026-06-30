@@ -8,6 +8,8 @@ export default defineConfig({
       'react-native': 'react-native-web',
       'expo-av': path.resolve(__dirname, '__mocks__/expo-av.tsx'),
       'expo-modules-core': path.resolve(__dirname, '__mocks__/expo-modules-core.ts'),
+      'expo-sqlite': path.resolve(__dirname, '__mocks__/expo-sqlite.ts'),
+      'expo-file-system': path.resolve(__dirname, '__mocks__/expo-file-system.ts'),
     },
   },
   ssr: {

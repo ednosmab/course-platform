@@ -1,15 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StatusBar } from 'react-native';
+import { Platform, StatusBar } from 'react-native';
 import { YStack, XStack, Text, Button, ScrollView, Spinner, Icon } from '@projeto/ui';
 import { BlockRenderer } from '../components/BlockRenderer';
 import { StudentHeader } from '../components/StudentHeader';
 import { CourseService, LessonService, ProgressService, AuthService } from '@projeto/core';
-import {
-  progressOfflineStore,
-  type LocalProgressData,
-} from '../services/progressOfflineStore';
-import { syncService } from '../services/syncService';
-import { contentCacheService } from '../services/contentCacheService';
+import type { LocalProgressData } from '../services/progressOfflineStore';
+import { offlineStore, syncService, contentCache } from '../services/registry';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 
 type LessonPlayerProps = {
@@ -92,11 +88,11 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
       // OFFLINE FALLBACK: try loading from cached modules
       if (courseId) {
         try {
-          const cachedModules = await contentCacheService.listCachedModules(courseId);
+          const cachedModules = await contentCache.listCachedModules(courseId);
           if (cachedModules.length > 0) {
             const allLessons: any[] = [];
             for (const mod of cachedModules) {
-              const cached = await contentCacheService.getCachedModule(mod.moduleId);
+              const cached = await contentCache.getCachedModule(mod.moduleId);
               if (cached?.lessons) {
                 allLessons.push(...cached.lessons.map((l: any) => ({
                   ...l,
@@ -156,6 +152,32 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
 
   const refreshActiveLesson = async () => {
     if (!activeLessonId) return;
+
+    // Offline: skip server, go straight to cache
+    if (!isOnline && courseId) {
+      try {
+        const cachedModules = await contentCache.listCachedModules(courseId);
+        for (const mod of cachedModules) {
+          const cached = await contentCache.getCachedModule(mod.moduleId);
+          if (cached?.lessons) {
+            const cachedLesson = cached.lessons.find((l: any) => l.id === activeLessonId) as any;
+            if (cachedLesson) {
+              setLessons(prev => prev.map(les =>
+                les.id === activeLessonId
+                  ? { ...les, blocks: cachedLesson.blocks || [] }
+                  : les
+              ));
+              setError(null);
+              return;
+            }
+          }
+        }
+      } catch (cacheErr) {
+        console.error('Offline cache failed for lesson:', cacheErr);
+      }
+      return;
+    }
+
     try {
       setError(null);
 
@@ -175,14 +197,13 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
     } catch (err) {
       console.error('Failed to reload active lesson from server, trying offline cache:', err);
 
-      // OFFLINE FALLBACK: find lesson blocks from cached modules
       if (courseId) {
         try {
-          const cachedModules = await contentCacheService.listCachedModules(courseId);
+          const cachedModules = await contentCache.listCachedModules(courseId);
           for (const mod of cachedModules) {
-            const cached = await contentCacheService.getCachedModule(mod.moduleId);
+            const cached = await contentCache.getCachedModule(mod.moduleId);
             if (cached?.lessons) {
-              const cachedLesson = cached.lessons.find((l: any) => l.id === activeLessonId);
+            const cachedLesson = cached.lessons.find((l: any) => l.id === activeLessonId) as any;
               if (cachedLesson) {
                 setLessons(prev => prev.map(les => {
                   if (les.id === activeLessonId) {
@@ -209,7 +230,7 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
 
   useEffect(() => {
     refreshActiveLesson();
-  }, [activeLessonId]);
+  }, [activeLessonId, isOnline]);
 
   // Polling: checa version (1 int) a cada 30s
   useEffect(() => {
@@ -253,6 +274,8 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
         ),
       );
     };
+    if (Platform.OS !== 'web') return;
+
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
   }, [activeLessonId]);
@@ -274,7 +297,7 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
       blockStates: blockStates[activeLessonId] || {},
       savedAt: new Date().toISOString(),
     };
-    await progressOfflineStore.saveProgressLocal(userId || '', activeLessonId, localData);
+    await offlineStore.saveProgressLocal(userId || '', activeLessonId, localData);
 
     const percent = progressSec / durationSec;
     if (percent >= 0.85 && !completions[activeLessonId]) {
@@ -300,7 +323,7 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
 
     const restoreProgress = async () => {
       try {
-        const local = await progressOfflineStore.getProgressLocal(userId, activeLessonId);
+        const local = await offlineStore.getProgressLocal(userId, activeLessonId);
         if (cancelled) return;
 
         if (local) {
@@ -348,7 +371,7 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
         blockStates: blockStates[activeLessonId] || {},
         savedAt: new Date().toISOString(),
       };
-      await progressOfflineStore.saveProgressLocal(userId, activeLessonId, localData);
+      await offlineStore.saveProgressLocal(userId, activeLessonId, localData);
 
       // Try server (may fail offline — queued for sync)
       try {
@@ -375,6 +398,7 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
 
   const completedCount = Object.values(completions).filter(Boolean).length;
   const progressPercent = lessons.length > 0 ? Math.round((completedCount / lessons.length) * 100) : 0;
+  const currentIndex = lessons.findIndex((l) => l.id === activeLessonId);
 
   return (
     <YStack flex={1} bg="$background">
@@ -437,34 +461,59 @@ export function LessonPlayer({ courseId, lessonId, onBack, onLogout, onTabAction
         />
       </ScrollView>
 
-      <XStack px="$4" py="$3" bg="$background" borderTopWidth={1} borderTopColor="$border" gap="$3">
-        {completions[activeLessonId] ? (
-          <Button
-            flex={1}
-            bg="$success"
-            onPress={onBack}
-          >
-            <Text color="$white" fontWeight="600">
-              Voltar ao curso
+      <XStack px="$4" py="$3" bg="$background" borderTopWidth={1} borderTopColor="$border" gap="$3" ai="center">
+        <YStack flex={1} gap="$1">
+          <XStack ai="center" gap="$2">
+            <Text fontSize={13} fontWeight="700" color="$text">
+              {completedCount}/{lessons.length} aulas
             </Text>
-          </Button>
-        ) : (
-          <Button
-            flex={1}
-            bg="$primary"
-            onPress={handleCompleteLesson}
-            disabled={completing}
-            opacity={completing ? 0.7 : 1}
-          >
-            {completing ? (
-              <Spinner size="small" color="$white" />
-            ) : (
-              <Text color="$white" fontWeight="600">
-                Concluir aula
-              </Text>
-            )}
-          </Button>
-        )}
+            <YStack w={1} h={12} bg="$border" />
+            <Text fontSize={13} fontWeight="600" color="$primary">
+              {progressPercent}%
+            </Text>
+          </XStack>
+          <YStack h={3} bg="$secondary" borderRadius={999} overflow="hidden">
+            <YStack h={3} bg="$primary" borderRadius={999} w={`${progressPercent}%`} />
+          </YStack>
+        </YStack>
+
+        <XStack ai="center" gap="$2">
+          {currentIndex > 0 && (
+            <Button
+              variant="ghost"
+              px="$3"
+              py="$2"
+              onPress={() => setActiveLessonId(lessons[currentIndex - 1].id)}
+            >
+              <Icon name="ChevronLeft" size={18} color="$text" />
+            </Button>
+          )}
+
+          {activeLessonId && completions[activeLessonId] ? (
+            <Button bg="$success" onPress={onBack}>
+              <Text color="$white" fontWeight="600">Voltar</Text>
+            </Button>
+          ) : (
+            <Button bg="$primary" onPress={handleCompleteLesson} disabled={completing} opacity={completing ? 0.7 : 1}>
+              {completing ? (
+                <Spinner size="small" color="$white" />
+              ) : (
+                <Text color="$white" fontWeight="600">Concluir</Text>
+              )}
+            </Button>
+          )}
+
+          {currentIndex >= 0 && currentIndex < lessons.length - 1 && (
+            <Button
+              variant="ghost"
+              px="$3"
+              py="$2"
+              onPress={() => setActiveLessonId(lessons[currentIndex + 1].id)}
+            >
+              <Icon name="ChevronRight" size={18} color="$text" />
+            </Button>
+          )}
+        </XStack>
       </XStack>
       </>
       )}

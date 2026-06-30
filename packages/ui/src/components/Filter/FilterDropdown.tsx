@@ -30,6 +30,7 @@ export function FilterDropdown({
   const hasSelection = value !== options[0]?.value;
 
   useEffect(() => {
+    if (Platform.OS !== 'web') return;
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);

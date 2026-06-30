@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input } from '@projeto/ui';
+import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input, useMedia } from '@projeto/ui';
 import { CourseService, ProgressService, AuthService } from '@projeto/core';
 import type { Course, Module, Lesson } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
-import {
-  progressOfflineStore,
-  type LocalProgressData,
-} from '../services/progressOfflineStore';
-
-import { contentCacheService } from '../services/contentCacheService';
+import { MobileHeader } from '../components/MobileHeader';
+import { MobileBottomNav, MOBILE_BOTTOM_NAV_HEIGHT } from '../components/MobileBottomNav';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { LocalProgressData } from '../services/progressOfflineStore';
+import { contentCache, offlineStore } from '../services/registry';
 import { Platform } from 'react-native';
+import { useConnectionStatus } from '../hooks/useConnectionStatus';
 
 type CourseLessonsProps = {
   courseId: string;
@@ -49,6 +49,10 @@ const typeConfig = {
 };
 
 export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertificate, onLogout, onTabAction }: CourseLessonsProps) {
+  const media = useMedia();
+  const isMobile = media.sm;
+  const insets = useSafeAreaInsets();
+  const { isOnline } = useConnectionStatus();
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<ModuleWithLessons[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +60,7 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
   const [openModules, setOpenModules] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [userProfile, setUserProfile] = useState<{ full_name: string } | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const [downloadingModules, setDownloadingModules] = useState<Record<string, boolean>>({});
   const [cachedModules, setCachedModules] = useState<Record<string, boolean>>({});
@@ -68,12 +73,32 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
 
       const profile = await AuthService.getCurrentProfile();
       setUserProfile(profile);
+      setUserId(profile?.id || null);
 
       const structure = await CourseService.getCourseStructure(courseId);
       setCourse(structure.course);
 
       const lessonIds = structure.modules.flatMap(mod => mod.lessons.map(l => l.id));
-      const progressData = await ProgressService.getProgressByLessons(profile?.id || '', lessonIds);
+
+      let progressData: any[] = [];
+      try {
+        progressData = await ProgressService.getProgressByLessons(profile?.id || '', lessonIds);
+      } catch (progressErr) {
+        console.warn('Server progress unavailable, falling back to local:', progressErr);
+        if (profile?.id) {
+          for (const lid of lessonIds) {
+            const local = await offlineStore.getProgressLocal(profile.id, lid);
+            if (local) {
+              progressData.push({
+                lesson_id: lid,
+                completed: local.percentageWatched >= 85,
+                percentage_watched: local.percentageWatched,
+                last_played_seconds: local.videoPosition,
+              });
+            }
+          }
+        }
+      }
 
       const modulesWithStatus: ModuleWithLessons[] = structure.modules.map(mod => ({
         ...mod,
@@ -105,7 +130,7 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
       setModules(modulesWithStatus);
 
       // Check which modules are cached
-      const cachedMods = await contentCacheService.listCachedModules(courseId);
+      const cachedMods = await contentCache.listCachedModules(courseId);
       const cachedMap: Record<string, boolean> = {};
       cachedMods.forEach(mod => {
         cachedMap[mod.moduleId] = true;
@@ -129,12 +154,12 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
 
       // OFFLINE FALLBACK: try loading from cached modules
       try {
-        const cachedModules = await contentCacheService.listCachedModules(courseId);
+        const cachedModules = await contentCache.listCachedModules(courseId);
         if (cachedModules.length > 0) {
           const modulesWithStatus: ModuleWithLessons[] = [];
 
           for (const mod of cachedModules) {
-            const cached = await contentCacheService.getCachedModule(mod.moduleId);
+            const cached = await contentCache.getCachedModule(mod.moduleId);
             if (cached?.lessons) {
               modulesWithStatus.push({
                 id: mod.moduleId,
@@ -182,6 +207,55 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
     loadData();
   }, [courseId]);
 
+  // Enrich lesson statuses with local SQLite progress
+  useEffect(() => {
+    if (!userId || modules.length === 0) return;
+
+    const enrichWithLocalProgress = async () => {
+      const updatedModules = await Promise.all(
+        modules.map(async (mod) => ({
+          ...mod,
+          lessons: await Promise.all(
+            mod.lessons.map(async (lesson) => {
+              if (lesson.status !== 'todo' && lesson.status !== 'locked') return lesson;
+
+              const local = await offlineStore.getProgressLocal(userId, lesson.id);
+              if (local && local.percentageWatched > 0) {
+                return {
+                  ...lesson,
+                  status: (local.percentageWatched >= 85 ? 'done' : 'current') as LessonStatus,
+                  percentageWatched: local.percentageWatched,
+                };
+              }
+              return lesson;
+            })
+          ),
+        }))
+      );
+      setModules(updatedModules);
+    };
+
+    enrichWithLocalProgress();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, modules.length > 0]);
+
+  // Auto-download uncached modules in background
+  useEffect(() => {
+    if (modules.length === 0 || !courseId || !isOnline) return;
+
+    const autoDownloadUncached = async () => {
+      for (const mod of modules) {
+        if (!cachedModules[mod.id] && !downloadingModules[mod.id]) {
+          handleDownloadModule(mod.id);
+        }
+      }
+    };
+
+    const timer = setTimeout(autoDownloadUncached, 2000);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modules.length > 0, courseId, isOnline]);
+
   const toggleModule = (moduleId: string) => {
     setOpenModules(prev => ({ ...prev, [moduleId]: !prev[moduleId] }));
   };
@@ -197,7 +271,7 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
     if (!courseId) return;
     try {
       setDownloadingModules(prev => ({ ...prev, [moduleId]: true }));
-      await contentCacheService.downloadModule(courseId, moduleId);
+      await contentCache.downloadModule(courseId, moduleId);
       // Update cached state after successful download
       setCachedModules(prev => ({ ...prev, [moduleId]: true }));
     } catch (err) {
@@ -219,7 +293,7 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
     .find(l => l.status === 'current');
 
   const allLessons = modules.flatMap(mod => mod.lessons);
-  const nextLesson = allLessons.find(l => l.status === 'todo' && l.status !== 'locked');
+  const nextLesson = allLessons.find(l => l.status === 'todo');
   const allCompleted = completedLessons === totalLessons && totalLessons > 0;
 
   // Hero contextual data
@@ -255,12 +329,16 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
 
   return (
     <YStack flex={1} bg="$background">
-      <StudentHeader
-        userProfile={userProfile}
-        onLogout={onLogout}
-        onTabAction={onTabAction}
-        activeTab="courses"
-      />
+      {isMobile ? (
+        <MobileHeader userProfile={userProfile} onLogout={onLogout} />
+      ) : (
+        <StudentHeader
+          userProfile={userProfile}
+          onLogout={onLogout}
+          onTabAction={onTabAction}
+          activeTab="courses"
+        />
+      )}
 
       {error ? (
         <YStack flex={1} jc="center" ai="center" p="$6">
@@ -289,11 +367,11 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
         bg="$background"
         borderBottomWidth={1}
         borderBottomColor="$border"
-        px="$6"
-        py="$4"
+        px={isMobile ? '$4' : '$6'}
+        py={isMobile ? '$3' : '$4'}
       >
         <XStack ai="center" jc="space-between" maxWidth={1400} w="100%" als="center">
-          <XStack ai="center" gap="$4">
+          <XStack ai="center" gap={isMobile ? '$2' : '$4'}>
             <Button
               variant="ghost"
               px="$3"
@@ -305,10 +383,10 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
               <Icon name="ArrowLeft" size={18} color="$text" />
             </Button>
             <YStack>
-              <Text fontSize={11} fontWeight="600" color="$primary" textTransform="uppercase" letterSpacing={1.5}>
+              <Text fontSize={isMobile ? 10 : 11} fontWeight="600" color="$primary" textTransform="uppercase" letterSpacing={1.5}>
                 Curso em andamento
               </Text>
-              <Text fontSize={18} fontWeight="bold" numberOfLines={1} mt="$1">
+              <Text fontSize={isMobile ? 15 : 18} fontWeight="bold" numberOfLines={1} mt="$1">
                 {course?.title || 'Carregando...'}
               </Text>
             </YStack>
@@ -332,8 +410,8 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
         </XStack>
       </YStack>
 
-      <ScrollView ref={scrollViewRef} flex={1} contentContainerStyle={{ padding: 24, gap: 24, paddingBottom: 32 }}>
-        <YStack maxWidth={1400} w="100%" als="center" gap="$6">
+      <ScrollView ref={scrollViewRef} flex={1} contentContainerStyle={{ paddingBottom: isMobile ? MOBILE_BOTTOM_NAV_HEIGHT + Math.max(insets.bottom, 4) : 60 }}>
+        <YStack px={isMobile ? '$4' : '$6'} pt={isMobile ? '$4' : '$12'} pb="$4" gap={isMobile ? '$4' : '$6'} maxWidth={1400} alignSelf="center" w="100%">
 
           {/* Hero Section */}
           <Card
@@ -724,6 +802,9 @@ export function CourseLessons({ courseId, onSelectLesson, onBack, onViewCertific
         </YStack>
       </ScrollView>
         </>
+      )}
+      {isMobile && (
+        <MobileBottomNav activeTab="courses" onTabAction={onTabAction} />
       )}
     </YStack>
   );

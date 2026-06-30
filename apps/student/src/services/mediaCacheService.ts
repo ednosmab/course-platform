@@ -1,141 +1,138 @@
-import { Platform } from 'react-native';
-import * as FileSystem from 'expo-file-system';
-import { getDatabase } from './offlineDb';
+import type { IMediaCacheRepository } from '../persistence/repos/types'
+import type { ITelemetryProvider } from '../telemetry/types'
+import * as FileSystem from 'expo-file-system'
 
-const MAX_RETRIES = 3;
-const TIMEOUT_MS = 30000;
-const MAX_CONCURRENT = 5;
+const MAX_RETRIES = 3
+const TIMEOUT_MS = 30000
+const MAX_CONCURRENT = 5
 
 /**
- * Service de cache de mídia (imagens) usando expo-file-system + SQLite.
- * No web, todas as funções são no-op (imagens vêm directamente da URL).
+ * @description Service for media (image) caching.
+ * Delegates all persistence to IMediaCacheRepository.
+ * No Platform.OS checks — platform decisions live in the repository layer.
  */
-export const mediaCacheService = {
-  /**
-   * Baixa uma imagem e salva no cache local.
-   * Retorna o path local ou null em caso de falha.
-   */
-  async downloadImage(url: string): Promise<string | null> {
-    if (Platform.OS === 'web' || !url) return null;
+export function createMediaCacheService(
+  mediaRepo: IMediaCacheRepository,
+  telemetry: ITelemetryProvider,
+) {
+  async function downloadImage(url: string): Promise<string | null> {
+    if (!url) return null
 
-    const db = await getDatabase();
-    if (!db) return null;
-
-    const cached = await db.getFirstAsync<{ local_path: string }>(
-      'SELECT local_path FROM cached_media WHERE url = ?',
-      [url]
-    );
+    const cached = await mediaRepo.getByUrl(url)
     if (cached) {
-      const fileInfo = await FileSystem.getInfoAsync(cached.local_path);
-      if (fileInfo.exists) return cached.local_path;
+      const fileInfo = await FileSystem.getInfoAsync(cached.localPath)
+      if (fileInfo.exists) return cached.localPath
     }
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        const filename = `${Date.now()}_${url.split('/').pop()?.replace(/[^a-zA-Z0-9._-]/g, '_') || 'image'}`;
-        const localPath = `${FileSystem.cacheDirectory}media/${filename}`;
+        const filename = `${Date.now()}_${url.split('/').pop()?.replace(/[^a-zA-Z0-9._-]/g, '_') || 'image'}`
+        const localPath = `${FileSystem.cacheDirectory}media/${filename}`
 
-        const dir = `${FileSystem.cacheDirectory}media`;
-        const dirInfo = await FileSystem.getInfoAsync(dir);
+        const dir = `${FileSystem.cacheDirectory}media`
+        const dirInfo = await FileSystem.getInfoAsync(dir)
         if (!dirInfo.exists) {
-          await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
+          await FileSystem.makeDirectoryAsync(dir, { intermediates: true })
         }
 
         const downloadResult = await FileSystem.downloadAsync(url, localPath, {
           timeout: TIMEOUT_MS,
-        });
+        })
 
         if (downloadResult.status === 200) {
-          const fileInfo = await FileSystem.getInfoAsync(localPath);
-          await db.runAsync(
-            'INSERT OR REPLACE INTO cached_media (url, local_path, mime_type, size_bytes, cached_at) VALUES (?, ?, ?, ?, ?)',
-            [url, localPath, downloadResult.headers['content-type'] || 'image/png', fileInfo.size || 0, new Date().toISOString()]
-          );
-          return localPath;
+          const fileInfo = await FileSystem.getInfoAsync(localPath)
+          await mediaRepo.upsert({
+            url,
+            localPath,
+            mimeType: downloadResult.headers['content-type'] || 'image/png',
+            sizeBytes: fileInfo.size || 0,
+            cachedAt: new Date().toISOString(),
+          })
+
+          telemetry.event('image.cached', {
+            url,
+            sizeBytes: fileInfo.size || 0,
+          })
+
+          return localPath
         }
       } catch (err) {
         if (attempt === MAX_RETRIES) {
-          console.error(`Failed to download image after ${MAX_RETRIES} attempts:`, url, err);
-          return null;
+          telemetry.error(err instanceof Error ? err : new Error(String(err)), {
+            url,
+            attempts: MAX_RETRIES,
+          })
+          return null
         }
-        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt))
       }
     }
-    return null;
-  },
+    return null
+  }
 
-  /**
-   * Retorna o path local de uma imagem cacheada, ou null se não existir.
-   */
-  async getCachedImage(url: string): Promise<string | null> {
-    if (Platform.OS === 'web' || !url) return null;
+  async function getCachedImage(url: string): Promise<string | null> {
+    if (!url) return null
 
-    const db = await getDatabase();
-    if (!db) return null;
+    const cached = await mediaRepo.getByUrl(url)
+    if (!cached) return null
 
-    const cached = await db.getFirstAsync<{ local_path: string }>(
-      'SELECT local_path FROM cached_media WHERE url = ?',
-      [url]
-    );
-    if (!cached) return null;
-
-    const fileInfo = await FileSystem.getInfoAsync(cached.local_path);
+    const fileInfo = await FileSystem.getInfoAsync(cached.localPath)
     if (!fileInfo.exists) {
-      await db.runAsync('DELETE FROM cached_media WHERE url = ?', [url]);
-      return null;
+      await mediaRepo.deleteByUrl(url)
+      return null
     }
 
-    return cached.local_path;
-  },
+    return cached.localPath
+  }
 
-  /**
-   * Baixa todas as imagens de um array de blocos (max 5 concorrentes).
-   * Retorna mapa de URL → path local.
-   */
-  async preloadModuleMedia(blocks: any[]): Promise<Map<string, string>> {
-    const result = new Map<string, string>();
-    if (Platform.OS === 'web') return result;
+  async function preloadModuleMedia(
+    blocks: { type?: string; url?: string; styles?: { backgroundImage?: string } }[],
+  ): Promise<Map<string, string>> {
+    const result = new Map<string, string>()
 
-    const urls = new Set<string>();
+    const urls = new Set<string>()
     for (const block of blocks) {
-      if (block.type === 'image' && block.url) urls.add(block.url);
-      if (block.styles?.backgroundImage) urls.add(block.styles.backgroundImage);
+      if (block.type === 'image' && block.url) urls.add(block.url)
+      if (block.styles?.backgroundImage) urls.add(block.styles.backgroundImage)
     }
 
-    const urlArray = Array.from(urls);
+    const urlArray = Array.from(urls)
     for (let i = 0; i < urlArray.length; i += MAX_CONCURRENT) {
-      const batch = urlArray.slice(i, i + MAX_CONCURRENT);
+      const batch = urlArray.slice(i, i + MAX_CONCURRENT)
       const downloads = await Promise.allSettled(
         batch.map(async (url) => {
-          const path = await mediaCacheService.downloadImage(url);
-          if (path) result.set(url, path);
-        })
-      );
+          const path = await downloadImage(url)
+          if (path) result.set(url, path)
+        }),
+      )
       downloads.forEach((d, idx) => {
         if (d.status === 'rejected') {
-          console.warn(`Media preload failed for ${batch[idx]}:`, d.reason);
+          telemetry.error(d.reason instanceof Error ? d.reason : new Error(String(d.reason)), {
+            url: batch[idx],
+          })
         }
-      });
+      })
     }
 
-    return result;
-  },
+    return result
+  }
 
-  /**
-   * Limpa todo o cache de mídia.
-   */
-  async clearMediaCache(): Promise<void> {
-    if (Platform.OS === 'web') return;
-
-    const db = await getDatabase();
-    if (!db) return;
-
-    const all = await db.getAllAsync<{ local_path: string }>('SELECT local_path FROM cached_media');
-    for (const item of all) {
+  async function clearMediaCache(): Promise<void> {
+    const paths = await mediaRepo.getAllPaths()
+    for (const path of paths) {
       try {
-        await FileSystem.deleteAsync(item.local_path, { idempotent: true });
-      } catch {}
+        await FileSystem.deleteAsync(path, { idempotent: true })
+      } catch {
+        // File may not exist — continue cleanup
+      }
     }
-    await db.execAsync('DELETE FROM cached_media');
-  },
-};
+    await mediaRepo.clearAll()
+  }
+
+  return {
+    downloadImage,
+    getCachedImage,
+    preloadModuleMedia,
+    clearMediaCache,
+  }
+}

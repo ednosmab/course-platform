@@ -6,11 +6,14 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input, Dialog, CertificateMiniature } from '@projeto/ui';
+import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, Input, Dialog, CertificateMiniature, useMedia } from '@projeto/ui';
 import { CertificateService, AuthService } from '@projeto/core';
 import type { Course } from '@projeto/types';
 import { Certificate } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
+import { MobileHeader } from '../components/MobileHeader';
+import { MobileBottomNav, MOBILE_BOTTOM_NAV_HEIGHT } from '../components/MobileBottomNav';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { CertificateWithCourse } from '../components/CertificateDetailCard';
 import { CertificateDetailCard } from '../components/CertificateDetailCard';
 import { printCertificate, openCertificateValidation, shareCertificate } from '../services/certificate-actions';
@@ -38,6 +41,9 @@ export function Certificates({
   onNavigateToExplore,
   onLogout,
 }: CertificatesProps) {
+  const media = useMedia();
+  const isMobile = media.sm;
+  const insets = useSafeAreaInsets();
   const [certificates, setCertificates] = useState<CertificateWithCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -133,222 +139,207 @@ export function Certificates({
 
   const totalCategories = new Set(certificates.map(c => c.category)).size;
 
-  if (error) {
-    return (
-      <YStack flex={1} bg="$background">
-        <StudentHeader
-          userProfile={userProfile}
-          onLogout={onLogout}
-          onTabAction={handleTabAction}
-          activeTab="certificates"
-        />
-        <YStack flex={1} jc="center" ai="center" p="$6">
-          <Icon name="AlertCircle" size={48} color="$danger" />
-          <Text color="$danger" fontSize={16} fontWeight="700" mt="$4" textAlign="center">
-            Erro ao carregar certificados
-          </Text>
-          <Text color="$gray4" fontSize={12} mt="$2" textAlign="center" lineHeight={18}>
-            {error}
-          </Text>
-          <Button variant="secondary" mt="$6" onPress={loadData}>
-            Tentar Novamente
-          </Button>
-        </YStack>
-      </YStack>
-    );
-  }
-
-  if (loading) {
-    return (
-      <YStack flex={1} bg="$background">
-        <StudentHeader
-          userProfile={userProfile}
-          onLogout={onLogout}
-          onTabAction={handleTabAction}
-          activeTab="certificates"
-        />
-        <YStack flex={1} jc="center" ai="center">
-          <Spinner size="large" color="$primary" />
-          <Text color="$gray4" mt="$4" fontSize={13} fontWeight="600">
-            Carregando certificados...
-          </Text>
-        </YStack>
-      </YStack>
-    );
-  }
-
   return (
     <YStack flex={1} bg="$background">
-      {/* StudentHeader - obrigatório em todas as telas do student */}
-      <StudentHeader
-        userProfile={userProfile}
-        onLogout={onLogout}
-        onTabAction={handleTabAction}
-        activeTab="certificates"
-      />
+      {isMobile ? (
+        <MobileHeader userProfile={userProfile} onLogout={onLogout} />
+      ) : (
+        <StudentHeader
+          userProfile={userProfile}
+          onLogout={onLogout}
+          onTabAction={handleTabAction}
+          activeTab="certificates"
+        />
+      )}
 
-      <ScrollView flex={1} contentContainerStyle={{ padding: 24, gap: 20, paddingBottom: 32 }}>
-        <YStack maxWidth={1400} w="100%" alignSelf="center" gap="$6">
-          {/* Hero Section */}
-          <Card p={0} overflow="hidden" br="$4">
-            <YStack p="$5" gap="$4">
-              <XStack ai="center" gap="$2">
-                <YStack px="$2" py="$1" br="$4" bg="$primary">
-                  <Text fontSize={11} fontWeight="700" color="$white">
-                    Parabéns, {userProfile?.full_name?.split(' ')[0] || 'estudante'}
-                  </Text>
-                </YStack>
-              </XStack>
+      <ScrollView flex={1} contentContainerStyle={{ paddingBottom: isMobile ? MOBILE_BOTTOM_NAV_HEIGHT + Math.max(insets.bottom, 4) : 60 }}>
+        <YStack px={isMobile ? '$4' : '$6'} pt={isMobile ? '$4' : '$12'} pb="$4" gap={isMobile ? '$4' : '$6'} maxWidth={1400} alignSelf="center" w="100%">
 
-              <Text variant="h2" fontWeight="bold">
-                {certificates.length} certificados conquistados
-              </Text>
+          {/* Loading state — inline */}
+          {loading && (
+            <Card ai="center" jc="center" p="$8" gap="$3">
+              <Spinner size="large" color="$primary" />
+              <Text color="$textMuted">Carregando certificados...</Text>
+            </Card>
+          )}
 
-              <Text variant="caption" color="$textMuted">
-                Sua jornada de aprendizado em um só lugar. Baixe, compartilhe ou
-                valide a autenticidade de cada certificado.
-              </Text>
+          {/* Error state — inline */}
+          {error && (
+            <Card ai="center" jc="center" p="$8" gap="$3">
+              <Icon name="AlertCircle" size={32} color="$danger" />
+              <Text color="$danger" fontWeight="600">{error}</Text>
+              <Button variant="secondary" mt="$2" onPress={loadData}>
+                Tentar Novamente
+              </Button>
+            </Card>
+          )}
 
-              <XStack gap="$3" mt="$2" flexWrap="wrap">
-                <YStack flex={1} minWidth={100} p="$3" bg="$secondary" br="$3" ai="center">
-                  <Text variant="h2" fontWeight="bold">{certificates.length}</Text>
-                  <Text fontSize={10} color="$textMuted" textTransform="uppercase" fontWeight="700">
-                    Certificados
-                  </Text>
-                </YStack>
-                <YStack flex={1} minWidth={100} p="$3" bg="$secondary" br="$3" ai="center">
-                  <Text variant="h2" fontWeight="bold">{totalHours}h</Text>
-                  <Text fontSize={10} color="$textMuted" textTransform="uppercase" fontWeight="700">
-                    Horas
-                  </Text>
-                </YStack>
-                <YStack flex={1} minWidth={100} p="$3" bg="$secondary" br="$3" ai="center">
-                  <Text variant="h2" fontWeight="bold">{totalCategories}</Text>
-                  <Text fontSize={10} color="$textMuted" textTransform="uppercase" fontWeight="700">
-                    Categorias
-                  </Text>
-                </YStack>
-              </XStack>
-            </YStack>
-          </Card>
-
-          {/* Filters */}
-          <XStack ai="center" jc="space-between" gap="$3" flexWrap="wrap">
-            <XStack ai="center" gap="$2" flexWrap="wrap">
-              <Icon name="Filter" size={14} color="$textMuted" />
-              {categories.map(cat => (
-                <Button
-                  key={cat}
-                  variant="ghost"
-                  px="$3"
-                  py="$1"
-                  br="$4"
-                  bg={filter === cat ? '$text' : '$secondary'}
-                  onPress={() => setFilter(cat)}
-                >
-                  <Text
-                    fontSize={12}
-                    fontWeight="600"
-                    color={filter === cat ? '$background' : '$textMuted'}
-                  >
-                    {cat}
-                  </Text>
-                </Button>
-              ))}
-            </XStack>
-
-            <XStack flex={1} maxWidth={300} ai="center" bg="$surface" borderWidth={1} borderColor="$border" br="$3" px="$3" py="$2">
-              <Icon name="Search" size={15} color="$textMuted" />
-              <Input
-                value={query}
-                onChangeText={setQuery}
-                placeholder="Buscar por curso ou instrutor"
-                placeholderTextColor="$textMuted"
-                bg="transparent"
-                borderWidth={0}
-                h="$2.5"
-                fontSize={12}
-                color="$text"
-                flex={1}
-              />
-            </XStack>
-          </XStack>
-
-          {/* Certificates Grid - Cards 200x141px (proporção A4) */}
-          {filteredCertificates.length === 0 ? (
-            <YStack p="$8" ai="center" jc="center" bg="$surface" br="$4" borderWidth={1} borderColor="$border">
-              <Icon name="Award" size={48} color="$textMuted" />
-              <Text variant="h3" mt="$4" textAlign="center">
-                Nenhum certificado encontrado
-              </Text>
-              <Text variant="caption" mt="$2" textAlign="center" color="$textMuted">
-                Ajuste os filtros ou continue estudando para liberar novas conquistas.
-              </Text>
-            </YStack>
-          ) : (
-            <XStack gap="$4" flexWrap="wrap">
-              {filteredCertificates.map(cert => (
-                <Card
-                  key={cert.id}
-                  w={200}
-                  h={141}
-                  p={0}
-                  overflow="hidden"
-                  br="$3"
-                  pressStyle={{ scale: 0.98, opacity: 0.9 }}
-                  onPress={() => setSelectedCertificate(cert)}
-                >
-                  {/* Certificate Preview - Compact */}
-                  {cert.certificate_blocks && cert.certificate_blocks.length > 0 ? (
-                    <YStack flex={1} overflow="hidden">
-                      <CertificateMiniature
-                        blocks={cert.certificate_blocks}
-                        designWidth={cert.designWidth || 1100}
-                        designHeight={cert.designHeight || 778}
-                        isDoubleSided={cert.isDoubleSided || false}
-                      />
+          {/* Main content — only when not loading/error */}
+          {!loading && !error && (
+            <YStack gap={isMobile ? '$4' : '$6'} w="100%">
+              {/* Hero Section */}
+              <Card p={0} overflow="hidden" br="$4">
+                <YStack p="$5" gap="$4">
+                  <XStack ai="center" gap="$2">
+                    <YStack px="$2" py="$1" br="$4" bg="$primary">
+                      <Text fontSize={11} fontWeight="700" color="$white">
+                        Parabéns, {userProfile?.full_name?.split(' ')[0] || 'estudante'}
+                      </Text>
                     </YStack>
-                  ) : (
-                    <YStack
-                      flex={1}
-                      style={{ background: cert.gradient }}
-                      p="$3"
-                      jc="space-between"
+                  </XStack>
+
+                  <Text variant="h2" fontWeight="bold">
+                    {certificates.length} certificados conquistados
+                  </Text>
+
+                  <Text variant="caption" color="$textMuted">
+                    Sua jornada de aprendizado em um só lugar. Baixe, compartilhe ou
+                    valide a autenticidade de cada certificado.
+                  </Text>
+
+                  <XStack gap="$3" mt="$2" flexWrap="wrap">
+                    <YStack flex={1} minWidth={100} p="$3" bg="$secondary" br="$3" ai="center">
+                      <Text variant="h2" fontWeight="bold">{certificates.length}</Text>
+                      <Text fontSize={10} color="$textMuted" textTransform="uppercase" fontWeight="700">
+                        Certificados
+                      </Text>
+                    </YStack>
+                    <YStack flex={1} minWidth={100} p="$3" bg="$secondary" br="$3" ai="center">
+                      <Text variant="h2" fontWeight="bold">{totalHours}h</Text>
+                      <Text fontSize={10} color="$textMuted" textTransform="uppercase" fontWeight="700">
+                        Horas
+                      </Text>
+                    </YStack>
+                    <YStack flex={1} minWidth={100} p="$3" bg="$secondary" br="$3" ai="center">
+                      <Text variant="h2" fontWeight="bold">{totalCategories}</Text>
+                      <Text fontSize={10} color="$textMuted" textTransform="uppercase" fontWeight="700">
+                        Categorias
+                      </Text>
+                    </YStack>
+                  </XStack>
+                </YStack>
+              </Card>
+
+              {/* Filters */}
+              <XStack ai="center" jc="space-between" gap="$3" flexWrap="wrap">
+                <XStack ai="center" gap="$2" flexWrap="wrap">
+                  <Icon name="Filter" size={14} color="$textMuted" />
+                  {categories.map(cat => (
+                    <Button
+                      key={cat}
+                      variant="ghost"
+                      px="$3"
+                      py="$1"
+                      br="$4"
+                      bg={filter === cat ? '$text' : '$secondary'}
+                      onPress={() => setFilter(cat)}
                     >
-                      <XStack ai="center" jc="space-between">
-                        <YStack w={24} h={24} br="$2" bg="rgba(255,255,255,0.2)" ai="center" jc="center">
-                          <Icon name="Sparkles" size={12} color="$white" />
-                        </YStack>
-                        <YStack px="$1.5" py="$0.5" br="$2" bg="rgba(255,255,255,0.2)">
-                          <Text fontSize={8} fontWeight="600" color="$white" textTransform="uppercase">
-                            {cert.category}
-                          </Text>
-                        </YStack>
-                      </XStack>
+                      <Text
+                        fontSize={12}
+                        fontWeight="600"
+                        color={filter === cat ? '$background' : '$textMuted'}
+                      >
+                        {cat}
+                      </Text>
+                    </Button>
+                  ))}
+                </XStack>
 
-                      <YStack>
-                        <Text fontSize={8} color="rgba(255,255,255,0.8)" textTransform="uppercase" letterSpacing={1}>
-                          Certificado de conclusão
-                        </Text>
-                        <Text fontSize={11} fontWeight="bold" color="$white" numberOfLines={2} mt="$0.5">
-                          {cert.course?.title || 'Curso'}
-                        </Text>
-                      </YStack>
+                <XStack flex={1} maxWidth={300} ai="center" bg="$surface" borderWidth={1} borderColor="$border" br="$3" px="$3" py="$2">
+                  <Icon name="Search" size={15} color="$textMuted" />
+                  <Input
+                    value={query}
+                    onChangeText={setQuery}
+                    placeholder="Buscar por curso ou instrutor"
+                    placeholderTextColor="$textMuted"
+                    bg="transparent"
+                    borderWidth={0}
+                    h="$2.5"
+                    fontSize={12}
+                    color="$text"
+                    flex={1}
+                  />
+                </XStack>
+              </XStack>
 
-                      <XStack ai="center" jc="space-between">
-                        <Text fontSize={8} color="rgba(255,255,255,0.9)" numberOfLines={1}>
-                          {new Date(cert.created_at).toLocaleDateString('pt-BR')}
-                        </Text>
-                        <XStack ai="center" gap="$0.5">
-                          <Icon name="CheckCircle" size={8} color="$white" />
-                          <Text fontSize={8} color="$white">✓</Text>
-                        </XStack>
-                      </XStack>
-                    </YStack>
-                  )}
-                </Card>
-              ))}
-            </XStack>
+              {/* Certificates Grid - Responsive cards */}
+              {filteredCertificates.length === 0 ? (
+                <YStack p="$8" ai="center" jc="center" bg="$surface" br="$4" borderWidth={1} borderColor="$border">
+                  <Icon name="Award" size={48} color="$textMuted" />
+                  <Text variant="h3" mt="$4" textAlign="center">
+                    Nenhum certificado encontrado
+                  </Text>
+                  <Text variant="caption" mt="$2" textAlign="center" color="$textMuted">
+                    Ajuste os filtros ou continue estudando para liberar novas conquistas.
+                  </Text>
+                </YStack>
+              ) : (
+                <XStack gap={isMobile ? '$3' : '$4'} flexWrap="wrap">
+                  {filteredCertificates.map(cert => (
+                    <Card
+                      key={cert.id}
+                      flex={1}
+                      minWidth={isMobile ? 140 : 180}
+                      maxWidth={isMobile ? '48%' : 220}
+                      p={0}
+                      overflow="hidden"
+                      br="$3"
+                      pressStyle={{ scale: 0.98, opacity: 0.9 }}
+                      onPress={() => setSelectedCertificate(cert)}
+                    >
+                      {/* Certificate Preview - Compact */}
+                      {cert.certificate_blocks && cert.certificate_blocks.length > 0 ? (
+                        <YStack flex={1} overflow="hidden">
+                          <CertificateMiniature
+                            blocks={cert.certificate_blocks}
+                            designWidth={cert.designWidth || 1100}
+                            designHeight={cert.designHeight || 778}
+                            isDoubleSided={cert.isDoubleSided || false}
+                          />
+                        </YStack>
+                      ) : (
+                        <YStack
+                          flex={1}
+                          style={{ background: cert.gradient }}
+                          p="$3"
+                          jc="space-between"
+                        >
+                          <XStack ai="center" jc="space-between">
+                            <YStack w={24} h={24} br="$2" bg="rgba(255,255,255,0.2)" ai="center" jc="center">
+                              <Icon name="Sparkles" size={12} color="$white" />
+                            </YStack>
+                            <YStack px="$1.5" py="$0.5" br="$2" bg="rgba(255,255,255,0.2)">
+                              <Text fontSize={8} fontWeight="600" color="$white" textTransform="uppercase">
+                                {cert.category}
+                              </Text>
+                            </YStack>
+                          </XStack>
+
+                          <YStack>
+                            <Text fontSize={8} color="rgba(255,255,255,0.8)" textTransform="uppercase" letterSpacing={1}>
+                              Certificado de conclusão
+                            </Text>
+                            <Text fontSize={11} fontWeight="bold" color="$white" numberOfLines={2} mt="$0.5">
+                              {cert.course?.title || 'Curso'}
+                            </Text>
+                          </YStack>
+
+                          <XStack ai="center" jc="space-between">
+                            <Text fontSize={8} color="rgba(255,255,255,0.9)" numberOfLines={1}>
+                              {new Date(cert.created_at).toLocaleDateString('pt-BR')}
+                            </Text>
+                            <XStack ai="center" gap="$0.5">
+                              <Icon name="CheckCircle" size={8} color="$white" />
+                              <Text fontSize={8} color="$white">✓</Text>
+                            </XStack>
+                          </XStack>
+                        </YStack>
+                      )}
+                    </Card>
+                  ))}
+                </XStack>
+              )}
+            </YStack>
           )}
         </YStack>
       </ScrollView>
@@ -372,13 +363,13 @@ export function Certificates({
             borderWidth={1}
             borderColor="$border"
             br="$4"
-            p="$4"
+            p={isMobile ? '$3' : '$4'}
             position="absolute"
-            top="30%"
+            top={isMobile ? '10%' : '30%'}
             alignSelf="center"
             zIndex={99999}
-            minWidth={340}
-            maxWidth={400}
+            minWidth={isMobile ? 280 : 340}
+            maxWidth={isMobile ? '90%' : 400}
           >
             <Dialog.Close asChild>
               <Button
@@ -401,6 +392,10 @@ export function Certificates({
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog>
+
+      {isMobile && (
+        <MobileBottomNav activeTab="certificates" onTabAction={handleTabAction} />
+      )}
     </YStack>
   );
 }

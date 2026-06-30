@@ -8,7 +8,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
-import Head from 'expo-router/head';
+
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import {
@@ -28,6 +28,7 @@ import {
 } from '@projeto/ui';
 import { AuthService } from '@projeto/core';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
+import { initOfflineServices } from '../src/services/registry';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -49,6 +50,7 @@ export default function RootLayout() {
           // ignore — auth state will be rechecked on protected screens
         }
       }
+      await initOfflineServices();
       setReady(true);
     };
     init();
@@ -69,12 +71,6 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <TamaguiProvider config={config} defaultTheme={null}>
-        <Head>
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap"
-          />
-        </Head>
         <Theme name="cloudWhite">
           <ErrorBoundary>
             <Stack

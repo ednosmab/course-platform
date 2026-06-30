@@ -1,170 +1,111 @@
-import { Platform } from 'react-native';
-import { getDatabase } from './offlineDb';
-import { CourseService } from '@projeto/core';
-import { mediaCacheService } from './mediaCacheService';
+import type { IModuleCacheRepository } from '../persistence/repos/types'
+import type { IMediaCacheRepository } from '../persistence/repos/types'
+import type { ITelemetryProvider } from '../telemetry/types'
+import { CourseService } from '@projeto/core'
 
-const MAX_RETRIES = 3;
-const TIMEOUT_MS = 30000;
-
-interface CachedModuleRow {
-  module_id: string;
-  course_id: string;
-  title: string;
-  order_index: number;
-  data: string;
-  cached_at: string;
-  version: number;
-  partial: number;
-}
+const MAX_RETRIES = 3
 
 /**
- * Service de cache de conteúdo de módulos usando expo-sqlite.
- * Permite baixar e armazenar módulos completos para acesso offline.
- * No web, todas as funções são no-op.
+ * @description Service for module content caching.
+ * Delegates all persistence to IModuleCacheRepository and IMediaCacheRepository.
+ * No Platform.OS checks — platform decisions live in the repository layer.
  */
-export const contentCacheService = {
-  /**
-   * Baixa a estrutura de um módulo e salva no cache local.
-   * Também baixa as imagens dos blocos via mediaCacheService.
-   */
-  async downloadModule(courseId: string, moduleId: string): Promise<boolean> {
-    if (Platform.OS === 'web') return false;
-
-    const db = await getDatabase();
-    if (!db) return false;
-
+export function createContentCacheService(
+  moduleRepo: IModuleCacheRepository,
+  mediaRepo: IMediaCacheRepository,
+  telemetry: ITelemetryProvider,
+) {
+  async function downloadModule(
+    courseId: string,
+    moduleId: string,
+  ): Promise<boolean> {
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        const structure = await CourseService.getCourseStructure(courseId);
-        const module = structure.modules.find((m) => m.id === moduleId);
-        if (!module) return false;
+        const structure = await CourseService.getCourseStructure(courseId)
+        const module = structure.modules.find((m) => m.id === moduleId)
+        if (!module) return false
 
-        await db.runAsync(
-          `INSERT OR REPLACE INTO cached_modules
-           (module_id, course_id, title, order_index, data, cached_at, version, partial)
-           VALUES (?, ?, ?, ?, ?, ?, 1, 0)`,
-          [
-            moduleId,
-            courseId,
-            module.title,
-            module.order_index,
-            JSON.stringify({ lessons: module.lessons }),
-            new Date().toISOString(),
-          ]
-        );
+        await moduleRepo.upsert({
+          moduleId,
+          courseId,
+          title: module.title,
+          orderIndex: module.order_index,
+          data: JSON.stringify({ lessons: module.lessons }),
+          cachedAt: new Date().toISOString(),
+          version: 1,
+          partial: false,
+        })
 
-        for (const lesson of module.lessons) {
-          if (lesson.blocks) {
-            await mediaCacheService.preloadModuleMedia(lesson.blocks);
-          }
-        }
+        telemetry.event('module.downloaded', {
+          moduleId,
+          courseId,
+          lessonCount: module.lessons.length,
+        })
 
-        return true;
+        return true
       } catch (err) {
         if (attempt === MAX_RETRIES) {
-          console.error(`Failed to download module after ${MAX_RETRIES} attempts:`, moduleId, err);
-          const db = await getDatabase();
-          if (db) {
-            await db.runAsync(
-              `INSERT OR REPLACE INTO cached_modules
-               (module_id, course_id, title, order_index, data, cached_at, version, partial)
-               VALUES (?, ?, ?, ?, ?, ?, 1, 1)`,
-              [moduleId, courseId, '', 0, '{}', new Date().toISOString()]
-            );
-          }
-          return false;
+          telemetry.error(err instanceof Error ? err : new Error(String(err)), {
+            moduleId,
+            courseId,
+            attempts: MAX_RETRIES,
+          })
+          await moduleRepo.upsertPartial(moduleId, courseId)
+          return false
         }
-        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt))
       }
     }
-    return false;
-  },
+    return false
+  }
 
-  /**
-   * Retorna um módulo cacheado do SQLite.
-   */
-  async getCachedModule(moduleId: string): Promise<{ title: string; lessons: any[] } | null> {
-    if (Platform.OS === 'web') return null;
+  async function getCachedModule(
+    moduleId: string,
+  ): Promise<{ title: string; lessons: unknown[] } | null> {
+    const cached = await moduleRepo.getById(moduleId)
+    if (!cached) {
+      telemetry.event('cache.miss', { moduleId })
+      return null
+    }
 
-    const db = await getDatabase();
-    if (!db) return null;
+    telemetry.event('cache.hit', { moduleId })
+    const data = JSON.parse(cached.data)
+    return { title: cached.title, lessons: data.lessons || [] }
+  }
 
-    const row = await db.getFirstAsync<CachedModuleRow>(
-      'SELECT * FROM cached_modules WHERE module_id = ?',
-      [moduleId]
-    );
-    if (!row) return null;
+  async function getCachedLessons(moduleId: string): Promise<unknown[]> {
+    const data = await moduleRepo.getLessons(moduleId)
+    if (!data) return []
+    const parsed = JSON.parse(data)
+    return parsed.lessons || []
+  }
 
-    const data = JSON.parse(row.data);
-    return { title: row.title, lessons: data.lessons || [] };
-  },
+  async function isModuleCached(moduleId: string): Promise<boolean> {
+    return moduleRepo.exists(moduleId)
+  }
 
-  /**
-   * Retorna as aulas de um módulo cacheado.
-   */
-  async getCachedLessons(moduleId: string): Promise<any[]> {
-    if (Platform.OS === 'web') return [];
+  async function clearModuleCache(moduleId: string): Promise<void> {
+    await moduleRepo.deleteById(moduleId)
+  }
 
-    const db = await getDatabase();
-    if (!db) return [];
+  async function listCachedModules(
+    courseId: string,
+  ): Promise<{ moduleId: string; title: string; cachedAt: string; partial: boolean }[]> {
+    const modules = await moduleRepo.listByCourse(courseId)
+    return modules.map((m) => ({
+      moduleId: m.moduleId,
+      title: m.title,
+      cachedAt: m.cachedAt,
+      partial: m.partial,
+    }))
+  }
 
-    const row = await db.getFirstAsync<CachedModuleRow>(
-      'SELECT data FROM cached_modules WHERE module_id = ?',
-      [moduleId]
-    );
-    if (!row) return [];
-
-    const data = JSON.parse(row.data);
-    return data.lessons || [];
-  },
-
-  /**
-   * Verifica se um módulo está no cache.
-   */
-  async isModuleCached(moduleId: string): Promise<boolean> {
-    if (Platform.OS === 'web') return false;
-
-    const db = await getDatabase();
-    if (!db) return false;
-
-    const row = await db.getFirstAsync<{ module_id: string }>(
-      'SELECT module_id FROM cached_modules WHERE module_id = ? AND partial = 0',
-      [moduleId]
-    );
-    return row !== null;
-  },
-
-  /**
-   * Remove um módulo do cache.
-   */
-  async clearModuleCache(moduleId: string): Promise<void> {
-    if (Platform.OS === 'web') return;
-
-    const db = await getDatabase();
-    if (!db) return;
-
-    await db.runAsync('DELETE FROM cached_modules WHERE module_id = ?', [moduleId]);
-  },
-
-  /**
-   * Lista módulos baixados para um curso.
-   */
-  async listCachedModules(courseId: string): Promise<{ moduleId: string; title: string; cachedAt: string; partial: boolean }[]> {
-    if (Platform.OS === 'web') return [];
-
-    const db = await getDatabase();
-    if (!db) return [];
-
-    const rows = await db.getAllAsync<CachedModuleRow>(
-      'SELECT * FROM cached_modules WHERE course_id = ? ORDER BY order_index',
-      [courseId]
-    );
-
-    return rows.map((row) => ({
-      moduleId: row.module_id,
-      title: row.title,
-      cachedAt: row.cached_at,
-      partial: row.partial === 1,
-    }));
-  },
-};
+  return {
+    downloadModule,
+    getCachedModule,
+    getCachedLessons,
+    isModuleCached,
+    clearModuleCache,
+    listCachedModules,
+  }
+}

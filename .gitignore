@@ -42,5 +42,5 @@ tests/ladle-vrt/test-results/
 supabase/.temp/
 supabase/.branches/
 .opencode/plans/
-docs/feedback/
+#docs/feedback/
 videos/*

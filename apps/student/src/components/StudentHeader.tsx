@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, XStack, YStack, Text, Icon, useMedia, BrandMark } from '@projeto/ui';
+import { XStack, YStack, Text, Icon, BrandMark } from '@projeto/ui';
 import { AuthService } from '@projeto/core';
 import { Platform } from 'react-native';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
@@ -19,7 +19,6 @@ interface StudentHeaderProps {
 }
 
 export function StudentHeader({ userProfile, onLogout, onTabAction, activeTab }: StudentHeaderProps) {
-  const media = useMedia();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<any>(null);
   const { isOnline } = useConnectionStatus();
@@ -30,7 +29,7 @@ export function StudentHeader({ userProfile, onLogout, onTabAction, activeTab }:
   const firstName = userProfile?.full_name ? userProfile.full_name.split(' ')[0] : '--';
 
   useEffect(() => {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !(menuRef.current as any).contains?.(e.target as Node)) {
         setShowUserMenu(false);
@@ -175,45 +174,6 @@ export function StudentHeader({ userProfile, onLogout, onTabAction, activeTab }:
           </YStack>
         </XStack>
       </XStack>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} mt="$3" display={media.sm ? 'flex' : 'none'}>
-        <XStack gap={4}>
-          {NAV_TABS.map((tab) => {
-            const isActive = tab.action === activeTab;
-            return (
-              <XStack
-                key={tab.label}
-                px={12}
-                py={6}
-                borderRadius={6}
-                position="relative"
-                hoverStyle={Platform.OS === 'web' ? { backgroundColor: '$secondary' } : undefined}
-                onPress={() => onTabAction(tab.action)}
-              >
-                <Text
-                  fontSize={14}
-                  fontWeight={isActive ? '600' : '400'}
-                  color={isActive ? '$text' : '$textMuted'}
-                  style={Platform.OS === 'web' ? { userSelect: 'none' } : undefined}
-                >
-                  {tab.label}
-                </Text>
-                {isActive && (
-                  <XStack
-                    position="absolute"
-                    bottom={0}
-                    left={12}
-                    right={12}
-                    height={2}
-                    bg="$primary"
-                    borderRadius={1}
-                  />
-                )}
-              </XStack>
-            );
-          })}
-        </XStack>
-      </ScrollView>
     </>
   );
 }

@@ -7,36 +7,36 @@ milestone:
   next_phase: "P1-01 Observabilidade"
 
 session:
-  id: "2026-06-27-sessao-5"
+  id: "2026-06-29-sessao-6"
   branch: "feat/offline-first"
   operation_type: "FEATURE"
   last_commit: "pending"
   status: "in_progress"
-  started_at: "2026-06-27"
-  reminder: "TEST-OFFLINE-001: Testar feature offline-first no Expo Go"
+  started_at: "2026-06-29"
+  reminder: "TEST-OFFLINE-001: FRACASSADO — App abre no Expo Go mas layout mobile desconfigurado (header sobreposto à status bar, bottom nav com altura inconsistente, BrandMark sem texto). Correcções de layout mobile cross-platform aplicadas nesta sessão. Re-testar após validação visual."
 
 current_task:
-  id: "OFFLINE-FIRST-ARCHITECTURE"
-  type: "FEATURE"
-  description: "Arquitectura Offline-First com Repository Pattern e TelemetryProvider"
+  id: "ANDROID-CRASH-FIXES-ROUND-4"
+  type: "BUG"
+  description: "Correcções Android: registry + SQLite + BlockRenderer + Renderer native"
   status: "completed"
-  current_step: "Implementação concluída — aguarda validação Android"
-  adr: "ADR-024"
+  current_step: "5+ crashes resolvidos, lint verde (0 errors)"
+  adr: "ADR-026"
 
 adr:
-  last: "ADR-024"
-  created: "2026-06-27"
+  last: "ADR-026"
+  created: "2026-06-29"
 
 blockers: []
 
 next_steps:
+  - "TEST-OFFLINE-001: Testar fluxo offline completo no Expo Go (syncService.startAutoSync deve funcionar agora)"
   - "FASE-2-WEB: DexieDatabase + Service Worker + PWA (após validação Android)"
-  - "TEST-OFFLINE-001: Testar fluxo offline completo no Expo Go"
   - "PENDENTE-DRAG-CANVAS-EXPAND: Canvas não acompanha arrasto — expandir via DOM direct"
 
 last_decision:
-  adr: "ADR-024"
-  description: "Arquitectura de persistência com Repository Pattern, IDatabase simplificada, ITelemetryProvider e migrações atómicas."
+  adr: "ADR-026"
+  description: "Service Registry como composition root — inicializa DB, telemetry, repos e serviços offline-first como singletons. Resolve crash syncService.startAutoSync."
 
 technical_debt:
   - "Botões de acesso usam hex hardcoded — migrar para tokens Tamagui"
@@ -53,6 +53,11 @@ technical_debt:
   - "2026-06-25: BUG-FIX-MIDDLEWARE-AUTH + BUG-FIX-I18N-BARREL"
   - "2026-06-28: SUPABASE-ADMIN-WARN — Warning SUPABASE_SERVICE_ROLE_KEY suprimido em client-side (Expo/React Native). Ficheiro: packages/core/src/supabase.ts. Admin .env.local atualizado com service role keys."
   - "2026-06-28: ANDROID-CRASH-FIX — Corrigido crash java.lang.String→Boolean no Android (Fabric+Tamagui RC). Props web-only removidas: position=fixed (Toast, Certificates Dialog), borderStyle=dashed (7 ficheiros), cursor=pointer (Button, Card, StudentHeader, telas). Ficheiros: Toast.tsx, Certificates.tsx, StudentCourses.tsx, StudentExplore.tsx, StudentDashboard.tsx, StudentHeader.tsx, Button.tsx, Card.tsx, CertificateMiniature.tsx, CertificateBlockRenderer.tsx, BlockRenderer.tsx"
+  - "2026-06-29: SERVICE-REGISTRY — Composition root criado em services/registry.ts. Inicializa DB+telemetry+repos+services como singletons. Resolve crash syncService.startAutoSync em LessonPlayer. ADR-026. Ficheiros: registry.ts (novo), LessonPlayer.tsx, CourseLessons.tsx, _layout.tsx"
+  - "2026-06-29: SQLITE-TRANSACTION-FIX — Corrigido transactionAsync → withExclusiveTransactionAsync (expo-sqlite v16 API). Ficheiro: persistence/sqlite/SQLiteDatabase.ts"
+  - "2026-06-29: BLOCKRENDERER-NATIVE — Criado BlockRenderer.native.tsx com YStack+transforms RN. Resolve crash <div> em aulas. Platform Split (web mantém <div>). Ficheiro: components/BlockRenderer.native.tsx"
+  - "2026-06-29: RENDERER-NATIVE — Platform Split no packages/renderer. BlockRenderer.native.tsx e ImageWithCache.native.tsx. Resolve crashes <div>, <h2>, <strong>, <em>, <svg>, <hr>, <iframe> em aulas. Ficheiros: packages/renderer/src/BlockRenderer.native.tsx, packages/renderer/src/ImageWithCache.native.tsx"
+  - "2026-06-29: WINDOW-ADD-EVENT-LISTENER — Corrigido window.addEventListener em LessonPlayer.tsx. Platform.OS guard para web-only. Ficheiro: screens/LessonPlayer.tsx"
 
 documents_loaded:
   - "governance/WORKFLOW.md"
@@ -61,3 +66,4 @@ documents_loaded:
   - "docs/FORBIDDEN_OPERATIONS.md"
   - "docs/DESDO.md"
   - "docs/adrs/ADR-024-persistence-architecture.md"
+  - "docs/adrs/ADR-026-service-registry-composition-root.md"

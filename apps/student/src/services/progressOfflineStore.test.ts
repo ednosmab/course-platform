@@ -1,4 +1,6 @@
-import { progressOfflineStore, type LocalProgressData } from './progressOfflineStore';
+import { describe, it, expect, vi } from 'vitest';
+import { createProgressOfflineStore, type LocalProgressData } from './progressOfflineStore';
+import type { ILessonProgressRepository } from '../persistence/repos/types';
 
 const mockUser = 'test-user-id';
 const mockLesson = 'test-lesson-id';
@@ -10,25 +12,43 @@ const mockData: LocalProgressData = {
   savedAt: '2026-06-20T10:00:00.000Z',
 };
 
+function createMockRepo(): ILessonProgressRepository {
+  return {
+    upsert: vi.fn(async () => {}),
+    getByUserAndLesson: vi.fn(async () => null),
+    getUnsynced: vi.fn(async () => []),
+    markSynced: vi.fn(async () => {}),
+    clearAll: vi.fn(async () => {}),
+  };
+}
+
 describe('progressOfflineStore', () => {
   it('exports all required functions', () => {
-    expect(typeof progressOfflineStore.saveProgressLocal).toBe('function');
-    expect(typeof progressOfflineStore.getProgressLocal).toBe('function');
-    expect(typeof progressOfflineStore.queuePendingSave).toBe('function');
-    expect(typeof progressOfflineStore.getPendingSaves).toBe('function');
-    expect(typeof progressOfflineStore.clearPendingSave).toBe('function');
-    expect(typeof progressOfflineStore.markSynced).toBe('function');
-    expect(typeof progressOfflineStore.clearAll).toBe('function');
+    const repo = createMockRepo();
+    const store = createProgressOfflineStore(repo);
+    expect(typeof store.saveProgressLocal).toBe('function');
+    expect(typeof store.getProgressLocal).toBe('function');
+    expect(typeof store.queuePendingSave).toBe('function');
+    expect(typeof store.getPendingSaves).toBe('function');
+    expect(typeof store.clearPendingSave).toBe('function');
+    expect(typeof store.markSynced).toBe('function');
+    expect(typeof store.clearAll).toBe('function');
   });
 
-  it('returns null on web platform', async () => {
-    const result = await progressOfflineStore.getProgressLocal(mockUser, mockLesson);
+  it('delegates to repository', async () => {
+    const repo = createMockRepo();
+    const store = createProgressOfflineStore(repo);
+
+    await store.saveProgressLocal(mockUser, mockLesson, mockData);
+    expect(repo.upsert).toHaveBeenCalledWith(mockUser, mockLesson, mockData);
+  });
+
+  it('returns null when no progress found', async () => {
+    const repo = createMockRepo();
+    const store = createProgressOfflineStore(repo);
+
+    const result = await store.getProgressLocal(mockUser, mockLesson);
     expect(result).toBeNull();
-  });
-
-  it('returns empty array for pending saves on web', async () => {
-    const result = await progressOfflineStore.getPendingSaves();
-    expect(result).toEqual([]);
   });
 
   it('LocalProgressData interface matches expected shape', () => {

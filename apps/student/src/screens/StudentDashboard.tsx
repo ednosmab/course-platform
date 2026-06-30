@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Image, Platform } from 'react-native';
-import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, GridBackground } from '@projeto/ui';
+import { ScrollView, XStack, YStack, Text, Button, Card, Icon, Spinner, GridBackground, useMedia } from '@projeto/ui';
 import flexedLogo from '../../assets/flexed-logo.png';
 import { AuthService, CourseService, ProgressService } from '@projeto/core';
 import type { Course } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
+import { MobileHeader } from '../components/MobileHeader';
+import { MobileBottomNav, MOBILE_BOTTOM_NAV_HEIGHT } from '../components/MobileBottomNav';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type StudentDashboardProps = {
   onPlay: (courseId: string) => void;
@@ -28,6 +31,9 @@ interface ActiveProgressState {
 }
 
 export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigateToCourses, onNavigateToExplore, onNavigateToCertificates, onLogout }: StudentDashboardProps) {
+  const media = useMedia();
+  const isMobile = media.sm;
+  const insets = useSafeAreaInsets();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -165,9 +171,13 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
 
   return (
     <YStack flex={1} bg="$background">
-      <StudentHeader userProfile={userProfile} onLogout={onLogout} onTabAction={onTabAction} activeTab="dashboard" />
-      <ScrollView flex={1} contentContainerStyle={{ paddingBottom: 60 }}>
-        <YStack px="$6" pt="$12" pb="$4" gap="$6" maxWidth={1400} alignSelf="center" w="100%">
+      {isMobile ? (
+        <MobileHeader userProfile={userProfile} onLogout={onLogout} onPressLogo={() => onTabAction('dashboard')} />
+      ) : (
+        <StudentHeader userProfile={userProfile} onLogout={onLogout} onTabAction={onTabAction} activeTab="dashboard" />
+      )}
+      <ScrollView flex={1} contentContainerStyle={{ paddingBottom: isMobile ? MOBILE_BOTTOM_NAV_HEIGHT + Math.max(insets.bottom, 4) : 60 }}>
+        <YStack px={isMobile ? '$4' : '$6'} pt={isMobile ? '$4' : '$12'} pb="$4" gap={isMobile ? '$4' : '$6'} maxWidth={1400} alignSelf="center" w="100%">
           {loading && (
             <Card ai="center" jc="center" p="$8" gap="$3">
               <Spinner size="large" color="$primary" />
@@ -190,7 +200,7 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                 <YStack flex={2} gap="$4">
                   <Card p={0} overflow="hidden" br="$4" elevated>
                     {/* Cover Gradient/Visual Area */}
-                    <YStack h={200} bg="$primary" position="relative" jc="center" ai="center">
+                    <YStack h={isMobile ? 160 : 200} bg="$primary" position="relative" jc="center" ai="center">
                       <GridBackground position="absolute" top={0} left={0} right={0} bottom={0} opacity={0.2} />
                       <XStack
                         w={64}
@@ -379,15 +389,23 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
                                 bg="$primary"
                               >
                                 {course.thumbnail_url ? (
-                                  <YStack
-                                    position="absolute"
-                                    inset={0}
-                                    style={{
-                                      backgroundImage: `url(${course.thumbnail_url})`,
-                                      backgroundSize: 'cover',
-                                      backgroundPosition: 'center',
-                                    }}
-                                  />
+                                  Platform.OS === 'web' ? (
+                                    <YStack
+                                      position="absolute"
+                                      inset={0}
+                                      style={{
+                                        backgroundImage: `url(${course.thumbnail_url})`,
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center',
+                                      }}
+                                    />
+                                  ) : (
+                                    <Image
+                                      source={{ uri: course.thumbnail_url }}
+                                      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+                                      resizeMode="cover"
+                                    />
+                                  )
                                 ) : (
                                   <>
                                     <GridBackground position="absolute" inset={0} opacity={0.15} />
@@ -460,6 +478,9 @@ export function StudentDashboard({ onPlay, onNavigateToCourseLessons, onNavigate
           )}
         </YStack>
       </ScrollView>
+      {isMobile && (
+        <MobileBottomNav activeTab="dashboard" onTabAction={onTabAction} />
+      )}
     </YStack>
   );
 }

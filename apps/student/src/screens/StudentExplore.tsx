@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Platform } from 'react-native';
-import { ScrollView, XStack, YStack, Text, Card, Icon, Spinner, FilterBar, GridBackground } from '@projeto/ui';
+import { Image, Platform } from 'react-native';
+import { ScrollView, XStack, YStack, Text, Card, Icon, Spinner, FilterBar, GridBackground, useMedia } from '@projeto/ui';
 import { CourseService, ProgressService, AuthService } from '@projeto/core';
 import type { Course, CourseAccess } from '@projeto/types';
 import { StudentHeader } from '../components/StudentHeader';
+import { MobileHeader } from '../components/MobileHeader';
+import { MobileBottomNav, MOBILE_BOTTOM_NAV_HEIGHT } from '../components/MobileBottomNav';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type CourseWithAccessAndStatus = Course & {
   accessData?: CourseAccess | null;
@@ -23,6 +26,9 @@ type StudentExploreProps = {
 };
 
 export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToDashboard, onNavigateToCourses, onNavigateToCertificates }: StudentExploreProps) {
+  const media = useMedia();
+  const isMobile = media.sm;
+  const insets = useSafeAreaInsets();
   const [courses, setCourses] = useState<CourseWithAccessAndStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -149,10 +155,14 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
 
   return (
     <YStack flex={1} bg="$background">
-      <StudentHeader userProfile={userProfile} onLogout={onLogout} onTabAction={handleTabAction} activeTab="explore" />
+      {isMobile ? (
+        <MobileHeader userProfile={userProfile} onLogout={onLogout} />
+      ) : (
+        <StudentHeader userProfile={userProfile} onLogout={onLogout} onTabAction={handleTabAction} activeTab="explore" />
+      )}
 
-      <ScrollView flex={1} contentContainerStyle={{ paddingBottom: 60 }}>
-        <YStack px={24} pt={24} pb={16} gap={24} maxWidth={1400} alignSelf="center" w="100%">
+      <ScrollView flex={1} contentContainerStyle={{ paddingBottom: isMobile ? MOBILE_BOTTOM_NAV_HEIGHT + Math.max(insets.bottom, 4) : 60 }}>
+        <YStack px={isMobile ? '$4' : 24} pt={isMobile ? '$4' : 24} pb={isMobile ? '$4' : 16} gap={isMobile ? '$4' : 24} maxWidth={1400} alignSelf="center" w="100%">
 
           {/* Page Header */}
           <YStack gap={4}>
@@ -214,14 +224,14 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
                   <Text color="$textMuted" fontSize={14}>Ajuste os filtros ou volte mais tarde.</Text>
                 </YStack>
               ) : (
-                <XStack flexWrap="wrap" gap={16}>
+                <XStack flexWrap="wrap" gap={isMobile ? '$3' : 16}>
                   {sortedCourses.map((course) => (
                     <YStack
                       key={course.id}
                       flex={1}
-                      minWidth={320}
-                      maxWidth="calc(33.33% - 12px)"
-                      $md={{ maxWidth: 'calc(50% - 8px)' }}
+                      minWidth={isMobile ? '100%' : 320}
+                      maxWidth={isMobile ? '100%' : "calc(33.33% - 12px)"}
+                      $md={{ maxWidth: isMobile ? '100%' : 'calc(50% - 8px)' }}
                       $sm={{ maxWidth: '100%' }}
                     >
                       <Card
@@ -242,15 +252,23 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
                           bg="$primary"
                         >
                           {course.thumbnail_url ? (
-                            <YStack
-                              position="absolute"
-                              inset={0}
-                              style={{
-                                backgroundImage: `url(${course.thumbnail_url})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                              }}
-                            />
+                            Platform.OS === 'web' ? (
+                              <YStack
+                                position="absolute"
+                                inset={0}
+                                style={{
+                                  backgroundImage: `url(${course.thumbnail_url})`,
+                                  backgroundSize: 'cover',
+                                  backgroundPosition: 'center',
+                                }}
+                              />
+                            ) : (
+                              <Image
+                                source={{ uri: course.thumbnail_url }}
+                                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+                                resizeMode="cover"
+                              />
+                            )
                           ) : (
                             <>
                               <GridBackground position="absolute" inset={0} opacity={0.15} />
@@ -348,6 +366,9 @@ export function StudentExplore({ onSelectCourse, onBack, onLogout, onNavigateToD
           )}
         </YStack>
       </ScrollView>
+      {isMobile && (
+        <MobileBottomNav activeTab="explore" onTabAction={handleTabAction} />
+      )}
     </YStack>
   );
 }
